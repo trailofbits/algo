@@ -14,5 +14,15 @@
   - name: Do not accept ICMP redirects (prevent MITM attacks)
     sysctl: name=net.ipv4.conf.all.send_redirects value=0
 
-  - name: Configure IPTables to route traffic appropriately
+  - name: Needed so that IPSEC traffic can traverse the tunnel
     iptables: table=nat chain=POSTROUTING source=10.0.0.0/24 out_interface=eth0 jump=MASQUERADE
+
+  - name: Setup the ipsec.conf file from our template
+    template: src=ipsec.conf.j2 dest=/etc/ipsec.conf owner=root group=root mode=644
+
+  - name: Generate a random IPsec pre-shared key (16 bytes)
+    shell: openssl rand -base64 16
+    register: ipsec_psk
+
+  - name: Setup the ipsec.secrets file with users and passwords
+    template: src=ipsec.secrets.j2 dest=/etc/ipsec.secrets owner=root group=root mode=600

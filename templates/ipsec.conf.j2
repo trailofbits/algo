@@ -1,0 +1,18 @@
+config setup
+	uniqueids = never # allow multiple connections per user
+
+conn %default
+	keyexchange=ikev2
+	ike=aes128gcm16-sha2_256-prfsha256-ecp256!
+	esp=aes128gcm16-sha2_256-ecp256!
+	compress=yes
+	fragmentation=yes
+
+conn psk	
+	authby=psk
+	left=%any
+	leftsubnet=0.0.0.0/0
+	right=%any
+	rightdns=8.8.8.8,8.8.4.4
+	rightsourceip=10.0.0.0/24
+	auto=add
