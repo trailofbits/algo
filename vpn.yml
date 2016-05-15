@@ -1,5 +1,4 @@
 ---
-
 - name: Install StrongSwan and its dependencies
   hosts: vpn
   roles:
