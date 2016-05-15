@@ -1,5 +1,18 @@
 ---
 - name: Install StrongSwan and its dependencies
   hosts: vpn
-  roles:
-    - common
+  tasks:
+  - name: Install StrongSwan
+    apt: name=strongswan state=latest update_cache=yes
+
+  - name: Enable packet forwarding for IPv4
+    sysctl: name=net.ipv4.ip_forward value=1
+
+  - name: Do not accept ICMP redirects (prevent MITM attacks)
+    sysctl: name=net.ipv4.conf.all.accept_redirects value=0
+
+  - name: Do not accept ICMP redirects (prevent MITM attacks)
+    sysctl: name=net.ipv4.conf.all.send_redirects value=0
+
+  - name: Configure IPTables to route traffic appropriately
+    iptables: table=nat chain=POSTROUTING source=10.0.0.0/24 out_interface=eth0 jump=MASQUERADE
