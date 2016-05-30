@@ -11,10 +11,10 @@
   - name: Do not accept ICMP redirects (prevent MITM attacks)
     sysctl: name=net.ipv4.conf.all.accept_redirects value=0
 
-  - name: Do not accept ICMP redirects (prevent MITM attacks)
+  - name: Do not send ICMP redirects (we are not a router)
     sysctl: name=net.ipv4.conf.all.send_redirects value=0
 
-  - name: Needed so that IPSEC traffic can traverse the tunnel
+  - name: Configure iptables so IPSec traffic can traverse the tunnel
     iptables: table=nat chain=POSTROUTING source=10.0.0.0/24 out_interface=eth0 jump=MASQUERADE
 
   - name: Setup the ipsec.conf file from our template
