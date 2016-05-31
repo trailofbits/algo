@@ -1,2 +1,2 @@
-[vpn]
-104.236.56.30
+[localhost]
+127.0.0.1 ansible_connection=local

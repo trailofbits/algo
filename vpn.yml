@@ -1,7 +1,96 @@
----
-- name: Install StrongSwan and its dependencies
-  hosts: vpn
+- name: Configure the server and install required software
+  hosts: localhost
+
+  vars:
+    regions:
+      "1":  "ams2"
+      "2":  "ams3"
+      "3":  "fra1"
+      "4":  "lon1"
+      "5":  "nyc1"
+      "6":  "nyc2"
+      "7":  "nyc3"
+      "8":  "sfo1"
+      "9":  "sgp1"
+      "10": "tor1"
+
+  vars_prompt:
+  - name: "do_access_token"
+    prompt: "Enter your API Token (https://cloud.digitalocean.com/settings/api/tokens):\n"
+    private: yes
+
+  - name: "do_ssh_name"
+    prompt: "Enter a valid SSH key name (https://cloud.digitalocean.com/settings/security):\n"
+    private: no
+
+  - name: "do_region"
+    prompt: >
+      What region should the server be located in?
+        1.  Amsterdam        (Datacenter 2)
+        2.  Amsterdam        (Datacenter 3)
+        3.  Frankfurt
+        4.  London
+        5.  New York         (Datacenter 1)
+        6.  New York         (Datacenter 2)
+        7.  New York         (Datacenter 3)
+        8.  San Francisco
+        9.  Singapore
+        10. Toronto
+      Please choose the number of your region. Press enter for default (#7) region.
+    default: "7"
+    private: no
+    
+  - name: "do_server_name"
+    prompt: "Name the vpn server:\n"
+    default: "strongswan"
+    private: no
+
   tasks:
+  - name: "Getting your SSH key ID on Digital Ocean..."
+    digital_ocean:
+      state: present
+      command: ssh
+      name: "{{ do_ssh_name }}"
+      api_token: "{{ do_access_token }}"
+    register: do_ssh_key
+
+  - name: "Creating a droplet..."
+    digital_ocean:
+      state: present
+      command: droplet
+      name: "{{ do_server_name }}"
+      region_id: "{{ regions[do_region] }}"
+      size_id: "512mb"
+      image_id: "ubuntu-16-04-x64"
+      ssh_key_ids: "{{ do_ssh_key.ssh_key.id }}"
+      unique_name: yes
+      api_token: "{{ do_access_token }}"
+    register: do
+
+  - name: Add the droplet to an inventory group
+    add_host:
+      name: "{{ do.droplet.ip_address }}"
+      groups: vpn-host
+      ansible_python_interpreter: "/usr/bin/python2.7"
+
+  - name: Pause to let DigitalOcean boot up the VM
+    pause: seconds=180
+
+- name: Install StrongSwan
+  hosts: vpn-host
+  gather_facts: false
+  remote_user: root
+  
+  tasks:
+  - name: Wait for port 22 to become available
+    local_action: "wait_for port=22 host={{ inventory_hostname }}"
+
+  - name: Updating apt-get
+    raw: apt-get update -qq
+    
+  - name: Install python2.7 for Ansible
+    raw: apt-get install -qq -y python2.7
+
   - name: Install StrongSwan
     apt: name=strongswan state=latest update_cache=yes
 
