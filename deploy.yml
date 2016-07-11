@@ -1,0 +1,4 @@
+---
+
+#- include: cloud.yml
+- include: vpn.yml
