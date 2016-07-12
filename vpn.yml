@@ -11,42 +11,42 @@
   - name: Wait for port 22 to become available
     local_action: "wait_for port=22 host={{ inventory_hostname }}"
 
-  #- name: Updating apt-get
-    #raw: apt-get update -qq
+  - name: Updating apt-get
+    raw: apt-get update -qq
     
-  #- name: Install python2.7 for Ansible
-    #raw: apt-get install -qq -y python2.7
+  - name: Install python2.7 for Ansible
+    raw: apt-get install -qq -y python2.7
 
-  #- name: Install StrongSwan
-    #apt: name=strongswan state=latest update_cache=yes
+  - name: Install StrongSwan
+    apt: name=strongswan state=latest update_cache=yes
 
-  #- name: Enable strongswan
-    #service: name=strongswan enabled=yes
+  - name: Enable strongswan
+    service: name=strongswan enabled=yes
 
-  #- name: Enable packet forwarding for IPv4
-    #sysctl: name=net.ipv4.ip_forward value=1
+  - name: Enable packet forwarding for IPv4
+    sysctl: name=net.ipv4.ip_forward value=1
 
-  #- name: Do not accept ICMP redirects (prevent MITM attacks)
-    #sysctl: name=net.ipv4.conf.all.accept_redirects value=0
+  - name: Do not accept ICMP redirects (prevent MITM attacks)
+    sysctl: name=net.ipv4.conf.all.accept_redirects value=0
 
-  #- name: Do not send ICMP redirects (we are not a router)
-    #sysctl: name=net.ipv4.conf.all.send_redirects value=0
+  - name: Do not send ICMP redirects (we are not a router)
+    sysctl: name=net.ipv4.conf.all.send_redirects value=0
 
-  #- name: Configure iptables so IPSec traffic can traverse the tunnel
-    #iptables: table=nat chain=POSTROUTING source=10.0.0.0/24 jump=MASQUERADE
+  - name: Configure iptables so IPSec traffic can traverse the tunnel
+    iptables: table=nat chain=POSTROUTING source=10.0.0.0/24 jump=MASQUERADE
 
-  #- name: Setup the ipsec.conf file from our template
-    #template: src=ipsec.conf.j2 dest=/etc/ipsec.conf owner=root group=root mode=644
-    #notify:
-    #- restart strongswan    
+  - name: Setup the ipsec.conf file from our template
+    template: src=ipsec.conf.j2 dest=/etc/ipsec.conf owner=root group=root mode=644
+    notify:
+    - restart strongswan    
 
-  #- name: Setup the ipsec.secrets file with users and passwords
-    #template: src=ipsec.secrets.j2 dest=/etc/ipsec.secrets owner=root group=root mode=600
-    #notify:
-    #- restart strongswan    
+  - name: Setup the ipsec.secrets file with users and passwords
+    template: src=ipsec.secrets.j2 dest=/etc/ipsec.secrets owner=root group=root mode=600
+    notify:
+    - restart strongswan    
  
-  #- name: Install git
-    #apt: name=git state=latest      
+  - name: Install git
+    apt: name=git state=latest      
     
   - name: Fetch easy-rsa-ipsec repo
     git: repo=git://github.com/ValdikSS/easy-rsa-ipsec.git dest="{{ easyrsa_dir }}"
@@ -78,7 +78,7 @@
     
   - name: Build the server pair
     shell: |
-      ./easyrsa build-server-full {{ server_name }} nopass
+      ./easyrsa --subject-alt-name=DNS:{{ server_name }},IP:{{ server_ip }} build-server-full {{ server_name }} nopass
       touch '{{ easyrsa_dir }}/easyrsa3/pki/server_initialized'
     args:
       chdir: '{{ easyrsa_dir }}/easyrsa3/'
@@ -88,7 +88,7 @@
 
   - name: Build the client's pair
     shell: |
-      ./easyrsa build-client-full {{ item }} nopass
+      ./easyrsa --subject-alt-name=DNS:{{ server_name }},IP:{{ server_ip }} build-client-full {{ item }} nopass
       touch '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_initialized'
     args:
       chdir: '{{ easyrsa_dir }}/easyrsa3/'

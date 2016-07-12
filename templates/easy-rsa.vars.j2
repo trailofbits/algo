@@ -94,7 +94,7 @@ set_var EASYRSA_DN "cn_only"
 # generation take much longer. Values up to 4096 should be accepted by most
 # software. Only used when the crypto alg is rsa (see below.)
 
-set_var EASYRSA_KEY_SIZE   {{ easyrsa_key_size }}
+# set_var EASYRSA_KEY_SIZE    2048
 
 # The default crypto mode is rsa; ec can enable elliptic curve support.
 # Note that not all software supports ECC, so use care when enabling it.
@@ -177,7 +177,7 @@ set_var EASYRSA_CERT_EXPIRE    {{ easyrsa_cert_expire }}
 # specific and you cannot just use a standard config file, so this is an
 # advanced feature.
 
-#set_var EASYRSA_SSL_CONF   "$EASYRSA/openssl-1.0.cnf"
+set_var EASYRSA_SSL_CONF   "$EASYRSA/openssl-1.0.cnf"
 
 # Default CN:
 # This is best left alone. Interactively you will set this manually, and BATCH

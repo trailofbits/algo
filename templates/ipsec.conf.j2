@@ -1,52 +1,52 @@
-#config setup
-	#uniqueids = never # allow multiple connections per user
-
-#conn %default
-    #dpdaction=clear
-    #dpddelay=35s
-    #dpdtimeout=300s
-    #rekey=no
-	#keyexchange=ikev2
-    #ike=aes256-sha1-modp1024!
-    #esp=aes256-sha1!
-	#compress=yes
-	#fragmentation=yes
-	
-    #left=%any
-    #leftauth=pubkey
-    #leftid={{ server_name }}
-    #leftcert={{ server_name }}.crt
-    #leftsendcert=always
-    #leftsubnet=0.0.0.0/0,::/0
-
-    #right=%any
-    ##rightauth=pubkey
-    #rightsourceip=10.0.0.0/24
-    #rightdns=8.8.8.8,8.8.4.4
-
-#conn ikev2-pubkey
-    #auto=add
-
-    
-    
 config setup
+	uniqueids = never # allow multiple connections per user
 
 conn %default
-        ikelifetime=60m
-        keylife=20m
-        rekeymargin=3m
-        keyingtries=1
+    dpdaction=clear
+    dpddelay=35s
+    dpdtimeout=300s
+    rekey=no
+	keyexchange=ikev2
+    ike=aes256-sha1-modp1024!
+    esp=aes256-sha1!
+	compress=yes
+	fragmentation=yes
+	
+    left=%any
+    leftauth=pubkey
+    leftid={{ server_name }}
+    leftcert={{ server_name }}.crt
+    leftsendcert=always
+    leftsubnet=0.0.0.0/0,::/0
 
-conn common
-        left=%any         # Ip of the host
-        leftcert={{ server_name }}.crt # the cert we just created and copied
-        leftid={{ server_name }}  # the Alt name in the Cert we just created
-        leftsubnet=172.16.31.0/24      # The internal subnet the remote user wants to access
-        right=%any
-        rightid=%any # Connections can come from anywhere
-        rightsourceip=192.168.1.0/24   # Use this pool of IPs to assign to these inbound connections
-        auto=add
+    right=%any
+    #rightauth=pubkey
+    rightsourceip=10.0.0.0/24
+    rightdns=8.8.8.8,8.8.4.4
 
-conn ikev2
-        keyexchange=ikev2 
-        also=common
+conn ikev2-pubkey
+    auto=add
+
+    
+    
+#config setup
+
+#conn %default
+        #ikelifetime=60m
+        #keylife=20m
+        #rekeymargin=3m
+        #keyingtries=1
+
+#conn common
+        #left=%any         # Ip of the host
+        #leftcert={{ server_name }}.crt # the cert we just created and copied
+        #leftid={{ server_name }}  # the Alt name in the Cert we just created
+        #leftsubnet=172.16.31.0/24      # The internal subnet the remote user wants to access
+        #right=%any
+        #rightid=%any # Connections can come from anywhere
+        #rightsourceip=192.168.1.0/24   # Use this pool of IPs to assign to these inbound connections
+        #auto=add
+
+#conn ikev2
+        #keyexchange=ikev2 
+        #also=common
