@@ -78,7 +78,7 @@
     
   - name: Build the server pair
     shell: |
-      ./easyrsa --subject-alt-name=DNS:{{ server_name }} build-server-full {{ server_name }} nopass
+      ./easyrsa --subject-alt-name=DNS:{{ server_name }},IP:{{ server_ip }} build-server-full {{ server_name }} nopass
       touch '{{ easyrsa_dir }}/easyrsa3/pki/server_initialized'
     args:
       chdir: '{{ easyrsa_dir }}/easyrsa3/'
@@ -88,7 +88,7 @@
 
   - name: Build the client's pair
     shell: |
-      ./easyrsa --subject-alt-name=DNS:{{ server_name }} build-client-full {{ item }} nopass
+      ./easyrsa --subject-alt-name=DNS:{{ server_name }},IP:{{ server_ip }} build-client-full {{ item }} nopass
       touch '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_initialized'
     args:
       chdir: '{{ easyrsa_dir }}/easyrsa3/'
@@ -97,7 +97,7 @@
 
   - name: Build the client's p12 
     shell: |
-      ./easyrsa export-p12 {{ item }} nopass
+      openssl pkcs12 -in {{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt -inkey {{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.key -export -name {{ item }} -out /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 -certfile {{ easyrsa_dir }}/easyrsa3//pki/ca.crt -passout pass:vpn
       touch '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_p12_initialized'
     args:
       chdir: '{{ easyrsa_dir }}/easyrsa3/'
