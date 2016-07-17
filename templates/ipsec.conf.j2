@@ -1,52 +1,24 @@
 config setup
-	uniqueids = never # allow multiple connections per user
+    charondebug="ike 2, knl 2, cfg 2, net 2, esp 2, dmn 2,  mgr 2"
 
 conn %default
+    keyexchange=ikev2
+    ike=aes128gcm16-sha2_256-prfsha256-ecp256!
+    esp=aes128gcm16-sha2_256-ecp256!
     dpdaction=clear
-    dpddelay=35s
-    dpdtimeout=300s
-    rekey=no
-	keyexchange=ikev2
-    ike=aes256gcm16-aes256gcm12-aes128gcm16-aes128gcm12-sha256-sha1-modp2048-modp4096-modp1024,aes256-aes128-sha256-sha1-modp2048-modp4096-modp1024,3des-sha1-modp1024!
-    esp=aes128gcm12-aes128gcm16-aes256gcm12-aes256gcm16-modp2048-modp4096-modp1024,aes128-aes256-sha1-sha256-modp2048-modp4096-modp1024,aes128-sha1-modp2048,aes128-sha1-modp1024,3des-sha1-modp1024,aes128-aes256-sha1-sha256,aes128-sha1,3des-sha1!
-	compress=yes
-	fragmentation=yes
-	
+    dpddelay=300s
+    authby=pubkey
     left=%any
-    leftauth=pubkey
     leftid={{ server_name }}
+    leftsubnet=0.0.0.0/0
     leftcert={{ server_name }}.crt
     leftsendcert=always
-    leftsubnet=0.0.0.0/0,::/0
-
     right=%any
-    rightauth=pubkey
     rightsourceip=10.0.0.0/24
-    rightdns=8.8.8.8,8.8.4.4
+    rightdns=8.8.8.8
+    rightsendcert=never
 
-conn ikev2-pubkey
+conn IPSec-IKEv2
+    keyexchange=ikev2
     auto=add
 
-    
-    
-#config setup
-
-#conn %default
-        #ikelifetime=60m
-        #keylife=20m
-        #rekeymargin=3m
-        #keyingtries=1
-
-#conn common
-        #left=%any         # Ip of the host
-        #leftcert={{ server_name }}.crt # the cert we just created and copied
-        #leftid={{ server_name }}  # the Alt name in the Cert we just created
-        #leftsubnet=172.16.31.0/24      # The internal subnet the remote user wants to access
-        #right=%any
-        #rightid=%any # Connections can come from anywhere
-        #rightsourceip=192.168.1.0/24   # Use this pool of IPs to assign to these inbound connections
-        #auto=add
-
-#conn ikev2
-        #keyexchange=ikev2 
-        #also=common

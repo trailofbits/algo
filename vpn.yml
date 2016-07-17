@@ -1,6 +1,6 @@
 ---
 
-- name: Install StrongSwan
+- name: VPN Configuration
   hosts: vpn-host
   gather_facts: false
   remote_user: root
@@ -8,48 +8,39 @@
     - config.cfg    
   
   tasks:
-  - name: Wait for port 22 to become available
-    local_action: "wait_for port=22 host={{ inventory_hostname }}"
+  - name: Install StrongSwan
+    apt: name=strongswan state=latest update_cache=yes
 
-  #- name: Updating apt-get
-    #raw: apt-get update -qq
+  - name: Enforcing ipsec with apparmor
+    shell: aa-enforce "{{ item }}"
+    with_items:
+      - /usr/lib/ipsec/charon
+      - /usr/lib/ipsec/lookip
+      - /usr/lib/ipsec/stroke
+    notify:
+    - restart apparmor
     
-  #- name: Install python2.7 for Ansible
-    #raw: apt-get install -qq -y python2.7
+  - name: Enable services
+    service: name={{ item }} enabled=yes
+    with_items:
+      - apparmor
+      - strongswan
 
-  #- name: Install StrongSwan
-    #apt: name=strongswan state=latest update_cache=yes
-
-  #- name: Enable strongswan
-    #service: name=strongswan enabled=yes
-
-  #- name: Enable packet forwarding for IPv4
-    #sysctl: name=net.ipv4.ip_forward value=1
-
-  #- name: Do not accept ICMP redirects (prevent MITM attacks)
-    #sysctl: name=net.ipv4.conf.all.accept_redirects value=0
-
-  #- name: Do not send ICMP redirects (we are not a router)
-    #sysctl: name=net.ipv4.conf.all.send_redirects value=0
-
-  #- name: Configure iptables so IPSec traffic can traverse the tunnel
-    #iptables: table=nat chain=POSTROUTING source=10.0.0.0/24 jump=MASQUERADE
+  - name: Configure iptables so IPSec traffic can traverse the tunnel
+    iptables: table=nat chain=POSTROUTING source=10.0.0.0/24 jump=MASQUERADE
 
   - name: Setup the ipsec.conf file from our template
     template: src=ipsec.conf.j2 dest=/etc/ipsec.conf owner=root group=root mode=644
     notify:
     - restart strongswan    
 
-  - name: Setup the ipsec.secrets file with users and passwords
+  - name: Setup the ipsec.secrets file
     template: src=ipsec.secrets.j2 dest=/etc/ipsec.secrets owner=root group=root mode=600
     notify:
     - restart strongswan    
- 
-  - name: Install git
-    apt: name=git state=latest      
     
-  #- name: Fetch easy-rsa-ipsec repo
-    #git: repo=git://github.com/ValdikSS/easy-rsa-ipsec.git dest="{{ easyrsa_dir }}"
+  - name: Fetch easy-rsa-ipsec repo
+    git: repo=git://github.com/ValdikSS/easy-rsa-ipsec.git dest="{{ easyrsa_dir }}"
 
   - name: Setup the vars file from our template
     template: src=easy-rsa.vars.j2 dest={{ easyrsa_dir }}/easyrsa3/vars
@@ -78,7 +69,7 @@
     
   - name: Build the server pair
     shell: |
-      ./easyrsa --subject-alt-name=DNS:{{ server_name }},IP:{{ server_ip }} build-server-full {{ server_name }} nopass
+      ./easyrsa build-server-full {{ server_name }} nopass
       touch '{{ easyrsa_dir }}/easyrsa3/pki/server_initialized'
     args:
       chdir: '{{ easyrsa_dir }}/easyrsa3/'
@@ -88,7 +79,7 @@
 
   - name: Build the client's pair
     shell: |
-      ./easyrsa --subject-alt-name=DNS:{{ server_name }},IP:{{ server_ip }} build-client-full {{ item }} nopass
+      ./easyrsa build-client-full {{ item }} nopass
       touch '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_initialized'
     args:
       chdir: '{{ easyrsa_dir }}/easyrsa3/'
@@ -104,27 +95,27 @@
       creates: '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_p12_initialized'
     with_items: "{{ users }}"
   
-  - name: Make the CA cert to the strongswan directory
+  - name: Copy the CA cert to the strongswan directory
     copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/ca.crt' dest=/etc/ipsec.d/cacerts/ca.crt owner=root group=root mode=0600
     notify:
     - restart strongswan
 
-  - name: Make the server cert to the strongswan directory
+  - name: Copy the server cert to the strongswan directory
     copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/issued/{{ server_name }}.crt' dest=/etc/ipsec.d/certs/{{ server_name }}.crt owner=root group=root mode=0600
     notify:
     - restart strongswan      
     
-  - name: Make the server key to the strongswan directory
+  - name: Copy the server key to the strongswan directory
     copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/private/{{ server_name }}.key' dest=/etc/ipsec.d/private/{{ server_name }}.key owner=root group=root mode=0600
     notify:
     - restart strongswan    
-   
-  - name: restart strongswan
-    service: name=strongswan state=restarted
     
   handlers:
     - name: restart strongswan
       service: name=strongswan state=restarted
+
+    - name: restart apparmor
+      service: name=apparmor state=restarted      
       
       
       
