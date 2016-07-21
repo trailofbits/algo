@@ -1,1 +1,4 @@
 *.retry
+users/*.mobileconfig
+users/*.p12
+users/*.crt

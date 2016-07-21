@@ -23,6 +23,8 @@
       - git
       - screen
       - apparmor-utils
+      - uuid-runtime
+      - coreutils
 
   - name: Enable packet forwarding for IPv4
     sysctl: name=net.ipv4.ip_forward value=1

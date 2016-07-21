@@ -67,7 +67,7 @@
     notify:
     - restart strongswan  
     
-  - name: Build the server pair
+  - name: Build the server pair # TODO: IP and DNS for sertificate
     shell: |
       ./easyrsa build-server-full {{ server_name }} nopass
       touch '{{ easyrsa_dir }}/easyrsa3/pki/server_initialized'
@@ -88,13 +88,13 @@
 
   - name: Build the client's p12 
     shell: |
-      openssl pkcs12 -in {{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt -inkey {{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.key -export -name {{ item }} -out /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 -certfile {{ easyrsa_dir }}/easyrsa3//pki/ca.crt -passout pass:vpn
+      openssl pkcs12 -in {{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt -inkey {{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.key -export -name {{ item }} -out /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 -certfile {{ easyrsa_dir }}/easyrsa3//pki/ca.crt -passout pass:{{ easyrsa_p12_export_password }}
       touch '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_p12_initialized'
     args:
       chdir: '{{ easyrsa_dir }}/easyrsa3/'
       creates: '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_p12_initialized'
     with_items: "{{ users }}"
-  
+    
   - name: Copy the CA cert to the strongswan directory
     copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/ca.crt' dest=/etc/ipsec.d/cacerts/ca.crt owner=root group=root mode=0600
     notify:
@@ -109,20 +109,38 @@
     copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/private/{{ server_name }}.key' dest=/etc/ipsec.d/private/{{ server_name }}.key owner=root group=root mode=0600
     notify:
     - restart strongswan    
+ 
+  - name: Register p12 PayloadContent
+    shell: >
+     cat /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 | base64
+    register:  PayloadContent
+    with_items: "{{ users }}"
+
+  - name: Register CA PayloadContent
+    shell: >
+     cat /{{ easyrsa_dir }}/easyrsa3/pki/ca.crt | base64
+    register:  PayloadContentCA
+   
+  - name: Build the mobileconfigs
+    template: src=mobileconfig.j2 dest=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item.0 }}.mobileconfig mode=0600
+    with_together:
+      - "{{ users }}"
+      - "{{ PayloadContent.results }}"
+      
+  - name: Fetch users P12
+    fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 dest=users/{{ server_name }}_{{ item }}.p12 flat=yes
+    with_items: "{{ users }}"
+
+  - name: Fetch users mobileconfig
+    fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.mobileconfig dest=users/{{ server_name }}_{{ item }}.mobileconfig flat=yes
+    with_items: "{{ users }}"
+    
+  - name: Fetch server CA certificate
+    fetch: src=/{{ easyrsa_dir }}/easyrsa3/pki/ca.crt dest=users/{{ server_name }}_ca.crt flat=yes
     
   handlers:
     - name: restart strongswan
       service: name=strongswan state=restarted
 
     - name: restart apparmor
-      service: name=apparmor state=restarted      
-      
-      
-      
-      
-    
-    
-    
-    
-    
-    
+      service: name=apparmor state=restarted
