@@ -126,6 +126,7 @@
     with_together:
       - "{{ users }}"
       - "{{ PayloadContent.results }}"
+    no_log: True  
       
   - name: Fetch users P12
     fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 dest=configs/{{ server_name }}_{{ item }}.p12 flat=yes
