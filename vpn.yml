@@ -67,7 +67,7 @@
     notify:
     - restart strongswan  
     
-  - name: Build the server pair # TODO: IP and DNS for sertificate
+  - name: Build the server pair # TODO: IP and DNS for certificate
     shell: |
       ./easyrsa build-server-full {{ server_name }} nopass
       touch '{{ easyrsa_dir }}/easyrsa3/pki/server_initialized'
