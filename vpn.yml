@@ -128,15 +128,15 @@
       - "{{ PayloadContent.results }}"
       
   - name: Fetch users P12
-    fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 dest=users/{{ server_name }}_{{ item }}.p12 flat=yes
+    fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 dest=configs/{{ server_name }}_{{ item }}.p12 flat=yes
     with_items: "{{ users }}"
 
   - name: Fetch users mobileconfig
-    fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.mobileconfig dest=users/{{ server_name }}_{{ item }}.mobileconfig flat=yes
+    fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.mobileconfig dest=configs/{{ server_name }}_{{ item }}.mobileconfig flat=yes
     with_items: "{{ users }}"
     
   - name: Fetch server CA certificate
-    fetch: src=/{{ easyrsa_dir }}/easyrsa3/pki/ca.crt dest=users/{{ server_name }}_ca.crt flat=yes
+    fetch: src=/{{ easyrsa_dir }}/easyrsa3/pki/ca.crt dest=configs/{{ server_name }}_ca.crt flat=yes
     
   handlers:
     - name: restart strongswan

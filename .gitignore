@@ -1,4 +1,4 @@
 *.retry
-users/*.mobileconfig
-users/*.p12
-users/*.crt
+configs/*.mobileconfig
+configs/*.p12
+configs/*.crt
