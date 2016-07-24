@@ -2,7 +2,6 @@
 
 - name: Common tools
   hosts: vpn-host
-  gather_facts: false
   remote_user: root
   vars_files:
     - config.cfg    
@@ -25,6 +24,9 @@
       - apparmor-utils
       - uuid-runtime
       - coreutils
+      - auditd
+      - rsyslog
+      - sendmail
 
   - name: Enable packet forwarding for IPv4
     sysctl: name=net.ipv4.ip_forward value=1
@@ -35,5 +37,45 @@
   - name: Do not send ICMP redirects (we are not a router)
     sysctl: name=net.ipv4.conf.all.send_redirects value=0
     
+  - name: Collect Use of Privileged Commands
+    shell: > 
+      /usr/bin/find {/usr/local/sbin,/usr/local/bin,/sbin,/bin,/usr/sbin,/usr/bin} -xdev \( -perm -4000 -o -perm -2000 \) -type f | awk '{print "-a always,exit -F path=" $1 " -F perm=x -F auid>=500 -F auid!=4294967295 -k privileged" }'
+    args:
+      executable: /bin/bash
+    register: privileged_programs
+    
+  - name: Auditd rules configured
+    template: src=audit.rules.j2 dest=/etc/audit/audit.rules
+    notify:
+      - restart auditd
+      
+  - name: Auditd configured
+    template: src=auditd.conf.j2 dest=/etc/audit/auditd.conf
+    notify:
+      - restart auditd       
+      
+  - name: Rsyslog configured
+    template: src=rsyslog.conf.j2 dest=/etc/rsyslog.conf
+    notify:
+      - restart rsyslog    
+
+  - name: Rsyslog CIS configured
+    template: src=CIS.conf.j2 dest=/etc/rsyslog.d/CIS.conf owner=root group=root mode=0644
+    notify:
+      - restart rsyslog   
+      
+  - name: Enable services
+    service: name={{ item }} enabled=yes
+    with_items:
+      - auditd
+      - rsyslog
+      
+  
+  handlers:
+    - name: restart auditd
+      service: name=auditd state=restarted
+
+    - name: restart rsyslog
+      service: name=rsyslog state=restarted      
 
     

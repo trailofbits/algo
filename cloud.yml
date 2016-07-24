@@ -42,7 +42,7 @@
     
   - name: "do_server_name"
     prompt: "Name the vpn server:\n"
-    default: "strongswan"
+    default: "strongswan.local"
     private: no
 
   tasks:
