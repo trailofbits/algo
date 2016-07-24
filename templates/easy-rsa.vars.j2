@@ -102,11 +102,11 @@ set_var EASYRSA_DN "cn_only"
 #  * rsa
 #  * ec
 
-set_var EASYRSA_ALGO       rsa
+set_var EASYRSA_ALGO       ec
 
 # Define the named curve, used in ec mode only:
 
-set_var EASYRSA_CURVE      {{ easyrsa_curve }}
+set_var EASYRSA_CURVE      prime256v1
 
 # In how many days should the root CA key expire?
 
