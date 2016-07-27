@@ -28,7 +28,7 @@
     
   - name: Get active users
     shell: >
-      grep ^V pki/index.txt | grep -v "www.ivlis.me" | awk '{print $5}' | sed 's/\/CN=//g'
+      grep ^V pki/index.txt | grep -v "{{ server_name }}" | awk '{print $5}' | sed 's/\/CN=//g'
     args:
       chdir: '{{ easyrsa_dir }}/easyrsa3/'
     register: valid_certs
