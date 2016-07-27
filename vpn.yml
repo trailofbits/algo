@@ -50,16 +50,16 @@
     when: easyrsa_reinit_existent == True
     
   - name: Build the pki enviroments
-    shell: |
-      ./easyrsa init-pki
+    shell: >
+      ./easyrsa init-pki &&
       touch '{{ easyrsa_dir }}/easyrsa3/pki/pki_initialized'    
     args:
       chdir: '{{ easyrsa_dir }}/easyrsa3/'
       creates: '{{ easyrsa_dir }}/easyrsa3/pki/pki_initialized'
 
   - name: Build the CA pair 
-    shell: |
-      ./easyrsa build-ca nopass
+    shell: >
+      ./easyrsa build-ca nopass &&
       touch {{ easyrsa_dir }}/easyrsa3/pki/ca_initialized
     args:
       chdir: '{{ easyrsa_dir }}/easyrsa3/'
@@ -68,8 +68,8 @@
     - restart strongswan  
     
   - name: Build the server pair # TODO: IP and DNS for certificate
-    shell: |
-      ./easyrsa build-server-full {{ server_name }} nopass
+    shell: >
+      ./easyrsa build-server-full {{ server_name }} nopass &&
       touch '{{ easyrsa_dir }}/easyrsa3/pki/server_initialized'
     args:
       chdir: '{{ easyrsa_dir }}/easyrsa3/'
@@ -78,8 +78,8 @@
     - restart strongswan        
 
   - name: Build the client's pair
-    shell: |
-      ./easyrsa build-client-full {{ item }} nopass
+    shell: >
+      ./easyrsa build-client-full {{ item }} nopass &&
       touch '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_initialized'
     args:
       chdir: '{{ easyrsa_dir }}/easyrsa3/'
@@ -87,8 +87,8 @@
     with_items: "{{ users }}"
 
   - name: Build the client's p12 
-    shell: |
-      openssl pkcs12 -in {{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt -inkey {{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.key -export -name {{ item }} -out /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 -certfile {{ easyrsa_dir }}/easyrsa3//pki/ca.crt -passout pass:{{ easyrsa_p12_export_password }}
+    shell: >
+      openssl pkcs12 -in {{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt -inkey {{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.key -export -name {{ item }} -out /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 -certfile {{ easyrsa_dir }}/easyrsa3//pki/ca.crt -passout pass:{{ easyrsa_p12_export_password }} &&
       touch '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_p12_initialized'
     args:
       chdir: '{{ easyrsa_dir }}/easyrsa3/'
@@ -138,6 +138,9 @@
     
   - name: Fetch server CA certificate
     fetch: src=/{{ easyrsa_dir }}/easyrsa3/pki/ca.crt dest=configs/{{ server_name }}_ca.crt flat=yes
+    
+  - name: Add server to the inventory file
+    local_action: lineinfile dest=inventory_users line="{{ inventory_hostname }}" insertafter='\[users-management\]\n' state=present
     
   handlers:
     - name: restart strongswan
