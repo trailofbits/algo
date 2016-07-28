@@ -1,0 +1,134 @@
+---
+
+- name: Security fixes
+  hosts: vpn-host
+  remote_user: root
+  vars_files:
+    - config.cfg    
+  
+  tasks:   
+  # Using a two-pass approach for checking directories in order to support symlinks.
+  - name: Find directories for minimizing access
+    stat:
+      path: "{{ item }}"
+    register: minimize_access_directories
+    with_items:
+      - '/usr/local/sbin'
+      - '/usr/local/bin'
+      - '/usr/sbin'
+      - '/usr/bin'
+      - '/sbin'
+      - '/bin'
+
+  - name: Minimize access
+    file: path='{{ item.stat.path }}' mode='go-w' recurse=yes
+    when: item.stat.isdir
+    with_items: "{{ minimize_access_directories.results }}"
+    no_log: True 
+
+  - name: Change shadow ownership to root and mode to 0600
+    file: dest='/etc/shadow' owner=root group=root mode=0600
+
+  - name: change su-binary to only be accessible to user and group root
+    file: dest='/bin/su' owner=root group=root mode=0750
+   
+  # auditd
+  
+  - name: Collect Use of Privileged Commands
+    shell: > 
+      /usr/bin/find {/usr/local/sbin,/usr/local/bin,/sbin,/bin,/usr/sbin,/usr/bin} -xdev \( -perm -4000 -o -perm -2000 \) -type f | awk '{print "-a always,exit -F path=" $1 " -F perm=x -F auid>=500 -F auid!=4294967295 -k privileged" }'
+    args:
+      executable: /bin/bash
+    register: privileged_programs
+    
+  - name: Auditd rules configured
+    template: src=audit.rules.j2 dest=/etc/audit/audit.rules
+    notify:
+      - restart auditd
+      
+  - name: Auditd configured
+    template: src=auditd.conf.j2 dest=/etc/audit/auditd.conf
+    notify:
+      - restart auditd 
+      
+  # Rsyslog
+      
+  - name: Rsyslog configured
+    template: src=rsyslog.conf.j2 dest=/etc/rsyslog.conf
+    notify:
+      - restart rsyslog    
+
+  - name: Rsyslog CIS configured
+    template: src=CIS.conf.j2 dest=/etc/rsyslog.d/CIS.conf owner=root group=root mode=0644
+    notify:
+      - restart rsyslog   
+      
+  - name: Enable services
+    service: name={{ item }} enabled=yes
+    with_items:
+      - auditd
+      - rsyslog  
+  
+  # Core dumps
+   
+  - name: Restrict Core Dumps - using pam limits
+    lineinfile: dest=/etc/security/limits.conf line="* hard core 0" state=present
+
+  - name: Restrict Core Dumps - using sysctl
+    sysctl: name=fs.suid_dumpable value=0 ignoreerrors=yes sysctl_set=yes reload=yes state=present
+  
+  # Kernel fixes
+  
+  - name: Disable Source Routed Packet Acceptance
+    sysctl: name="{{item}}" value=0 ignoreerrors=yes sysctl_set=yes reload=yes state=present
+    with_items:
+      - net.ipv4.conf.all.accept_source_route
+      - net.ipv4.conf.default.accept_source_route
+    notify:
+      - flush routing cache
+      
+  - name: Disable ICMP Redirect Acceptance
+    sysctl: name="{{item}}" value=0 ignoreerrors=yes sysctl_set=yes reload=yes state=present
+    with_items:
+      - net.ipv4.conf.all.accept_redirects
+      - net.ipv4.conf.default.accept_redirects  
+      
+  - name: Disable Secure ICMP Redirect Acceptance
+    sysctl: name="{{item}}" value=0 ignoreerrors=yes sysctl_set=yes reload=yes state=present
+    with_items:
+      - net.ipv4.conf.all.secure_redirects
+      - net.ipv4.conf.default.secure_redirects
+    notify:
+      - flush routing cache
+    
+  - name: Enable Bad Error Message Protection (Scored)
+    sysctl: name=net.ipv4.icmp_ignore_bogus_error_responses value=1 ignoreerrors=yes sysctl_set=yes reload=yes state=present
+    notify:
+      - flush routing cache
+    
+  - name: Enable RFC-recommended Source Route Validation (Scored)
+    sysctl: name="{{item}}" value=1 ignoreerrors=yes sysctl_set=yes reload=yes state=present
+    with_items:
+      - net.ipv4.conf.all.rp_filter
+      - net.ipv4.conf.default.rp_filter
+    notify:
+      - flush routing cache
+    
+  - name: Enable packet forwarding for IPv4
+    sysctl: name=net.ipv4.ip_forward value=1
+
+  - name: Do not send ICMP redirects (we are not a router)
+    sysctl: name=net.ipv4.conf.all.send_redirects value=0    
+
+      
+  handlers:
+    - name: restart auditd
+      service: name=auditd state=restarted
+
+    - name: restart rsyslog
+      service: name=rsyslog state=restarted
+      
+    - name: flush routing cache
+      shell: echo 1 > /proc/sys/net/ipv4/route/flush     
+
+    
