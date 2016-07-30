@@ -15,8 +15,9 @@ Algo (short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhere
 
 ## Anti-features
 
-* Does not support legacy cipher suites or protocols like L2TP or IKEv1
+* Does not support legacy cipher suites or protocols like L2TP, IKEv1, or RSA
 * Does not install Tor, OpenVPN, or other insecure servers
+* Does not depend on the security of TLS
 * Does not require client software on most platforms
 * Does not claim to provide anonymity
 * Does not claim to protect you from the [FSB](https://en.wikipedia.org/wiki/Federal_Security_Service), [MSS](https://en.wikipedia.org/wiki/Ministry_of_State_Security_(China)), [DGSE](https://en.wikipedia.org/wiki/Directorate-General_for_External_Security), or [FSM](https://en.wikipedia.org/wiki/Flying_Spaghetti_Monster)
