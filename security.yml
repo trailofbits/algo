@@ -101,12 +101,12 @@
     notify:
       - flush routing cache
     
-  - name: Enable Bad Error Message Protection (Scored)
+  - name: Enable Bad Error Message Protection
     sysctl: name=net.ipv4.icmp_ignore_bogus_error_responses value=1 ignoreerrors=yes sysctl_set=yes reload=yes state=present
     notify:
       - flush routing cache
     
-  - name: Enable RFC-recommended Source Route Validation (Scored)
+  - name: Enable RFC-recommended Source Route Validation
     sysctl: name="{{item}}" value=1 ignoreerrors=yes sysctl_set=yes reload=yes state=present
     with_items:
       - net.ipv4.conf.all.rp_filter

@@ -11,8 +11,9 @@
       "6":  "nyc2"
       "7":  "nyc3"
       "8":  "sfo1"
-      "9":  "sgp1"
-      "10": "tor1"
+      "9":  "sfo2"
+      "10": "sgp1"
+      "11": "tor1"
 
   vars_prompt:
   - name: "do_access_token"
@@ -33,9 +34,10 @@
         5.  New York         (Datacenter 1)
         6.  New York         (Datacenter 2)
         7.  New York         (Datacenter 3)
-        8.  San Francisco
-        9.  Singapore
-        10. Toronto
+        8.  San Francisco    (Datacenter 1)
+        9.  San Francisco    (Datacenter 2)
+        10. Singapore
+        11. Toronto
       Please choose the number of your region. Press enter for default (#7) region.
     default: "7"
     private: no

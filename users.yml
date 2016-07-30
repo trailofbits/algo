@@ -1,7 +1,7 @@
 ---
 
-- name: Users management
-  hosts: users-management
+- name: User management
+  hosts: user-management
   gather_facts: false
   remote_user: root
   vars_files:
