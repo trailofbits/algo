@@ -73,12 +73,14 @@
       - rsyslog
       - sendmail
       - unattended-upgrades
+      - privoxy
+      - iptables-persistent
       
   - name: Unattended-upgrades configured
     template: src=50unattended-upgrades.j2 dest=/etc/apt/apt.conf.d/50unattended-upgrades owner=root group=root mode=644
 
   - name: Periodic upgrades configured
-    template: src=10periodic.j2 dest=/etc/apt/apt.conf.d/10periodic owner=root group=root mode=644    
+    template: src=10periodic.j2 dest=/etc/apt/apt.conf.d/10periodic owner=root group=root mode=644
   
   handlers:
     - name: restart auditd
@@ -88,7 +90,7 @@
       service: name=rsyslog state=restarted
       
     - name: restart ssh
-      service: name=ssh state=restarted     
+      service: name=ssh state=restarted
       
     - name: flush routing cache
       shell: echo 1 > /proc/sys/net/ipv4/route/flush     

@@ -1,0 +1,33 @@
+---
+
+- name: Other features
+  hosts: vpn-host
+  gather_facts: false
+  remote_user: root
+  vars_files:
+    - config.cfg    
+  
+  tasks:
+  - name: Loopback for services configured
+    template: src=10-loopback-services.cfg.j2 dest=/etc/network/interfaces.d/10-loopback-services.cfg
+    
+  - name: Loopback included into the network config
+    lineinfile: dest=/etc/network/interfaces line='source /etc/network/interfaces.d/10-loopback-services.cfg' state=present
+    
+  - name: Loopback is running
+    shell: ifdown lo:100 && ifup lo:100
+    
+  # Privoxy  
+  
+  - name: Privoxy configured
+    template: src=privoxy_config.j2 dest=/etc/privoxy/config
+    notify:
+      - restart privoxy
+      
+  - name: Privoxy enabled and started
+    service: name=privoxy state=started enabled=yes
+    
+  handlers:
+    - name: restart privoxy
+      service: name=privoxy state=restarted          
+    
