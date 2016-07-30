@@ -1,0 +1,116 @@
+# vim:ft=ansible:
+- name: Create a sandbox instance
+  hosts: localhost
+  gather_facts: False
+  vars:
+    instance_type: t2.nano
+    security_group: vpn-secgroup
+    regions:
+      "1":  "us-east-1"
+      "2":  "us-west-1"
+      "3":  "us-west-2"
+      "4":  "ap-south-1"
+      "5":  "ap-northeast-2"
+      "6":  "ap-southeast-1"
+      "7":  "ap-southeast-2"
+      "8":  "ap-northeast-1"
+      "9":  "eu-central-1"
+      "10": "eu-west-1"
+      "11": "sa-east-1"
+
+  vars_prompt:
+    - name: "region"
+      prompt: >
+        What region should the server be located in?
+         1.   us-east-1           US East (N. Virginia) 
+         2.   us-west-1           US West (N. California) 
+         3.   us-west-2           US West (Oregon)
+         4.   ap-south-1          Asia Pacific (Mumbai) 
+         5.   ap-northeast-2      Asia Pacific (Seoul)  
+         6.   ap-southeast-1      Asia Pacific (Singapore)  
+         7.   ap-southeast-2      Asia Pacific (Sydney) 
+         8.   ap-northeast-1      Asia Pacific (Tokyo)  
+         9.   eu-central-1        EU (Frankfurt)  
+         10.  eu-west-1           EU (Ireland)  
+         11.  sa-east-1           South America (São Paulo)
+      default: "1"
+      private: no      
+
+  tasks:
+
+    - name: Grab the default interface subnet. 
+      ec2_eni_facts:
+        region: "{{ regions[region] }}"
+      register: ec2_enis
+
+    - name: Locate official Ubuntu 16.04 AMI for region.
+      ec2_ami_find:
+        name: "ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"
+        owner:  099720109477
+        sort: name
+        sort_order: descending
+        sort_end: 1
+        region: "{{ regions[region] }}"
+      register: ami_search
+
+    - set_fact:
+        ami_image: "{{ ami_search.results[0].ami_id }}"
+        default_subnet: "{{ ec2_enis.interfaces[0].subnet_id }}"
+
+    - name: Fetch our IP for security group.
+      ipify_facts:
+    
+    - name: Add ssh public key.
+      ec2_key:
+        name: VPNKEY
+        region: "{{ regions[region] }}"
+        key_material: "{{ item }}"
+      with_file: ~/.ssh/id_rsa.pub
+      register: keypair
+
+    - name: Configure EC2 security group
+      ec2_group:
+        name: "{{ security_group }}"
+        description: Security group for VPN servers
+        region: "{{ regions[region] }}"
+        rules:
+          - proto: tcp
+            from_port: 443
+            to_port: 443
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: "{{ ipify_public_ip }}/32"
+        rules_egress:
+          - proto: all
+            from_port: 0-65535
+            to_port: 0-65535
+            cidr_ip: 0.0.0.0/0
+
+    - name: Launch instance
+      ec2:
+         keypair: "VPNKEY"
+         group: "{{ security_group }}"
+         instance_type: "{{ instance_type }}"
+         image: "{{ ami_image }}"
+         wait: true
+         region: "{{ regions[region] }}"
+         vpc_subnet_id: "{{ default_subnet }}"
+         assign_public_ip: yes
+         instance_tags:
+           Name: VPN
+      register: ec2
+
+    - name: Add new instance to host group
+      add_host: hostname={{ item.public_ip }} groupname=vpn-host remote_user=ubuntu ansible_python_interpreter="/usr/bin/python2.7"
+      with_items: "{{ ec2.instances }}"
+
+    - name: Wait for SSH to come up
+      wait_for: host={{ item.public_dns_name }} port=22 delay=60 timeout=320 state=started
+      with_items: "{{ ec2.instances }}"
+
+    - name: accept new ssh fingerprints
+      shell: ssh-keyscan -H {{ item.public_ip }} >> ~/.ssh/known_hosts
+      with_items: "{{ ec2.instances }}"
+

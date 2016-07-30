@@ -2,7 +2,7 @@
 
 - name: Security fixes
   hosts: vpn-host
-  remote_user: root
+  become: true
   vars_files:
     - config.cfg    
   

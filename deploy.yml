@@ -1,6 +1,6 @@
 ---
 
-- include: cloud.yml
+- include: "{{ provider }}.yml"
 - include: common.yml
 - include: security.yml
 - include: features.yml

@@ -3,7 +3,7 @@
 - name: User management
   hosts: user-management
   gather_facts: false
-  remote_user: root
+  become: true
   vars_files:
     - config.cfg    
   

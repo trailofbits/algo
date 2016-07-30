@@ -78,8 +78,10 @@
     add_host:
       name: "{{ do.droplet.ip_address }}"
       groups: vpn-host
+      remote_user: root
       ansible_python_interpreter: "/usr/bin/python2.7"
 
-  - name: Pause to let DigitalOcean boot up the VM
-    pause: seconds=180
+  - name: Wait for SSH to become available
+    wait_for: host={{ do.droplet.ip_address }} port=22 delay=60 timeout=320 state=started
+
 
