@@ -10,13 +10,15 @@ Algo (short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhere
 * Supports only AES GCM, SHA2 HMAC, and P-256 DH
 * Generates mobileconfig profiles to auto-configure Apple devices
 * Provides helper scripts to add and remove users
+* Based on current versions of Ubuntu and StrongSwan
 
 ## Anti-features
 
 * Does not support legacy cipher suites or protocols, like L2TP or IKEv1
 * Does not install Tor, OpenVPN, or other insecure servers
 * Does not require client software on most platforms
-* Does not claim to provide anonymity or protection from the FSB, MSS, DGSE, or FSM
+* Does not claim to provide anonymity
+* Does not claim to provide protection from the [FSB](https://en.wikipedia.org/wiki/Federal_Security_Service), [MSS](https://en.wikipedia.org/wiki/Ministry_of_State_Security_(China)), [DGSE](https://en.wikipedia.org/wiki/Directorate-General_for_External_Security), or [FSM](https://en.wikipedia.org/wiki/Flying_Spaghetti_Monster)
 
 ## Requirements
 
