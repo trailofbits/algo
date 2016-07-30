@@ -81,6 +81,22 @@
 
   - name: Periodic upgrades configured
     template: src=10periodic.j2 dest=/etc/apt/apt.conf.d/10periodic owner=root group=root mode=644
+    
+- hosts: 127.0.0.1
+  gather_facts: false
+  vars_files:
+    - config.cfg    
+  
+  tasks:
+  - debug:
+      msg:
+        - "#----------------------------------------------------------------------#"
+        - "#                          Congratulations!                            #"
+        - "#                    Your IPsec server is running.                     #"
+        - "#  Config files and X.509 certificates in the directory: ./configs/    #"
+        - "#          After connect go to https://www.dnsleaktest.com/            #"
+        - "#        and ensure that all your traffic pass through the VPN.        #"
+        - "#----------------------------------------------------------------------#"    
   
   handlers:
     - name: restart auditd
