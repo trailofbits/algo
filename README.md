@@ -46,7 +46,7 @@ ansible-playbook users.yml -i inventory_users -l example.com
 
 ### Has this been audited?
 
-No. This project is under active development. We're happy to [accept and fix issues](https://github.com/trailofbits/algo/issues) as they are identified.
+No. This project is under active development. Use algo at your own risk. We're happy to [accept and fix issues](https://github.com/trailofbits/algo/issues) as they are identified.
 
 ### Why aren't you using Tor?
 
