@@ -18,13 +18,13 @@ Algo (short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhere
 * Does not install Tor, OpenVPN, or other insecure servers
 * Does not require client software on most platforms
 * Does not claim to provide anonymity
-* Does not claim to provide protection from the [FSB](https://en.wikipedia.org/wiki/Federal_Security_Service), [MSS](https://en.wikipedia.org/wiki/Ministry_of_State_Security_(China)), [DGSE](https://en.wikipedia.org/wiki/Directorate-General_for_External_Security), or [FSM](https://en.wikipedia.org/wiki/Flying_Spaghetti_Monster)
+* Does not claim to protect you from the [FSB](https://en.wikipedia.org/wiki/Federal_Security_Service), [MSS](https://en.wikipedia.org/wiki/Ministry_of_State_Security_(China)), [DGSE](https://en.wikipedia.org/wiki/Directorate-General_for_External_Security), or [FSM](https://en.wikipedia.org/wiki/Flying_Spaghetti_Monster)
 
 ## Requirements
 
-* ansible >= 2.2.0  
-* python >= 2.6  
-* dopy  
+* ansible >= 2.2.0
+* python >= 2.6
+* [dopy](https://github.com/Wiredcraft/dopy)
 
 ## Usage
 
@@ -35,10 +35,10 @@ ansible-playbook deploy.yml
 ```
 * When the process is done, you can find `.mobileconfig` files and certificates in the `configs` directory. Send the `.mobileconfig` profile to your users on iOS or macOS (note: Profile installation is supported over AirDrop) or send the X.509 certificates to those using other clients, like Windows or Android.
 * When the deploy proccess is done a new server will be placed in the local inventory file `inventory_users`.
-* If you want to add or delete users, just update the (`users`) list in the config file (`config.cfg`) and run the playbook `users.yml`. This command will update users on all the servers in the file `inventory_users`. If you want to limit servers, you can use option `-l`.
+* If you want to add or delete users, update the `users` list in `config.cfg` and run the playbook `users.yml`. This command will update users on all the servers in the file `inventory_users`. If you want to limit servers it updates, you can use `-l` flag.
 ```
 ansible-playbook users.yml -i inventory_users
-ansible-playbook users.yml -i inventory_users -l vpnserver.com
+ansible-playbook users.yml -i inventory_users -l example.com
 ```
 
 ## FAQ
