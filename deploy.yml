@@ -1,0 +1,6 @@
+---
+
+- include: cloud.yml
+- include: common.yml
+- include: security.yml
+- include: vpn.yml

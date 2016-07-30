@@ -1,0 +1,74 @@
+---
+
+- name: Users management
+  hosts: users-management
+  gather_facts: false
+  remote_user: root
+  vars_files:
+    - config.cfg    
+  
+  tasks:
+  - name: Build the client's pair
+    shell: >
+      ./easyrsa build-client-full {{ item }} nopass &&
+      touch '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_initialized'
+    args:
+      chdir: '{{ easyrsa_dir }}/easyrsa3/'
+      creates: '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_initialized'
+    with_items: "{{ users }}"
+
+  - name: Build the client's p12 
+    shell: >
+      openssl pkcs12 -in {{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt -inkey {{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.key -export -name {{ item }} -out /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 -certfile {{ easyrsa_dir }}/easyrsa3//pki/ca.crt -passout pass:{{ easyrsa_p12_export_password }} &&
+      touch '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_p12_initialized'
+    args:
+      chdir: '{{ easyrsa_dir }}/easyrsa3/'
+      creates: '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_p12_initialized'
+    with_items: "{{ users }}"
+    
+  - name: Get active users
+    shell: >
+      grep ^V pki/index.txt | grep -v "{{ server_name }}" | awk '{print $5}' | sed 's/\/CN=//g'
+    args:
+      chdir: '{{ easyrsa_dir }}/easyrsa3/'
+    register: valid_certs
+      
+  - name: Revoke non-existing users
+    shell: >
+      ipsec pki --signcrl --cacert {{ easyrsa_dir }}/easyrsa3//pki/ca.crt --cakey {{ easyrsa_dir }}/easyrsa3/pki/private/ca.key --reason superseded --cert {{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt > /etc/ipsec.d/crls/{{ item }}.der &&    
+      ./easyrsa revoke {{ item }} &&
+      ipsec rereadcrls
+    args:
+      chdir: '{{ easyrsa_dir }}/easyrsa3/'
+    when: item not in users
+    with_items: "{{ valid_certs.stdout_lines }}"
+    
+  - name: Register p12 PayloadContent
+    shell: >
+     cat /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 | base64
+    register:  PayloadContent
+    with_items: "{{ users }}"
+
+  - name: Register CA PayloadContent
+    shell: >
+     cat /{{ easyrsa_dir }}/easyrsa3/pki/ca.crt | base64
+    register:  PayloadContentCA
+   
+  - name: Build the mobileconfigs
+    template: src=mobileconfig.j2 dest=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item.0 }}.mobileconfig mode=0600
+    with_together:
+      - "{{ users }}"
+      - "{{ PayloadContent.results }}"
+    no_log: True  
+      
+  - name: Fetch users P12
+    fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 dest=configs/{{ server_name }}_{{ item }}.p12 flat=yes
+    with_items: "{{ users }}"
+
+  - name: Fetch users mobileconfig
+    fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.mobileconfig dest=configs/{{ server_name }}_{{ item }}.mobileconfig flat=yes
+    with_items: "{{ users }}"
+    
+  - name: Fetch server CA certificate
+    fetch: src=/{{ easyrsa_dir }}/easyrsa3/pki/ca.crt dest=configs/{{ server_name }}_ca.crt flat=yes
+    

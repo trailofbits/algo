@@ -1,0 +1,150 @@
+---
+
+- name: VPN Configuration
+  hosts: vpn-host
+  gather_facts: false
+  remote_user: root
+  vars_files:
+    - config.cfg    
+  
+  tasks:
+  - name: Install StrongSwan
+    apt: name=strongswan state=latest update_cache=yes
+
+  - name: Enforcing ipsec with apparmor
+    shell: aa-enforce "{{ item }}"
+    with_items:
+      - /usr/lib/ipsec/charon
+      - /usr/lib/ipsec/lookip
+      - /usr/lib/ipsec/stroke
+    notify:
+    - restart apparmor
+    
+  - name: Enable services
+    service: name={{ item }} enabled=yes
+    with_items:
+      - apparmor
+      - strongswan
+
+  - name: Configure iptables so IPSec traffic can traverse the tunnel
+    iptables: table=nat chain=POSTROUTING source=10.0.0.0/24 jump=MASQUERADE
+
+  - name: Setup the ipsec.conf file from our template
+    template: src=ipsec.conf.j2 dest=/etc/ipsec.conf owner=root group=root mode=644
+    notify:
+    - restart strongswan    
+
+  - name: Setup the ipsec.secrets file
+    template: src=ipsec.secrets.j2 dest=/etc/ipsec.secrets owner=root group=root mode=600
+    notify:
+    - restart strongswan    
+    
+  - name: Fetch easy-rsa-ipsec repo
+    git: repo=git://github.com/ValdikSS/easy-rsa-ipsec.git dest="{{ easyrsa_dir }}"
+
+  - name: Setup the vars file from our template
+    template: src=easy-rsa.vars.j2 dest={{ easyrsa_dir }}/easyrsa3/vars
+    
+  - name: Ensure the pki directory is not exist
+    file: dest={{ easyrsa_dir }}/easyrsa3/pki state=absent
+    when: easyrsa_reinit_existent == True
+    
+  - name: Build the pki enviroments
+    shell: >
+      ./easyrsa init-pki &&
+      touch '{{ easyrsa_dir }}/easyrsa3/pki/pki_initialized'    
+    args:
+      chdir: '{{ easyrsa_dir }}/easyrsa3/'
+      creates: '{{ easyrsa_dir }}/easyrsa3/pki/pki_initialized'
+
+  - name: Build the CA pair 
+    shell: >
+      ./easyrsa build-ca nopass &&
+      touch {{ easyrsa_dir }}/easyrsa3/pki/ca_initialized
+    args:
+      chdir: '{{ easyrsa_dir }}/easyrsa3/'
+      creates: '{{ easyrsa_dir }}/easyrsa3/pki/ca_initialized'
+    notify:
+    - restart strongswan  
+    
+  - name: Build the server pair # TODO: IP and DNS for certificate
+    shell: >
+      ./easyrsa build-server-full {{ server_name }} nopass &&
+      touch '{{ easyrsa_dir }}/easyrsa3/pki/server_initialized'
+    args:
+      chdir: '{{ easyrsa_dir }}/easyrsa3/'
+      creates: '{{ easyrsa_dir }}/easyrsa3/pki/server_initialized'
+    notify:
+    - restart strongswan        
+
+  - name: Build the client's pair
+    shell: >
+      ./easyrsa build-client-full {{ item }} nopass &&
+      touch '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_initialized'
+    args:
+      chdir: '{{ easyrsa_dir }}/easyrsa3/'
+      creates: '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_initialized'
+    with_items: "{{ users }}"
+
+  - name: Build the client's p12 
+    shell: >
+      openssl pkcs12 -in {{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt -inkey {{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.key -export -name {{ item }} -out /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 -certfile {{ easyrsa_dir }}/easyrsa3//pki/ca.crt -passout pass:{{ easyrsa_p12_export_password }} &&
+      touch '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_p12_initialized'
+    args:
+      chdir: '{{ easyrsa_dir }}/easyrsa3/'
+      creates: '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_p12_initialized'
+    with_items: "{{ users }}"
+    
+  - name: Copy the CA cert to the strongswan directory
+    copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/ca.crt' dest=/etc/ipsec.d/cacerts/ca.crt owner=root group=root mode=0600
+    notify:
+    - restart strongswan
+
+  - name: Copy the server cert to the strongswan directory
+    copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/issued/{{ server_name }}.crt' dest=/etc/ipsec.d/certs/{{ server_name }}.crt owner=root group=root mode=0600
+    notify:
+    - restart strongswan      
+    
+  - name: Copy the server key to the strongswan directory
+    copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/private/{{ server_name }}.key' dest=/etc/ipsec.d/private/{{ server_name }}.key owner=root group=root mode=0600
+    notify:
+    - restart strongswan    
+ 
+  - name: Register p12 PayloadContent
+    shell: >
+     cat /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 | base64
+    register:  PayloadContent
+    with_items: "{{ users }}"
+
+  - name: Register CA PayloadContent
+    shell: >
+     cat /{{ easyrsa_dir }}/easyrsa3/pki/ca.crt | base64
+    register:  PayloadContentCA
+   
+  - name: Build the mobileconfigs
+    template: src=mobileconfig.j2 dest=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item.0 }}.mobileconfig mode=0600
+    with_together:
+      - "{{ users }}"
+      - "{{ PayloadContent.results }}"
+    no_log: True  
+      
+  - name: Fetch users P12
+    fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 dest=configs/{{ server_name }}_{{ item }}.p12 flat=yes
+    with_items: "{{ users }}"
+
+  - name: Fetch users mobileconfig
+    fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.mobileconfig dest=configs/{{ server_name }}_{{ item }}.mobileconfig flat=yes
+    with_items: "{{ users }}"
+    
+  - name: Fetch server CA certificate
+    fetch: src=/{{ easyrsa_dir }}/easyrsa3/pki/ca.crt dest=configs/{{ server_name }}_ca.crt flat=yes
+    
+  - name: Add server to the inventory file
+    local_action: lineinfile dest=inventory_users line="{{ inventory_hostname }}" insertafter='\[users-management\]\n' state=present
+    
+  handlers:
+    - name: restart strongswan
+      service: name=strongswan state=restarted
+
+    - name: restart apparmor
+      service: name=apparmor state=restarted

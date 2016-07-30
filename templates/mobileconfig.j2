@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>IKEv2</key>
+            <dict>
+                <key>AuthenticationMethod</key>
+                <string>Certificate</string>
+                <key>ChildSecurityAssociationParameters</key>
+                <dict>
+                    <key>DiffieHellmanGroup</key>
+                    <integer>19</integer>
+                    <key>EncryptionAlgorithm</key>
+                    <string>AES-128-GCM</string>
+                    <key>IntegrityAlgorithm</key>
+                    <string>SHA2-256</string>
+                    <key>LifeTimeInMinutes</key>
+                    <integer>1440</integer>
+                </dict>
+                <key>DeadPeerDetectionRate</key>
+                <string>Medium</string>
+                <key>DisableMOBIKE</key>
+                <integer>0</integer>
+                <key>DisableRedirect</key>
+                <integer>0</integer>
+                <key>EnableCertificateRevocationCheck</key>
+                <integer>0</integer>
+                <key>EnablePFS</key>
+                <true/>
+                <key>IKESecurityAssociationParameters</key>
+                <dict>
+                    <key>DiffieHellmanGroup</key>
+                    <integer>19</integer>
+                    <key>EncryptionAlgorithm</key>
+                    <string>AES-128-GCM</string>
+                    <key>IntegrityAlgorithm</key>
+                    <string>SHA2-256</string>
+                    <key>LifeTimeInMinutes</key>
+                    <integer>1440</integer>
+                </dict>
+                <key>LocalIdentifier</key>
+                <string>{{ item.0 }}</string>
+                <key>PayloadCertificateUUID</key>
+                <string>1FB2907D-14D3-4BAB-A472-B304F4B7F7D9</string>
+                <key>CertificateType</key>
+                <string>ECDSA256</string>
+                <key>ServerCertificateIssuerCommonName</key>
+                <string>{{ server_name }}</string>                
+                <key>RemoteAddress</key>
+                <string>{{ server_name }}</string>
+                <key>RemoteIdentifier</key>
+                <string>{{ server_name }}</string>
+                <key>UseConfigurationAttributeInternalIPSubnet</key>
+                <integer>0</integer>
+            </dict>
+            <key>IPv4</key>
+            <dict>
+                <key>OverridePrimary</key>
+                <integer>1</integer>
+            </dict>
+            <key>PayloadDescription</key>
+            <string>Configures VPN settings</string>
+            <key>PayloadDisplayName</key>
+            <string>VPN</string>
+            <key>PayloadIdentifier</key>
+            <string>com.apple.vpn.managed.D247A30B-6023-4C8E-B3E3-FF1910A65E53</string>
+            <key>PayloadType</key>
+            <string>com.apple.vpn.managed</string>
+            <key>PayloadUUID</key>
+            <string>D247A30B-6023-4C8E-B3E3-FF1910A65E53</string>
+            <key>PayloadVersion</key>
+            <real>1</real>
+            <key>Proxies</key>
+            <dict>
+                <key>HTTPEnable</key>
+                <integer>0</integer>
+                <key>HTTPSEnable</key>
+                <integer>0</integer>
+            </dict>
+            <key>UserDefinedName</key>
+            <string>{{ server_name }} IKEv2</string>
+            <key>VPNType</key>
+            <string>IKEv2</string>
+        </dict>
+        <dict>
+            <key>Password</key>
+            <string>{{ easyrsa_p12_export_password }}</string>
+            <key>PayloadCertificateFileName</key>
+            <string>{{ item.0 }}.p12</string>
+            <key>PayloadContent</key>
+            <data>
+            {{ item.1.stdout }}
+            </data>
+            <key>PayloadDescription</key>
+            <string>Adds a PKCS#12-formatted certificate</string>
+            <key>PayloadDisplayName</key>
+            <string>{{ item.0 }}.p12</string>
+            <key>PayloadIdentifier</key>
+            <string>com.apple.security.pkcs12.1FB2907D-14D3-4BAB-A472-B304F4B7F7D9</string>
+            <key>PayloadType</key>
+            <string>com.apple.security.pkcs12</string>
+            <key>PayloadUUID</key>
+            <string>1FB2907D-14D3-4BAB-A472-B304F4B7F7D9</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+        </dict>
+        <dict>
+            <key>PayloadCertificateFileName</key>
+            <string>ca.crt</string>
+            <key>PayloadContent</key>
+            <data>
+            {{ PayloadContentCA.stdout }}
+            </data>
+            <key>PayloadDescription</key>
+            <string>Adds a CA root certificate</string>
+            <key>PayloadDisplayName</key>
+            <string>{{ server_name }}</string>
+            <key>PayloadIdentifier</key>
+            <string>com.apple.security.root.32EA3AAA-D19E-43EF-B357-608218745A38</string>
+            <key>PayloadType</key>
+            <string>com.apple.security.root</string>
+            <key>PayloadUUID</key>
+            <string>32EA3AAA-D19E-43EF-B357-608218745A38</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+        </dict>
+    </array>
+    <key>PayloadDisplayName</key>
+    <string>{{ server_name }} IKEv2</string>
+    <key>PayloadIdentifier</key>
+    <string>donut.local.37CA79B1-FC6A-421F-960A-90F91FC983BE</string>
+    <key>PayloadRemovalDisallowed</key>
+    <false/>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>743B04A8-5725-45A2-B1BB-836F8C16DB0A</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+</dict>
+</plist>
