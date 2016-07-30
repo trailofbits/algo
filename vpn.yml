@@ -140,7 +140,7 @@
     fetch: src=/{{ easyrsa_dir }}/easyrsa3/pki/ca.crt dest=configs/{{ server_name }}_ca.crt flat=yes
     
   - name: Add server to the inventory file
-    local_action: lineinfile dest=inventory_users line="{{ inventory_hostname }}" insertafter='\[users-management\]\n' state=present
+    local_action: lineinfile dest=inventory_users line="{{ inventory_hostname }}" insertafter='\[user-management\]\n' state=present
     
   handlers:
     - name: restart strongswan
