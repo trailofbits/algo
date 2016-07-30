@@ -10,6 +10,7 @@ Algo (short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhere
 * Supports only AES GCM, SHA2 HMAC, and P-256 DH
 * Generates mobileconfig profiles to auto-configure Apple devices
 * Provides helper scripts to add and remove users
+* Blocks ads with an included HTTP proxy (optional)
 * Based on current versions of Ubuntu and StrongSwan
 
 ## Anti-features
