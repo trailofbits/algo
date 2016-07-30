@@ -2,7 +2,7 @@
 
 [![Slack Status](https://empireslacking.herokuapp.com/badge.svg)](https://empireslacking.herokuapp.com)
 
-Algo (short for "Al Gore", the Vice President of Networks everywhere for inventing the Internet) is a set of Ansible scripts that simplifies the setup of an IPSEC VPN. It contains the most secure defaults available and works with common cloud providers.
+Algo (short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhere for [inventing the Internet](https://www.youtube.com/watch?v=BnFJ8cHAlco)) is a set of Ansible scripts that simplifies the setup of an IPSEC VPN. It contains the most secure defaults available and works with common cloud providers.
 
 ## Features
 
