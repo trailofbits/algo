@@ -94,7 +94,7 @@
         - "#                    Your IPsec server is running.                     #"
         - "#  Config files and X.509 certificates in the directory: ./configs/    #"
         - "#          After connect go to https://www.dnsleaktest.com/            #"
-        - "#        and ensure that all your traffic pass through the VPN.        #"
+        - "#        and ensure that all your traffic passes through the VPN.      #"
         - "#----------------------------------------------------------------------#"    
   
   handlers:
@@ -109,5 +109,3 @@
       
     - name: flush routing cache
       shell: echo 1 > /proc/sys/net/ipv4/route/flush     
-
-    
