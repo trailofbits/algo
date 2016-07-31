@@ -3,6 +3,7 @@
 - name: Common tools
   hosts: vpn-host
   remote_user: root
+  gather_facts: false
   vars_files:
     - config.cfg    
   
@@ -18,6 +19,9 @@
     
   - name: Install Updates, Patches and Additional Security Software
     apt: upgrade=dist update_cache=yes
+
+  - name: Gather Facts
+    setup:
     
   - name: Check if reboot is required
     shell: >
