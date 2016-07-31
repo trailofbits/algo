@@ -16,13 +16,13 @@
     
   - name: Install python2.7 for Ansible
     raw: apt-get install -qq -y python2.7
-    
-  - name: Install Updates, Patches and Additional Security Software
-    apt: upgrade=dist update_cache=yes
 
   - name: Gather Facts
     setup:
     
+  - name: Install Updates, Patches and Additional Security Software
+    apt: upgrade=dist update_cache=yes
+
   - name: Check if reboot is required
     shell: >
       if [[ $(readlink -f /vmlinuz) != /boot/vmlinuz-$(uname -r) ]]; then echo "required"; else echo "no"; fi
