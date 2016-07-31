@@ -3,7 +3,7 @@
 - name: VPN Configuration
   hosts: vpn-host
   gather_facts: false
-  remote_user: root
+  become: true
   vars_files:
     - config.cfg    
   
