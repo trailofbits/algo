@@ -17,7 +17,10 @@
   - name: Loopback is running
     shell: ifdown lo:100 && ifup lo:100
     
-  # Privoxy  
+  # Privoxy 
+  
+  - name: Install privoxy
+    apt: name=privoxy state=latest
   
   - name: Privoxy configured
     template: src=privoxy_config.j2 dest=/etc/privoxy/config
@@ -27,7 +30,62 @@
   - name: Privoxy enabled and started
     service: name=privoxy state=started enabled=yes
     
+  # DNS 
+  
+  - name: Install dnsmasq
+    apt: name=dnsmasq state=latest    
+    
+  - name: Dnsmasq profile for apparmor configured
+    template: src=usr.sbin.dnsmasq.j2 dest=/etc/apparmor.d/usr.sbin.dnsmasq
+    
+  - name: Enforcing dnsmasq with apparmor
+    shell: aa-enforce usr.sbin.dnsmasq
+    notify:
+    - restart apparmor
+        
+  - name: Dnsmasq configured
+    template: src=dnsmasq.conf.j2 dest=/etc/dnsmasq.conf
+    
+  - name: Adblock script created
+    copy: src=templates/adblock.sh dest=/opt/adblock.sh owner=root group=root mode=755
+    
+  - name: Adblock script added to cron
+    cron: name="Adblock hosts update" minute="10" hour="2" job="/opt/adblock.sh"
+
+  - name: Update adblock hosts
+    shell: >
+      /opt/adblock.sh
+      
+  - name: Forward all DNS requests to the local resolver
+    iptables: 
+      table: nat
+      chain: PREROUTING
+      protocol: udp
+      destination_port: 53
+      source: 10.0.0.0/24
+      jump: DNAT
+      to_destination: 172.16.0.1:53
+    notify:
+    - save iptables
+    when: service_dns is defined and service_dns == "Y"
+    
+  - name: Dnsmasq enabled and started
+    service: name=dnsmasq state=started enabled=yes
+    when: service_dns is defined and service_dns == "Y"
+    
+  - name: Dnsmasq disabled and stopped
+    service: name=dnsmasq state=stopped enabled=no
+    when: service_dns is defined and service_dns == "N"      
+    
   handlers:
     - name: restart privoxy
-      service: name=privoxy state=restarted          
+      service: name=privoxy state=restarted
+      
+    - name: restart apparmor
+      service: name=apparmor state=restarted      
+      
+    - name: save iptables
+      command: service netfilter-persistent save      
+      
+      
     

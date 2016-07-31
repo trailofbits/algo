@@ -73,7 +73,6 @@
       - rsyslog
       - sendmail
       - unattended-upgrades
-      - privoxy
       - iptables-persistent
       
   - name: Unattended-upgrades configured

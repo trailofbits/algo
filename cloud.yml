@@ -46,6 +46,11 @@
     prompt: "Name the vpn server:\n"
     default: "strongswan.local"
     private: no
+    
+  - name: "service_dns"
+    prompt: "Do you want to use DNS resolver on the new server to block ads and malware while surfing? (Y or N)\nIf your choice is 'N', DNS servers will set to values from the dns_servers variable.\n"
+    default: "Y"
+    private: no    
 
   tasks:
   - name: "Getting your SSH key ID on Digital Ocean..."

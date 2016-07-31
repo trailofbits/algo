@@ -23,7 +23,12 @@ conn %default
     right=%any
     rightauth=pubkey
     rightsourceip=10.0.0.0/24
-    rightdns=8.8.8.8,8.8.4.4
+{% if service_dns is defined and service_dns == "N" %}
+    rightdns={% for host in dns_servers %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}
+{% else %}    
+    rightdns=172.16.0.1
+{% endif %}    
+    
 
 conn ikev2-pubkey
     auto=add    
