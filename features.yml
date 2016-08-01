@@ -62,7 +62,7 @@
       chain: PREROUTING
       protocol: udp
       destination_port: 53
-      source: 10.0.0.0/24
+      source: "{{ vpn_network }}"
       jump: DNAT
       to_destination: 172.16.0.1:53
     notify:
