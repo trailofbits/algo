@@ -15,14 +15,14 @@ conn %default
     
     left=%any
     leftauth=pubkey
-    leftid={{ server_name }}
-    leftcert={{ server_name }}.crt
+    leftid={{ ansible_ssh_host }}
+    leftcert={{ ansible_ssh_host }}.crt
     leftsendcert=always
     leftsubnet=0.0.0.0/0,::/0
 
     right=%any
     rightauth=pubkey
-    rightsourceip="{{ vpn_network }""
+    rightsourceip="{{ vpn_network }}"
 {% if service_dns is defined and service_dns == "N" %}
     rightdns={% for host in dns_servers %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}
 {% else %}    

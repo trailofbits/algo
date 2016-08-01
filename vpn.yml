@@ -70,9 +70,9 @@
     notify:
     - restart strongswan  
     
-  - name: Build the server pair # TODO: IP and DNS for certificate
+  - name: Build the server pair
     shell: >
-      ./easyrsa build-server-full {{ server_name }} nopass &&
+      ./easyrsa --subject-alt-name='DNS:{{ server_name }},IP:{{ ansible_ssh_host }}' build-server-full {{ ansible_ssh_host }} nopass&&
       touch '{{ easyrsa_dir }}/easyrsa3/pki/server_initialized'
     args:
       chdir: '{{ easyrsa_dir }}/easyrsa3/'
@@ -104,12 +104,12 @@
     - restart strongswan
 
   - name: Copy the server cert to the strongswan directory
-    copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/issued/{{ server_name }}.crt' dest=/etc/ipsec.d/certs/{{ server_name }}.crt owner=root group=root mode=0600
+    copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/issued/{{ ansible_ssh_host }}.crt' dest=/etc/ipsec.d/certs/{{ ansible_ssh_host }}.crt owner=root group=root mode=0600
     notify:
     - restart strongswan      
     
   - name: Copy the server key to the strongswan directory
-    copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/private/{{ server_name }}.key' dest=/etc/ipsec.d/private/{{ server_name }}.key owner=root group=root mode=0600
+    copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/private/{{ ansible_ssh_host }}.key' dest=/etc/ipsec.d/private/{{ ansible_ssh_host }}.key owner=root group=root mode=0600
     notify:
     - restart strongswan    
  

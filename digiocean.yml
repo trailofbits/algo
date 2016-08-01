@@ -42,8 +42,8 @@
     default: "7"
     private: no
     
-  - name: "do_server_name"
-    prompt: "Name the vpn server:\n"
+  - name: "server_name"
+    prompt: "Name the vpn server:\nMaybe a valid DNS name"
     default: "strongswan.local"
     private: no
     
@@ -65,7 +65,7 @@
     digital_ocean:
       state: present
       command: droplet
-      name: "{{ do_server_name }}"
+      name: "{{ server_name }}"
       region_id: "{{ regions[do_region] }}"
       size_id: "512mb"
       image_id: "ubuntu-16-04-x64"
