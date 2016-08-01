@@ -35,14 +35,14 @@
   - name: Setup the ipsec.conf file from our template
     template: src=ipsec.conf.j2 dest=/etc/ipsec.conf owner=root group=root mode=644
     notify:
-    - restart strongswan    
+    - restart strongswan  
 
   - name: Setup the ipsec.secrets file
     template: src=ipsec.secrets.j2 dest=/etc/ipsec.secrets owner=root group=root mode=600
     notify:
     - restart strongswan    
     
-  - name: Fetch easy-rsa-ipsec repo
+  - name: Fetch easy-rsa-ipsec from git
     git: repo=git://github.com/ValdikSS/easy-rsa-ipsec.git dest="{{ easyrsa_dir }}"
 
   - name: Setup the vars file from our template
@@ -144,6 +144,9 @@
     
   - name: Add server to the inventory file
     local_action: lineinfile dest=inventory_users line="{{ inventory_hostname }}" insertafter='\[user-management\]\n' state=present
+    become: false    
+    notify:
+      - congrats
     
   handlers:
     - name: restart strongswan
@@ -153,4 +156,15 @@
       service: name=apparmor state=restarted
       
     - name: save iptables
-      command: service netfilter-persistent save
+      command: service netfilter-persistent save      
+      
+    - name: congrats
+      debug:
+        msg:
+          - "#----------------------------------------------------------------------#"
+          - "#                          Congratulations!                            #"
+          - "#                    Your IPsec server is running.                     #"
+          - "#  Config files and X.509 certificates in the directory: ./configs/    #"
+          - "#          After connect go to https://www.dnsleaktest.com/            #"
+          - "#        and ensure that all your traffic passes through the VPN.      #"
+          - "#----------------------------------------------------------------------#"        

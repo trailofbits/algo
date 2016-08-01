@@ -78,10 +78,10 @@
     add_host:
       name: "{{ do.droplet.ip_address }}"
       groups: vpn-host
-      remote_user: root
+      ansible_ssh_user: root
       ansible_python_interpreter: "/usr/bin/python2.7"
 
   - name: Wait for SSH to become available
-    wait_for: host={{ do.droplet.ip_address }} port=22 delay=60 timeout=320 state=started
+    local_action: "wait_for port=22 host={{ do.droplet.ip_address }} timeout=320"
 
 

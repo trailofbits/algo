@@ -1,6 +1,15 @@
 ---
 
+- hosts: localhost
+  gather_facts: false
+  tasks:
+  - fail:
+      msg:
+        - 'You need to define `provider` variable. Read README.md for more details'
+    when: provider is not defined            
+
 - include: "{{ provider }}.yml"
+  when: provider is defined 
 - include: common.yml
 - include: security.yml
 - include: features.yml
