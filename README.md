@@ -60,3 +60,7 @@ Raccoon does not support IKEv2. Racoon2 supports IKEv2 but is not actively maint
 ### Why aren't you using a memory-safe or verified IKE daemon?
 
 I would, but I don't know of any. Do you? If you're in the position to fund the development of such a project, [contact us](mailto:info@trailofbits.com). We would be interested in leading such an effort. At the very least, we plan to make modifications to StrongSwan and the environment it's deployed in that prevent or significantly complicate exploitation of any latent issues.
+
+### Why aren't you using OpenVPN?
+
+Among other reasons, there is no out-of-the-box client support for OpenVPN on any major desktop or mobile platform and it depends on the security of [TLS](https://tools.ietf.org/html/rfc7457).
