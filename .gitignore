@@ -3,3 +3,4 @@ configs/*.mobileconfig
 configs/*.p12
 configs/*.crt
 configs/*.tmp
+inventory_users
