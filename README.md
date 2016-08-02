@@ -32,16 +32,10 @@ Algo (short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhere
 ## Usage
 
 * Open the file `config.cfg` in your favorite text editor. Change `server_name` and specify users in the `users` list.
-* Start the deploy and follow the instructions: 
+* Start the deploy and follow the instructions (available options for PROVIDER are `digitalocean` or `ec2`): 
 ```
 ansible-playbook deploy.yml -e "provider=PROVIDER"
 ```
-
-Available providers:
-	digiocean - Digital Ocean
-	ec2				- Amazon AWS EC2 (see EC2 section below)
-
-
 * When the process is done, you can find `.mobileconfig` files and certificates in the `configs` directory. Send the `.mobileconfig` profile to your users on iOS or macOS (note: Profile installation is supported over AirDrop) or send the X.509 certificates to those using other clients, like Windows or Android.
 * When the deploy proccess is done a new server will be placed in the local inventory file `inventory_users`.
 * If you want to add or delete users, update the `users` list in `config.cfg` and run the playbook `users.yml`. This command will update users on all the servers in the file `inventory_users`. If you want to limit servers it updates, you can use `-l` flag.
