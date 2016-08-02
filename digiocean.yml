@@ -83,5 +83,56 @@
 
   - name: Wait for SSH to become available
     local_action: "wait_for port=22 host={{ do.droplet.ip_address }} timeout=320"
+    
+  - name: Enable IPv6 on the droplet
+    uri:
+      url: "https://api.digitalocean.com/v2/droplets/{{ do.droplet.id }}/actions"
+      method: POST
+      body:
+        type: enable_ipv6
+      body_format: json
+      status_code: 201
+      HEADER_Authorization: "Bearer {{ do_access_token }}"
+      HEADER_Content-Type: "application/json"
+      
+  - name: Get Droplet networks
+    uri:
+      url: "https://api.digitalocean.com/v2/droplets/{{ do.droplet.id }}"
+      method: GET
+      status_code: 200
+      HEADER_Authorization: "Bearer {{ do_access_token }}"
+      HEADER_Content-Type: "application/json"
+    register: droplet_info
+    
+  - name: IPv6 template created
+    template: src=20-ipv6.cfg.j2 dest=configs/20-ipv6.tmp
+    with_items: "{{ droplet_info.json.droplet.networks.v6 }}"
+
+- name: Post-provisioning tasks
+  hosts: vpn-host
+  gather_facts: false
+  user: root
+  vars_files:
+    - config.cfg
+    
+  pre_tasks:
+    - name: Install prerequisites
+      raw: sudo apt-get update -qq && sudo apt-get install -qq -y python2.7
+    - name: Configure defaults
+      raw: sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1    
+    
+  tasks:  
+    - name: IPv6 configured
+      copy: src=configs/20-ipv6.tmp dest=/etc/network/interfaces.d/20-ipv6.cfg owner=root group=root mode=0644
+      
+    - name: IPv6 included into the network config
+      lineinfile: dest=/etc/network/interfaces line='source /etc/network/interfaces.d/20-ipv6.cfg' state=present
+      
+    - name: IPV6 is running
+      shell: sh -c 'ifdown eth0; ip addr flush dev eth0; ifup eth0'
+
+    - name: Wait for SSH to become available
+      local_action: "wait_for port=22 host={{ inventory_hostname }} timeout=320"
+      become: false
 
 
