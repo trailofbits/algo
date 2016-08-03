@@ -32,6 +32,11 @@
     notify:
     - save iptables
     
+  - name: Configure ip6tables so IPSec traffic can traverse the tunnel
+    iptables: ip_version=ipv6 table=nat chain=POSTROUTING source="{{ vpn_network_ipv6 }}" jump=MASQUERADE
+    notify:
+    - save iptables    
+    
   - name: Setup the ipsec.conf file from our template
     template: src=ipsec.conf.j2 dest=/etc/ipsec.conf owner=root group=root mode=644
     notify:
