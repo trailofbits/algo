@@ -1,0 +1,6 @@
+iface eth0 inet6 static
+        address {{ item.ip_address }}
+        netmask {{ item.netmask }}
+        gateway {{ item.gateway }}
+        autoconf 0
+        dns-nameservers 2001:4860:4860::8844 2001:4860:4860::8888
