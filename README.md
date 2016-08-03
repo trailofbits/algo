@@ -84,6 +84,6 @@ I would, but I don't know of any. If you're in the position to fund the developm
 
 OpenVPN does not have out-of-the-box client support on any major desktop or mobile operating system. This introduces user experience issues and requires the user to update and maintain the software themselves. OpenVPN depends on the security of the [TLS](https://tools.ietf.org/html/rfc7457), both the protocol and its implementations, and we simply trust the server less due to [past security incidents](https://www.exploit-db.com/exploits/34879/).
 
-### Why aren't you using Alpine Linux?
+### Why aren't you using Alpine Linux, OpenBSD, or HardenedBSD?
 
-I would, but Alpine Linux is not supported out-of-the-box by any major cloud provider.
+Alpine Linux is not supported out-of-the-box by any major cloud provider. We are interested in supporting Free, Open, and HardenedBSD. Follow along on our progress in [this issue](https://github.com/trailofbits/algo/issues/35).
