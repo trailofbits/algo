@@ -163,8 +163,8 @@
         msg:
           - "#----------------------------------------------------------------------#"
           - "#                          Congratulations!                            #"
-          - "#                    Your IPsec server is running.                     #"
-          - "#  Config files and X.509 certificates in the directory: ./configs/    #"
-          - "#          After connect go to https://www.dnsleaktest.com/            #"
+          - "#                     Your Algo server is running.                     #"
+          - "#    Config files and certificates are in the ./configs/ directory.    #"
+          - "#          Go to https://www.dnsleaktest.com/ after connecting         #"
           - "#        and ensure that all your traffic passes through the VPN.      #"
-          - "#----------------------------------------------------------------------#"        
+          - "#----------------------------------------------------------------------#"

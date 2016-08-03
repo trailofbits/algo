@@ -38,17 +38,17 @@
         9.  San Francisco    (Datacenter 2)
         10. Singapore
         11. Toronto
-      Please choose the number of your region. Press enter for default (#7) region.
+      Enter the number of your desired region:
     default: "7"
     private: no
     
   - name: "do_server_name"
     prompt: "Name the vpn server:\n"
-    default: "strongswan.local"
+    default: "algo.local"
     private: no
     
   - name: "service_dns"
-    prompt: "Do you want to use DNS resolver on the new server to block ads and malware while surfing? (Y or N)\nIf your choice is 'N', DNS servers will set to values from the dns_servers variable.\n"
+    prompt: "Do you want to use a local DNS resolver to block ads while surfing? (Y or N)"
     default: "Y"
     private: no    
 
