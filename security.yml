@@ -1,6 +1,6 @@
 ---
 
-- name: Security fixes
+- name: Security enhancements
   hosts: vpn-host
   become: true
   vars_files:
@@ -34,7 +34,7 @@
    
   # auditd
   
-  - name: Collect Use of Privileged Commands
+  - name: Collect Use of privileged commands
     shell: > 
       /usr/bin/find {/usr/local/sbin,/usr/local/bin,/sbin,/bin,/usr/sbin,/usr/bin} -xdev \( -perm -4000 -o -perm -2000 \) -type f | awk '{print "-a always,exit -F path=" $1 " -F perm=x -F auid>=500 -F auid!=4294967295 -k privileged" }'
     args:
@@ -71,10 +71,10 @@
   
   # Core dumps
    
-  - name: Restrict Core Dumps - using pam limits
+  - name: Restrict core dumps (with PAM)
     lineinfile: dest=/etc/security/limits.conf line="* hard core 0" state=present
 
-  - name: Restrict Core Dumps - using sysctl
+  - name: Restrict core dumps (with sysctl)
     sysctl: name=fs.suid_dumpable value=0 ignoreerrors=yes sysctl_set=yes reload=yes state=present
   
   # Kernel fixes
