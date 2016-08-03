@@ -56,7 +56,7 @@ When the deploy proccess is done a new server will be placed in the local invent
 ansible-playbook users.yml -i inventory_users
 ```
 
-Note: For EC2 users, Algo does NOT use EC2 dynamic inventory for user management. Please continue to use users.yml playbook as described above. This may be subject to change in the future.
+Note: For EC2 users, Algo does NOT use EC2 dynamic inventory for user management. Please continue to use users.yml playbook as described below. This may be subject to change in the future.
 
 ```
 ansible-playbook users.yml -u ubuntu -i inventory_users
