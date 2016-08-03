@@ -3,6 +3,8 @@
 
 # Redirect endpoint
 ENDPOINT_IP4="0.0.0.0"
+ENDPOINT_IP6="::"
+IPV6="Y"
 
 #Delete the old block.hosts to make room for the updates
 rm -f /etc/block.hosts
@@ -33,6 +35,14 @@ then
     egrep -v "^[[:space:]]*$" /etc/white.list | awk '/^[^#]/ {sub(/\r$/,"");print $1}' | grep -vf - /tmp/block.build.before > /etc/block.hosts
 else
     cat /tmp/block.build.before > /etc/block.hosts
+fi
+
+if [ "$IPV6" = "Y" ]
+then
+    safe_pattern=$(printf '%s\n' "$ENDPOINT_IP4" | sed 's/[[\.*^$(){}?+|/]/\\&/g')
+    safe_addition=$(printf '%s\n' "$ENDPOINT_IP6" | sed 's/[\&/]/\\&/g')
+    echo 'Adding ipv6 support...'
+    sed -i -re "s/^(${safe_pattern}) (.*)$/\1 \2\n${safe_addition} \2/g" /etc/block.hosts
 fi
 
 service dnsmasq restart
