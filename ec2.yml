@@ -74,9 +74,13 @@
         description: Security group for VPN servers
         region: "{{ regions[region] }}"
         rules:
-          - proto: tcp
-            from_port: 443
-            to_port: 443
+          - proto: udp
+            from_port: 4500
+            to_port: 4500
+            cidr_ip: 0.0.0.0/0
+          - proto: udp
+            from_port: 500
+            to_port: 500
             cidr_ip: 0.0.0.0/0
           - proto: tcp
             from_port: 22
