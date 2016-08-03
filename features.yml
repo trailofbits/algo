@@ -38,7 +38,7 @@
   - name: Dnsmasq profile for apparmor configured
     template: src=usr.sbin.dnsmasq.j2 dest=/etc/apparmor.d/usr.sbin.dnsmasq
     
-  - name: Enforcing dnsmasq with apparmor
+  - name: Enforce the dnsmasq AppArmor policy
     shell: aa-enforce usr.sbin.dnsmasq
     notify:
     - restart apparmor
