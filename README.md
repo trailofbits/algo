@@ -53,7 +53,7 @@ declare -x AWS_SECRET_ACCESS_KEY="XXXXXXXXXXXXXXXxx"
 When the deploy proccess is done a new server will be placed in the local inventory file `inventory_users`. If you want to add or delete users, update the `users` list in `config.cfg` and run the playbook `users.yml`. This command will update users on any servers in the file `inventory_users`.
 
 ```
-ansible-playbook users.yml -i inventory_users
+ansible-playbook users.yml --user=root -i inventory_users
 ```
 
 Note: For EC2 users, Algo does NOT use EC2 dynamic inventory for user management. Please continue to use users.yml playbook as described below. This may be subject to change in the future.
