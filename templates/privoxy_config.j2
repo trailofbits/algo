@@ -1256,6 +1256,8 @@ enable-proxy-authentication-forwarding 0
 #        forward  /                        parent-proxy.example.org:8000
 #        forward  ipv6-server.example.org  .
 #        forward  <[2-3][0-9a-f][0-9a-f][0-9a-f]:*>   .
+forward   /      172.16.0.1:8080
+forward   :443   .
 #
 #
 #  5.2. forward-socks4, forward-socks4a, forward-socks5 and forward-socks5t

@@ -2,7 +2,6 @@
 
 - name: Other features
   hosts: vpn-host
-  gather_facts: false
   become: true
   vars_files:
     - config.cfg    
@@ -17,7 +16,7 @@
   - name: Loopback is running
     shell: ifdown lo:100 && ifup lo:100
     
-  # Privoxy 
+  #Privoxy 
   
   - name: Install privoxy
     apt: name=privoxy state=latest
@@ -37,6 +36,46 @@
       
   - name: Privoxy enabled and started
     service: name=privoxy state=started enabled=yes
+    
+  # PageSpeed
+  
+  - name: Apache installed
+    apt: name=apache2 state=latest
+    
+  - name: PageSpeed installed for x86_64
+    apt: deb=https://dl-ssl.google.com/dl/linux/direct/mod-pagespeed-stable_current_amd64.deb
+    when: ansible_architecture == "x86_64"
+    
+  - name: PageSpeed installed for i386
+    apt: deb=https://dl-ssl.google.com/dl/linux/direct/mod-pagespeed-stable_current_i386.deb
+    when: ansible_architecture != "x86_64"    
+    
+  - name: PageSpeed configured
+    template: src=pagespeed.conf.j2 dest=/etc/apache2/mods-available/pagespeed.conf
+    notify:
+    - restart apache2 
+    
+  - name: Modules enabled
+    apache2_module: state=present name="{{ item }}"
+    with_items:
+      - proxy_http
+      - pagespeed
+      - cache
+      - proxy_connect
+      - proxy_html
+      - rewrite
+    notify:
+    - restart apache2
+    
+  - name: VirtualHost configured for the PageSpeed module
+    template: src=000-default.conf.j2 dest=/etc/apache2/sites-enabled/000-default.conf
+    notify:
+    - restart apache2      
+    
+  - name: Apache ports configured
+    template: src=ports.conf.j2 dest=/etc/apache2/ports.conf
+    notify:
+    - restart apache2  
     
   # DNS 
   
@@ -58,13 +97,16 @@
     
   - name: Adblock script created
     copy: src=templates/adblock.sh dest=/opt/adblock.sh owner=root group=root mode=755
+    when: service_dns is defined and service_dns == "True"
     
   - name: Adblock script added to cron
     cron: name="Adblock hosts update" minute="10" hour="2" job="/opt/adblock.sh"
+    when: service_dns is defined and service_dns == "True"
 
   - name: Update adblock hosts
     shell: >
       /opt/adblock.sh
+    when: service_dns is defined and service_dns == "True"
       
   - name: Forward all DNS requests to the local resolver
     iptables: 
@@ -77,7 +119,7 @@
       to_destination: 172.16.0.1:53
     notify:
     - save iptables
-    when: service_dns is defined and service_dns == "Y" # TODO: service_dns is not defined, because the variable in vars_prompt
+    when: service_dns is defined and service_dns == "True"
     
   - name: Forward all DNS requests to the local resolver
     iptables: 
@@ -91,15 +133,15 @@
       ip_version: ipv6
     notify:
     - save iptables
-    when: service_dns is defined and service_dns == "Y"    
+    when: service_dns is defined and service_dns == "True"    
     
   - name: Dnsmasq enabled and started
     service: name=dnsmasq state=started enabled=yes
-    when: service_dns is defined and service_dns == "Y"
+    when: service_dns is defined and service_dns == "True"
     
   - name: Dnsmasq disabled and stopped
     service: name=dnsmasq state=stopped enabled=no
-    when: service_dns is defined and service_dns == "N"      
+    when: service_dns is defined and service_dns == "False"      
     
   handlers:
     - name: restart privoxy
@@ -109,10 +151,10 @@
       service: name=dnsmasq state=restarted      
       
     - name: restart apparmor
-      service: name=apparmor state=restarted      
+      service: name=apparmor state=restarted
+      
+    - name: restart apache2
+      service: name=apache2 state=restarted       
       
     - name: save iptables
-      command: service netfilter-persistent save      
-      
-      
-    
+      command: service netfilter-persistent save 
