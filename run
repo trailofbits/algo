@@ -1,0 +1,18 @@
+#!/bin/sh
+
+echo -n "
+What provider would you like to use?
+  1. DigitalOcean
+  3. Amazon EC2
+Enter the number of your desired provider  
+: "
+
+read N
+
+case "$N" in
+  1) CLOUD="digitalocean"  ;;
+  2) CLOUD="ec2" ;;
+  *) exit 1 ;;
+esac  
+
+ansible-playbook deploy.yml -e "provider=${CLOUD}"
