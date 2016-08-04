@@ -46,11 +46,6 @@
     prompt: "Name the vpn server:\n"
     default: "algo.local"
     private: no
-    
-  - name: "service_dns"
-    prompt: "Do you want to use a local DNS resolver to block ads while surfing? (Y or N)"
-    default: "Y"
-    private: no    
 
   tasks:
   - name: "Getting your SSH key ID on Digital Ocean..."
