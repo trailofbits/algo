@@ -16,7 +16,7 @@
   - name: Loopback is running
     shell: ifdown lo:100 && ifup lo:100
     
-  #Privoxy 
+  # Privoxy 
   
   - name: Install privoxy
     apt: name=privoxy state=latest
