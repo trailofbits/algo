@@ -30,23 +30,27 @@ Algo (short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhere
 * python >= 2.6
 * libselinux-python (for RedHat based distros)
 * [dopy=0.3.5](https://github.com/Wiredcraft/dopy)
+* SHell or BASH
 
 ### Initial Deployment
 
-Open the file `config.cfg` in your favorite text editor. Change `server_name` and specify users in the `users` list. Start the deploy and follow the instructions (available options for PROVIDER are `digitalocean` or `ec2`): 
+**Available cloud providers:**  
+* DigitalOcean
+* Amazon EC2
 
-```
-ansible-playbook deploy.yml -e "provider=PROVIDER"
-```
-
-When the process is done, you can find `.mobileconfig` files and certificates in the `configs` directory. Send the `.mobileconfig` profile to users with Apple devices. Note that profile installation is supported over AirDrop. Do not send the mobileconfig file over plaintext since it contains the keys to access the VPN. For those using other clients, like Windows or Android, send the X.509 certificates for the server and their user.
-
-Note: For EC2 users, ensure that you setup the required environment variables prior to starting the deploy:
-
+Note: For EC2 users, ensure that you setup the required environment variables prior to starting the deploy:  
 ```
 declare -x AWS_ACCESS_KEY_ID="XXXXXXXXXXXXXXXXXXX"
 declare -x AWS_SECRET_ACCESS_KEY="XXXXXXXXXXXXXXXxx"
 ```
+Open the file `config.cfg` in your favorite text editor. Specify users in the `users` list. Start the deploy and follow the instructions:  
+
+```
+./run
+```
+
+When the process is done, you can find `.mobileconfig` files and certificates in the `configs` directory. Send the `.mobileconfig` profile to users with Apple devices. Note that profile installation is supported over AirDrop. Do not send the mobileconfig file over plaintext since it contains the keys to access the VPN. For those using other clients, like Windows or Android, send the X.509 certificates for the server and their user.
+
 
 ### User Management
 
