@@ -3,7 +3,7 @@
 echo -n "
 What provider would you like to use?
   1. DigitalOcean
-  3. Amazon EC2
+  2. Amazon EC2
 Enter the number of your desired provider  
 : "
 
