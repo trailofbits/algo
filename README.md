@@ -51,7 +51,9 @@ declare -x AWS_ACCESS_KEY_ID="XXXXXXXXXXXXXXXXXXX"
 declare -x AWS_SECRET_ACCESS_KEY="XXXXXXXXXXXXXXXxx"
 ```
 
-Open the file `config.cfg` in your favorite text editor. Specify users in the `users` list. Start the deploy and follow the instructions:
+Open the file `config.cfg` in your favorite text editor. Specify users in the `users` list.
+
+Start the deploy and follow the instructions:
 
 ```
 ./run
@@ -71,7 +73,7 @@ ansible-playbook users.yml --user=root -i inventory_users
 Note: For EC2 users, Algo does NOT use EC2 dynamic inventory for user management. Please continue to use users.yml playbook as described below. This may be subject to change in the future.
 
 ```
-ansible-playbook users.yml -u ubuntu -i inventory_users
+ansible-playbook users.yml --user=ubuntu -i inventory_users
 ```
 
 ## FAQ
