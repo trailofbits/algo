@@ -26,24 +26,32 @@ Algo (short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhere
 
 ### Requirements
 
-* ansible >= 2.2.0
+* ansible >= 2.1.0
 * python >= 2.6
-* libselinux-python (for RedHat based distros)
 * [dopy=0.3.5](https://github.com/Wiredcraft/dopy)
 * SHell or BASH
+* libselinux-python (for RedHat based distros)
 
 ### Initial Deployment
 
-**Available cloud providers:**  
+To install the dependencies on OS X:
+
+```
+sudo easy_install pip
+sudo pip install ansible dopy==0.3.5
+```
+
+There are two available cloud providers:  
 * DigitalOcean
 * Amazon EC2
 
-Note: For EC2 users, ensure that you setup the required environment variables prior to starting the deploy:  
+If you want to use Amazon EC2, ensure that you setup the required environment variables prior to starting the deploy:  
 ```
 declare -x AWS_ACCESS_KEY_ID="XXXXXXXXXXXXXXXXXXX"
 declare -x AWS_SECRET_ACCESS_KEY="XXXXXXXXXXXXXXXxx"
 ```
-Open the file `config.cfg` in your favorite text editor. Specify users in the `users` list. Start the deploy and follow the instructions:  
+
+Open the file `config.cfg` in your favorite text editor. Specify users in the `users` list. Start the deploy and follow the instructions:
 
 ```
 ./run
