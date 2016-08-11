@@ -2,6 +2,8 @@
 - name: Create a sandbox instance
   hosts: localhost
   gather_facts: False
+  vars_files:
+    - config.cfg  
   vars:
     instance_type: t2.nano
     security_group: vpn-secgroup
@@ -19,6 +21,15 @@
       "11": "sa-east-1"
 
   vars_prompt:
+      
+    - name: "aws_access_key"
+      prompt: "Enter your aws_access_key (http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html):\n"
+      private: yes
+      
+    - name: "aws_secret_key"
+      prompt: "Enter your aws_secret_key (http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html):\n"
+      private: yes   
+  
     - name: "region"
       prompt: >
         What region should the server be located in?
@@ -35,6 +46,15 @@
          11.  sa-east-1           South America (São Paulo)
       default: "1"
       private: no
+      
+    - name: "aws_server_name"
+      prompt: "Name the vpn server:\n"
+      default: "algo.local"
+      private: no      
+      
+    - name: "ssh_public_key"
+      prompt: "Enter the local path to your SSH public key (ex: ~/.ssh/id_rsa.pub):\n"
+      private: no  
 
     - name: "dns_enabled"
       prompt: "Do you want to use a local DNS resolver to block ads while surfing? (Y or N):\n"
@@ -46,89 +66,8 @@
       default: "Y"
       private: no
 
-  tasks:
-
-    - name: Grab the default interface subnet. 
-      ec2_eni_facts:
-        region: "{{ regions[region] }}"
-      register: ec2_enis
-
-    - name: Locate official Ubuntu 16.04 AMI for region.
-      ec2_ami_find:
-        name: "ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"
-        owner:  099720109477
-        sort: name
-        sort_order: descending
-        sort_end: 1
-        region: "{{ regions[region] }}"
-      register: ami_search
-
-    - set_fact:
-        ami_image: "{{ ami_search.results[0].ami_id }}"
-        default_subnet: "{{ ec2_enis.interfaces[0].subnet_id }}"
-
-    - name: Fetch our IP for security group.
-      ipify_facts:
-    
-    - name: Add ssh public key.
-      ec2_key:
-        name: VPNKEY
-        region: "{{ regions[region] }}"
-        key_material: "{{ item }}"
-      with_file: ~/.ssh/id_rsa.pub
-      register: keypair
-
-    - name: Configure EC2 security group
-      ec2_group:
-        name: "{{ security_group }}"
-        description: Security group for VPN servers
-        region: "{{ regions[region] }}"
-        rules:
-          - proto: udp
-            from_port: 4500
-            to_port: 4500
-            cidr_ip: 0.0.0.0/0
-          - proto: udp
-            from_port: 500
-            to_port: 500
-            cidr_ip: 0.0.0.0/0
-          - proto: tcp
-            from_port: 22
-            to_port: 22
-            cidr_ip: "{{ ipify_public_ip }}/32"
-        rules_egress:
-          - proto: all
-            from_port: 0-65535
-            to_port: 0-65535
-            cidr_ip: 0.0.0.0/0
-
-    - name: Launch instance
-      ec2:
-         keypair: "VPNKEY"
-         group: "{{ security_group }}"
-         instance_type: "{{ instance_type }}"
-         image: "{{ ami_image }}"
-         wait: true
-         region: "{{ regions[region] }}"
-         vpc_subnet_id: "{{ default_subnet }}"
-         assign_public_ip: yes
-         instance_tags:
-           Name: VPN
-      register: ec2
-
-    - name: Add new instance to host group
-      add_host: 
-        hostname: "{{ item.public_ip }}"
-        groupname: vpn-host
-        remote_user: ubuntu
-        ansible_python_interpreter: "/usr/bin/python2.7"
-        dns_enabled: "{{ dns_enabled }}"
-        auditd_enabled: " {{ auditd_enabled }}"
-      with_items: "{{ ec2.instances }}"
-
-    - name: Wait for SSH to come up
-      wait_for: host={{ item.public_dns_name }} port=22 delay=60 timeout=320 state=started
-      with_items: "{{ ec2.instances }}"
+  roles:
+    - ec2  
       
 - name: Post-provisioning tasks
   hosts: vpn-host
@@ -147,5 +86,6 @@
     - common
     - security
     - features
-    - vpn      
+    - vpn
+    - { role: logging, when: auditd_enabled is defined and auditd_enabled == 'Y' }    
 
