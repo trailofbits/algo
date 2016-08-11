@@ -46,12 +46,6 @@ There are two available cloud providers:
 * DigitalOcean
 * Amazon EC2
 
-If you want to use Amazon EC2, ensure that you setup the required environment variables prior to starting the deploy:  
-```
-declare -x AWS_ACCESS_KEY_ID="XXXXXXXXXXXXXXXXXXX"
-declare -x AWS_SECRET_ACCESS_KEY="XXXXXXXXXXXXXXXxx"
-```
-
 Open the file `config.cfg` in your favorite text editor. Specify users in the `users` list.
 
 Start the deploy and follow the instructions:
