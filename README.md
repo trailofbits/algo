@@ -39,31 +39,30 @@ To install the dependencies on OS X or Linux:
 
 ```
 sudo easy_install pip
-sudo pip install ansible dopy==0.3.5
-sudo pip install boto
+sudo pip install ansible dopy==0.3.5 boto
 ```
 
-There are two available cloud providers:  
+There are three available installation targets:  
 * DigitalOcean
 * Amazon EC2
+* Local servers
 
-Open the file `config.cfg` in your favorite text editor. Specify users in the `users` list.
+Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
 
 Start the deploy and follow the instructions:
 
 ```
-./run
+./algo
 ```
 
-When the process is done, you can find `.mobileconfig` files and certificates in the `configs` directory. Send the `.mobileconfig` profile to users with Apple devices. Note that profile installation is supported over AirDrop. Do not send the mobileconfig file over plaintext since it contains the keys to access the VPN. For those using other clients, like Windows or Android, send the X.509 certificates for the server and their user.
-
+When the process is done, you can find `.mobileconfig` files and certificates in the `configs` directory. Send the `.mobileconfig` profile to users with Apple devices. Note that profile installation is supported over AirDrop. Do not send the mobileconfig file over plaintext (e.g., e-mail) since it contains the keys to access the VPN. For those using other clients, like Windows or Android, securely send them the X.509 certificates for the server and their user.
 
 ### User Management
 
 If you want to add or delete users, update the `users` list in `config.cfg` and run the command: 
 
 ```
-./run users
+./algo update-users
 ```
 
 
