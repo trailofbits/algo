@@ -27,7 +27,7 @@ user_management () {
 }
 
 case "$1" in
-  users)  user_management   ;;
+  update-users)  user_management   ;;
   *)      algo_provisioning ;;
 esac 
 
