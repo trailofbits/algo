@@ -136,9 +136,5 @@
   
 - name: Fetch server CA certificate
   fetch: src=/{{ easyrsa_dir }}/easyrsa3/pki/ca.crt dest=configs/{{ server_name }}_ca.crt flat=yes
-  
-- name: Add server to the inventory file
-  local_action: lineinfile dest=inventory_users line="{{ inventory_hostname }}" insertafter='\[user-management\]\n' state=present
-  become: false    
   notify:
     - congrats
