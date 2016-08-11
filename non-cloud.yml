@@ -9,7 +9,7 @@
       private: no
       
     - name: "server_user"
-      prompt: "What user should we use?:\n"
+      prompt: "What user should we use to login on the server?:\n"
       default: "root"
       private: no
       

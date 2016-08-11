@@ -35,11 +35,12 @@ Algo (short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhere
 
 ### Initial Deployment
 
-To install the dependencies on OS X:
+To install the dependencies on OS X or Linux:
 
 ```
 sudo easy_install pip
 sudo pip install ansible dopy==0.3.5
+sudo pip install boto
 ```
 
 There are two available cloud providers:  
@@ -59,17 +60,12 @@ When the process is done, you can find `.mobileconfig` files and certificates in
 
 ### User Management
 
-When the deploy proccess is done a new server will be placed in the local inventory file `inventory_users`. If you want to add or delete users, update the `users` list in `config.cfg` and run the playbook `users.yml`. This command will update users on any servers in the file `inventory_users`.
+If you want to add or delete users, update the `users` list in `config.cfg` and run the command: 
 
 ```
-ansible-playbook users.yml --user=root -i inventory_users
+./run users
 ```
 
-Note: For EC2 users, Algo does NOT use EC2 dynamic inventory for user management. Please continue to use users.yml playbook as described below. This may be subject to change in the future.
-
-```
-ansible-playbook users.yml --user=ubuntu -i inventory_users
-```
 
 ## FAQ
 

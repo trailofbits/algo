@@ -1,21 +1,35 @@
 #!/bin/sh
 
-echo -n "
-What provider would you like to use?
-  1. DigitalOcean
-  2. Amazon EC2
-  3. Local installation (non-cloud or a server already deployed)
-  
-Enter the number of your desired provider  
-: "
+algo_provisioning () {
+  echo -n "
+  What provider would you like to use?
+    1. DigitalOcean
+    2. Amazon EC2
+    3. Local installation (non-cloud or a server already deployed)
 
-read N
+  Enter the number of your desired provider  
+  : "
 
-case "$N" in
-  1) CLOUD="digitalocean"  ;;
-  2) CLOUD="ec2" ;;
-  3) CLOUD="non-cloud" ;;
-  *) exit 1 ;;
-esac  
+  read N
 
-ansible-playbook deploy.yml -e "provider=${CLOUD}"
+  case "$N" in
+    1) CLOUD="digitalocean"  ;;
+    2) CLOUD="ec2" ;;
+    3) CLOUD="non-cloud" ;;
+    *) exit 1 ;;
+  esac  
+
+  ansible-playbook deploy.yml -e "provider=${CLOUD}"
+}
+
+user_management () {
+  ansible-playbook users.yml
+}
+
+case "$1" in
+  users)  user_management   ;;
+  *)      algo_provisioning ;;
+esac 
+
+
+
