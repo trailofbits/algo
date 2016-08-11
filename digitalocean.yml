@@ -108,7 +108,6 @@
 
     - name: Wait for SSH to become available
       local_action: "wait_for port=22 host={{ inventory_hostname }} timeout=320"
-      become: false
     
   roles:
     - common
