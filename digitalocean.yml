@@ -114,7 +114,8 @@
     - common
     - security
     - features
-    - vpn   
+    - vpn
+    - { role: logging, when: auditd_enabled is defined and auditd_enabled == 'Y' }     
     
   handlers:
     - name: reload eth0

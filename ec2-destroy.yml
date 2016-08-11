@@ -1,0 +1,14 @@
+- name: Create a sandbox instance
+  hosts: localhost
+  gather_facts: False
+  vars_files:
+    - config.cfg 
+    
+  tasks:  
+    - name: Terminate instances that were previously launched
+      ec2:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: eu-central-1
+        state: 'absent'
+        instance_ids: "{{ id }}"

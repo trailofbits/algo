@@ -29,6 +29,7 @@ Algo (short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhere
 * ansible >= 2.1.0
 * python >= 2.6
 * [dopy=0.3.5](https://github.com/Wiredcraft/dopy)
+* [boto](https://github.com/boto/boto)
 * SHell or BASH
 * libselinux-python (for RedHat based distros)
 

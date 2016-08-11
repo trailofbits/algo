@@ -1,5 +1,3 @@
-
-
 # Using a two-pass approach for checking directories in order to support symlinks.
 - name: Find directories for minimizing access
   stat:
@@ -32,28 +30,6 @@
     executable: /bin/bash
   register: privileged_programs  
   
-# auditd
-
-- name: Auditd installed
-  apt: name=auditd state=latest
-  when: auditd_enabled is defined and auditd_enabled == 'Y'
-
-- name: Auditd rules configured
-  template: src=audit.rules.j2 dest=/etc/audit/audit.rules
-  notify:
-    - restart auditd
-  when: auditd_enabled is defined and auditd_enabled == 'Y'    
-    
-- name: Auditd configured
-  template: src=auditd.conf.j2 dest=/etc/audit/auditd.conf
-  notify:
-    - restart auditd
-  when: auditd_enabled is defined and auditd_enabled == 'Y'
-  
-- name: Enable services
-  service: name=auditd enabled=yes
-  when: auditd_enabled is defined and auditd_enabled == 'Y'  
-    
 # Rsyslog
     
 - name: Rsyslog configured

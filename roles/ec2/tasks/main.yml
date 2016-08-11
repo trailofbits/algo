@@ -1,0 +1,78 @@
+- name: Locate official Ubuntu 16.04 AMI for region.
+  ec2_ami_find:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    name: "ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"
+    owner:  099720109477
+    sort: name
+    sort_order: descending
+    sort_end: 1
+    region: "{{ regions[region] }}"
+  register: ami_search
+
+- set_fact:
+    ami_image: "{{ ami_search.results[0].ami_id }}"
+
+- name: Add ssh public key.
+  ec2_key:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    name: VPNKEY
+    region: "{{ regions[region] }}"
+    key_material: "{{ item }}"
+  with_file: "{{ ssh_public_key }}"
+  register: keypair
+
+- name: Configure EC2 security group
+  ec2_group:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    name: "{{ security_group }}"
+    description: Security group for VPN servers
+    region: "{{ regions[region] }}"
+    rules:
+      - proto: udp
+        from_port: 4500
+        to_port: 4500
+        cidr_ip: 0.0.0.0/0
+      - proto: udp
+        from_port: 500
+        to_port: 500
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+    rules_egress:
+      - proto: all
+        from_port: 0-65535
+        to_port: 0-65535
+        cidr_ip: 0.0.0.0/0
+
+- name: Launch instance
+  ec2:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    keypair: "VPNKEY"
+    group: "{{ security_group }}"
+    instance_type: "{{ instance_type }}"
+    image: "{{ ami_image }}"
+    wait: true
+    region: "{{ regions[region] }}"
+    instance_tags:
+      name: "{{ aws_server_name }}"
+  register: ec2
+
+- name: Add new instance to host group
+  add_host: 
+    hostname: "{{ item.public_ip }}"
+    groupname: vpn-host
+    ansible_ssh_user: ubuntu
+    ansible_python_interpreter: "/usr/bin/python2.7"
+    dns_enabled: "{{ dns_enabled }}"
+    auditd_enabled: " {{ auditd_enabled }}"
+  with_items: "{{ ec2.instances }}"
+
+- name: Wait for SSH to come up
+  wait_for: host={{ item.public_dns_name }} port=22 delay=60 timeout=320 state=started
+  with_items: "{{ ec2.instances }}"

@@ -1,0 +1,16 @@
+- name: Auditd installed
+  apt: name=auditd state=latest
+
+- name: Auditd rules configured
+  template: src=audit.rules.j2 dest=/etc/audit/audit.rules
+  notify:
+    - restart auditd
+    
+- name: Auditd configured
+  template: src=auditd.conf.j2 dest=/etc/audit/auditd.conf
+  notify:
+    - restart auditd
+  
+- name: Enable services
+  service: name=auditd enabled=yes
+ 
