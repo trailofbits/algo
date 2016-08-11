@@ -1,0 +1,59 @@
+- hosts: localhost
+  gather_facts: False
+  vars_files:
+    - config.cfg  
+  vars_prompt:
+      
+    - name: "server_ip"
+      prompt: "Enter IP address of your server:\n"
+      private: no
+      
+    - name: "server_user"
+      prompt: "What user should we use?:\n"
+      default: "root"
+      private: no
+      
+    - name: "dns_enabled"
+      prompt: "Do you want to use a local DNS resolver to block ads while surfing? (Y or N):\n"
+      default: "Y"
+      private: no
+      
+    - name: "auditd_enabled"
+      prompt: "Do you want to use auditd ? (Y or N):\n"
+      default: "Y"
+      private: no      
+      
+  tasks:
+    - name: Add the server to the vpn-host group
+      add_host: 
+        hostname: "{{ server_ip }}"
+        groupname: vpn-host
+        ansible_ssh_user: "{{ server_user }}"
+        ansible_python_interpreter: "/usr/bin/python2.7"
+        dns_enabled: "{{ dns_enabled }}"
+        auditd_enabled: " {{ auditd_enabled }}"
+
+    - name: Wait for SSH to become available
+      local_action: "wait_for port=22 host={{ server_ip }} timeout=320"
+      become: false
+      
+- name: Post-provisioning tasks
+  hosts: vpn-host
+  gather_facts: false
+  become: true
+  vars_files:
+    - config.cfg
+    
+  pre_tasks:
+    - name: Install prerequisites
+      raw: sudo apt-get update -qq && sudo apt-get install -qq -y python2.7
+    - name: Configure defaults
+      raw: sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1  
+    
+  roles:
+    - common
+    - security
+    - features
+    - vpn
+    - { role: logging, when: auditd_enabled is defined and auditd_enabled == 'Y' }    
+
