@@ -34,7 +34,17 @@
          10.  eu-west-1           EU (Ireland)  
          11.  sa-east-1           South America (São Paulo)
       default: "1"
-      private: no      
+      private: no
+
+    - name: "dns_enabled"
+      prompt: "Do you want to use a local DNS resolver to block ads while surfing? (Y or N):\n"
+      default: "Y"
+      private: no
+      
+    - name: "auditd_enabled"
+      prompt: "Do you want to use auditd ? (Y or N):\n"
+      default: "Y"
+      private: no
 
   tasks:
 
@@ -107,14 +117,35 @@
       register: ec2
 
     - name: Add new instance to host group
-      add_host: hostname={{ item.public_ip }} groupname=vpn-host remote_user=ubuntu ansible_python_interpreter="/usr/bin/python2.7"
+      add_host: 
+        hostname: "{{ item.public_ip }}"
+        groupname: vpn-host
+        remote_user: ubuntu
+        ansible_python_interpreter: "/usr/bin/python2.7"
+        dns_enabled: "{{ dns_enabled }}"
+        auditd_enabled: " {{ auditd_enabled }}"
       with_items: "{{ ec2.instances }}"
 
     - name: Wait for SSH to come up
       wait_for: host={{ item.public_dns_name }} port=22 delay=60 timeout=320 state=started
       with_items: "{{ ec2.instances }}"
-
-    - name: accept new ssh fingerprints
-      shell: ssh-keyscan -H {{ item.public_ip }} >> ~/.ssh/known_hosts
-      with_items: "{{ ec2.instances }}"
+      
+- name: Post-provisioning tasks
+  hosts: vpn-host
+  gather_facts: false
+  become: true
+  vars_files:
+    - config.cfg
+    
+  pre_tasks:
+    - name: Install prerequisites
+      raw: sudo apt-get update -qq && sudo apt-get install -qq -y python2.7
+    - name: Configure defaults
+      raw: sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1  
+    
+  roles:
+    - common
+    - security
+    - features
+    - vpn      
 

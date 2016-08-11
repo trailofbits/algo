@@ -1,0 +1,70 @@
+---
+
+- name: Gather Facts
+  setup:
+  
+- name: Install software updates
+  apt: update_cache=yes upgrade=dist
+
+- name: Check if reboot is required
+  shell: >
+    if [[ $(readlink -f /vmlinuz) != /boot/vmlinuz-$(uname -r) ]]; then echo "required"; else echo "no"; fi
+  args:
+    executable: /bin/bash      
+  register: reboot_required
+  
+- name: Reboot
+  shell: sleep 2 && shutdown -r now "Ansible updates triggered"
+  async: 1
+  poll: 0
+  when: reboot_required is defined and reboot_required.stdout == 'required'
+  ignore_errors: true
+
+- name: Wait for shutdown
+  local_action: wait_for host={{ inventory_hostname }} port=22 state=stopped timeout=120
+  when: reboot_required is defined and reboot_required.stdout == 'required'
+  become: false    
+
+- name: Wait until SSH becomes ready...
+  local_action: wait_for host={{ inventory_hostname }} port=22 state=started timeout=120
+  when: reboot_required is defined and reboot_required.stdout == 'required'
+  become: false    
+  
+# SSH fixes
+    
+- name: SSH config
+  lineinfile: dest="{{ item.file }}" regexp="{{ item.regexp }}" line="{{ item.line }}" state=present
+  with_items:
+    - { regexp: '^PasswordAuthentication.*', line: 'PasswordAuthentication no', file: '/etc/ssh/sshd_config'  }
+    - { regexp: '^PermitRootLogin.*', line: 'PermitRootLogin without-password', file: '/etc/ssh/sshd_config' }
+    - { regexp: '^UseDNS.*', line: 'UseDNS no', file: '/etc/ssh/sshd_config' }
+    - { regexp: '^Ciphers', line: 'Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com', file: '/etc/ssh/sshd_config' } 
+    - { regexp: '^MACs', line: 'MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com', file: '/etc/ssh/sshd_config' }
+    - { regexp: '^KexAlgorithms', line: 'KexAlgorithms curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384', file: '/etc/ssh/sshd_config' }
+  notify:
+    - restart ssh      
+    
+- name: Disable MOTD on login and SSHD
+  replace: dest="{{ item.file }}" regexp="{{ item.regexp }}" replace="{{ item.line }}"
+  with_items:      
+    - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/login' }
+    - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/sshd' }
+
+- name: Install tools
+  apt: name="{{ item }}" state=latest
+  with_items:
+    - git
+    - screen
+    - apparmor-utils
+    - uuid-runtime
+    - coreutils
+    - rsyslog
+    - sendmail
+    - unattended-upgrades
+    - iptables-persistent
+    
+- name: Configure unattended-upgrades
+  template: src=50unattended-upgrades.j2 dest=/etc/apt/apt.conf.d/50unattended-upgrades owner=root group=root mode=644
+
+- name: Periodic upgrades configured
+  template: src=10periodic.j2 dest=/etc/apt/apt.conf.d/10periodic owner=root group=root mode=644
