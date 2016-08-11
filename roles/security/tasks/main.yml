@@ -1,0 +1,124 @@
+
+
+# Using a two-pass approach for checking directories in order to support symlinks.
+- name: Find directories for minimizing access
+  stat:
+    path: "{{ item }}"
+  register: minimize_access_directories
+  with_items:
+    - '/usr/local/sbin'
+    - '/usr/local/bin'
+    - '/usr/sbin'
+    - '/usr/bin'
+    - '/sbin'
+    - '/bin'
+
+- name: Minimize access
+  file: path='{{ item.stat.path }}' mode='go-w' recurse=yes
+  when: item.stat.isdir
+  with_items: "{{ minimize_access_directories.results }}"
+  no_log: True 
+
+- name: Change shadow ownership to root and mode to 0600
+  file: dest='/etc/shadow' owner=root group=root mode=0600
+
+- name: change su-binary to only be accessible to user and group root
+  file: dest='/bin/su' owner=root group=root mode=0750
+  
+- name: Collect Use of privileged commands
+  shell: > 
+    /usr/bin/find {/usr/local/sbin,/usr/local/bin,/sbin,/bin,/usr/sbin,/usr/bin} -xdev \( -perm -4000 -o -perm -2000 \) -type f | awk '{print "-a always,exit -F path=" $1 " -F perm=x -F auid>=500 -F auid!=4294967295 -k privileged" }'
+  args:
+    executable: /bin/bash
+  register: privileged_programs  
+  
+# auditd
+
+- name: Auditd installed
+  apt: name=auditd state=latest
+  when: auditd_enabled is defined and auditd_enabled == 'Y'
+
+- name: Auditd rules configured
+  template: src=audit.rules.j2 dest=/etc/audit/audit.rules
+  notify:
+    - restart auditd
+  when: auditd_enabled is defined and auditd_enabled == 'Y'    
+    
+- name: Auditd configured
+  template: src=auditd.conf.j2 dest=/etc/audit/auditd.conf
+  notify:
+    - restart auditd
+  when: auditd_enabled is defined and auditd_enabled == 'Y'
+  
+- name: Enable services
+  service: name=auditd enabled=yes
+  when: auditd_enabled is defined and auditd_enabled == 'Y'  
+    
+# Rsyslog
+    
+- name: Rsyslog configured
+  template: src=rsyslog.conf.j2 dest=/etc/rsyslog.conf
+  notify:
+    - restart rsyslog 
+
+- name: Rsyslog CIS configured
+  template: src=CIS.conf.j2 dest=/etc/rsyslog.d/CIS.conf owner=root group=root mode=0644
+  notify:
+    - restart rsyslog   
+    
+- name: Enable services
+  service: name=rsyslog enabled=yes
+
+# Core dumps
+  
+- name: Restrict core dumps (with PAM)
+  lineinfile: dest=/etc/security/limits.conf line="* hard core 0" state=present
+
+- name: Restrict core dumps (with sysctl)
+  sysctl: name=fs.suid_dumpable value=0 ignoreerrors=yes sysctl_set=yes reload=yes state=present
+
+# Kernel fixes
+
+- name: Disable Source Routed Packet Acceptance
+  sysctl: name="{{item}}" value=0 ignoreerrors=yes sysctl_set=yes reload=yes state=present
+  with_items:
+    - net.ipv4.conf.all.accept_source_route
+    - net.ipv4.conf.default.accept_source_route
+  notify:
+    - flush routing cache
+    
+- name: Disable ICMP Redirect Acceptance
+  sysctl: name="{{item}}" value=0 ignoreerrors=yes sysctl_set=yes reload=yes state=present
+  with_items:
+    - net.ipv4.conf.all.accept_redirects
+    - net.ipv4.conf.default.accept_redirects  
+    
+- name: Disable Secure ICMP Redirect Acceptance
+  sysctl: name="{{item}}" value=0 ignoreerrors=yes sysctl_set=yes reload=yes state=present
+  with_items:
+    - net.ipv4.conf.all.secure_redirects
+    - net.ipv4.conf.default.secure_redirects
+  notify:
+    - flush routing cache
+  
+- name: Enable Bad Error Message Protection
+  sysctl: name=net.ipv4.icmp_ignore_bogus_error_responses value=1 ignoreerrors=yes sysctl_set=yes reload=yes state=present
+  notify:
+    - flush routing cache
+  
+- name: Enable RFC-recommended Source Route Validation
+  sysctl: name="{{item}}" value=1 ignoreerrors=yes sysctl_set=yes reload=yes state=present
+  with_items:
+    - net.ipv4.conf.all.rp_filter
+    - net.ipv4.conf.default.rp_filter
+  notify:
+    - flush routing cache
+  
+- name: Enable packet forwarding for IPv4
+  sysctl: name=net.ipv4.ip_forward value=1
+  
+- name: Enable packet forwarding for IPv6
+  sysctl: name=net.ipv6.conf.all.forwarding value=1    
+
+- name: Do not send ICMP redirects (we are not a router)
+  sysctl: name=net.ipv4.conf.all.send_redirects value=0

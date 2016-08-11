@@ -1,0 +1,17 @@
+- name: restart privoxy
+  service: name=privoxy state=restarted
+  
+- name: restart dnsmasq
+  service: name=dnsmasq state=restarted      
+  
+- name: restart apparmor
+  service: name=apparmor state=restarted
+  
+- name: restart apache2
+  service: name=apache2 state=restarted       
+  
+- name: save iptables
+  command: service netfilter-persistent save
+  
+- name: restart loopback
+  shell: ifdown lo:100 && ifup lo:100  

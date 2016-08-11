@@ -1,8 +1,4 @@
 ---
 
 - include: "{{ provider }}.yml"
-- include: common.yml
-- include: security.yml
-- include: features.yml
-- include: vpn.yml
 

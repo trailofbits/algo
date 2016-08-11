@@ -1,0 +1,20 @@
+- name: restart strongswan
+  service: name=strongswan state=restarted
+
+- name: restart apparmor
+  service: name=apparmor state=restarted
+  
+- name: save iptables
+  command: service netfilter-persistent save      
+  
+- name: congrats
+  debug:
+    msg:
+      - "#----------------------------------------------------------------------#"
+      - "#                          Congratulations!                            #"
+      - "#                     Your Algo server is running.                     #"
+      - "#    Config files and certificates are in the ./configs/ directory.    #"
+      - "#          Go to https://www.dnsleaktest.com/ after connecting         #"
+      - "#        and ensure that all your traffic passes through the VPN.      #"
+      - "#          Local DNS resolver and Proxy IP address: 172.16.0.1         #"
+      - "#----------------------------------------------------------------------#"

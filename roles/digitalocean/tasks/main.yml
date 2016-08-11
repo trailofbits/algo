@@ -1,0 +1,39 @@
+- name: Set the DigitalOcean Access Token fact
+  set_fact:
+    do_token: "{{ do_access_token | default( lookup('env', 'DIGITALOCEAN_API_KEY') ) }}"
+
+- name: "Getting your SSH key ID on Digital Ocean..."
+  digital_ocean:
+    state: present
+    command: ssh
+    name: "{{ do_ssh_name }}"
+    api_token: "{{ do_access_token }}"
+  register: do_ssh_key
+
+- name: "Creating a droplet..."
+  digital_ocean:
+    state: present
+    command: droplet
+    name: "{{ do_server_name }}"
+    region_id: "{{ regions[do_region] }}"
+    size_id: "512mb"
+    image_id: "ubuntu-16-04-x64"
+    ssh_key_ids: "{{ do_ssh_key.ssh_key.id }}"
+    unique_name: yes
+    api_token: "{{ do_access_token }}"
+  register: do
+
+- name: Add the droplet to an inventory group
+  add_host:
+    name: "{{ do.droplet.ip_address }}"
+    groups: vpn-host
+    ansible_ssh_user: root
+    ansible_python_interpreter: "/usr/bin/python2.7"
+    do_access_token: "{{ do_access_token }}"
+    do_droplet_id: "{{ do.droplet.id }}"
+    dns_enabled: "{{ dns_enabled }}"
+    auditd_enabled: " {{ auditd_enabled }}"
+
+- name: Wait for SSH to become available
+  local_action: "wait_for port=22 host={{ do.droplet.ip_address }} timeout=320"
+
