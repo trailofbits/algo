@@ -42,6 +42,13 @@ sudo easy_install pip
 sudo pip install ansible dopy==0.3.5 boto
 ```
 
+To install the dependencies for installing on an existing Ubuntu 16.04 system:
+
+```
+sudo apt-get install software-properties-common && sudo apt-add-repository ppa:ansible/ansible
+sudo apt-get update && sudo apt-get install ansible
+```
+
 There are three available installation targets:  
 * DigitalOcean
 * Amazon EC2
