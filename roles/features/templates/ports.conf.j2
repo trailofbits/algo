@@ -1,0 +1,13 @@
+# If you just change the port or add more ports here, you will likely also
+# have to change the VirtualHost statement in
+# /etc/apache2/sites-enabled/000-default.conf
+
+Listen 172.16.0.1:8080
+
+<IfModule ssl_module>
+	Listen 172.16.0.1:443
+</IfModule>
+
+<IfModule mod_gnutls.c>
+	Listen 172.16.0.1:443
+</IfModule>
