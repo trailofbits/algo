@@ -5,17 +5,19 @@ algo_provisioning () {
   What provider would you like to use?
     1. DigitalOcean
     2. Amazon EC2
-    3. Local installation (non-cloud or a server already deployed)
+    3. Google-cloud
+    0. Local installation (non-cloud or a server already deployed)
 
-  Enter the number of your desired provider  
-  : "
+Enter the number of your desired provider  
+: "
 
   read N
 
   case "$N" in
     1) CLOUD="digitalocean"  ;;
     2) CLOUD="ec2" ;;
-    3) CLOUD="non-cloud" ;;
+    3) CLOUD="google_cloud" ;;    
+    0) CLOUD="non-cloud" ;;
     *) exit 1 ;;
   esac  
 

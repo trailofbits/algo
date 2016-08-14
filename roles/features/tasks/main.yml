@@ -93,7 +93,7 @@
   - restart dnsmasq
   
 - name: Adblock script created
-  copy: src=templates/adblock.sh dest=/opt/adblock.sh owner=root group=root mode=755
+  template: src=adblock.sh dest=/opt/adblock.sh owner=root group=root mode=755
   when: dns_enabled is defined and dns_enabled == "Y"
   
 - name: Adblock script added to cron
