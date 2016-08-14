@@ -1,5 +1,13 @@
 #!/bin/sh
 
+p12_export_password () {
+  echo -n "
+Enter the password for p12 certificates (default: vpn):
+: "
+  read -s P  
+  P=${P:-vpn}
+}
+
 algo_provisioning () {
   echo -n "
   What provider would you like to use?
@@ -20,12 +28,15 @@ Enter the number of your desired provider
     0) CLOUD="non-cloud" ;;
     *) exit 1 ;;
   esac  
-
-  ansible-playbook "${CLOUD}.yml"
+  
+  p12_export_password
+  
+  ansible-playbook "${CLOUD}.yml" -e easyrsa_p12_export_password=${P}
 }
 
 user_management () {
-  ansible-playbook users.yml
+  p12_export_password
+  ansible-playbook users.yml -e easyrsa_p12_export_password=${P}
 }
 
 case "$1" in
