@@ -43,7 +43,7 @@ To install the dependencies on OS X or Linux:
 
 ```
 sudo easy_install pip
-sudo pip install ansible dopy==0.3.5 boto
+sudo pip install ansible dopy==0.3.5 boto apache-libcloud six
 ```
 
 To install the dependencies for installing on an existing Ubuntu 16.04 system:
@@ -56,6 +56,7 @@ sudo apt-get update && sudo apt-get install ansible
 There are three available installation targets:  
 * DigitalOcean
 * Amazon EC2
+* Google Cloud Engine
 * Local servers
 
 Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
