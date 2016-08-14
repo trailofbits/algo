@@ -9,8 +9,8 @@ algo_provisioning () {
     4. Google-cloud
     0. Local installation (non-cloud or a server already deployed)
 
-  Enter the number of your desired provider  
-  : "
+Enter the number of your desired provider  
+: "
 
   read N
 
