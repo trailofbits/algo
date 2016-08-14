@@ -5,6 +5,8 @@ algo_provisioning () {
   What provider would you like to use?
     1. DigitalOcean
     2. Amazon EC2
+    3. Azure
+    4. Google-cloud
     0. Local installation (non-cloud or a server already deployed)
 
   Enter the number of your desired provider  
