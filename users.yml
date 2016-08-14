@@ -82,7 +82,7 @@
     register:  PayloadContentCA
    
   - name: Build the mobileconfigs
-    template: src=mobileconfig.j2 dest=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item.0 }}.mobileconfig mode=0600
+    template: src=roles/vpn/templates/mobileconfig.j2 dest=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item.0 }}.mobileconfig mode=0600
     with_together:
       - "{{ users }}"
       - "{{ PayloadContent.results }}"

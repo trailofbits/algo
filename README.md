@@ -33,6 +33,7 @@ Algo (short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhere
 * [azure >= 0.7.1](https://github.com/Azure/azure-sdk-for-python)
 * [apache-libcloud](https://github.com/apache/libcloud)
 * [libcloud](https://curl.haxx.se/docs/caextract.html) (for Mac OS)
+* [six](https://github.com/JioCloud/python-six) 
 * SHell or BASH
 * libselinux-python (for RedHat based distros)
 
