@@ -21,7 +21,7 @@ Enter the number of your desired provider
     *) exit 1 ;;
   esac  
 
-  ansible-playbook deploy.yml -e "provider=${CLOUD}"
+  ansible-playbook "${CLOUD}.yml"
 }
 
 user_management () {
