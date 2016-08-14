@@ -1,13 +1,29 @@
-- name: Launch instances
+- set_fact:
+    credentials_file_lookup: "{{ lookup('file', '{{ credentials_file }}') }}"
+    ssh_public_key_lookup: "{{ lookup('file', '{{ ssh_public_key }}') }}"
+
+- name: "Creating a droplet..."
   gce:
-    instance_names: dev
-    zone: us-central1-b
+    instance_names: "{{ server_name }}"
+    zone: "{{ zones[zone] }}"
     machine_type: n1-standard-1
-    image: debian-7-wheezy
-    service_account_email: e601809@gmail.com
-    credentials_file: '/home/jack/ownCloud/Clouds/Google/My First Project-72e386228f5e.json'
-    project_id: algo-833@storied-bearing-140310.iam.gserviceaccount.com
+    image: ubuntu-1604
+    service_account_email: "{{ credentials_file_lookup.client_email  }}"
+    credentials_file: "{{ credentials_file  }}"
+    project_id: "{{ credentials_file_lookup.project_id  }}" 
+    metadata: '{"sshKeys":"root:{{ ssh_public_key_lookup }}"}'
   register: google_vm
   
-- debug: msg="{{ google_vm }}"  
+- name: Add the droplet to an inventory group
+  add_host:
+    name: "{{ google_vm.instance_data[0].public_ip}}"
+    groups: vpn-host
+    ansible_ssh_user: ubuntu
+    ansible_python_interpreter: "/usr/bin/python2.7"
+    dns_enabled: "{{ dns_enabled }}"
+    auditd_enabled: " {{ auditd_enabled }}"
+
+- name: Wait for SSH to become available
+  local_action: "wait_for port=22 host={{ google_vm.instance_data[0].public_ip }} timeout=320"
+   
 
