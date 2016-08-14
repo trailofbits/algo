@@ -1,0 +1,13 @@
+- name: Launch instances
+  gce:
+    instance_names: dev
+    zone: us-central1-b
+    machine_type: n1-standard-1
+    image: debian-7-wheezy
+    service_account_email: e601809@gmail.com
+    credentials_file: '/home/jack/ownCloud/Clouds/Google/My First Project-72e386228f5e.json'
+    project_id: algo-833@storied-bearing-140310.iam.gserviceaccount.com
+  register: google_vm
+  
+- debug: msg="{{ google_vm }}"  
+
