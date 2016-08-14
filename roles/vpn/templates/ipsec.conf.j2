@@ -1,0 +1,34 @@
+config setup
+    uniqueids = never # allow multiple connections per user
+    charondebug="ike 2, knl 2, cfg 2, net 2, esp 2, dmn 2,  mgr 2"
+
+conn %default
+    dpdaction=clear
+    dpddelay=35s
+    dpdtimeout=300s
+    rekey=no
+    keyexchange=ikev2
+    ike=aes128gcm16-sha2_256-prfsha256-ecp256!
+    esp=aes128gcm16-sha2_256-ecp256!
+    compress=yes
+    fragmentation=yes
+    
+    left=%any
+    leftauth=pubkey
+    leftid={{ ansible_ssh_host }}
+    leftcert={{ ansible_ssh_host }}.crt
+    leftsendcert=always
+    leftsubnet=0.0.0.0/0,::/0
+
+    right=%any
+    rightauth=pubkey
+    rightsourceip={{ vpn_network }},{{ vpn_network_ipv6 }}
+{% if service_dns is defined and service_dns == "N" %}
+    rightdns={% for host in dns_servers %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}
+{% else %}    
+    rightdns=172.16.0.1
+{% endif %}    
+    
+
+conn ikev2-pubkey
+    auto=add    
