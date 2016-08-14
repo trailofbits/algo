@@ -10,7 +10,7 @@
     image: ubuntu-1604
     service_account_email: "{{ credentials_file_lookup.client_email  }}"
     credentials_file: "{{ credentials_file  }}"
-    project_id: "{{ credentials_file_lookup.project_id  }}" 
+    project_id: "{{ credentials_file_lookup.project_id  }}"
     metadata: '{"sshKeys":"root:{{ ssh_public_key_lookup }}"}'
   register: google_vm
   
@@ -22,8 +22,22 @@
     ansible_python_interpreter: "/usr/bin/python2.7"
     dns_enabled: "{{ dns_enabled }}"
     auditd_enabled: " {{ auditd_enabled }}"
+    
+- name: Firewall configured
+  local_action:
+    module: gce_net
+    name: "{{ google_vm.instance_data[0].network }}"
+    fwname: "algo-ikev2"
+    allowed: "udp:500,4500;tcp:22"
+    state: "present"
+    src_range: 0.0.0.0/0
+    service_account_email: "{{ credentials_file_lookup.client_email  }}"
+    credentials_file: "{{ credentials_file  }}"
+    project_id: "{{ credentials_file_lookup.project_id  }}"
 
 - name: Wait for SSH to become available
   local_action: "wait_for port=22 host={{ google_vm.instance_data[0].public_ip }} timeout=320"
+  
+  
    
 
