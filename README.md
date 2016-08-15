@@ -62,6 +62,15 @@ Start the deploy and follow the instructions:
 
 When the process is done, you can find `.mobileconfig` files and certificates in the `configs` directory. Send the `.mobileconfig` profile to users with Apple devices. Note that profile installation is supported over AirDrop. Do not send the mobileconfig file over plaintext (e.g., e-mail) since it contains the keys to access the VPN. For those using other clients, like Windows or Android, securely send them the X.509 certificates for the server and their user.
 
+
+### Initial Deployment on Local Servers
+When installing algo on an existing system such as Ubuntu 16.04, you only need to install ansible using the commands below:
+
+ ```
+ sudo apt-get install software-properties-common && sudo apt-add-repository ppa:ansible/ansible
+ sudo apt-get update && sudo apt-get install ansible
+ ```
+
 ### User Management
 
 If you want to add or delete users, update the `users` list in `config.cfg` and run the command: 
