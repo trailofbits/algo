@@ -67,7 +67,7 @@
       private: no
 
   roles:
-    - ec2
+    - cloud-ec2
 
 - name: Post-provisioning tasks
   hosts: vpn-host
