@@ -3,21 +3,21 @@
 - hosts: localhost
   gather_facts: False
   vars_files:
-    - config.cfg  
+    - config.cfg
   vars_prompt:
-      
+
     - name: "server_ip"
       prompt: "\nEnter IP address of your server:\n"
       private: no
-      
+
     - name: "server_user"
       prompt: "What user should we use to login on the server?:\n"
       default: "root"
       private: no
-      
+
   tasks:
     - name: Add the server to the vpn-host group
-      add_host: 
+      add_host:
         hostname: "{{ server_ip }}"
         groupname: vpn-host
         ansible_ssh_user: "{{ server_user }}"
@@ -25,15 +25,15 @@
 
     - name: Wait for SSH to become available
       local_action: "wait_for port=22 host={{ server_ip }} timeout=320"
-      become: false      
+      become: false
 
 - name: User management
   hosts: vpn-host
   gather_facts: false
   become: true
   vars_files:
-    - config.cfg    
-  
+    - config.cfg
+
   tasks:
   - name: Build the client's pair
     shell: >
@@ -52,14 +52,14 @@
       chdir: '{{ easyrsa_dir }}/easyrsa3/'
       creates: '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_p12_initialized'
     with_items: "{{ users }}"
-    
+
   - name: Get active users
     shell: >
       grep ^V pki/index.txt | grep -v "{{ server_name }}" | awk '{print $5}' | sed 's/\/CN=//g'
     args:
       chdir: '{{ easyrsa_dir }}/easyrsa3/'
     register: valid_certs
-      
+
   - name: Revoke non-existing users
     shell: >
       ipsec pki --signcrl --cacert {{ easyrsa_dir }}/easyrsa3//pki/ca.crt --cakey {{ easyrsa_dir }}/easyrsa3/pki/private/ca.key --reason superseded --cert {{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt > /etc/ipsec.d/crls/{{ item }}.der &&    
@@ -69,7 +69,7 @@
       chdir: '{{ easyrsa_dir }}/easyrsa3/'
     when: item not in users
     with_items: "{{ valid_certs.stdout_lines }}"
-    
+
   - name: Register p12 PayloadContent
     shell: >
      cat /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 | base64
@@ -80,14 +80,14 @@
     shell: >
      cat /{{ easyrsa_dir }}/easyrsa3/pki/ca.crt | base64
     register:  PayloadContentCA
-   
+
   - name: Build the mobileconfigs
     template: src=roles/vpn/templates/mobileconfig.j2 dest=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item.0 }}.mobileconfig mode=0600
     with_together:
       - "{{ users }}"
       - "{{ PayloadContent.results }}"
-    no_log: True  
-      
+    no_log: True
+
   - name: Fetch users P12
     fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 dest=configs/{{ server_name }}_{{ item }}.p12 flat=yes
     with_items: "{{ users }}"
@@ -98,4 +98,3 @@
     
   - name: Fetch server CA certificate
     fetch: src=/{{ easyrsa_dir }}/easyrsa3/pki/ca.crt dest=configs/{{ server_name }}_ca.crt flat=yes
-    

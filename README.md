@@ -7,11 +7,12 @@ Algo (short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhere
 ## Features
 
 * Supports only IKEv2
-* Supports only AES GCM, SHA2 HMAC, and P-256 DH
+* Supports only a single cipher suite w/ AES GCM, SHA2 HMAC, and P-256 DH
 * Generates mobileconfig profiles to auto-configure Apple devices
 * Provides helper scripts to add and remove users
 * Blocks ads with a local DNS resolver and HTTP proxy (optional)
 * Based on current versions of Ubuntu and StrongSwan
+* Installs to DigitalOcean, Amazon EC2, Google Cloud Engine, or your own server
 
 ## Anti-features
 
@@ -45,12 +46,6 @@ To install the dependencies on OS X or Linux:
 sudo easy_install pip
 sudo pip install ansible dopy==0.3.5 boto apache-libcloud six
 ```
-
-There are four available installation targets:  
-* DigitalOcean
-* Amazon EC2
-* Google Cloud Engine
-* Local servers
 
 Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
 

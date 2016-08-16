@@ -1,19 +1,19 @@
 - name: Gather Facts
   setup:
-  
+
 - name: Loopback for services configured
   template: src=10-loopback-services.cfg.j2 dest=/etc/network/interfaces.d/10-loopback-services.cfg
   notify:
     - restart loopback
-  
+
 - name: Loopback included into the network config
   lineinfile: dest=/etc/network/interfaces line='source /etc/network/interfaces.d/10-loopback-services.cfg' state=present
   notify:
     - restart loopback
-    
+
 - meta: flush_handlers
-  
-# Privoxy 
+
+# Privoxy
 
 - name: Privoxy installed
   apt: name=privoxy state=latest
@@ -22,36 +22,36 @@
   template: src=privoxy_config.j2 dest=/etc/privoxy/config
   notify:
     - restart privoxy
-    
+
 - name: Privoxy profile for apparmor configured
-  template: src=usr.sbin.privoxy.j2 dest=/etc/apparmor.d/usr.sbin.privoxy owner=root group=root mode=600
+  template: src=usr.sbin.privoxy.j2 dest=/etc/apparmor.d/usr.sbin.privoxy owner=root group=root mode=0600
   notify:
   - restart privoxy
-  
+
 - name: Enforce the privoxy AppArmor policy
-  shell: aa-enforce usr.sbin.privoxy     
-    
+  shell: aa-enforce usr.sbin.privoxy
+
 - name: Privoxy enabled and started
   service: name=privoxy state=started enabled=yes
-  
+
 # PageSpeed
 
 - name: Apache installed
   apt: name=apache2 state=latest
-  
+
 - name: PageSpeed installed for x86_64
   apt: deb=https://dl-ssl.google.com/dl/linux/direct/mod-pagespeed-stable_current_amd64.deb
   when: ansible_architecture == "x86_64"
-  
+
 - name: PageSpeed installed for i386
   apt: deb=https://dl-ssl.google.com/dl/linux/direct/mod-pagespeed-stable_current_i386.deb
-  when: ansible_architecture != "x86_64"    
-  
+  when: ansible_architecture != "x86_64"
+
 - name: PageSpeed configured
   template: src=pagespeed.conf.j2 dest=/etc/apache2/mods-available/pagespeed.conf
   notify:
-  - restart apache2 
-  
+  - restart apache2
+
 - name: Modules enabled
   apache2_module: state=present name="{{ item }}"
   with_items:
@@ -63,39 +63,39 @@
     - rewrite
   notify:
   - restart apache2
-  
+
 - name: VirtualHost configured for the PageSpeed module
   template: src=000-default.conf.j2 dest=/etc/apache2/sites-enabled/000-default.conf
   notify:
-  - restart apache2      
-  
+  - restart apache2
+
 - name: Apache ports configured
   template: src=ports.conf.j2 dest=/etc/apache2/ports.conf
   notify:
-  - restart apache2  
-  
-# DNS 
+  - restart apache2
+
+# DNS
 
 - name: Dnsmasq installed
-  apt: name=dnsmasq state=latest    
-  
+  apt: name=dnsmasq state=latest
+
 - name: Dnsmasq profile for apparmor configured
-  template: src=usr.sbin.dnsmasq.j2 dest=/etc/apparmor.d/usr.sbin.dnsmasq owner=root group=root mode=600
+  template: src=usr.sbin.dnsmasq.j2 dest=/etc/apparmor.d/usr.sbin.dnsmasq owner=root group=root mode=0600
   notify:
   - restart dnsmasq
-  
+
 - name: Enforce the dnsmasq AppArmor policy
   shell: aa-enforce usr.sbin.dnsmasq
-      
+
 - name: Dnsmasq configured
   template: src=dnsmasq.conf.j2 dest=/etc/dnsmasq.conf
   notify:
   - restart dnsmasq
-  
+
 - name: Adblock script created
-  template: src=adblock.sh dest=/opt/adblock.sh owner=root group=root mode=755
+  template: src=adblock.sh dest=/opt/adblock.sh owner=root group=root mode=0755
   when: dns_enabled is defined and dns_enabled == "Y"
-  
+
 - name: Adblock script added to cron
   cron: name="Adblock hosts update" minute="10" hour="2" job="/opt/adblock.sh"
   when: dns_enabled is defined and dns_enabled == "Y"
@@ -104,9 +104,9 @@
   shell: >
     /opt/adblock.sh
   when: dns_enabled is defined and dns_enabled == "Y"
-    
+
 - name: Forward all DNS requests to the local resolver
-  iptables: 
+  iptables:
     table: nat
     chain: PREROUTING
     protocol: udp
@@ -117,9 +117,9 @@
   notify:
   - save iptables
   when: dns_enabled is defined and dns_enabled == "Y"
-  
+
 - name: Forward all DNS requests to the local resolver
-  iptables: 
+  iptables:
     table: nat
     chain: PREROUTING
     protocol: udp
@@ -130,12 +130,12 @@
     ip_version: ipv6
   notify:
   - save iptables
-  when: dns_enabled is defined and dns_enabled == "Y"    
-  
+  when: dns_enabled is defined and dns_enabled == "Y"
+
 - name: Dnsmasq enabled and started
   service: name=dnsmasq state=started enabled=yes
   when: dns_enabled is defined and dns_enabled == "Y"
-  
+
 - name: Dnsmasq disabled and stopped
   service: name=dnsmasq state=stopped enabled=no
-  when: dns_enabled is defined and dns_enabled != "Y"      
+  when: dns_enabled is defined and dns_enabled != "Y"
