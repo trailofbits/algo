@@ -41,22 +41,22 @@
       Enter the number of your desired region:
     default: "7"
     private: no
-    
+
   - name: "do_server_name"
     prompt: "Name the vpn server:\n"
     default: "algo.local"
     private: no
-    
+
   - name: "dns_enabled"
     prompt: "Do you want to use a local DNS resolver to block ads while surfing? (Y or N):\n"
     default: "Y"
     private: no
-    
+
   - name: "auditd_enabled"
     prompt: "Do you want to use auditd ? (Y or N):\n"
     default: "Y"
-    private: no    
-    
+    private: no
+
   roles:
     - digitalocean
 
@@ -66,13 +66,13 @@
   become: true
   vars_files:
     - config.cfg
-    
+
   pre_tasks:
     - name: Install prerequisites
       raw: sudo apt-get update -qq && sudo apt-get install -qq -y python2.7
     - name: Configure defaults
-      raw: sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1    
-  
+      raw: sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
+
     - name: Enable IPv6 on the droplet
       uri:
         url: "https://api.digitalocean.com/v2/droplets/{{ do_droplet_id }}/actions"
@@ -83,7 +83,7 @@
         status_code: 201
         HEADER_Authorization: "Bearer {{ do_access_token }}"
         HEADER_Content-Type: "application/json"
-        
+
     - name: Get Droplet networks
       uri:
         url: "https://api.digitalocean.com/v2/droplets/{{ do_droplet_id }}"
@@ -97,30 +97,26 @@
       template: src=roles/digitalocean/templates/20-ipv6.cfg.j2 dest=/etc/network/interfaces.d/20-ipv6.cfg owner=root group=root mode=0644
       with_items: "{{ droplet_info.json.droplet.networks.v6 }}"
       notify:
-        - reload eth0  
-      
+        - reload eth0
+
     - name: IPv6 included into the network config
       lineinfile: dest=/etc/network/interfaces line='source /etc/network/interfaces.d/20-ipv6.cfg' state=present
       notify:
         - reload eth0
-        
+
     - meta: flush_handlers
 
     - name: Wait for SSH to become available
       local_action: "wait_for port=22 host={{ inventory_hostname }} timeout=320"
       become: false
-    
+
   roles:
     - common
     - security
     - features
     - vpn
-    - { role: logging, when: auditd_enabled is defined and auditd_enabled == 'Y' }     
-    
+    - { role: logging, when: auditd_enabled is defined and auditd_enabled == 'Y' }
+
   handlers:
     - name: reload eth0
-      shell: sh -c 'ifdown eth0; ip addr flush dev eth0; ifup eth0'      
-    
-
-
-
+      shell: sh -c 'ifdown eth0; ip addr flush dev eth0; ifup eth0'
