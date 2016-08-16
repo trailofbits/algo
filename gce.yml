@@ -63,7 +63,7 @@
     private: no
 
   roles:
-    - google_cloud
+    - cloud-gce
 
 - name: Post-provisioning tasks
   hosts: vpn-host

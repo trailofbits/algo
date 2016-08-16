@@ -71,7 +71,7 @@
     #private: no
 
   roles:
-    - azure
+    - cloud-azure
 
 - name: Post-provisioning tasks
   hosts: vpn-host

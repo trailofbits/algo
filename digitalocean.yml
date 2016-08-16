@@ -58,7 +58,7 @@
     private: no
 
   roles:
-    - digitalocean
+    - cloud-digitalocean
 
 - name: Post-provisioning tasks
   hosts: vpn-host
