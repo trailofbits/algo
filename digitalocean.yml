@@ -94,7 +94,7 @@
       register: droplet_info
 
     - name: IPv6 configured
-      template: src=roles/digitalocean/templates/20-ipv6.cfg.j2 dest=/etc/network/interfaces.d/20-ipv6.cfg owner=root group=root mode=0644
+      template: src=roles/cloud-digitalocean/templates/20-ipv6.cfg.j2 dest=/etc/network/interfaces.d/20-ipv6.cfg owner=root group=root mode=0644
       with_items: "{{ droplet_info.json.droplet.networks.v6 }}"
       notify:
         - reload eth0
