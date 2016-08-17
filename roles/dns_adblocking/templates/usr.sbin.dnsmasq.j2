@@ -1,0 +1,68 @@
+# ------------------------------------------------------------------
+#
+#    Copyright (C) 2009 John Dong <jdong@ubuntu.com>
+#    Copyright (C) 2010 Canonical Ltd.
+#
+#    This program is free software; you can redistribute it and/or
+#    modify it under the terms of version 2 of the GNU General Public
+#    License published by the Free Software Foundation.
+#
+# ------------------------------------------------------------------
+
+@{TFTP_DIR}=/var/tftp /srv/tftpboot
+
+#include <tunables/global>
+
+/usr/sbin/dnsmasq {
+  #include <abstractions/base>
+  #include <abstractions/dbus>
+  #include <abstractions/nameservice>
+
+  capability net_bind_service,
+  capability setgid,
+  capability setuid,
+  capability dac_override,
+  capability net_admin,         # for DHCP server
+  capability net_raw,           # for DHCP server ping checks
+  network inet raw,
+
+  signal (receive) peer=/usr/sbin/libvirtd,
+  ptrace (readby) peer=/usr/sbin/libvirtd,
+
+  /etc/dnsmasq.conf r,
+  /etc/dnsmasq.d/ r,
+  /etc/dnsmasq.d/* r,
+  /etc/ethers r,
+  /etc/NetworkManager/dnsmasq.d/ r,
+  /etc/NetworkManager/dnsmasq.d/* r,
+  /etc/block.hosts r,
+
+  /usr/sbin/dnsmasq mr,
+
+  /{,var/}run/*dnsmasq*.pid w,
+  /{,var/}run/dnsmasq-forwarders.conf r,
+  /{,var/}run/dnsmasq/ r,
+  /{,var/}run/dnsmasq/* rw,
+
+  /var/lib/misc/dnsmasq.leases rw, # Required only for DHCP server usage
+
+  # for the read-only TFTP server
+  @{TFTP_DIR}/ r,
+  @{TFTP_DIR}/** r,
+
+  # libvirt config, lease and hosts files for dnsmasq
+  /var/lib/libvirt/dnsmasq/            r,
+  /var/lib/libvirt/dnsmasq/*        r,
+  /var/lib/libvirt/dnsmasq/*.leases rw,
+
+  # libvirt pid files for dnsmasq
+  /{,var/}run/libvirt/network/      r,
+  /{,var/}run/libvirt/network/*.pid rw,
+
+  # NetworkManager integration
+  /{,var/}run/nm-dns-dnsmasq.conf r,
+  /{,var/}run/sendsigs.omit.d/*dnsmasq.pid w,
+  /{,var/}run/NetworkManager/dnsmasq.conf r,
+  /{,var/}run/NetworkManager/dnsmasq.pid w,
+
+}
