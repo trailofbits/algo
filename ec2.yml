@@ -53,7 +53,7 @@
       private: no
 
     - name: "ssh_public_key"
-      prompt: "Enter the local path to your SSH public key (ex: ~/.ssh/id_rsa.pub):\n"
+      prompt: "Enter the local path to your SSH public key:\n"
       default: "~/.ssh/id_rsa.pub"
       private: no
 
