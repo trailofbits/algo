@@ -14,6 +14,7 @@
       "9":  "sfo2"
       "10": "sgp1"
       "11": "tor1"
+      "12": "blr1"
 
   vars_prompt:
   - name: "do_access_token"
@@ -38,6 +39,7 @@
         9.  San Francisco    (Datacenter 2)
         10. Singapore
         11. Toronto
+        12. Bangalore
       Enter the number of your desired region:
     default: "7"
     private: no
