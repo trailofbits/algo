@@ -68,3 +68,13 @@
 
 - name: Periodic upgrades configured
   template: src=10periodic.j2 dest=/etc/apt/apt.conf.d/10periodic owner=root group=root mode=0644
+
+- name: Loopback for services configured
+  template: src=10-loopback-services.cfg.j2 dest=/etc/network/interfaces.d/10-loopback-services.cfg
+  notify:
+    - restart loopback
+
+- name: Loopback included into the network config
+  lineinfile: dest=/etc/network/interfaces line='source /etc/network/interfaces.d/10-loopback-services.cfg' state=present
+  notify:
+    - restart loopback  
