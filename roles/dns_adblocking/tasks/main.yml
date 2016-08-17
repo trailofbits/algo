@@ -1,0 +1,59 @@
+- name: Gather Facts
+  setup:
+
+- name: Dnsmasq installed
+  apt: name=dnsmasq state=latest
+
+- name: Dnsmasq profile for apparmor configured
+  template: src=usr.sbin.dnsmasq.j2 dest=/etc/apparmor.d/usr.sbin.dnsmasq owner=root group=root mode=0600
+  notify:
+  - restart dnsmasq
+
+- name: Enforce the dnsmasq AppArmor policy
+  shell: aa-enforce usr.sbin.dnsmasq
+
+- name: Dnsmasq configured
+  template: src=dnsmasq.conf.j2 dest=/etc/dnsmasq.conf
+  notify:
+  - restart dnsmasq
+
+- name: Adblock script created
+  template: src=adblock.sh dest=/opt/adblock.sh owner=root group=root mode=0755
+
+- name: Adblock script added to cron
+  cron: name="Adblock hosts update" minute="10" hour="2" job="/opt/adblock.sh"
+
+- name: Update adblock hosts
+  shell: >
+    /opt/adblock.sh
+
+- name: Forward all DNS requests to the local resolver
+  iptables:
+    table: nat
+    chain: PREROUTING
+    protocol: udp
+    destination_port: 53
+    source: "{{ vpn_network }}"
+    jump: DNAT
+    to_destination: 172.16.0.1:53
+  notify:
+  - save iptables
+
+- name: Forward all DNS requests to the local resolver
+  iptables:
+    table: nat
+    chain: PREROUTING
+    protocol: udp
+    destination_port: 53
+    source: "{{ vpn_network_ipv6 }}"
+    jump: DNAT
+    to_destination: fcaa::1:53
+    ip_version: ipv6
+  notify:
+  - save iptables
+
+- name: Dnsmasq enabled and started
+  service: name=dnsmasq state=started enabled=yes
+  
+- name: Dnsmasq disabled and stopped
+  service: name=dnsmasq state=stopped enabled=no
