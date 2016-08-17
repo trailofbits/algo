@@ -6,3 +6,6 @@
 
 - name: flush routing cache
   shell: echo 1 > /proc/sys/net/ipv4/route/flush
+
+- name: restart loopback
+  shell: ifdown lo:100 && ifup lo:100
