@@ -1,3 +1,6 @@
+- name: Gather Facts
+  setup:
+  
 - name: Install StrongSwan
   apt: name=strongswan state=latest update_cache=yes
 

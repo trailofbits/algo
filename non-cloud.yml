@@ -29,7 +29,7 @@
       default: "vpn"
       private: yes
       
-    - name: "IP_subject_alt_name"
+    - name: "IP_subject"
       prompt: "Enter public IP address of your server: (IMPORTANT! This IP is using to verify the certificate)\n"
       private: no
 
@@ -43,7 +43,7 @@
         dns_enabled: "{{ dns_enabled }}"
         auditd_enabled: " {{ auditd_enabled }}"
         easyrsa_p12_export_password: "{{ easyrsa_p12_export_password }}"
-        IP_subject_alt_name: "{{ IP_subject_alt_name }}"
+        IP_subject: "{{ IP_subject }}"
 
 - name: Post-provisioning tasks
   hosts: vpn-host
@@ -57,6 +57,8 @@
       raw: sudo apt-get update -qq && sudo apt-get install -qq -y python2.7
     - name: Configure defaults
       raw: sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
+    - set_fact:
+        IP_subject_alt_name: "{{ IP_subject }}"
 
   roles:
     #- common
