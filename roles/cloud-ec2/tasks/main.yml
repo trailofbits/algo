@@ -71,6 +71,7 @@
     ansible_python_interpreter: "/usr/bin/python2.7"
     dns_enabled: "{{ dns_enabled }}"
     auditd_enabled: " {{ auditd_enabled }}"
+    easyrsa_p12_export_password: "{{ easyrsa_p12_export_password }}"
   with_items: "{{ ec2.instances }}"
 
 - name: Wait for SSH to become available

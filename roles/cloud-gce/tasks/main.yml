@@ -22,6 +22,7 @@
     ansible_python_interpreter: "/usr/bin/python2.7"
     dns_enabled: "{{ dns_enabled }}"
     auditd_enabled: " {{ auditd_enabled }}"
+    easyrsa_p12_export_password: "{{ easyrsa_p12_export_password }}"
 
 - name: Firewall configured
   local_action:

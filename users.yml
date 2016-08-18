@@ -14,6 +14,11 @@
       prompt: "What user should we use to login on the server?:\n"
       default: "root"
       private: no
+      
+    - name: "easyrsa_p12_export_password"
+      prompt: "Enter the password for p12 certificates:\n"
+      default: "vpn"
+      private: yes      
 
   tasks:
     - name: Add the server to the vpn-host group
@@ -22,6 +27,7 @@
         groupname: vpn-host
         ansible_ssh_user: "{{ server_user }}"
         ansible_python_interpreter: "/usr/bin/python2.7"
+        easyrsa_p12_export_password: "{{ easyrsa_p12_export_password }}"
 
     - name: Wait for SSH to become available
       local_action: "wait_for port=22 host={{ server_ip }} timeout=320"
