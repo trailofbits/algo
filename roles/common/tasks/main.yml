@@ -77,4 +77,6 @@
 - name: Loopback included into the network config
   lineinfile: dest=/etc/network/interfaces line='source /etc/network/interfaces.d/10-loopback-services.cfg' state=present
   notify:
-    - restart loopback  
+    - restart loopback
+    
+- meta: flush_handlers    
