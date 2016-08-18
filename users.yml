@@ -7,18 +7,23 @@
   vars_prompt:
 
     - name: "server_ip"
-      prompt: "\nEnter IP address of your server:\n"
+      prompt: "Enter IP address of your server: (use localhost for local installation)\n"
+      default: localhost
       private: no
 
     - name: "server_user"
-      prompt: "What user should we use to login on the server?:\n"
+      prompt: "What user should we use to login on the server? (ignore if you're deploying to localhost):\n"
       default: "root"
       private: no
       
     - name: "easyrsa_p12_export_password"
       prompt: "Enter the password for p12 certificates:\n"
       default: "vpn"
-      private: yes      
+      private: yes
+
+    - name: "IP_subject"
+      prompt: "Enter public IP address of your server: (IMPORTANT! This IP is used to verify the certificate)\n"
+      private: no
 
   tasks:
     - name: Add the server to the vpn-host group
@@ -28,6 +33,7 @@
         ansible_ssh_user: "{{ server_user }}"
         ansible_python_interpreter: "/usr/bin/python2.7"
         easyrsa_p12_export_password: "{{ easyrsa_p12_export_password }}"
+        IP_subject: "{{ IP_subject }}"
 
     - name: Wait for SSH to become available
       local_action: "wait_for port=22 host={{ server_ip }} timeout=320"
@@ -39,6 +45,10 @@
   become: true
   vars_files:
     - config.cfg
+    
+  pre_tasks:
+    - set_fact:
+        IP_subject_alt_name: "{{ IP_subject }}"
 
   tasks:
   - name: Build the client's pair
