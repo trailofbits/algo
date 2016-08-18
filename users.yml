@@ -61,7 +61,7 @@
 
   - name: Get active users
     shell: >
-      grep ^V pki/index.txt | grep -v "{{ server_name }}" | awk '{print $5}' | sed 's/\/CN=//g'
+      grep ^V pki/index.txt | grep -v "{{ IP_subject_alt_name }}" | awk '{print $5}' | sed 's/\/CN=//g'
     args:
       chdir: '{{ easyrsa_dir }}/easyrsa3/'
     register: valid_certs
@@ -95,12 +95,12 @@
     no_log: True
 
   - name: Fetch users P12
-    fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 dest=configs/{{ server_name }}_{{ item }}.p12 flat=yes
+    fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 dest=configs/{{ IP_subject_alt_name }}_{{ item }}.p12 flat=yes
     with_items: "{{ users }}"
 
   - name: Fetch users mobileconfig
-    fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.mobileconfig dest=configs/{{ server_name }}_{{ item }}.mobileconfig flat=yes
+    fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.mobileconfig dest=configs/{{ IP_subject_alt_name }}_{{ item }}.mobileconfig flat=yes
     with_items: "{{ users }}"
     
   - name: Fetch server CA certificate
-    fetch: src=/{{ easyrsa_dir }}/easyrsa3/pki/ca.crt dest=configs/{{ server_name }}_ca.crt flat=yes
+    fetch: src=/{{ easyrsa_dir }}/easyrsa3/pki/ca.crt dest=configs/{{ IP_subject_alt_name }}_ca.crt flat=yes
