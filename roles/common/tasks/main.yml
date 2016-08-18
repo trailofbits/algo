@@ -30,19 +30,10 @@
   when: reboot_required is defined and reboot_required.stdout == 'required'
   become: false
 
-# SSH fixes
-
 - name: SSH config
-  lineinfile: dest="{{ item.file }}" regexp="{{ item.regexp }}" line="{{ item.line }}" state=present
-  with_items:
-    - { regexp: '^PasswordAuthentication.*', line: 'PasswordAuthentication no', file: '/etc/ssh/sshd_config'  }
-    - { regexp: '^PermitRootLogin.*', line: 'PermitRootLogin without-password', file: '/etc/ssh/sshd_config' }
-    - { regexp: '^UseDNS.*', line: 'UseDNS no', file: '/etc/ssh/sshd_config' }
-    - { regexp: '^Ciphers', line: 'Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com', file: '/etc/ssh/sshd_config' }
-    - { regexp: '^MACs', line: 'MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com', file: '/etc/ssh/sshd_config' }
-    - { regexp: '^KexAlgorithms', line: 'KexAlgorithms curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256', file: '/etc/ssh/sshd_config' }
+  template: src=sshd_config.j2 dest=/etc/ssh/sshd_config owner=root group=root mode=0644
   notify:
-    - restart ssh
+    - restart ssh    
 
 - name: Disable MOTD on login and SSHD
   replace: dest="{{ item.file }}" regexp="{{ item.regexp }}" replace="{{ item.line }}"
