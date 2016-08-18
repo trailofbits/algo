@@ -10,7 +10,7 @@
       private: no
 
     - name: "server_user"
-      prompt: "What user should we use to login on the server? (Ignore if you're deploying to localhost):\n"
+      prompt: "What user should we use to login on the server? (ignore if you're deploying to localhost):\n"
       default: "root"
       private: no
 
@@ -30,7 +30,7 @@
       private: yes
       
     - name: "IP_subject"
-      prompt: "Enter public IP address of your server: (IMPORTANT! This IP is using to verify the certificate)\n"
+      prompt: "Enter public IP address of your server: (IMPORTANT! This IP is used to verify the certificate)\n"
       private: no
 
   tasks:
