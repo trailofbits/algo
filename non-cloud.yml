@@ -6,6 +6,7 @@
 
     - name: "server_ip"
       prompt: "Enter IP address of your server: (use localhost for local installation)\n"
+      default: localhost
       private: no
 
     - name: "server_user"
@@ -26,7 +27,11 @@
     - name: "easyrsa_p12_export_password"
       prompt: "Enter the password for p12 certificates:\n"
       default: "vpn"
-      private: yes         
+      private: yes
+      
+    - name: "IP_subject_alt_name"
+      prompt: "Enter public IP address of your server: (IMPORTANT! This IP is using to verify the certificate)\n"
+      private: no
 
   tasks:
     - name: Add the server to the vpn-host group
@@ -38,6 +43,7 @@
         dns_enabled: "{{ dns_enabled }}"
         auditd_enabled: " {{ auditd_enabled }}"
         easyrsa_p12_export_password: "{{ easyrsa_p12_export_password }}"
+        IP_subject_alt_name: "{{ IP_subject_alt_name }}"
 
 - name: Post-provisioning tasks
   hosts: vpn-host
@@ -53,9 +59,9 @@
       raw: sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
 
   roles:
-    - common
-    - security
-    - proxy
+    #- common
+    #- security
+    #- proxy
     - vpn
     - { role: dns_adblocking , when: dns_enabled is defined and dns_enabled == "Y" }
     - { role: logging, when: auditd_enabled is defined and auditd_enabled == 'Y' }

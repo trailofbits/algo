@@ -15,8 +15,8 @@ conn %default
     
     left=%any
     leftauth=pubkey
-    leftid={{ ansible_ssh_host }}
-    leftcert={{ ansible_ssh_host }}.crt
+    leftid={{ IP_subject_alt_name }}
+    leftcert={{ IP_subject_alt_name }}.crt
     leftsendcert=always
     leftsubnet=0.0.0.0/0,::/0
 
