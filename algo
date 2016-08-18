@@ -7,7 +7,7 @@ algo_provisioning () {
     1. DigitalOcean
     2. Amazon EC2
     3. Google Compute Engine
-    4. Remote installation (install to existing Ubuntu server)
+    4. Install to existing Ubuntu server
 
 Enter the number of your desired provider  
 : "
