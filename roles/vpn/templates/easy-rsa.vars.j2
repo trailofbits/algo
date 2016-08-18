@@ -183,7 +183,7 @@ set_var EASYRSA_SSL_CONF   "$EASYRSA/openssl-1.0.cnf"
 # This is best left alone. Interactively you will set this manually, and BATCH
 # callers are expected to set this themselves.
 
-set_var EASYRSA_REQ_CN     "{{ ansible_ssh_host }}"
+set_var EASYRSA_REQ_CN     "{{ IP_subject_alt_name }}"
 
 # Cryptographic digest to use.
 # Do not change this default unless you understand the security implications.
@@ -195,4 +195,4 @@ set_var EASYRSA_REQ_CN     "{{ ansible_ssh_host }}"
 # in batch mode without any user input, confirmation on dangerous operations,
 # or most output. Setting this to any non-blank string enables batch mode.
 
-set_var EASYRSA_BATCH      "{{ ansible_ssh_host }}"
+set_var EASYRSA_BATCH      "{{ IP_subject_alt_name }}"
