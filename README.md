@@ -38,7 +38,7 @@ Algo (short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhere
 * SHell or BASH
 * libselinux-python (for RedHat based distros)
 
-### Initial Deployment
+### Cloud Deployment
 
 To install the dependencies on OS X or Linux:
 
@@ -57,15 +57,14 @@ Start the deploy and follow the instructions:
 
 When the process is done, you can find `.mobileconfig` files and certificates in the `configs` directory. Send the `.mobileconfig` profile to users with Apple devices. Note that profile installation is supported over AirDrop. Do not send the mobileconfig file over plaintext (e.g., e-mail) since it contains the keys to access the VPN. For those using other clients, like Windows or Android, securely send them the X.509 certificates for the server and their user.  
 
-### Deploy Algo locally
+### Local Deployment
 
-In order to install algo on Ubuntu locally, you need to install ansible first.   
-Installing ansible via pip requires pulling in a lot of dependencies, including a full compiler suite.   
-It is easier to use apt, however, Ubuntu 16.04 only comes with ansible 2.0.0.2.   
-Therefore, to use apt you must use the ansible PPA and using a PPA requires installing `software-properties-common`
+It is possible to download Algo to your own Ubuntu server and run the scripts locally. You need to install ansible to run Algo on Ubuntu. Installing ansible via pip requires pulling in a lot of dependencies, including a full compiler suite. It is easier to use apt, however, Ubuntu 16.04 only comes with ansible 2.0.0.2. Therefore, to use apt you must use the ansible PPA and using a PPA requires installing `software-properties-common`. tl;dr:
 ```
 sudo apt-get install software-properties-common && sudo apt-add-repository ppa:ansible/ansible
 sudo apt-get update && sudo apt-get install ansible
+git clone git@github.com:trailofbits/algo.git
+cd algo && ./algo
 ```
 
 ### User Management
