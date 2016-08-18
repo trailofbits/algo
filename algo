@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 p12_export_password () {
   echo -n "
@@ -31,12 +31,29 @@ Enter the number of your desired provider
   
   p12_export_password
   
-  ansible-playbook "${CLOUD}.yml" -e easyrsa_p12_export_password=${P}
+  # Use a local connection for non-cloud installations
+  case "${CLOUD}" in
+    "non-cloud") ansible-playbook "${CLOUD}.yml" -e easyrsa_p12_export_password=${P} --connection=local ;;
+    *) ansible-playbook "${CLOUD}.yml" -e easyrsa_p12_export_password=${P} ;;
+  esac
 }
 
 user_management () {
   p12_export_password
-  ansible-playbook users.yml -e easyrsa_p12_export_password=${P}
+  # Use a local connection for non-cloud installations
+  echo -n "
+  What provider would you like to use?
+    1. Remote Server
+    2. Local Server
+
+: "
+
+  read N
+
+  case "$N" in
+    2) ansible-playbook users.yml -e easyrsa_p12_export_password=${P}  --connection=local ;;
+    *) ansible-playbook users.yml -e easyrsa_p12_export_password=${P} ;;
+  esac
 }
 
 case "$1" in
