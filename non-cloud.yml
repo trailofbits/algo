@@ -5,11 +5,11 @@
   vars_prompt:
 
     - name: "server_ip"
-      prompt: "Enter IP address of your server:\n"
+      prompt: "Enter IP address of your server: (use localhost for local installation)\n"
       private: no
 
     - name: "server_user"
-      prompt: "What user should we use to login on the server?:\n"
+      prompt: "What user should we use to login on the server? (Ignore if you're deploying to localhost):\n"
       default: "root"
       private: no
 
@@ -38,10 +38,6 @@
         dns_enabled: "{{ dns_enabled }}"
         auditd_enabled: " {{ auditd_enabled }}"
         easyrsa_p12_export_password: "{{ easyrsa_p12_export_password }}"
-
-    - name: Wait for SSH to become available
-      local_action: "wait_for port=22 host={{ server_ip }} timeout=320"
-      become: false
 
 - name: Post-provisioning tasks
   hosts: vpn-host
