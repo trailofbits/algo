@@ -70,7 +70,7 @@
 
 - name: Build the server pair
   shell: >
-    ./easyrsa --subject-alt-name='DNS:{{ server_name }},IP:{{ IP_subject_alt_name }}' build-server-full {{ IP_subject_alt_name }} nopass&&
+    ./easyrsa --subject-alt-name='DNS:{{ IP_subject_alt_name }},IP:{{ IP_subject_alt_name }}' build-server-full {{ IP_subject_alt_name }} nopass&&
     touch '{{ easyrsa_dir }}/easyrsa3/pki/server_initialized'
   args:
     chdir: '{{ easyrsa_dir }}/easyrsa3/'
