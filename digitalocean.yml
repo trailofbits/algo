@@ -58,6 +58,11 @@
     prompt: "Do you want to use auditd ? (Y or N):\n"
     default: "Y"
     private: no
+    
+  - name: "easyrsa_p12_export_password"
+    prompt: "Enter the password for p12 certificates:\n"
+    default: "vpn"
+    private: yes    
 
   roles:
     - cloud-digitalocean

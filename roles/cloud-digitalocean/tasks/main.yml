@@ -33,6 +33,7 @@
     do_droplet_id: "{{ do.droplet.id }}"
     dns_enabled: "{{ dns_enabled }}"
     auditd_enabled: " {{ auditd_enabled }}"
+    easyrsa_p12_export_password: "{{ easyrsa_p12_export_password }}"
 
 - name: Wait for SSH to become available
   local_action: "wait_for port=22 host={{ do.droplet.ip_address }} timeout=320"
