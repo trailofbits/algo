@@ -61,9 +61,9 @@
         IP_subject_alt_name: "{{ IP_subject }}"
 
   roles:
-    #- common
-    #- security
-    #- proxy
+    - common
+    - security
+    - proxy
     - vpn
     - { role: dns_adblocking , when: dns_enabled is defined and dns_enabled == "Y" }
     - { role: logging, when: auditd_enabled is defined and auditd_enabled == 'Y' }
