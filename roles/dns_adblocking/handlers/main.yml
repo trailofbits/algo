@@ -3,6 +3,3 @@
 
 - name: restart apparmor
   service: name=apparmor state=restarted
-
-- name: save iptables
-  command: service netfilter-persistent save
