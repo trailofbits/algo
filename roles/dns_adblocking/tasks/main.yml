@@ -27,33 +27,6 @@
   shell: >
     /opt/adblock.sh
 
-- name: Forward all DNS requests to the local resolver
-  iptables:
-    table: nat
-    chain: PREROUTING
-    protocol: udp
-    destination_port: 53
-    source: "{{ vpn_network }}"
-    jump: DNAT
-    to_destination: 172.16.0.1:53
-  notify:
-  - save iptables
-
-- name: Forward all DNS requests to the local resolver
-  iptables:
-    table: nat
-    chain: PREROUTING
-    protocol: udp
-    destination_port: 53
-    source: "{{ vpn_network_ipv6 }}"
-    jump: DNAT
-    to_destination: fcaa::1:53
-    ip_version: ipv6
-  notify:
-    - save iptables
-
 - name: Dnsmasq enabled and started
   service: name=dnsmasq state=started enabled=yes
-  
-- name: Dnsmasq disabled and stopped
-  service: name=dnsmasq state=stopped enabled=no
+
