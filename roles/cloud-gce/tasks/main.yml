@@ -23,6 +23,8 @@
     dns_enabled: "{{ dns_enabled }}"
     auditd_enabled: " {{ auditd_enabled }}"
     easyrsa_p12_export_password: "{{ easyrsa_p12_export_password }}"
+    cloud_provider: gce
+    ipv6_support: no
 
 - name: Firewall configured
   local_action:
