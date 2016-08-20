@@ -44,7 +44,7 @@ To install the dependencies on OS X or Linux:
 
 ```
 sudo easy_install pip
-sudo pip install ansible dopy==0.3.5 boto apache-libcloud six
+sudo pip install -r requirements.txt
 ```
 
 Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
