@@ -7,7 +7,7 @@ ENDPOINT_IP6="::"
 IPV6="Y"
 
 #Delete the old block.hosts to make room for the updates
-rm -f /etc/block.hosts
+rm -f /var/lib/dnsmasq/block.hosts
 
 echo 'Downloading hosts lists...'
 #Download and process the files needed to make the lists (enable/add more, if you want)
@@ -32,9 +32,9 @@ then
     #Filter the blacklist, supressing whitelist matches
     #  This is relatively slow =-(
     echo 'Filtering white list...'
-    egrep -v "^[[:space:]]*$" /etc/white.list | awk '/^[^#]/ {sub(/\r$/,"");print $1}' | grep -vf - /tmp/block.build.before > /etc/block.hosts
+    egrep -v "^[[:space:]]*$" /etc/white.list | awk '/^[^#]/ {sub(/\r$/,"");print $1}' | grep -vf - /tmp/block.build.before > /var/lib/dnsmasq/block.hosts
 else
-    cat /tmp/block.build.before > /etc/block.hosts
+    cat /tmp/block.build.before > /var/lib/dnsmasq/block.hosts
 fi
 
 if [ "$IPV6" = "Y" ]
@@ -42,7 +42,7 @@ then
     safe_pattern=$(printf '%s\n' "$ENDPOINT_IP4" | sed 's/[[\.*^$(){}?+|/]/\\&/g')
     safe_addition=$(printf '%s\n' "$ENDPOINT_IP6" | sed 's/[\&/]/\\&/g')
     echo 'Adding ipv6 support...'
-    sed -i -re "s/^(${safe_pattern}) (.*)$/\1 \2\n${safe_addition} \2/g" /etc/block.hosts
+    sed -i -re "s/^(${safe_pattern}) (.*)$/\1 \2\n${safe_addition} \2/g" /var/lib/dnsmasq/block.hosts
 fi
 
 service dnsmasq restart

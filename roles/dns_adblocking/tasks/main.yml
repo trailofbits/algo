@@ -8,6 +8,9 @@
   template: src=usr.sbin.dnsmasq.j2 dest=/etc/apparmor.d/usr.sbin.dnsmasq owner=root group=root mode=0600
   notify:
   - restart dnsmasq
+  
+- name: The dnsmasq directory created
+  file: dest=/var/lib/dnsmasq state=directory mode=755 owner=dnsmasq group=nogroup
 
 - name: Enforce the dnsmasq AppArmor policy
   shell: aa-enforce usr.sbin.dnsmasq
@@ -21,11 +24,18 @@
   template: src=adblock.sh dest=/opt/adblock.sh owner=root group=root mode=0755
 
 - name: Adblock script added to cron
-  cron: name="Adblock hosts update" minute="10" hour="2" job="/opt/adblock.sh"
+  cron: 
+    name: Adblock hosts update
+    minute: 10
+    hour: 2
+    job: /opt/adblock.sh
+    user: dnsmasq
 
 - name: Update adblock hosts
   shell: >
     /opt/adblock.sh
+  become: true
+  become_user: dnsmasq
 
 - name: Dnsmasq enabled and started
   service: name=dnsmasq state=started enabled=yes
