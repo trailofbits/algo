@@ -72,6 +72,8 @@
     dns_enabled: "{{ dns_enabled }}"
     auditd_enabled: " {{ auditd_enabled }}"
     easyrsa_p12_export_password: "{{ easyrsa_p12_export_password }}"
+    cloud_provider: ec2
+    ipv6_support: no
   with_items: "{{ ec2.instances }}"
 
 - name: Wait for SSH to become available

@@ -98,3 +98,20 @@
 
 - name: Do not send ICMP redirects (we are not a router)
   sysctl: name=net.ipv4.conf.all.send_redirects value=0
+
+- name: Drop SMB traffic
+  iptables:
+    table: filter
+    chain: FORWARD
+    protocol: tcp
+    source: 0.0.0.0/0
+    destination: 0.0.0.0/0
+    destination_port: "{{ item }}"
+    jump: DROP
+    action: insert
+  with_items:
+    - 137
+    - 139
+    - 445
+  notify:
+  - save iptables

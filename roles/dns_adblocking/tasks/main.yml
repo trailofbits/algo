@@ -50,7 +50,7 @@
     to_destination: fcaa::1:53
     ip_version: ipv6
   notify:
-  - save iptables
+    - save iptables
 
 - name: Dnsmasq enabled and started
   service: name=dnsmasq state=started enabled=yes
