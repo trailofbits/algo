@@ -50,9 +50,14 @@
     private: no
 
   - name: "dns_enabled"
-    prompt: "Do you want to use a local DNS resolver to block ads while surfing? (Y or N):\n"
+    prompt: "Do you want to install a local DNS resolver to block ads while surfing? (Y or N):\n"
     default: "Y"
     private: no
+    
+  - name: "proxy_enabled"
+    prompt: "Do you want to install a proxy to block ads and decrease traffic usage while surfing? (Y or N):\n"
+    default: "Y"
+    private: no    
 
   - name: "auditd_enabled"
     prompt: "Do you want to use auditd ? (Y or N):\n"
@@ -120,9 +125,9 @@
   roles:
     - common
     - security
-    - proxy
     - vpn
-    - { role: dns_adblocking , when: dns_enabled is defined and dns_enabled == "Y" }
+    - { role: proxy, when: proxy_enabled is defined and proxy_enabled == "Y" } 
+    - { role: dns_adblocking, when: dns_enabled is defined and dns_enabled == "Y" }
     - { role: logging, when: auditd_enabled is defined and auditd_enabled == 'Y' }
 
   handlers:
