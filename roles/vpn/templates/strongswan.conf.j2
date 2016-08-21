@@ -1,0 +1,16 @@
+# strongswan.conf - strongSwan configuration file
+#
+# Refer to the strongswan.conf(5) manpage for details
+#
+# Configuration changes should be made in the included files
+
+charon {
+	load_modular = yes
+	plugins {
+		include strongswan.d/charon/*.conf
+	}
+	user = strongswan
+	group = strongswan
+}
+
+include strongswan.d/*.conf

@@ -19,6 +19,17 @@
     - apparmor
     - strongswan
     - netfilter-persistent
+ 
+- name: Ensure that the strongswan group exist
+  group: name=strongswan state=present
+  
+- name: Ensure that the strongswan user exist
+  user: name=strongswan group=strongswan state=present
+  
+- name: Setup the strongswan.conf file from our template
+  template: src=strongswan.conf.j2 dest=/etc/strongswan.conf owner=root group=root mode=0644
+  notify:
+  - restart strongswan  
 
 - name: Setup the ipsec.conf file from our template
   template: src=ipsec.conf.j2 dest=/etc/ipsec.conf owner=root group=root mode=0644
@@ -26,7 +37,7 @@
   - restart strongswan
 
 - name: Setup the ipsec.secrets file
-  template: src=ipsec.secrets.j2 dest=/etc/ipsec.secrets owner=root group=root mode=0600
+  template: src=ipsec.secrets.j2 dest=/etc/ipsec.secrets owner=strongswan group=root mode=0600
   notify:
   - restart strongswan
 
@@ -87,17 +98,17 @@
   with_items: "{{ users }}"
 
 - name: Copy the CA cert to the strongswan directory
-  copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/ca.crt' dest=/etc/ipsec.d/cacerts/ca.crt owner=root group=root mode=0600
+  copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/ca.crt' dest=/etc/ipsec.d/cacerts/ca.crt owner=strongswan group=root mode=0600
   notify:
   - restart strongswan
 
 - name: Copy the server cert to the strongswan directory
-  copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/issued/{{ IP_subject_alt_name }}.crt' dest=/etc/ipsec.d/certs/{{ IP_subject_alt_name }}.crt owner=root group=root mode=0600
+  copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/issued/{{ IP_subject_alt_name }}.crt' dest=/etc/ipsec.d/certs/{{ IP_subject_alt_name }}.crt owner=strongswan group=root mode=0600
   notify:
   - restart strongswan
 
 - name: Copy the server key to the strongswan directory
-  copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/private/{{ IP_subject_alt_name }}.key' dest=/etc/ipsec.d/private/{{ IP_subject_alt_name }}.key owner=root group=root mode=0600
+  copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/private/{{ IP_subject_alt_name }}.key' dest=/etc/ipsec.d/private/{{ IP_subject_alt_name }}.key owner=strongswan group=root mode=0600
   notify:
   - restart strongswan
 
@@ -126,6 +137,11 @@
 - name: Fetch users mobileconfig
   fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.mobileconfig dest=configs/{{ IP_subject_alt_name }}_{{ item }}.mobileconfig flat=yes
   with_items: "{{ users }}"
+    
+- name: Restrict permissions
+  file: path="{{ item }}" state=directory mode=0700  owner=strongswan group=root
+  with_items:
+    - /etc/ipsec.d/private  
 
 - name: Fetch server CA certificate
   fetch: src=/{{ easyrsa_dir }}/easyrsa3/pki/ca.crt dest=configs/{{ IP_subject_alt_name }}_ca.crt flat=yes
