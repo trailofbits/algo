@@ -15,7 +15,12 @@
       private: no
 
     - name: "dns_enabled"
-      prompt: "Do you want to use a local DNS resolver to block ads while surfing? (Y or N):\n"
+      prompt: "Do you want to install a local DNS resolver to block ads while surfing? (Y or N):\n"
+      default: "Y"
+      private: no
+      
+    - name: "proxy_enabled"
+      prompt: "Do you want to install a proxy to block ads and decrease traffic usage while surfing? (Y or N):\n"
       default: "Y"
       private: no
 
@@ -41,6 +46,7 @@
         ansible_ssh_user: "{{ server_user }}"
         ansible_python_interpreter: "/usr/bin/python2.7"
         dns_enabled: "{{ dns_enabled }}"
+        proxy_enabled: "{{ proxy_enabled }}"
         auditd_enabled: " {{ auditd_enabled }}"
         easyrsa_p12_export_password: "{{ easyrsa_p12_export_password }}"
         IP_subject: "{{ IP_subject }}"
@@ -63,7 +69,7 @@
   roles:
     - common
     - security
-    - proxy
     - vpn
+    - { role: proxy, when: proxy_enabled is defined and proxy_enabled == "Y" }
     - { role: dns_adblocking , when: dns_enabled is defined and dns_enabled == "Y" }
     - { role: logging, when: auditd_enabled is defined and auditd_enabled == 'Y' }
