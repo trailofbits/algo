@@ -110,7 +110,7 @@ group=nogroup
 #except-interface=
 # Or which to listen on by address (remember to include 127.0.0.1 if
 # you use this.)
-listen-address=172.16.0.1,127.0.0.1,FCAA::1
+listen-address=127.0.0.1,FCAA::1,{{ local_service_ip }}
 # If you want dnsmasq to provide only DNS service on an interface,
 # configure it as shown above, and then use the following line to
 # disable DHCP and TFTP on it.

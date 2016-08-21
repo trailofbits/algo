@@ -13,5 +13,5 @@
       - "#    Config files and certificates are in the ./configs/ directory.    #"
       - "#          Go to https://www.dnsleaktest.com/ after connecting         #"
       - "#        and ensure that all your traffic passes through the VPN.      #"
-      - "#          Local DNS resolver and Proxy IP address: 172.16.0.1         #"
+      - "#          Local DNS resolver and Proxy IP address: {{ local_service_ip }}"
       - "#----------------------------------------------------------------------#"

@@ -781,7 +781,7 @@ logfile logfile
 #        listen-address [::1]:8118
 #
 #
-listen-address  172.16.0.1:8118
+listen-address  {{ local_service_ip }}:8118
 #
 #  4.2. toggle
 #  ============
@@ -1256,7 +1256,7 @@ enable-proxy-authentication-forwarding 0
 #        forward  /                        parent-proxy.example.org:8000
 #        forward  ipv6-server.example.org  .
 #        forward  <[2-3][0-9a-f][0-9a-f][0-9a-f]:*>   .
-forward   /      172.16.0.1:8080
+forward   /      {{ local_service_ip }}:8080
 forward   :443   .
 #
 #
