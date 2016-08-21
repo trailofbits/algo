@@ -90,12 +90,6 @@
   notify:
     - flush routing cache
 
-- name: Enable packet forwarding for IPv4
-  sysctl: name=net.ipv4.ip_forward value=1
-
-- name: Enable packet forwarding for IPv6
-  sysctl: name=net.ipv6.conf.all.forwarding value=1
-
 - name: Do not send ICMP redirects (we are not a router)
   sysctl: name=net.ipv4.conf.all.send_redirects value=0
 
