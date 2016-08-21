@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+set -e
 
 algo_provisioning () {
   echo -n "
@@ -12,7 +13,7 @@ algo_provisioning () {
 Enter the number of your desired provider  
 : "
 
-  read N
+  read -r N
 
   case "$N" in
     1) CLOUD="digitalocean" ;;
