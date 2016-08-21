@@ -1,9 +1,6 @@
 *nat
 :PREROUTING ACCEPT [0:0]
 :POSTROUTING ACCEPT [0:0]
-{% if dns_enabled is defined and dns_enabled == "Y" %}
--A PREROUTING -s {{ vpn_network_ipv6 }} -p udp -m udp --dport 53 -j DNAT --to-destination fcaa::1:53
-{% endif %}
 -A POSTROUTING -s {{ vpn_network_ipv6 }} -m policy --pol none --dir out -j MASQUERADE
 COMMIT
 *filter

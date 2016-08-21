@@ -23,10 +23,10 @@ conn %default
     right=%any
     rightauth=pubkey
     rightsourceip={{ vpn_network }},{{ vpn_network_ipv6 }}
-{% if service_dns is defined and service_dns == "N" %}
-    rightdns={% for host in dns_servers %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}
-{% else %}    
-    rightdns=172.16.0.1
+{% if service_dns is defined and service_dns == "Y" %}
+    rightdns={{ local_service_ip }}
+{% else %}
+    rightdns={% for host in dns_servers %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}    
 {% endif %}    
     
 
