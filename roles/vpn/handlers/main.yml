@@ -1,5 +1,5 @@
 - name: restart strongswan
-  service: name=strongswan state=restarted
+  systemd: name=strongswan state=restarted daemon_reload=yes
 
 - name: restart apparmor
   service: name=apparmor state=restarted
