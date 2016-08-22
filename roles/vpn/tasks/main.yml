@@ -11,7 +11,7 @@
     - /usr/lib/ipsec/lookip
     - /usr/lib/ipsec/stroke
   notify:
-  - restart apparmor
+    - restart apparmor
 
 - name: Enable services
   service: name={{ item }} enabled=yes
@@ -26,20 +26,28 @@
 - name: Ensure that the strongswan user exist
   user: name=strongswan group=strongswan state=present
   
+- name: Ensure that the strongswan service directory exist
+  file: path=/etc/systemd/system/strongswan.service.d/ state=directory mode=0755  owner=root group=root
+  
+- name: Setup the cgroup limitations for the ipsec daemon
+  template: src=100-CustomLimitations.conf.j2 dest=/etc/systemd/system/strongswan.service.d/100-CustomLimitations.conf
+  notify:
+    - restart strongswan
+  
 - name: Setup the strongswan.conf file from our template
   template: src=strongswan.conf.j2 dest=/etc/strongswan.conf owner=root group=root mode=0644
   notify:
-  - restart strongswan  
+    - restart strongswan  
 
 - name: Setup the ipsec.conf file from our template
   template: src=ipsec.conf.j2 dest=/etc/ipsec.conf owner=root group=root mode=0644
   notify:
-  - restart strongswan
+    - restart strongswan
 
 - name: Setup the ipsec.secrets file
   template: src=ipsec.secrets.j2 dest=/etc/ipsec.secrets owner=strongswan group=root mode=0600
   notify:
-  - restart strongswan
+    - restart strongswan
 
 - name: Fetch easy-rsa-ipsec from git
   git: repo=git://github.com/ValdikSS/easy-rsa-ipsec.git version=ed4de10d7ce0726357fb1bb4729f8eb440c06e2b dest="{{ easyrsa_dir }}"
@@ -100,17 +108,17 @@
 - name: Copy the CA cert to the strongswan directory
   copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/ca.crt' dest=/etc/ipsec.d/cacerts/ca.crt owner=strongswan group=root mode=0600
   notify:
-  - restart strongswan
+    - restart strongswan
 
 - name: Copy the server cert to the strongswan directory
   copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/issued/{{ IP_subject_alt_name }}.crt' dest=/etc/ipsec.d/certs/{{ IP_subject_alt_name }}.crt owner=strongswan group=root mode=0600
   notify:
-  - restart strongswan
+    - restart strongswan
 
 - name: Copy the server key to the strongswan directory
   copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/private/{{ IP_subject_alt_name }}.key' dest=/etc/ipsec.d/private/{{ IP_subject_alt_name }}.key owner=strongswan group=root mode=0600
   notify:
-  - restart strongswan
+    - restart strongswan
 
 - name: Register p12 PayloadContent
   shell: >
