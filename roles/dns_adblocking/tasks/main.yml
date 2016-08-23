@@ -7,7 +7,7 @@
 - name: Dnsmasq profile for apparmor configured
   template: src=usr.sbin.dnsmasq.j2 dest=/etc/apparmor.d/usr.sbin.dnsmasq owner=root group=root mode=0600
   notify:
-  - restart dnsmasq
+    - restart dnsmasq
   
 - name: The dnsmasq directory created
   file: dest=/var/lib/dnsmasq state=directory mode=755 owner=dnsmasq group=nogroup
@@ -18,7 +18,7 @@
 - name: Dnsmasq configured
   template: src=dnsmasq.conf.j2 dest=/etc/dnsmasq.conf
   notify:
-  - restart dnsmasq
+    - restart dnsmasq
 
 - name: Adblock script created
   template: src=adblock.sh dest=/opt/adblock.sh owner=root group=root mode=0755

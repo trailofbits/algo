@@ -75,7 +75,7 @@
     chdir: '{{ easyrsa_dir }}/easyrsa3/'
     creates: '{{ easyrsa_dir }}/easyrsa3/pki/ca_initialized'
   notify:
-  - restart strongswan
+    - restart strongswan
 
 - name: Build the server pair
   shell: >
@@ -85,7 +85,7 @@
     chdir: '{{ easyrsa_dir }}/easyrsa3/'
     creates: '{{ easyrsa_dir }}/easyrsa3/pki/server_initialized'
   notify:
-  - restart strongswan
+    - restart strongswan
 
 - name: Build the client's pair
   shell: >

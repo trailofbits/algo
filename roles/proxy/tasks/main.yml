@@ -12,7 +12,7 @@
 - name: Privoxy profile for apparmor configured
   template: src=usr.sbin.privoxy.j2 dest=/etc/apparmor.d/usr.sbin.privoxy owner=root group=root mode=0600
   notify:
-  - restart privoxy
+    - restart privoxy
 
 - name: Enforce the privoxy AppArmor policy
   shell: aa-enforce usr.sbin.privoxy
@@ -36,7 +36,7 @@
 - name: PageSpeed configured
   template: src=pagespeed.conf.j2 dest=/etc/apache2/mods-available/pagespeed.conf
   notify:
-  - restart apache2
+    - restart apache2
 
 - name: Modules enabled
   apache2_module: state=present name="{{ item }}"
@@ -48,14 +48,14 @@
     - proxy_html
     - rewrite
   notify:
-  - restart apache2
+    - restart apache2
 
 - name: VirtualHost configured for the PageSpeed module
   template: src=000-default.conf.j2 dest=/etc/apache2/sites-enabled/000-default.conf
   notify:
-  - restart apache2
+    - restart apache2
 
 - name: Apache ports configured
   template: src=ports.conf.j2 dest=/etc/apache2/ports.conf
   notify:
-  - restart apache2
+    - restart apache2
