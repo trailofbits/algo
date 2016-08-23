@@ -24,7 +24,6 @@ PubkeyAuthentication yes
 AcceptEnv LANG LC_*
 
 # Turn off a lot of features
-AllowAgentForwarding no
 IgnoreRhosts yes
 RhostsRSAAuthentication no
 RSAAuthentication no
@@ -33,7 +32,6 @@ PermitEmptyPasswords no
 ChallengeResponseAuthentication no
 PasswordAuthentication no
 UseDNS no
-X11Forwarding no
 
 # Do not enable sftp
 # If you DO enable it, use this line to log which files sftp users read/write
@@ -51,21 +49,16 @@ HostKey /etc/ssh/ssh_host_ed25519_key
 KexAlgorithms curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256
 Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com
 MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com
-
-###
-
 # TODO: I haven't seen anyone review these yet
 # HostKeyAlgorithms ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519
-
 # TODO: I haven't seen anyone review these yet
 # PubkeyAcceptedKeyTypes ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519
-
-# TODO: I think we want to enable tunnels but disable stream local fowarding?
-# PermitTunnel yes
-# AllowStreamLocalForwarding no
 
 {% if ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "Y" %}
 Match Group algo
     AllowTcpForwarding remote
+    AllowAgentForwarding no
     AllowStreamLocalForwarding no
+    PermitTunnel no
+    X11Forwarding no
 {% endif %}    
