@@ -34,6 +34,8 @@
   notify:
     - daemon-reload    
     - restart strongswan
+    
+- meta: flush_handlers    
   
 - name: Setup the strongswan.conf file from our template
   template: src=strongswan.conf.j2 dest=/etc/strongswan.conf owner=root group=root mode=0644
