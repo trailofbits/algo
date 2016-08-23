@@ -15,6 +15,17 @@
 - name: Enforce the dnsmasq AppArmor policy
   shell: aa-enforce usr.sbin.dnsmasq
 
+- name: Ensure that the dnsmasq service directory exist
+  file: path=/etc/systemd/system/dnsmasq.service.d/ state=directory mode=0755  owner=root group=root
+  
+- name: Setup the cgroup limitations for the ipsec daemon
+  template: src=100-CustomLimitations.conf.j2 dest=/etc/systemd/system/dnsmasq.service.d/100-CustomLimitations.conf
+  notify:
+    - daemon-reload    
+    - restart dnsmasq
+    
+- meta: flush_handlers    
+  
 - name: Dnsmasq configured
   template: src=dnsmasq.conf.j2 dest=/etc/dnsmasq.conf
   notify:
