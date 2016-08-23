@@ -32,6 +32,7 @@
 - name: Setup the cgroup limitations for the ipsec daemon
   template: src=100-CustomLimitations.conf.j2 dest=/etc/systemd/system/strongswan.service.d/100-CustomLimitations.conf
   notify:
+    - daemon-reload    
     - restart strongswan
   
 - name: Setup the strongswan.conf file from our template

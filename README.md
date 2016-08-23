@@ -27,7 +27,7 @@ Algo (short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhere
 
 ### Requirements
 
-* ansible >= 2.2
+* ansible >= 2.1
 * python >= 2.6
 * [dopy=0.3.5](https://github.com/Wiredcraft/dopy)
 * [boto](https://github.com/boto/boto)
