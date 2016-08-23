@@ -99,4 +99,4 @@
     - { src: rules.v4.j2, dest: /etc/iptables/rules.v4 }
     - { src: rules.v6.j2, dest: /etc/iptables/rules.v6 }  
   notify:
-  - restart iptables
+    - restart iptables
