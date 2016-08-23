@@ -71,7 +71,12 @@
       prompt: "Do you want to use auditd ? (Y or N):\n"
       default: "Y"
       private: no
-      
+    
+    - name: "ssh_tunneling_enabled"
+      prompt: "Do you want to use SSH tunneling ? (Y or N):\n"
+      default: "Y"
+      private: no
+         
     - name: "easyrsa_p12_export_password"
       prompt: "Enter the password for p12 certificates:\n"
       default: "vpn"
@@ -100,3 +105,4 @@
     - { role: proxy, when: proxy_enabled is defined and proxy_enabled == "Y" }
     - { role: dns_adblocking , when: dns_enabled is defined and dns_enabled == "Y" }
     - { role: logging, when: auditd_enabled is defined and auditd_enabled == 'Y' }
+    - { role: ssh_tunneling, when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "Y" }     
