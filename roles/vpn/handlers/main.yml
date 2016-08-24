@@ -1,6 +1,11 @@
 - name: restart strongswan
+<<<<<<< Updated upstream
   service: name=strongswan state=restarted
   
+=======
+  service: name=strongswan state=restartedo
+
+>>>>>>> Stashed changes
 - name: daemon-reload
   shell: systemctl daemon-reload
 
