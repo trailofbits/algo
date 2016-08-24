@@ -2,12 +2,12 @@
 
 - name: Ensure that the algo group exist
   group: name=algo state=present
-  
+
 - name: Ensure that the jail directory exist
-  file: path=/var/jail/ state=directory mode=0755  owner=root group=root  
-  
+  file: path=/var/jail/ state=directory mode=0755  owner=root group=root
+
 - name: Ensure that the SSH users exist
-  user: 
+  user:
     name: "{{ item }}"
     group: algo
     home: '/var/jail/{{ item }}'
@@ -17,5 +17,5 @@
     ssh_key_type: ecdsa
     ssh_key_bits: 521
     ssh_key_comment: '{{ item }}@{{ IP_subject_alt_name }}'
-    state: present    
+    state: present
   with_items: "{{ users }}"
