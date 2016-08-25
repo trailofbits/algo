@@ -8,24 +8,24 @@
   template: src=usr.sbin.dnsmasq.j2 dest=/etc/apparmor.d/usr.sbin.dnsmasq owner=root group=root mode=0600
   notify:
     - restart dnsmasq
-  
+
 - name: The dnsmasq directory created
-  file: dest=/var/lib/dnsmasq state=directory mode=755 owner=dnsmasq group=nogroup
+  file: dest=/var/lib/dnsmasq state=directory mode=0755 owner=dnsmasq group=nogroup
 
 - name: Enforce the dnsmasq AppArmor policy
   shell: aa-enforce usr.sbin.dnsmasq
 
 - name: Ensure that the dnsmasq service directory exist
   file: path=/etc/systemd/system/dnsmasq.service.d/ state=directory mode=0755  owner=root group=root
-  
+
 - name: Setup the cgroup limitations for the ipsec daemon
   template: src=100-CustomLimitations.conf.j2 dest=/etc/systemd/system/dnsmasq.service.d/100-CustomLimitations.conf
   notify:
-    - daemon-reload    
+    - daemon-reload
     - restart dnsmasq
-    
-- meta: flush_handlers    
-  
+
+- meta: flush_handlers
+
 - name: Dnsmasq configured
   template: src=dnsmasq.conf.j2 dest=/etc/dnsmasq.conf
   notify:
@@ -35,7 +35,7 @@
   template: src=adblock.sh dest=/opt/adblock.sh owner=root group=root mode=0755
 
 - name: Adblock script added to cron
-  cron: 
+  cron:
     name: Adblock hosts update
     minute: 10
     hour: 2
