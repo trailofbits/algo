@@ -1,6 +1,6 @@
 - name: restart strongswan
   service: name=strongswan state=restarted
-  
+
 - name: daemon-reload
   shell: systemctl daemon-reload
 

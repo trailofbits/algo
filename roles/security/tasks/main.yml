@@ -97,6 +97,6 @@
   template: src="{{ item.src }}" dest="{{ item.dest }}" owner=root group=root mode=0640
   with_items:
     - { src: rules.v4.j2, dest: /etc/iptables/rules.v4 }
-    - { src: rules.v6.j2, dest: /etc/iptables/rules.v6 }  
+    - { src: rules.v6.j2, dest: /etc/iptables/rules.v6 }
   notify:
     - restart iptables
