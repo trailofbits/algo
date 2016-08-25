@@ -100,3 +100,8 @@
     - { src: rules.v6.j2, dest: /etc/iptables/rules.v6 }
   notify:
     - restart iptables
+
+- name: SSH config
+  template: src=sshd_config.j2 dest=/etc/ssh/sshd_config owner=root group=root mode=0644
+  notify:
+    - restart ssh

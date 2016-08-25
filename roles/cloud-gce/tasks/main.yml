@@ -24,6 +24,7 @@
     proxy_enabled: "{{ proxy_enabled }}"
     ssh_tunneling_enabled: "{{ ssh_tunneling_enabled }}"
     auditd_enabled: " {{ auditd_enabled }}"
+    security_enabled: "{{ security_enabled }}"
     easyrsa_p12_export_password: "{{ easyrsa_p12_export_password }}"
     cloud_provider: gce
     ipv6_support: no

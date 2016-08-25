@@ -1,6 +1,9 @@
 - name: restart rsyslog
   service: name=rsyslog state=restarted
 
+- name: restart ssh
+  service: name=ssh state=restarted
+
 - name: restart iptables
   service: name=netfilter-persistent state=restarted
 

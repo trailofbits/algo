@@ -1,9 +1,6 @@
 - name: restart rsyslog
   service: name=rsyslog state=restarted
 
-- name: restart ssh
-  service: name=ssh state=restarted
-
 - name: flush routing cache
   shell: echo 1 > /proc/sys/net/ipv4/route/flush
 

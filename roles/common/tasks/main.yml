@@ -30,11 +30,6 @@
   when: reboot_required is defined and reboot_required.stdout == 'required'
   become: false
 
-- name: SSH config
-  template: src=sshd_config.j2 dest=/etc/ssh/sshd_config owner=root group=root mode=0644
-  notify:
-    - restart ssh
-
 - name: Disable MOTD on login and SSHD
   replace: dest="{{ item.file }}" regexp="{{ item.regexp }}" replace="{{ item.line }}"
   with_items:
