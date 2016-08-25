@@ -30,7 +30,20 @@
     group: "{{ item }}"
     state: link
   with_items: "{{ users }}"
+  
+- name: Generate SSH fingerprints
+  shell: >
+    ssh-keyscan {{ IP_subject_alt_name }} 2>/dev/null
+  register: ssh_fingerprints
+  
+- name: The known_hosts file created
+  template: src=known_hosts.j2 dest=/root/.ssh/{{ IP_subject_alt_name }}_known_hosts
 
 - name: Fetch users SSH private keys
   fetch: src='/var/jail/{{ item }}/.ssh/id_rsa' dest=configs/{{ IP_subject_alt_name }}_{{ item }}.ssh.pem flat=yes
   with_items: "{{ users }}"
+  
+- name: Fetch the known_hosts file
+  fetch: src='/root/.ssh/{{ IP_subject_alt_name }}_known_hosts' dest=configs/{{ IP_subject_alt_name }}_known_hosts flat=yes
+  
+  
