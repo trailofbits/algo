@@ -14,17 +14,17 @@
     - name: "server_user"
       prompt: "What user should we use to login on the server? (ignore if you're deploying to localhost):\n"
       default: "root"
-      private: no      
-      
+      private: no
+
     - name: "ssh_tunneling_enabled"
       prompt: "Do you want each user to have their own account for SSH tunneling? (y/n):\n"
       default: "y"
-      private: no      
-      
+      private: no
+
     - name: "easyrsa_p12_export_password"
       prompt: "Enter a password for p12 certificates and SSH private keys: (minimum five characters)\n"
       default: "vpnpw"
-      private: yes   
+      private: yes
 
     - name: "IP_subject"
       prompt: "Enter public IP address of your server: (IMPORTANT! This IP is used to verify the certificate)\n"
@@ -51,7 +51,7 @@
   become: true
   vars_files:
     - config.cfg
-    
+
   pre_tasks:
     - set_fact:
         IP_subject_alt_name: "{{ IP_subject }}"
@@ -66,7 +66,7 @@
       creates: '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_initialized'
     with_items: "{{ users }}"
 
-  - name: Build the client's p12 
+  - name: Build the client's p12
     shell: >
       openssl pkcs12 -in {{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt -inkey {{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.key -export -name {{ item }} -out /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 -certfile {{ easyrsa_dir }}/easyrsa3//pki/ca.crt -passout pass:{{ easyrsa_p12_export_password }} &&
       touch '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_p12_initialized'
@@ -84,7 +84,7 @@
 
   - name: Revoke non-existing users
     shell: >
-      ipsec pki --signcrl --cacert {{ easyrsa_dir }}/easyrsa3//pki/ca.crt --cakey {{ easyrsa_dir }}/easyrsa3/pki/private/ca.key --reason superseded --cert {{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt > /etc/ipsec.d/crls/{{ item }}.der &&    
+      ipsec pki --signcrl --cacert {{ easyrsa_dir }}/easyrsa3//pki/ca.crt --cakey {{ easyrsa_dir }}/easyrsa3/pki/private/ca.key --reason superseded --cert {{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt > /etc/ipsec.d/crls/{{ item }}.der &&
       ./easyrsa revoke {{ item }} &&
       ipsec rereadcrls
     args:
@@ -117,12 +117,12 @@
   - name: Fetch users mobileconfig
     fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.mobileconfig dest=configs/{{ IP_subject_alt_name }}_{{ item }}.mobileconfig flat=yes
     with_items: "{{ users }}"
-    
+
   - name: Fetch server CA certificate
     fetch: src=/{{ easyrsa_dir }}/easyrsa3/pki/ca.crt dest=configs/{{ IP_subject_alt_name }}_ca.crt flat=yes
-    
+
   # SSH
-  
+
   - name: SSH | Ensure that the system users exist
     user:
       name: "{{ item }}"
@@ -138,10 +138,10 @@
       state: present
       append: yes
     with_items: "{{ users }}"
-    when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y" 
-    
+    when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
+
   - name: SSH | The authorized keys file created
-    file: 
+    file:
       src: '/var/jail/{{ item }}/.ssh/id_rsa.pub'
       dest: '/var/jail/{{ item }}/.ssh/authorized_keys'
       owner: "{{ item }}"
@@ -160,11 +160,11 @@
     user:
       name: "{{ item }}"
       state: absent
-      remove: yes      
+      remove: yes
       force: yes
     when: item not in users and ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
     with_items: "{{ valid_users.stdout_lines }}"
-    
+
   - name: SSH | Fetch users SSH private keys
     fetch: src='/var/jail/{{ item }}/.ssh/id_rsa' dest=configs/{{ IP_subject_alt_name }}_{{ item }}.ssh.pem flat=yes
     with_items: "{{ users }}"
