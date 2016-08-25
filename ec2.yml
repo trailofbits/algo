@@ -76,6 +76,11 @@
     default: "y"
     private: no
 
+  - name: "security_enabled"
+    prompt: "Do you want to enable the security role? (y/n):\n"
+    default: "y"
+    private: no
+
   - name: "easyrsa_p12_export_password"
     prompt: "Enter a password for p12 certificates and SSH private keys: (minimum five characters)\n"
     default: "vpnpw"
@@ -99,7 +104,7 @@
 
   roles:
     - common
-    - security
+    - { role: security, when: security_enabled is defined and security_enabled == "y" }
     - { role: proxy, when: proxy_enabled is defined and proxy_enabled == "y" }
     - { role: dns_adblocking , when: dns_enabled is defined and dns_enabled == "y" }
     - { role: logging, when: auditd_enabled is defined and auditd_enabled == "y" }

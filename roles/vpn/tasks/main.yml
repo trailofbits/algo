@@ -20,6 +20,20 @@
     - strongswan
     - netfilter-persistent
 
+- name: Configure iptables so IPSec traffic can traverse the tunnel
+  iptables: table=nat chain=POSTROUTING source="{{ vpn_network }}" jump=MASQUERADE
+  when: (security_enabled is not defined) or
+        (security_enabled is defined and security_enabled != "y")
+  notify:
+    - save iptables
+
+- name: Configure ip6tables so IPSec traffic can traverse the tunnel
+  iptables: ip_version=ipv6 table=nat chain=POSTROUTING source="{{ vpn_network_ipv6 }}" jump=MASQUERADE
+  when: (security_enabled is not defined) or
+        (security_enabled is defined and security_enabled != "y")
+  notify:
+    - save iptables
+
 - name: Ensure that the strongswan group exist
   group: name=strongswan state=present
 
