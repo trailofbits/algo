@@ -77,8 +77,8 @@
     private: no
 
   - name: "easyrsa_p12_export_password"
-    prompt: "Enter a password for p12 certificates:\n"
-    default: "vpn"
+    prompt: "Enter a password for p12 certificates and SSH private keys: (minimum five characters)\n"
+    default: "vpnpw"
     private: yes
 
   roles:
@@ -100,8 +100,8 @@
   roles:
     - common
     - security
-    - vpn
     - { role: proxy, when: proxy_enabled is defined and proxy_enabled == "y" }
     - { role: dns_adblocking , when: dns_enabled is defined and dns_enabled == "y" }
     - { role: logging, when: auditd_enabled is defined and auditd_enabled == "y" }
     - { role: ssh_tunneling, when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y" }
+    - vpn    
