@@ -1,8 +1,8 @@
 - name: restart rsyslog
   service: name=rsyslog state=restarted
-  
+
 - name: restart iptables
   service: name=netfilter-persistent state=restarted
-  
+
 - name: flush routing cache
   shell: echo 1 > /proc/sys/net/ipv4/route/flush

@@ -21,61 +21,65 @@
       "11": "sa-east-1"
 
   vars_prompt:
+  - name: "aws_access_key"
+    prompt: "Enter your aws_access_key (http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html):\n"
+    private: yes
 
-    - name: "aws_access_key"
-      prompt: "Enter your aws_access_key (http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html):\n"
-      private: yes
+  - name: "aws_secret_key"
+    prompt: "Enter your aws_secret_key (http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html):\n"
+    private: yes
 
-    - name: "aws_secret_key"
-      prompt: "Enter your aws_secret_key (http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html):\n"
-      private: yes
+  - name: "region"
+    prompt: >
+      What region should the server be located in?
+       1.   us-east-1           US East (N. Virginia)
+       2.   us-west-1           US West (N. California)
+       3.   us-west-2           US West (Oregon)
+       4.   ap-south-1          Asia Pacific (Mumbai)
+       5.   ap-northeast-2      Asia Pacific (Seoul)
+       6.   ap-southeast-1      Asia Pacific (Singapore)
+       7.   ap-southeast-2      Asia Pacific (Sydney)
+       8.   ap-northeast-1      Asia Pacific (Tokyo)
+       9.   eu-central-1        EU (Frankfurt)
+       10.  eu-west-1           EU (Ireland)
+       11.  sa-east-1           South America (São Paulo)
+    default: "1"
+    private: no
 
-    - name: "region"
-      prompt: >
-        What region should the server be located in?
-         1.   us-east-1           US East (N. Virginia)
-         2.   us-west-1           US West (N. California)
-         3.   us-west-2           US West (Oregon)
-         4.   ap-south-1          Asia Pacific (Mumbai)
-         5.   ap-northeast-2      Asia Pacific (Seoul)
-         6.   ap-southeast-1      Asia Pacific (Singapore)
-         7.   ap-southeast-2      Asia Pacific (Sydney)
-         8.   ap-northeast-1      Asia Pacific (Tokyo)
-         9.   eu-central-1        EU (Frankfurt)
-         10.  eu-west-1           EU (Ireland)
-         11.  sa-east-1           South America (São Paulo)
-      default: "1"
-      private: no
+  - name: "aws_server_name"
+    prompt: "Name the vpn server:\n"
+    default: "algo.local"
+    private: no
 
-    - name: "aws_server_name"
-      prompt: "Name the vpn server:\n"
-      default: "algo.local"
-      private: no
+  - name: "ssh_public_key"
+    prompt: "Enter the local path to your SSH public key:\n"
+    default: "~/.ssh/id_rsa.pub"
+    private: no
 
-    - name: "ssh_public_key"
-      prompt: "Enter the local path to your SSH public key:\n"
-      default: "~/.ssh/id_rsa.pub"
-      private: no
+  - name: "dns_enabled"
+    prompt: "Do you want to install a local DNS resolver to block ads while surfing? (y/n):\n"
+    default: "y"
+    private: no
 
-    - name: "dns_enabled"
-      prompt: "Do you want to install a local DNS resolver to block ads while surfing? (Y or N):\n"
-      default: "Y"
-      private: no
-      
-    - name: "proxy_enabled"
-      prompt: "Do you want to install a proxy to block ads and decrease traffic usage while surfing? (Y or N):\n"
-      default: "Y"
-      private: no
+  - name: "proxy_enabled"
+    prompt: "Do you want to install an HTTP proxy to block ads and decrease traffic usage while surfing? (y/n):\n"
+    default: "y"
+    private: no
 
-    - name: "auditd_enabled"
-      prompt: "Do you want to use auditd ? (Y or N):\n"
-      default: "Y"
-      private: no
-      
-    - name: "easyrsa_p12_export_password"
-      prompt: "Enter the password for p12 certificates:\n"
-      default: "vpn"
-      private: yes      
+  - name: "auditd_enabled"
+    prompt: "Do you want to use auditd for security monitoring (see config.cfg)? (y/n):\n"
+    default: "y"
+    private: no
+
+  - name: "ssh_tunneling_enabled"
+    prompt: "Do you want each user to have their own account for SSH tunneling? (y/n):\n"
+    default: "y"
+    private: no
+
+  - name: "easyrsa_p12_export_password"
+    prompt: "Enter a password for p12 certificates and SSH private keys: (minimum five characters)\n"
+    default: "vpnpw"
+    private: yes
 
   roles:
     - cloud-ec2
@@ -96,7 +100,8 @@
   roles:
     - common
     - security
-    - vpn
-    - { role: proxy, when: proxy_enabled is defined and proxy_enabled == "Y" }
-    - { role: dns_adblocking , when: dns_enabled is defined and dns_enabled == "Y" }
-    - { role: logging, when: auditd_enabled is defined and auditd_enabled == 'Y' }
+    - { role: proxy, when: proxy_enabled is defined and proxy_enabled == "y" }
+    - { role: dns_adblocking , when: dns_enabled is defined and dns_enabled == "y" }
+    - { role: logging, when: auditd_enabled is defined and auditd_enabled == "y" }
+    - { role: ssh_tunneling, when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y" }
+    - vpn    

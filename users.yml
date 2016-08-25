@@ -14,12 +14,17 @@
     - name: "server_user"
       prompt: "What user should we use to login on the server? (ignore if you're deploying to localhost):\n"
       default: "root"
-      private: no
+      private: no      
+      
+    - name: "ssh_tunneling_enabled"
+      prompt: "Do you want each user to have their own account for SSH tunneling? (y/n):\n"
+      default: "y"
+      private: no      
       
     - name: "easyrsa_p12_export_password"
-      prompt: "Enter the password for p12 certificates:\n"
-      default: "vpn"
-      private: yes
+      prompt: "Enter a password for p12 certificates and SSH private keys: (minimum five characters)\n"
+      default: "vpnpw"
+      private: yes   
 
     - name: "IP_subject"
       prompt: "Enter public IP address of your server: (IMPORTANT! This IP is used to verify the certificate)\n"
@@ -33,6 +38,7 @@
         ansible_ssh_user: "{{ server_user }}"
         ansible_python_interpreter: "/usr/bin/python2.7"
         easyrsa_p12_export_password: "{{ easyrsa_p12_export_password }}"
+        ssh_tunneling_enabled: "{{ ssh_tunneling_enabled }}"
         IP_subject: "{{ IP_subject }}"
 
     - name: Wait for SSH to become available
@@ -114,3 +120,51 @@
     
   - name: Fetch server CA certificate
     fetch: src=/{{ easyrsa_dir }}/easyrsa3/pki/ca.crt dest=configs/{{ IP_subject_alt_name }}_ca.crt flat=yes
+    
+  # SSH
+  
+  - name: SSH | Ensure that the system users exist
+    user:
+      name: "{{ item }}"
+      groups: algo
+      home: '/var/jail/{{ item }}'
+      createhome: yes
+      generate_ssh_key: yes
+      shell: /bin/false
+      ssh_key_type: rsa
+      ssh_key_bits: 2048
+      ssh_key_comment: '{{ item }}@{{ IP_subject_alt_name }}'
+      ssh_key_passphrase: "{{ easyrsa_p12_export_password }}"
+      state: present
+      append: yes
+    with_items: "{{ users }}"
+    when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y" 
+    
+  - name: SSH | The authorized keys file created
+    file: 
+      src: '/var/jail/{{ item }}/.ssh/id_rsa.pub'
+      dest: '/var/jail/{{ item }}/.ssh/authorized_keys'
+      owner: "{{ item }}"
+      group: "{{ item }}"
+      state: link
+    with_items: "{{ users }}"
+    when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
+
+  - name: SSH | Get active system users
+    shell: >
+      getent group algo | cut -f4 -d: | sed "s/,/\n/g"
+    register: valid_users
+    when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
+
+  - name: SSH | Delete non-existing users
+    user:
+      name: "{{ item }}"
+      state: absent
+      remove: yes      
+      force: yes
+    when: item not in users and ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
+    with_items: "{{ valid_users.stdout_lines }}"
+    
+  - name: SSH | Fetch users SSH private keys
+    fetch: src='/var/jail/{{ item }}/.ssh/id_rsa' dest=configs/{{ IP_subject_alt_name }}_{{ item }}.ssh.pem flat=yes
+    with_items: "{{ users }}"

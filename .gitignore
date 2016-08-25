@@ -1,6 +1,3 @@
 *.retry
-configs/*.mobileconfig
-configs/*.p12
-configs/*.crt
-configs/*.tmp
+configs/*
 inventory_users

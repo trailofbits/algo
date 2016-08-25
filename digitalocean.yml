@@ -1,3 +1,4 @@
+# vim:ft=ansible:
 - name: Configure the server and install required software
   hosts: localhost
 
@@ -50,24 +51,29 @@
     private: no
 
   - name: "dns_enabled"
-    prompt: "Do you want to install a local DNS resolver to block ads while surfing? (Y or N):\n"
-    default: "Y"
+    prompt: "Do you want to install a local DNS resolver to block ads while surfing? (y/n):\n"
+    default: "y"
     private: no
-    
+
   - name: "proxy_enabled"
-    prompt: "Do you want to install a proxy to block ads and decrease traffic usage while surfing? (Y or N):\n"
-    default: "Y"
-    private: no    
+    prompt: "Do you want to install an HTTP proxy to block ads and decrease traffic usage while surfing? (y/n):\n"
+    default: "y"
+    private: no
 
   - name: "auditd_enabled"
-    prompt: "Do you want to use auditd ? (Y or N):\n"
-    default: "Y"
+    prompt: "Do you want to use auditd for security monitoring (see config.cfg)? (y/n):\n"
+    default: "y"
     private: no
-    
+
+  - name: "ssh_tunneling_enabled"
+    prompt: "Do you want each user to have their own account for SSH tunneling? (y/n):\n"
+    default: "y"
+    private: no
+
   - name: "easyrsa_p12_export_password"
-    prompt: "Enter the password for p12 certificates:\n"
-    default: "vpn"
-    private: yes    
+    prompt: "Enter a password for p12 certificates and SSH private keys: (minimum five characters)\n"
+    default: "vpnpw"
+    private: yes
 
   roles:
     - cloud-digitalocean
@@ -125,10 +131,11 @@
   roles:
     - common
     - security
-    - vpn
-    - { role: proxy, when: proxy_enabled is defined and proxy_enabled == "Y" } 
-    - { role: dns_adblocking, when: dns_enabled is defined and dns_enabled == "Y" }
-    - { role: logging, when: auditd_enabled is defined and auditd_enabled == 'Y' }
+    - { role: proxy, when: proxy_enabled is defined and proxy_enabled == "y" }
+    - { role: dns_adblocking, when: dns_enabled is defined and dns_enabled == "y" }
+    - { role: logging, when: auditd_enabled is defined and auditd_enabled == "y" }
+    - { role: ssh_tunneling, when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y" }
+    - vpn    
 
   handlers:
     - name: reload eth0

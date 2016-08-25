@@ -33,7 +33,7 @@
 - name: SSH config
   template: src=sshd_config.j2 dest=/etc/ssh/sshd_config owner=root group=root mode=0644
   notify:
-    - restart ssh    
+    - restart ssh
 
 - name: Disable MOTD on login and SSHD
   replace: dest="{{ item.file }}" regexp="{{ item.regexp }}" replace="{{ item.line }}"
@@ -70,7 +70,7 @@
   lineinfile: dest=/etc/network/interfaces line='source /etc/network/interfaces.d/10-loopback-services.cfg' state=present
   notify:
     - restart loopback
-    
+
 - meta: flush_handlers
 
 - name: Enable packet forwarding for IPv4
