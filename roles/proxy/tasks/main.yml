@@ -16,17 +16,17 @@
 
 - name: Enforce the privoxy AppArmor policy
   shell: aa-enforce usr.sbin.privoxy
-  
+
 - name: Ensure that the privoxy service directory exist
   file: path=/etc/systemd/system/privoxy.service.d/ state=directory mode=0755  owner=root group=root
-  
+
 - name: Setup the cgroup limitations for the privoxy daemon
   template: src=privoxy_100-CustomLimitations.conf.j2 dest=/etc/systemd/system/privoxy.service.d/100-CustomLimitations.conf
   notify:
-    - daemon-reload    
+    - daemon-reload
     - restart privoxy
-    
-- meta: flush_handlers    
+
+- meta: flush_handlers
 
 - name: Privoxy enabled and started
   service: name=privoxy state=started enabled=yes
@@ -70,14 +70,14 @@
   template: src=ports.conf.j2 dest=/etc/apache2/ports.conf
   notify:
     - restart apache2
-    
+
 - name: Ensure that the apache2 service directory exist
   file: path=/etc/systemd/system/apache2.service.d/ state=directory mode=0755  owner=root group=root
-  
+
 - name: Setup the cgroup limitations for the apache2 daemon
   template: src=apache2_100-CustomLimitations.conf.j2 dest=/etc/systemd/system/apache2.service.d/100-CustomLimitations.conf
   notify:
-    - daemon-reload    
+    - daemon-reload
     - restart apache2
-    
-- meta: flush_handlers    
+
+- meta: flush_handlers
