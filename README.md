@@ -1,8 +1,8 @@
-# Algo
+# Algo VPN
 
 [![Slack Status](https://empireslacking.herokuapp.com/badge.svg)](https://empireslacking.herokuapp.com)
 
-Algo (short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhere for [inventing the Internet](https://www.youtube.com/watch?v=BnFJ8cHAlco)) is a set of Ansible scripts that simplifies the setup of an IPSEC VPN. It contains the most secure defaults available, works with common cloud providers, and does not require client software on most devices.
+Algo VPN (short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhere for [inventing the Internet](https://www.youtube.com/watch?v=BnFJ8cHAlco)) is a set of Ansible scripts that simplifies the setup of a personal IPSEC VPN. It contains the most secure defaults available, works with common cloud providers, and does not require client software on most devices.
 
 ## Features
 
@@ -22,6 +22,41 @@ Algo (short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhere
 * Does not require client software on most platforms
 * Does not claim to provide anonymity or censorship avoidance
 * Does not claim to protect you from the [FSB](https://en.wikipedia.org/wiki/Federal_Security_Service), [MSS](https://en.wikipedia.org/wiki/Ministry_of_State_Security_(China)), [DGSE](https://en.wikipedia.org/wiki/Directorate-General_for_External_Security), or [FSM](https://en.wikipedia.org/wiki/Flying_Spaghetti_Monster)
+
+## Included Roles
+
+Ansible scripts are organized into roles, each of which provides one discrete set of functionality. The roles used by Algo are described in detail below.
+
+### Required Roles
+
+* **Common**
+  * Installs several required packages and software updates, then reboots if necessary
+  * Configures network interfaces and enables packet forwarding on them
+* **VPN**
+  * Installs [StrongSwan](https://www.strongswan.org/), enables AppArmor, limits CPU and memory access, and drops user privileges
+  * Builds a Certificate Authority (CA) with [easy-rsa-ipsec](https://github.com/ValdikSS/easy-rsa-ipsec) and creates one client certificate per user
+  * Bundles the appropriate certificates into Apple mobileconfig profiles for each user
+
+### Optional Roles
+
+* **Security Enhancements**
+  * Enables [unattended-upgrades](https://help.ubuntu.com/community/AutomaticSecurityUpdates) to ensure your server is always patched to avoid the latest vulnerabilities.
+  * Minimizes the exposure of SUID binaries, restricts core dumps, and modifies kernel features to limit possible attacks.
+  * Modifies SSH to only use modern ciphers and a seccomp sandbox, and restricts access to many legacy and unwanted features, like X11 forwarding and SFTP.
+  * Configures IPtables to block traffic that might pose a risk to VPN users, such as [SMB/CIFS](https://medium.com/@ValdikSS/deanonymizing-windows-users-and-capturing-microsoft-and-vpn-accounts-f7e53fe73834).
+* **Ad Blocking and Compression HTTP Proxy**
+  * Installs [Privoxy](https://www.privoxy.org/) with an ad blocking ruleset.
+  * Installs Apache with [mod_pagespeed](http://modpagespeed.com/) as an HTTP proxy.
+  * Constrains Privoxy and Apache with AppArmor and cgroups CPU and memory limitations.
+* **DNS Ad Blocking**
+  * Install the [dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html) local resolver with a blacklist for advertising domains.
+  * Constraints dnsmasq with AppArmor and cgroups CPU and memory limitations.
+* **Security Monitoring and Logging**
+  * Configures [auditd](https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Security_Guide/chap-system_auditing.html) and rsyslog to log data useful for investigating security incidents.
+  * Logs are aggregated and emailed to the address in `config.cfg` on a regular basis.
+* **SSH Tunneling**
+  * Adds a restricted `algo` group to `sshd_config` with no shell access and limited forwarding options.
+  * Creates one local account per user and creates an SSH public key for each.
 
 ## Usage
 
@@ -74,7 +109,6 @@ If you want to add or delete users, update the `users` list in `config.cfg` and 
 ```
 ./algo update-users
 ```
-
 
 ## FAQ
 
