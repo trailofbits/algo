@@ -25,7 +25,7 @@ Algo VPN (short for "Al Gore", the **V**ice **P**resident of **N**etworks everyw
 
 ## Included Roles
 
-Ansible scripts are organized into roles, each of which provides one discrete set of functionality. The roles used by Algo are described in detail below.
+Ansible scripts are organized into roles. The roles used by Algo are described in detail below.
 
 ### Required Roles
 
@@ -40,23 +40,23 @@ Ansible scripts are organized into roles, each of which provides one discrete se
 ### Optional Roles
 
 * **Security Enhancements**
-  * Enables [unattended-upgrades](https://help.ubuntu.com/community/AutomaticSecurityUpdates) to ensure your server is always patched to avoid the latest vulnerabilities.
-  * Minimizes the exposure of SUID binaries, restricts core dumps, and modifies kernel features to limit possible attacks.
-  * Modifies SSH to only use modern ciphers and a seccomp sandbox, and restricts access to many legacy and unwanted features, like X11 forwarding and SFTP.
-  * Configures IPtables to block traffic that might pose a risk to VPN users, such as [SMB/CIFS](https://medium.com/@ValdikSS/deanonymizing-windows-users-and-capturing-microsoft-and-vpn-accounts-f7e53fe73834).
+  * Enables [unattended-upgrades](https://help.ubuntu.com/community/AutomaticSecurityUpdates) to ensure available patches are always applied
+  * Modify operating system features like core dumps, kernel parameters, and SUID binaries to limit possible attacks
+  * Modifies SSH to use only modern ciphers and a seccomp sandbox, and restricts access to many legacy and unwanted features, like X11 forwarding and SFTP
+  * Configures IPtables to block traffic that might pose a risk to VPN users, such as [SMB/CIFS](https://medium.com/@ValdikSS/deanonymizing-windows-users-and-capturing-microsoft-and-vpn-accounts-f7e53fe73834)
 * **Ad Blocking and Compression HTTP Proxy**
-  * Installs [Privoxy](https://www.privoxy.org/) with an ad blocking ruleset.
-  * Installs Apache with [mod_pagespeed](http://modpagespeed.com/) as an HTTP proxy.
-  * Constrains Privoxy and Apache with AppArmor and cgroups CPU and memory limitations.
+  * Installs [Privoxy](https://www.privoxy.org/) with an ad blocking ruleset
+  * Installs Apache with [mod_pagespeed](http://modpagespeed.com/) as an HTTP proxy
+  * Constrains Privoxy and Apache with AppArmor and cgroups CPU and memory limitations
 * **DNS Ad Blocking**
-  * Install the [dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html) local resolver with a blacklist for advertising domains.
-  * Constraints dnsmasq with AppArmor and cgroups CPU and memory limitations.
+  * Install the [dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html) local resolver with a blacklist for advertising domains
+  * Constrains dnsmasq with AppArmor and cgroups CPU and memory limitations
 * **Security Monitoring and Logging**
-  * Configures [auditd](https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Security_Guide/chap-system_auditing.html) and rsyslog to log data useful for investigating security incidents.
-  * Logs are aggregated and emailed to the address in `config.cfg` on a regular basis.
+  * Configures [auditd](https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Security_Guide/chap-system_auditing.html) and rsyslog to log data useful for investigating security incidents
+  * Emails aggregated Logs to a configured address on a regular basis
 * **SSH Tunneling**
-  * Adds a restricted `algo` group to `sshd_config` with no shell access and limited forwarding options.
-  * Creates one local account per user and creates an SSH public key for each.
+  * Adds a restricted `algo` group to SSH with no shell access and limited forwarding options
+  * Creates one limited, local account per user and an SSH public key for each
 
 ## Usage
 
