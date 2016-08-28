@@ -1,0 +1,114 @@
+  #vars:
+    #regions:
+      #"1":  "ams2"
+      #"2":  "ams3"
+      #"3":  "fra1"
+      #"4":  "lon1"
+      #"5":  "nyc1"
+      #"6":  "nyc2"
+      #"7":  "nyc3"
+      #"8":  "sfo1"
+      #"9":  "sfo2"
+      #"10": "sgp1"
+      #"11": "tor1"
+      #"12": "blr1"
+
+  #vars_prompt:
+  #- name: "do_access_token"
+    #prompt: "Enter your API Token (https://cloud.digitalocean.com/settings/api/tokens):\n"
+    #private: yes
+
+  #- name: "do_ssh_name"
+    #prompt: "Enter a valid SSH key name (https://cloud.digitalocean.com/settings/security):\n"
+    #private: no
+
+  #- name: "do_region"
+    #prompt: >
+      #What region should the server be located in?
+        #1.  Amsterdam        (Datacenter 2)
+        #2.  Amsterdam        (Datacenter 3)
+        #3.  Frankfurt
+        #4.  London
+        #5.  New York         (Datacenter 1)
+        #6.  New York         (Datacenter 2)
+        #7.  New York         (Datacenter 3)
+        #8.  San Francisco    (Datacenter 1)
+        #9.  San Francisco    (Datacenter 2)
+        #10. Singapore
+        #11. Toronto
+        #12. Bangalore
+      #Enter the number of your desired region:
+    #default: "7"
+    #private: no
+
+  #- name: "do_server_name"
+    #prompt: "Name the vpn server:\n"
+    #default: "algo.local"
+    #private: no
+
+  #- name: "dns_enabled"
+    #prompt: "Do you want to install a local DNS resolver to block ads while surfing? (y/n):\n"
+    #default: "y"
+    #private: no
+
+  #- name: "proxy_enabled"
+    #prompt: "Do you want to install an HTTP proxy to block ads and decrease traffic usage while surfing? (y/n):\n"
+    #default: "y"
+    #private: no
+
+  #- name: "auditd_enabled"
+    #prompt: "Do you want to use auditd for security monitoring (see config.cfg)? (y/n):\n"
+    #default: "y"
+    #private: no
+
+  #- name: "ssh_tunneling_enabled"
+    #prompt: "Do you want each user to have their own account for SSH tunneling? (y/n):\n"
+    #default: "y"
+    #private: no
+
+  #- name: "security_enabled"
+    #prompt: "Do you want to enable the security role? (y/n):\n"
+    #default: "y"
+    #private: no
+
+  #- name: "easyrsa_p12_export_password"
+    #prompt: "Enter a password for p12 certificates and SSH private keys: (minimum five characters)\n"
+    #default: "vpnpw"
+    #private: yes
+
+- name: Enable IPv6 on the droplet
+  uri:
+    url: "https://api.digitalocean.com/v2/droplets/{{ do_droplet_id }}/actions"
+    method: POST
+    body:
+      type: enable_ipv6
+    body_format: json
+    status_code: 201
+    HEADER_Authorization: "Bearer {{ do_access_token }}"
+    HEADER_Content-Type: "application/json"
+
+- name: Get Droplet networks
+  uri:
+    url: "https://api.digitalocean.com/v2/droplets/{{ do_droplet_id }}"
+    method: GET
+    status_code: 200
+    HEADER_Authorization: "Bearer {{ do_access_token }}"
+    HEADER_Content-Type: "application/json"
+  register: droplet_info
+
+- name: IPv6 configured
+  template: src=roles/cloud-digitalocean/templates/20-ipv6.cfg.j2 dest=/etc/network/interfaces.d/20-ipv6.cfg owner=root group=root mode=0644
+  with_items: "{{ droplet_info.json.droplet.networks.v6 }}"
+  notify:
+    - reload eth0
+
+- name: IPv6 included into the network config
+  lineinfile: dest=/etc/network/interfaces line='source /etc/network/interfaces.d/20-ipv6.cfg' state=present
+  notify:
+    - reload eth0
+
+- meta: flush_handlers
+
+- name: Wait for SSH to become available
+  local_action: "wait_for port=22 host={{ inventory_hostname }} timeout=320"
+  become: false
