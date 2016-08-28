@@ -1,6 +1,3 @@
-- name: restart rsyslog
-  service: name=rsyslog state=restarted
-
 - name: restart ssh
   service: name=ssh state=restarted
 

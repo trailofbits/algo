@@ -1,3 +1,5 @@
+# Auditd
+
 - name: Auditd installed
   apt: name=auditd state=latest
 
@@ -13,3 +15,18 @@
 
 - name: Enable services
   service: name=auditd enabled=yes
+  
+# Rsyslog
+
+- name: Rsyslog configured
+  template: src=rsyslog.conf.j2 dest=/etc/rsyslog.conf
+  notify:
+    - restart rsyslog
+
+- name: Rsyslog CIS configured
+  template: src=CIS.conf.j2 dest=/etc/rsyslog.d/CIS.conf owner=root group=root mode=0644
+  notify:
+    - restart rsyslog
+
+- name: Enable services
+  service: name=rsyslog enabled=yes  
