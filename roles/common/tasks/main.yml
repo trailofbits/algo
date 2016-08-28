@@ -44,7 +44,6 @@
     - apparmor-utils
     - uuid-runtime
     - coreutils
-    - rsyslog
     - sendmail
     - iptables-persistent
     - cgroup-tools
