@@ -25,7 +25,6 @@
       tags: [ 'digitalocean', 'ec2', 'gce' ]
 
   roles:
-    - { role: common, tags: [ 'vpn' ] }
     - { role: security, tags: [ 'security' ] }
     - { role: proxy, tags: [ 'proxy', 'adblock' ] }
     - { role: dns_adblocking, tags: ['dns', 'adblock' ] }
