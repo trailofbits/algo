@@ -18,6 +18,9 @@
   
 # Rsyslog
 
+- name: Rsyslog installed
+  apt: name=rsyslog state=latest
+
 - name: Rsyslog configured
   template: src=rsyslog.conf.j2 dest=/etc/rsyslog.conf
   notify:
