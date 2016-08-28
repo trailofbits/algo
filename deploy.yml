@@ -1,5 +1,6 @@
 - name: Configure the server and install required software
   hosts: localhost
+  tags: algo
   vars_files:
     - config.cfg
   
@@ -11,6 +12,7 @@
 - name: Post-provisioning tasks
   hosts: vpn-host
   gather_facts: false
+  tags: algo  
   become: true
   vars_files:
     - config.cfg
@@ -35,4 +37,5 @@
 
   handlers:
     - name: reload eth0
-      shell: sh -c 'ifdown eth0; ip addr flush dev eth0; ifup eth0'  
+      shell: sh -c 'ifdown eth0; ip addr flush dev eth0; ifup eth0'
+  
