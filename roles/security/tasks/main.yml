@@ -9,7 +9,6 @@
 - name: Periodic upgrades configured
   template: src=10periodic.j2 dest=/etc/apt/apt.conf.d/10periodic owner=root group=root mode=0644    
 
-# Using a two-pass approach for checking directories in order to support symlinks.
 - name: Find directories for minimizing access
   stat:
     path: "{{ item }}"
