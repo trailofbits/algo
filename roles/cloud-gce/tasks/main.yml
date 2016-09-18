@@ -5,7 +5,7 @@
 - name: "Creating a new instance..."
   gce:
     instance_names: "{{ server_name }}"
-    zone: "{{ zones[zone] }}"
+    zone: "{{ zone }}"
     machine_type: n1-standard-1
     image: ubuntu-1604
     service_account_email: "{{ credentials_file_lookup.client_email  }}"
