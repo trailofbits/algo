@@ -68,8 +68,8 @@ Enter the local path to your SSH public key:
 
   read -p "
 Name the vpn server:
-[algo.local]: " -r aws_server_name
-  aws_server_name=${aws_server_name:-algo.local}
+[algo]: " -r aws_server_name
+  aws_server_name=${aws_server_name:-algo}
 
   read -p "
   What region should the server be located in?
@@ -106,6 +106,59 @@ ansible-playbook deploy.yml -t ec2,vpn -e "aws_access_key=$aws_access_key aws_se
 
 }
 
+gce () {
+  read -p "
+Enter the local path to your credentials JSON file (https://support.google.com/cloud/answer/6158849?hl=en&ref_topic=6262490#serviceaccounts): 
+: " -r credentials_file
+  
+  read -p "
+Enter the local path to your SSH public key:
+: " -r ssh_public_key
+
+  read -p "
+Name the vpn server:
+[algo]: " -r server_name
+  server_name=${server_name:-algo}
+
+  read -p "
+  What zone should the server be located in?
+    1. Central US       (Iowa A)
+    2. Central US       (Iowa B)
+    3. Central US       (Iowa C)
+    4. Central US       (Iowa F)
+    5. Eastern US       (South Carolina B)
+    6. Eastern US       (South Carolina C)
+    7. Eastern US       (South Carolina D)
+    8. Western Europe   (Belgium B)
+    9. Western Europe   (Belgium C)
+    10. Western Europe  (Belgium D)
+    11. East Asia       (Taiwan A)
+    12. East Asia       (Taiwan B)
+    13. East Asia       (Taiwan C)
+Please choose the number of your zone. Press enter for default (#8) zone.
+[8]: " -r region
+  region=${region:-8}  
+  
+  case "$region" in 
+    1) zone="us-central1-a" ;;
+    2) zone="us-central1-b" ;;
+    3) zone="us-central1-c" ;;
+    4) zone="us-central1-f" ;;
+    5) zone="us-east1-b" ;;
+    6) zone="us-east1-c" ;;
+    7) zone="us-east1-d" ;;
+    8) zone="europe-west1-b" ;;
+    9) zone="europe-west1-c" ;;
+    10) zone="europe-west1-d" ;;
+    11) zone="asia-east1-a" ;;
+    12) zone="asia-east1-b" ;;
+    13) zone="asia-east1-c" ;;
+  esac
+  
+ansible-playbook deploy.yml -t gce,vpn -e "credentials_file=$credentials_file server_name=$server_name ssh_public_key=$ssh_public_key zone=$zone"   
+
+}
+
 algo_provisioning () {
   echo -n "
   What provider would you like to use?
@@ -122,7 +175,7 @@ Enter the number of your desired provider
   case "$N" in
     1) digitalocean; ;;
     2) ec2; ;;
-    3) CLOUD="gce" ;;
+    3) gce; ;;
     4) CLOUD="non-cloud" ;;
     *) exit 1 ;;
   esac
