@@ -130,7 +130,7 @@ I would, but I don't know of any [suitable ones](https://github.com/trailofbits/
 
 ### Why aren't you using OpenVPN?
 
-OpenVPN does not have out-of-the-box client support on any major desktop or mobile operating system. This introduces user experience issues and requires the user to update and maintain the software themselves. OpenVPN depends on the security of [TLS](https://tools.ietf.org/html/rfc7457), both the protocol and its implementations, and we simply trust the server less due to [past security incidents](https://www.exploit-db.com/exploits/34879/).
+OpenVPN does not have out-of-the-box client support on any major desktop or mobile operating system. This introduces user experience issues and requires the user to [update](https://www.exploit-db.com/exploits/34037/) and [maintain](https://www.exploit-db.com/exploits/20485/) the software themselves. OpenVPN depends on the security of [TLS](https://tools.ietf.org/html/rfc7457), both the [protocol](http://arstechnica.com/security/2016/08/new-attack-can-pluck-secrets-from-1-of-https-traffic-affects-top-sites/) and its [implementations](http://arstechnica.com/security/2014/04/confirmed-nasty-heartbleed-bug-exposes-openvpn-private-keys-too/), and we simply trust the server less due to past [security](https://github.com/ValdikSS/openvpn-fix-dns-leak-plugin/blob/master/README.md) [incidents](https://www.exploit-db.com/exploits/34879/).
 
 ### Why aren't you using Alpine Linux, OpenBSD, or HardenedBSD?
 
