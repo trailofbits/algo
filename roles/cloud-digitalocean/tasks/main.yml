@@ -1,6 +1,6 @@
 - name: Set the DigitalOcean Access Token fact
   set_fact:
-    do_token: "{{ do_access_token | default( lookup('env', 'DIGITALOCEAN_API_KEY') ) }}"
+    do_token: "{{ do_access_token }}"
 
 - name: "Getting your SSH key ID on Digital Ocean..."
   digital_ocean:
