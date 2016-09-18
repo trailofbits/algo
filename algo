@@ -2,6 +2,57 @@
 
 set -e
 
+digitalocean () {
+  read -p "
+Enter your API Token (https://cloud.digitalocean.com/settings/api/tokens):  
+: " -rs do_access_token
+  
+  read -p "
+Enter a valid SSH key name (https://cloud.digitalocean.com/settings/security):
+: " -r do_ssh_name
+
+  read -p "
+Name the vpn server:
+[algo.local]: " -r do_server_name
+  do_server_name=${do_server_name:-algo.local}
+
+  read -p "
+  What region should the server be located in?
+    1.  Amsterdam        (Datacenter 2)
+    2.  Amsterdam        (Datacenter 3)
+    3.  Frankfurt
+    4.  London
+    5.  New York         (Datacenter 1)
+    6.  New York         (Datacenter 2)
+    7.  New York         (Datacenter 3)
+    8.  San Francisco    (Datacenter 1)
+    9.  San Francisco    (Datacenter 2)
+    10. Singapore
+    11. Toronto
+    12. Bangalore
+Enter the number of your desired region: 
+[7]: " -r region
+  region=${region:-1}  
+  
+  case "$region" in 
+    1) do_region="ams2" ;;
+    2) do_region="ams3" ;;
+    3) do_region="fra1" ;;
+    4) do_region="lon1" ;;
+    5) do_region="nyc1" ;;
+    6) do_region="nyc2" ;;
+    7) do_region="nyc3" ;;
+    8) do_region="sfo1" ;;
+    9) do_region="sfo2" ;;
+    10) do_region="sgp1" ;;
+    11) do_region="tor1" ;;
+    12) do_region="blr1" ;;
+  esac
+  
+ansible-playbook deploy.yml -t digitalocean,vpn -e "do_access_token=$do_access_token do_ssh_name=$do_ssh_name do_server_name=$do_server_name do_region=$do_region"    
+
+}
+
 algo_provisioning () {
   echo -n "
   What provider would you like to use?
@@ -16,7 +67,7 @@ Enter the number of your desired provider
   read -r N
 
   case "$N" in
-    1) CLOUD="digitalocean" ;;
+    1) digitalocean; ;;
     2) CLOUD="ec2" ;;
     3) CLOUD="gce" ;;
     4) CLOUD="non-cloud" ;;
