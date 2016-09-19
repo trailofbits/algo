@@ -7,7 +7,8 @@
   roles:
     - { role: cloud-digitalocean, tags: ['digitalocean'] }
     - { role: cloud-ec2, tags: ['ec2'] }  
-    - { role: cloud-gce, tags: ['gce'] }     
+    - { role: cloud-gce, tags: ['gce'] }    
+    - { role: local, tags: ['local'] }
     
 - name: Post-provisioning tasks
   hosts: vpn-host
