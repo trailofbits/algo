@@ -153,6 +153,12 @@ Ansible scripts are organized into roles. The roles used by Algo are described i
 - eu-west-1
 - sa-east-1
 
+**local installation**  
+*Requirement variables:*  
+- server_ip
+- server_user
+- IP_subject
+
 ### Cloud Deployment
 
 To install the dependencies on OS X or Linux:
