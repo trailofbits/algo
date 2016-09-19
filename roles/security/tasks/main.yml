@@ -2,12 +2,12 @@
   apt: name="{{ item }}" state=latest
   with_items:
     - unattended-upgrades
-    
+
 - name: Configure unattended-upgrades
   template: src=50unattended-upgrades.j2 dest=/etc/apt/apt.conf.d/50unattended-upgrades owner=root group=root mode=0644
 
 - name: Periodic upgrades configured
-  template: src=10periodic.j2 dest=/etc/apt/apt.conf.d/10periodic owner=root group=root mode=0644    
+  template: src=10periodic.j2 dest=/etc/apt/apt.conf.d/10periodic owner=root group=root mode=0644
 
 - name: Find directories for minimizing access
   stat:
