@@ -1,0 +1,41 @@
+- name: Configure the server and install required software
+  hosts: localhost
+  tags: algo
+  vars_files:
+    - config.cfg
+
+  roles:
+    - { role: cloud-digitalocean, tags: ['digitalocean'] }
+    - { role: cloud-ec2, tags: ['ec2'] }
+    - { role: cloud-gce, tags: ['gce'] }
+    - { role: local, tags: ['local'] }
+
+- name: Post-provisioning tasks
+  hosts: vpn-host
+  gather_facts: false
+  tags: algo
+  become: true
+  vars_files:
+    - config.cfg
+
+  pre_tasks:
+    - name: Common pre-tasks
+      include: playbooks/common.yml
+      tags: [ 'digitalocean', 'ec2', 'gce', 'pre' ]
+
+    - name: DigitalOcean pre-tasks
+      include: playbooks/digitalocean.yml
+      tags: [ 'digitalocean' ]
+
+  roles:
+    - { role: security, tags: [ 'security' ] }
+    - { role: proxy, tags: [ 'proxy', 'adblock' ] }
+    - { role: dns_adblocking, tags: ['dns', 'adblock' ] }
+    - { role: logging, tags: [ 'logging' ] }
+    - { role: ssh_tunneling, tags: [ 'ssh_tunneling' ] }
+    - { role: vpn, tags: [ 'vpn' ] }
+
+  handlers:
+    - name: reload eth0
+      shell: sh -c 'ifdown eth0; ip addr flush dev eth0; ifup eth0'
+

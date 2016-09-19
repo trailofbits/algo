@@ -7,7 +7,7 @@
     sort: name
     sort_order: descending
     sort_end: 1
-    region: "{{ regions[region] }}"
+    region: "{{ region }}"
   register: ami_search
 
 - set_fact:
@@ -18,7 +18,7 @@
     aws_access_key: "{{ aws_access_key }}"
     aws_secret_key: "{{ aws_secret_key }}"
     name: VPNKEY
-    region: "{{ regions[region] }}"
+    region: "{{ region }}"
     key_material: "{{ item }}"
   with_file: "{{ ssh_public_key }}"
   register: keypair
@@ -27,9 +27,9 @@
   ec2_group:
     aws_access_key: "{{ aws_access_key }}"
     aws_secret_key: "{{ aws_secret_key }}"
-    name: "{{ security_group }}"
+    name: vpn-secgroup
     description: Security group for VPN servers
-    region: "{{ regions[region] }}"
+    region: "{{ region }}"
     rules:
       - proto: udp
         from_port: 4500
@@ -54,11 +54,11 @@
     aws_access_key: "{{ aws_access_key }}"
     aws_secret_key: "{{ aws_secret_key }}"
     keypair: "VPNKEY"
-    group: "{{ security_group }}"
-    instance_type: "{{ instance_type }}"
+    group: vpn-secgroup
+    instance_type: t2.nano
     image: "{{ ami_image }}"
     wait: true
-    region: "{{ regions[region] }}"
+    region: "{{ region }}"
     instance_tags:
       name: "{{ aws_server_name }}"
   register: ec2
@@ -69,11 +69,6 @@
     groupname: vpn-host
     ansible_ssh_user: ubuntu
     ansible_python_interpreter: "/usr/bin/python2.7"
-    dns_enabled: "{{ dns_enabled }}"
-    proxy_enabled: "{{ proxy_enabled }}"
-    ssh_tunneling_enabled: "{{ ssh_tunneling_enabled }}"
-    security_enabled: "{{ security_enabled }}"
-    auditd_enabled: " {{ auditd_enabled }}"
     easyrsa_p12_export_password: "{{ easyrsa_p12_export_password }}"
     cloud_provider: ec2
     ipv6_support: no

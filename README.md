@@ -73,6 +73,20 @@ Ansible scripts are organized into roles. The roles used by Algo are described i
 * SHell or BASH
 * libselinux-python (for RedHat based distros)
 
+### Roles and Tags
+**Cloud roles:**  
+- role: cloud-digitalocean, tags: digitalocean
+- role: cloud-ec2, tags: ec2  
+- role: cloud-gce, tags: gce  
+
+**Server roles:**  
+- role: vpn, tags: vpn 
+- role: dns_adblocking, tags: dns, adblock
+- role: proxy, tags: proxy, adblock 
+- role: logging, tags: logging
+- role: security, tags: security
+- role: ssh_tunneling, tags: ssh_tunneling
+
 ### Cloud Deployment
 
 To install the dependencies on OS X or Linux:
