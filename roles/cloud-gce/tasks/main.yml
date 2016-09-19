@@ -16,7 +16,7 @@
 
 - name: Add the instance to an inventory group
   add_host:
-    name: "{{ google_vm.instance_data[0].public_ip}}"
+    name: "{{ google_vm.instance_data[0].public_ip }}"
     groups: vpn-host
     ansible_ssh_user: ubuntu
     ansible_python_interpreter: "/usr/bin/python2.7"
