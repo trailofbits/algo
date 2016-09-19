@@ -15,7 +15,7 @@
 
 - name: Enable services
   service: name=auditd enabled=yes
-  
+
 # Rsyslog
 
 - name: Rsyslog configured
@@ -29,4 +29,4 @@
     - restart rsyslog
 
 - name: Enable services
-  service: name=rsyslog enabled=yes  
+  service: name=rsyslog enabled=yes
