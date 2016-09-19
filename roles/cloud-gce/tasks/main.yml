@@ -5,7 +5,7 @@
 - name: "Creating a new instance..."
   gce:
     instance_names: "{{ server_name }}"
-    zone: "{{ zones[zone] }}"
+    zone: "{{ zone }}"
     machine_type: n1-standard-1
     image: ubuntu-1604
     service_account_email: "{{ credentials_file_lookup.client_email  }}"
@@ -16,15 +16,10 @@
 
 - name: Add the instance to an inventory group
   add_host:
-    name: "{{ google_vm.instance_data[0].public_ip}}"
+    name: "{{ google_vm.instance_data[0].public_ip }}"
     groups: vpn-host
     ansible_ssh_user: ubuntu
     ansible_python_interpreter: "/usr/bin/python2.7"
-    dns_enabled: "{{ dns_enabled }}"
-    proxy_enabled: "{{ proxy_enabled }}"
-    ssh_tunneling_enabled: "{{ ssh_tunneling_enabled }}"
-    auditd_enabled: " {{ auditd_enabled }}"
-    security_enabled: "{{ security_enabled }}"
     easyrsa_p12_export_password: "{{ easyrsa_p12_export_password }}"
     cloud_provider: gce
     ipv6_support: no

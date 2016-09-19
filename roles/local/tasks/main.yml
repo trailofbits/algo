@@ -1,0 +1,12 @@
+- name: Add the instance to an inventory group
+  add_host:
+    name: "{{ server_ip }}"
+    groups: vpn-host
+    ansible_ssh_user: "{{ server_user }}"
+    ansible_python_interpreter: "/usr/bin/python2.7"
+    easyrsa_p12_export_password: "{{ easyrsa_p12_export_password }}"
+    cloud_provider: local
+
+- name: Waiting for SSH to become available
+  local_action: "wait_for port=22 host={{ server_ip }} timeout=320"
+  when: server_ip != "localhost"
