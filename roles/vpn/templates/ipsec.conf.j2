@@ -5,14 +5,13 @@ config setup
 conn %default
     dpdaction=clear
     dpddelay=35s
-    dpdtimeout=300s
     rekey=no
     keyexchange=ikev2
     ike=aes128gcm16-sha2_256-prfsha256-ecp256!
     esp=aes128gcm16-sha2_256-ecp256!
     compress=yes
     fragmentation=yes
-    
+
     left=%any
     leftauth=pubkey
     leftid={{ IP_subject_alt_name }}
@@ -26,9 +25,8 @@ conn %default
 {% if service_dns is defined and service_dns == "Y" %}
     rightdns={{ local_service_ip }}
 {% else %}
-    rightdns={% for host in dns_servers %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}    
-{% endif %}    
-    
+    rightdns={% for host in dns_servers %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}
+{% endif %}
 
 conn ikev2-pubkey
-    auto=add    
+    auto=add
