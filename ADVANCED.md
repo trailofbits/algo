@@ -68,7 +68,7 @@
 *Requirement variables:*  
 - server_ip
 - server_user
-- IP_subject
+- IP_subject_alt_name
 
 ### Deployment
 
