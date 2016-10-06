@@ -18,7 +18,7 @@
 
     - name: "ssh_tunneling_enabled"
       prompt: "Do you want each user to have their own account for SSH tunneling? (y/n):\n"
-      default: "y"
+      default: "n"
       private: no
 
     - name: "easyrsa_p12_export_password"
@@ -56,115 +56,91 @@
     - set_fact:
         IP_subject_alt_name: "{{ IP_subject }}"
 
+  roles:
+    - { role: ssh_tunneling, tags: [ 'ssh_tunneling' ], when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y" }
+
   tasks:
-  - name: Build the client's pair
-    shell: >
-      ./easyrsa build-client-full {{ item }} nopass &&
-      touch '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_initialized'
-    args:
-      chdir: '{{ easyrsa_dir }}/easyrsa3/'
-      creates: '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_initialized'
-    with_items: "{{ users }}"
+    - name: Build the client's pair
+      shell: >
+        ./easyrsa build-client-full {{ item }} nopass &&
+        touch '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_initialized'
+      args:
+        chdir: '{{ easyrsa_dir }}/easyrsa3/'
+        creates: '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_initialized'
+      with_items: "{{ users }}"
 
-  - name: Build the client's p12
-    shell: >
-      openssl pkcs12 -in {{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt -inkey {{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.key -export -name {{ item }} -out /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 -certfile {{ easyrsa_dir }}/easyrsa3//pki/ca.crt -passout pass:{{ easyrsa_p12_export_password }} &&
-      touch '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_p12_initialized'
-    args:
-      chdir: '{{ easyrsa_dir }}/easyrsa3/'
-      creates: '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_p12_initialized'
-    with_items: "{{ users }}"
+    - name: Build the client's p12
+      shell: >
+        openssl pkcs12 -in {{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt -inkey {{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.key -export -name {{ item }} -out /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 -certfile {{ easyrsa_dir }}/easyrsa3//pki/ca.crt -passout pass:{{ easyrsa_p12_export_password }} &&
+        touch '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_p12_initialized'
+      args:
+        chdir: '{{ easyrsa_dir }}/easyrsa3/'
+        creates: '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_p12_initialized'
+      with_items: "{{ users }}"
 
-  - name: Get active users
-    shell: >
-      grep ^V pki/index.txt | grep -v "{{ IP_subject_alt_name }}" | awk '{print $5}' | sed 's/\/CN=//g'
-    args:
-      chdir: '{{ easyrsa_dir }}/easyrsa3/'
-    register: valid_certs
+    - name: Get active users
+      shell: >
+        grep ^V pki/index.txt | grep -v "{{ IP_subject_alt_name }}" | awk '{print $5}' | sed 's/\/CN=//g'
+      args:
+        chdir: '{{ easyrsa_dir }}/easyrsa3/'
+      register: valid_certs
 
-  - name: Revoke non-existing users
-    shell: >
-      ipsec pki --signcrl --cacert {{ easyrsa_dir }}/easyrsa3//pki/ca.crt --cakey {{ easyrsa_dir }}/easyrsa3/pki/private/ca.key --reason superseded --cert {{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt > /etc/ipsec.d/crls/{{ item }}.der &&
-      ./easyrsa revoke {{ item }} &&
-      ipsec rereadcrls
-    args:
-      chdir: '{{ easyrsa_dir }}/easyrsa3/'
-    when: item not in users
-    with_items: "{{ valid_certs.stdout_lines }}"
+    - name: Revoke non-existing users
+      shell: >
+        ipsec pki --signcrl --cacert {{ easyrsa_dir }}/easyrsa3//pki/ca.crt --cakey {{ easyrsa_dir }}/easyrsa3/pki/private/ca.key --reason superseded --cert {{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt > /etc/ipsec.d/crls/{{ item }}.der &&
+        ./easyrsa revoke {{ item }} &&
+        ipsec rereadcrls
+      args:
+        chdir: '{{ easyrsa_dir }}/easyrsa3/'
+      when: item not in users
+      with_items: "{{ valid_certs.stdout_lines }}"
 
-  - name: Register p12 PayloadContent
-    shell: >
-     cat /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 | base64
-    register:  PayloadContent
-    with_items: "{{ users }}"
+    - name: Register p12 PayloadContent
+      shell: >
+        cat /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 | base64
+      register:  PayloadContent
+      with_items: "{{ users }}"
 
-  - name: Register CA PayloadContent
-    shell: >
-     cat /{{ easyrsa_dir }}/easyrsa3/pki/ca.crt | base64
-    register:  PayloadContentCA
+    - name: Register CA PayloadContent
+      shell: >
+        cat /{{ easyrsa_dir }}/easyrsa3/pki/ca.crt | base64
+      register:  PayloadContentCA
 
-  - name: Build the mobileconfigs
-    template: src=roles/vpn/templates/mobileconfig.j2 dest=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item.0 }}.mobileconfig mode=0600
-    with_together:
-      - "{{ users }}"
-      - "{{ PayloadContent.results }}"
-    no_log: True
+    - name: Build the mobileconfigs
+      template: src=roles/vpn/templates/mobileconfig.j2 dest=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item.0 }}.mobileconfig mode=0600
+      with_together:
+        - "{{ users }}"
+        - "{{ PayloadContent.results }}"
+      no_log: True
 
-  - name: Fetch users P12
-    fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 dest=configs/{{ IP_subject_alt_name }}_{{ item }}.p12 flat=yes
-    with_items: "{{ users }}"
+    - name: Fetch users P12
+      fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 dest=configs/{{ IP_subject_alt_name }}_{{ item }}.p12 flat=yes
+      with_items: "{{ users }}"
 
-  - name: Fetch users mobileconfig
-    fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.mobileconfig dest=configs/{{ IP_subject_alt_name }}_{{ item }}.mobileconfig flat=yes
-    with_items: "{{ users }}"
+    - name: Fetch users mobileconfig
+      fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.mobileconfig dest=configs/{{ IP_subject_alt_name }}_{{ item }}.mobileconfig flat=yes
+      with_items: "{{ users }}"
 
-  - name: Fetch server CA certificate
-    fetch: src=/{{ easyrsa_dir }}/easyrsa3/pki/ca.crt dest=configs/{{ IP_subject_alt_name }}_ca.crt flat=yes
+    - name: Fetch server CA certificate
+      fetch: src=/{{ easyrsa_dir }}/easyrsa3/pki/ca.crt dest=configs/{{ IP_subject_alt_name }}_ca.crt flat=yes
 
-  # SSH
+    # SSH
 
-  - name: SSH | Ensure that the system users exist
-    user:
-      name: "{{ item }}"
-      groups: algo
-      home: '/var/jail/{{ item }}'
-      createhome: yes
-      generate_ssh_key: yes
-      shell: /bin/false
-      ssh_key_type: rsa
-      ssh_key_bits: 2048
-      ssh_key_comment: '{{ item }}@{{ IP_subject_alt_name }}'
-      ssh_key_passphrase: "{{ easyrsa_p12_export_password }}"
-      state: present
-      append: yes
-    with_items: "{{ users }}"
-    when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
+    - name: SSH | Get active system users
+      shell: >
+        getent group algo | cut -f4 -d: | sed "s/,/\n/g"
+      register: valid_users
+      when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
 
-  - name: SSH | The authorized keys file created
-    file:
-      src: '/var/jail/{{ item }}/.ssh/id_rsa.pub'
-      dest: '/var/jail/{{ item }}/.ssh/authorized_keys'
-      owner: "{{ item }}"
-      group: "{{ item }}"
-      state: link
-    with_items: "{{ users }}"
-    when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
+    - name: SSH | Delete non-existing users
+      user:
+        name: "{{ item }}"
+        state: absent
+        remove: yes
+        force: yes
+      when: item not in users and ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
+      with_items: "{{ valid_users.stdout_lines }}"
 
-  - name: SSH | Get active system users
-    shell: >
-      getent group algo | cut -f4 -d: | sed "s/,/\n/g"
-    register: valid_users
-    when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
-
-  - name: SSH | Delete non-existing users
-    user:
-      name: "{{ item }}"
-      state: absent
-      remove: yes
-      force: yes
-    when: item not in users and ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
-    with_items: "{{ valid_users.stdout_lines }}"
-
-  - name: SSH | Fetch users SSH private keys
-    fetch: src='/var/jail/{{ item }}/.ssh/id_rsa' dest=configs/{{ IP_subject_alt_name }}_{{ item }}.ssh.pem flat=yes
-    with_items: "{{ users }}"
+    - name: SSH | Fetch users SSH private keys
+      fetch: src='/var/jail/{{ item }}/.ssh/id_rsa' dest=configs/{{ IP_subject_alt_name }}_{{ item }}.ssh.pem flat=yes
+      with_items: "{{ users }}"
