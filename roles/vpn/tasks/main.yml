@@ -66,6 +66,25 @@
   notify:
     - restart strongswan
 
+- name: Get loaded plugins
+  shell: >
+    find /etc/strongswan.d/charon/ -type f -name '*.conf' -printf '%f\n' | cut -f1 -d.
+  register: strongswan_plugins
+
+- name: Disable unneeded plugins
+  lineinfile: dest="/etc/strongswan.d/charon/{{ item }}.conf" regexp='.*load.*' line='load = no' state=present
+  notify:
+    - restart strongswan
+  when: item not in strongswan_enabled_plugins
+  with_items: "{{ strongswan_plugins.stdout_lines }}"
+
+- name: Ensure that required plugins are enabled
+  lineinfile: dest="/etc/strongswan.d/charon/{{ item }}.conf" regexp='.*load.*' line='load = yes' state=present
+  notify:
+    - restart strongswan
+  when: item in strongswan_enabled_plugins
+  with_items: "{{ strongswan_plugins.stdout_lines }}"
+
 - name: Fetch easy-rsa-ipsec from git
   git: repo=git://github.com/ValdikSS/easy-rsa-ipsec.git version=ed4de10d7ce0726357fb1bb4729f8eb440c06e2b dest="{{ easyrsa_dir }}"
 
