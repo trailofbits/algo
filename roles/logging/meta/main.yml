@@ -1,4 +1,4 @@
 ---
 
 dependencies:
-  - { role: common }
+  - { role: common, tags: common }
