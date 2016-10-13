@@ -55,16 +55,18 @@ ansible-playbook deploy.yml -t digitalocean,vpn -e "do_access_token=$do_access_t
 
 ec2 () {
   read -p "
-Enter your aws_access_key (http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html):
+Enter your aws_access_key (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
+Note: Make sure to use either your root key (recommended) or an IAM user with an acceptable policy attached
 [AKIA...]: " -rs aws_access_key
 
   read -p "
-Enter your aws_secret_key (http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html):
+Enter your aws_secret_key (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
+Note: Make sure to use either your root key (recommended) or an IAM user with an acceptable policy attached
 [ABCD...]: " -rs aws_secret_key
   
   read -p "
 Enter the local path to your SSH public key:
-[~/.ssh/id_rsa.pub]: " -r ssh_public_key
+: " -r ssh_public_key
 
   read -p "
 Name the vpn server:
