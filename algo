@@ -4,11 +4,11 @@ set -e
 
 digitalocean () {
   read -p "
-Enter your API Token (https://cloud.digitalocean.com/settings/api/tokens):  
+Enter your API token (https://cloud.digitalocean.com/settings/api/tokens):
 : " -rs do_access_token
   
   read -p "
-Enter a valid SSH key name (https://cloud.digitalocean.com/settings/security):
+Enter an existing SSH key name (https://cloud.digitalocean.com/settings/security):
 : " -r do_ssh_name
 
   read -p "
@@ -32,9 +32,9 @@ Name the vpn server:
     12. Bangalore
 Enter the number of your desired region: 
 [7]: " -r region
-  region=${region:-7}  
+  region=${region:-7}
   
-  case "$region" in 
+  case "$region" in
     1) do_region="ams2" ;;
     2) do_region="ams3" ;;
     3) do_region="fra1" ;;
@@ -49,22 +49,22 @@ Enter the number of your desired region:
     12) do_region="blr1" ;;
   esac
   
-ansible-playbook deploy.yml -t digitalocean,vpn -e "do_access_token=$do_access_token do_ssh_name=$do_ssh_name do_server_name=$do_server_name do_region=$do_region"    
+ansible-playbook deploy.yml -t digitalocean,vpn -e "do_access_token=$do_access_token do_ssh_name=$do_ssh_name do_server_name=$do_server_name do_region=$do_region"
 
 }
 
 ec2 () {
   read -p "
 Enter your aws_access_key (http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html):
-: " -rs aws_access_key
+[asdf...]: " -rs aws_access_key
 
   read -p "
 Enter your aws_secret_key (http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html):
-: " -rs aws_secret_key
+[asdf...]: " -rs aws_secret_key
   
   read -p "
 Enter the local path to your SSH public key:
-: " -r ssh_public_key
+[adsf]: " -r ssh_public_key
 
   read -p "
 Name the vpn server:
@@ -86,7 +86,7 @@ Name the vpn server:
     11.  sa-east-1           South America (São Paulo)
 Enter the number of your desired region: 
 [1]: " -r aws_region
-  aws_region=${aws_region:-1}  
+  aws_region=${aws_region:-1}
   
   case "$aws_region" in 
     1) region="us-east-1" ;;
@@ -155,7 +155,7 @@ Please choose the number of your zone. Press enter for default (#8) zone.
     13) zone="asia-east1-c" ;;
   esac
   
-ansible-playbook deploy.yml -t gce,vpn -e "credentials_file=$credentials_file server_name=$server_name ssh_public_key=$ssh_public_key zone=$zone"   
+ansible-playbook deploy.yml -t gce,vpn -e "credentials_file=$credentials_file server_name=$server_name ssh_public_key=$ssh_public_key zone=$zone"
 
 }
 
@@ -173,7 +173,7 @@ What user should we use to login on the server? (ignore if you're deploying to l
 Enter the public IP address of your server: (IMPORTANT! This IP is used to verify the certificate)
 : " -r IP_subject
   
-  ansible-playbook deploy.yml -t local,vpn -e "server_ip=$server_ip server_user=$server_user IP_subject_alt_name=$IP_subject" 
+  ansible-playbook deploy.yml -t local,vpn -e "server_ip=$server_ip server_user=$server_user IP_subject_alt_name=$IP_subject"
 }
 
 algo_provisioning () {
@@ -184,7 +184,7 @@ algo_provisioning () {
     3. Google Compute Engine
     4. Install to existing Ubuntu server
 
-Enter the number of your desired provider  
+Enter the number of your desired provider
 : "
 
   read -r N
@@ -198,12 +198,12 @@ Enter the number of your desired provider
   esac
 
 }
-  
+
 user_management () {
   ansible-playbook users.yml
 }
 
 case "$1" in
-  update-users)  user_management   ;;
-  *)      algo_provisioning ;;
+  update-users) user_management ;;
+  *) algo_provisioning ;;
 esac 
