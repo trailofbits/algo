@@ -1,8 +1,8 @@
 ### Common Issues
 
 * Check that you're using at least Ansible 2.1
-* If installing to a local server, try using a fresh install
-* Please review the [FAQ](https://github.com/trailofbits/algo#faq) in the readme
+* If installing to a local server, use a fresh install of Ubuntu 16.04
+* Please review the [FAQ](https://github.com/trailofbits/algo#faq)
 
 ### Coding Guidelines
 
