@@ -62,9 +62,9 @@ Enter your aws_access_key (http://docs.aws.amazon.com/AWSSimpleQueueService/late
 Enter your aws_secret_key (http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html):
 : " -rs aws_secret_key
   
-  read -p "
+  read -e -p "
 Enter the local path to your SSH public key:
-: " -r ssh_public_key
+: " -i "~/.ssh/id_rsa.pub" -r ssh_public_key
 
   read -p "
 Name the vpn server:
