@@ -76,7 +76,7 @@ Ansible scripts are organized into roles. The roles used by Algo are described i
 ### Roles and Tags
 **Cloud roles:**  
 - role: cloud-digitalocean, tags: digitalocean
-- role: cloud-ec2, tags: ec2  
+- role: cloud-ec2, tags: ec2
 - role: cloud-gce, tags: gce  
 
 **Server roles:**  
