@@ -5,7 +5,10 @@
   apt: name=privoxy state=latest
 
 - name: Privoxy configured
-  template: src=privoxy_config.j2 dest=/etc/privoxy/config
+  template: src="{{ item.src }}" dest="{{ item.dest }}"
+  with_items:
+    - { src: privoxy_config.j2, dest: /etc/privoxy/config }
+    - { src: default.filter.j2, dest: /etc/privoxy/default.filter }
   notify:
     - restart privoxy
 
