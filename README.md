@@ -60,6 +60,9 @@ Ansible scripts are organized into roles. The roles used by Algo are described i
 
 ## Usage
 
+### Warning
+If you run Algo on your existing server, the iptables rules will be overwritten. If you don't want to overwite the rules, just skip the `iptables` tag. (You can find some information about tags [here](https://github.com/trailofbits/algo/blob/master/ADVANCED.md))
+
 ### Requirements
 
 * ansible >= 2.1
