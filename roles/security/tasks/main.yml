@@ -88,14 +88,6 @@
 - name: Do not send ICMP redirects (we are not a router)
   sysctl: name=net.ipv4.conf.all.send_redirects value=0
 
-- name: Iptables configured
-  template: src="{{ item.src }}" dest="{{ item.dest }}" owner=root group=root mode=0640
-  with_items:
-    - { src: rules.v4.j2, dest: /etc/iptables/rules.v4 }
-    - { src: rules.v6.j2, dest: /etc/iptables/rules.v6 }
-  notify:
-    - restart iptables
-
 - name: SSH config
   template: src=sshd_config.j2 dest=/etc/ssh/sshd_config owner=root group=root mode=0644
   notify:
