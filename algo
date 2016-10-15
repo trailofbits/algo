@@ -64,9 +64,9 @@ Enter your aws_secret_key (http://docs.aws.amazon.com/general/latest/gr/managing
 Note: Make sure to use either your root key (recommended) or an IAM user with an acceptable policy attached
 [ABCD...]: " -rs aws_secret_key
   
-  read -p "
+  read -e -p "
 Enter the local path to your SSH public key:
-: " -r ssh_public_key
+: " -i "~/.ssh/id_rsa.pub" -r ssh_public_key
 
   read -p "
 Name the vpn server:
