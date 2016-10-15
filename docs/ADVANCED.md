@@ -17,6 +17,8 @@ Before you begin, make sure you have installed all the dependencies necessary fo
 
 ## Local Deployment
 
+**Warning**: If you run Algo on your existing server, the iptables rules will be overwritten. If you don't want to overwite the rules, just skip the `iptables` tag. You can find some information about tags below.
+
 It is possible to download the Algo scripts to your own Ubuntu server and run the scripts locally. You need to install ansible to run Algo on Ubuntu. Installing ansible via pip requires pulling in a lot of dependencies, including a full compiler suite. It is easier to use apt, however, Ubuntu 16.04 only comes with ansible 2.0.0.2. Therefore, to use apt you must use the ansible PPA, and using a PPA requires installing `software-properties-common`.
 
 tl;dr:

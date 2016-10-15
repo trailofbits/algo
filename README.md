@@ -73,7 +73,7 @@ Use the following command to SSH tunnel through the server:
 
 ```asdf```
 
-[explain the options]
+asdf then explain the options used
 
 ## FAQ
 
