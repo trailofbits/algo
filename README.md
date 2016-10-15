@@ -23,7 +23,7 @@ Algo VPN (short for "Al Gore", the **V**ice **P**resident of **N**etworks everyw
 * Does not claim to provide anonymity or censorship avoidance
 * Does not claim to protect you from the [FSB](https://en.wikipedia.org/wiki/Federal_Security_Service), [MSS](https://en.wikipedia.org/wiki/Ministry_of_State_Security_(China)), [DGSE](https://en.wikipedia.org/wiki/Directorate-General_for_External_Security), or [FSM](https://en.wikipedia.org/wiki/Flying_Spaghetti_Monster)
 
-## Initial Setup
+## Deploy the Algo Server
 
 The easiest way to get an Algo server running is to let it setup a new virtual machine in the cloud for you.
 
@@ -34,18 +34,13 @@ sudo pip install -r requirements.txt
 ```
 
 2. Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
-3. Start the deploy and follow the instructions:
-```
-./algo
-```
+3. Start the deploy and follow the instructions: `./algo`
 
 That's it! You now have an Algo VPN server on the internet.
 
 Note: for local or scripted deployment instructions see the [Advanced Usage](/docs/ADVANCED.md) documentation.
 
-## User Management
-
-### Configuration Files
+## Configure the VPN Clients
 
 After Algo finishes setting up the server, you can find all the certificates and configuration files that users will need in the `config` directory. Make sure to adequately secure and transmit these files since many contain private keys.
 
@@ -53,19 +48,7 @@ After Algo finishes setting up the server, you can find all the certificates and
 * asdf
 * asdf
 
-### Adding or Removing Users
-
-Algo's own scripts can easily add and remove users from the VPN server.
-
-1. Update the `users` list in your `config.cfg`
-2. Run the command:
-```
-./algo update-users
-```
-
-The Algo VPN server now only contains the users listed in the `config.cfg` file.
-
-## SSH Tunneling
+## Setup an SSH Tunnel
 
 If you turned on the optional SSH tunneling role, then local user accounts will be created for each user in `config.cfg`. None of these user accounts will have shell access and their SSH tunneling options are limited. This was done to ensure that users have the least access required to tunnel through the server.
 
@@ -74,6 +57,15 @@ Use the following command to SSH tunnel through the server:
 ```asdf```
 
 asdf then explain the options used
+
+## Adding or Removing Users
+
+Algo's own scripts can easily add and remove users from the VPN server.
+
+1. Update the `users` list in your `config.cfg`
+2. Run the command: `./algo update-users`
+
+The Algo VPN server now only contains the users listed in the `config.cfg` file.
 
 ## FAQ
 
