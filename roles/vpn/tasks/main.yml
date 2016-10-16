@@ -167,6 +167,10 @@
     cat /{{ easyrsa_dir }}/easyrsa3/pki/ca.crt | base64
   register:  PayloadContentCA
 
+- name: Set facts for mobileconfigs
+  set_fact:
+    proxy_enabled: false
+
 - name: Build the mobileconfigs
   template: src=mobileconfig.j2 dest=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item.0 }}.mobileconfig mode=0600
   with_together:
