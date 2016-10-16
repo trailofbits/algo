@@ -42,21 +42,32 @@ Note: for local or scripted deployment instructions see the [Advanced Usage](/do
 
 ## Configure the VPN Clients
 
-After Algo finishes setting up the server, you can find all the certificates and configuration files that users will need in the `config` directory. Make sure to adequately secure and transmit these files since many contain private keys.
+After Algo finishes setting up the server, you can find all the certificates and configuration files that users will need in the `config` directory. Make sure to secure these files since many contain private keys. All files are prefixed with the IP address of the Algo VPN server.
 
-* [adsf].mobileconfig: Apple Configuration Profiles. These are all-in-one configuration files for iOS and macOS devices. Open them to a compatible device to fully configure the VPN. Note that they can be installed via AirDrop.
-* asdf
-* asdf
+### Apple Devices
+
+Find the corresponding mobileconfig (Apple Profile) for the user and send it to them over AirDrop (or other secure means). Apple Configuration Profiles are all-in-one configuration files for iOS and macOS devices. Installing a profile will fully configure the VPN.
+
+### StrongSwan Clients (e.g., OpenWRT)
+
+Find the included user_ipsec.conf, user_ipsec.secrets, user.crt (user certificate), and user.key (private key) files and copy them to your client device.
+
+### Other Devices
+
+* ca.crt: CA Certificate
+* user_ipsec.conf: StrongSwan client configuration
+* user_ipsec.secrets: StrongSwan client configuration
+* user.crt: User Certificate
+* user.key: User Private Key
+* user.mobileconfig: Apple Profile
+* user.p12: User Certificate and Private Key (in PKCS#12 format)
+* user.ssh.pem (optional): SSH authorized_key file
 
 ## Setup an SSH Tunnel
 
 If you turned on the optional SSH tunneling role, then local user accounts will be created for each user in `config.cfg`. None of these user accounts will have shell access and their SSH tunneling options are limited. This was done to ensure that users have the least access required to tunnel through the server.
 
-Use the following command to SSH tunnel through the server:
-
-```asdf```
-
-asdf then explain the options used
+Make sure to access the server using 'ssh -N' for any limited accounts.
 
 ## Adding or Removing Users
 
