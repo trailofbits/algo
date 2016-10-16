@@ -76,12 +76,24 @@
             <key>Proxies</key>
             <dict>
                 <key>HTTPEnable</key>
+{% if proxy_enabled is defined and proxy_enabled == true %}
+                <integer>1</integer>
+                <key>HTTPPort</key>
+                <integer>8118</integer>
+                <key>HTTPProxy</key>
+                <string>{{ local_service_ip }}</string>
+  {% else %}
                 <integer>0</integer>
+{% endif %}
                 <key>HTTPSEnable</key>
                 <integer>0</integer>
             </dict>
             <key>UserDefinedName</key>
+{% if proxy_enabled is defined and proxy_enabled == true %}
+            <string>{{ IP_subject_alt_name }} IKEv2 with proxy</string>
+  {% else %}
             <string>{{ IP_subject_alt_name }} IKEv2</string>
+{% endif %}
             <key>VPNType</key>
             <string>IKEv2</string>
         </dict>
@@ -129,9 +141,17 @@
         </dict>
     </array>
     <key>PayloadDisplayName</key>
+{% if proxy_enabled is defined and proxy_enabled == true %}
+    <string>{{ IP_subject_alt_name }} IKEv2 with proxy</string>
+  {% else %}
     <string>{{ IP_subject_alt_name }} IKEv2</string>
+{% endif %}
     <key>PayloadIdentifier</key>
+{% if proxy_enabled is defined and proxy_enabled == true %}
+    <string>donut.local.37CA79B1-FC6A-421F-960A-90F91FC983BA</string>
+  {% else %}
     <string>donut.local.37CA79B1-FC6A-421F-960A-90F91FC983BE</string>
+{% endif %}
     <key>PayloadRemovalDisallowed</key>
     <false/>
     <key>PayloadType</key>

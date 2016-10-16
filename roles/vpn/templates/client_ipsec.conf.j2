@@ -1,0 +1,17 @@
+conn ikev2-{{ IP_subject_alt_name }}
+{% for key, value in ipsec_config.iteritems() %}
+    {{ key }}={{ value }}
+{% endfor %}
+
+    right={{ IP_subject_alt_name }}
+    rightid={{ IP_subject_alt_name }}
+    rightsubnet=0.0.0.0/0
+    rightauth=pubkey
+
+    leftsourceip=%config
+    leftauth=pubkey
+    leftcert={{ IP_subject_alt_name }}_{{ item }}.crt
+    leftfirewall=yes
+    left=%defaultroute
+
+    auto=add
