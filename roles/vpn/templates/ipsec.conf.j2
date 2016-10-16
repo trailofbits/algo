@@ -3,14 +3,9 @@ config setup
     charondebug="ike 2, knl 2, cfg 2, net 2, esp 2, dmn 2,  mgr 2"
 
 conn %default
-    dpdaction=clear
-    dpddelay=35s
-    rekey=no
-    keyexchange=ikev2
-    ike=aes128gcm16-sha2_256-prfsha256-ecp256!
-    esp=aes128gcm16-sha2_256-ecp256!
-    compress=yes
-    fragmentation=yes
+{% for key, value in ipsec_config.iteritems() %}
+    {{ key }}={{ value }}
+{% endfor %}
 
     left=%any
     leftauth=pubkey
