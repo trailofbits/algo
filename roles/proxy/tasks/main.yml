@@ -84,3 +84,29 @@
     - restart apache2
 
 - meta: flush_handlers
+
+- name: Set facts for mobileconfigs
+  set_fact:
+    proxy_enabled: true
+
+- name: Register p12 PayloadContent
+  shell: >
+    cat /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 | base64
+  register:  PayloadContent
+  with_items: "{{ users }}"
+
+- name: Register CA PayloadContent
+  shell: >
+    cat /{{ easyrsa_dir }}/easyrsa3/pki/ca.crt | base64
+  register:  PayloadContentCA
+
+- name: Build the mobileconfigs
+  template: src=roles/vpn/templates/mobileconfig.j2 dest=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item.0 }}_proxy.mobileconfig mode=0600
+  with_together:
+    - "{{ users }}"
+    - "{{ PayloadContent.results }}"
+  no_log: True
+
+- name: Fetch users mobileconfig
+  fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}_proxy.mobileconfig dest=configs/{{ IP_subject_alt_name }}_{{ item }}_proxy.mobileconfig flat=yes
+  with_items: "{{ users }}"
