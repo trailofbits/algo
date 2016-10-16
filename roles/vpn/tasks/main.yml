@@ -174,12 +174,38 @@
     - "{{ PayloadContent.results }}"
   no_log: True
 
+- name: Build the client ipsec config file
+  template: src=client_ipsec.conf.j2 dest=/{{ easyrsa_dir }}/easyrsa3//pki/private/ipsec_{{ item }}.conf mode=0600
+  with_items:
+    - "{{ users }}"
+
+- name: Build the client ipsec secret file
+  template: src=client_ipsec.secrets.j2 dest=/{{ easyrsa_dir }}/easyrsa3//pki/private/ipsec_{{ item }}.secrets mode=0600
+  with_items:
+    - "{{ users }}"
+
 - name: Fetch users P12
   fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 dest=configs/{{ IP_subject_alt_name }}_{{ item }}.p12 flat=yes
   with_items: "{{ users }}"
 
 - name: Fetch users mobileconfig
   fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.mobileconfig dest=configs/{{ IP_subject_alt_name }}_{{ item }}.mobileconfig flat=yes
+  with_items: "{{ users }}"
+
+- name: Fetch users certificates
+  fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt dest=configs/{{ IP_subject_alt_name }}_{{ item }}.crt flat=yes
+  with_items: "{{ users }}"
+
+- name: Fetch users keys
+  fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.key dest=configs/{{ IP_subject_alt_name }}_{{ item }}.key flat=yes
+  with_items: "{{ users }}"
+
+- name: Fetch users ipsec configs
+  fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/ipsec_{{ item }}.conf dest=configs/{{ IP_subject_alt_name }}_{{ item }}_ipsec.conf flat=yes
+  with_items: "{{ users }}"
+
+- name: Fetch users ipsec secrets
+  fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/ipsec_{{ item }}.secrets dest=configs/{{ IP_subject_alt_name }}_{{ item }}_ipsec.secrets flat=yes
   with_items: "{{ users }}"
 
 - name: Restrict permissions
