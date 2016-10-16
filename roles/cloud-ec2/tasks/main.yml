@@ -23,13 +23,25 @@
   with_file: "{{ ssh_public_key }}"
   register: keypair
 
+- name: Configure EC2 virtual private clouds
+  ec2_vpc:
+    state: present
+    resource_tags: { "Environment":"Algo" }
+    region: "{{ region }}"
+    cidr_block: "{{ ec2_vpc_nets.cidr_block }}"
+    subnets:
+      - cidr: "{{ ec2_vpc_nets.subnet_cidr }}"
+        resource_tags: { "Environment":"Algo" }
+  register: vpc
+
 - name: Configure EC2 security group
   ec2_group:
     aws_access_key: "{{ aws_access_key }}"
     aws_secret_key: "{{ aws_secret_key }}"
-    name: vpn-secgroup
+    name: algo-secgroup
     description: Security group for VPN servers
     region: "{{ region }}"
+    vpc_id: "{{ vpc.vpc_id }}"
     rules:
       - proto: udp
         from_port: 4500
@@ -54,13 +66,18 @@
     aws_access_key: "{{ aws_access_key }}"
     aws_secret_key: "{{ aws_secret_key }}"
     keypair: "VPNKEY"
-    group: vpn-secgroup
+    group: algo-secgroup
+    vpc_subnet_id: "{{ vpc.subnets[0].id }}"
     instance_type: t2.nano
     image: "{{ ami_image }}"
     wait: true
     region: "{{ region }}"
     instance_tags:
       name: "{{ aws_server_name }}"
+    exact_count: 1
+    count_tag:
+      name: "{{ aws_server_name }}"
+    assign_public_ip: yes
   register: ec2
 
 - name: Add new instance to host group
