@@ -38,4 +38,3 @@
   handlers:
     - name: reload eth0
       shell: sh -c 'ifdown eth0; ip addr flush dev eth0; ifup eth0'
-
