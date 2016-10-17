@@ -113,9 +113,9 @@ gce () {
 Enter the local path to your credentials JSON file (https://support.google.com/cloud/answer/6158849?hl=en&ref_topic=6262490#serviceaccounts): 
 : " -r credentials_file
   
-  read -p "
+  read -e -p "
 Enter the local path to your SSH public key:
-: " -r ssh_public_key
+: " -i "~/.ssh/id_rsa.pub" -r ssh_public_key
 
   read -p "
 Name the vpn server:
