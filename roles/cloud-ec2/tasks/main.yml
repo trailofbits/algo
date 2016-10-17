@@ -1,4 +1,4 @@
-- name: Locate official Ubuntu 16.04 AMI for region.
+- name: Locate official Ubuntu 16.04 AMI for region
   ec2_ami_find:
     aws_access_key: "{{ aws_access_key }}"
     aws_secret_key: "{{ aws_secret_key }}"
@@ -13,7 +13,7 @@
 - set_fact:
     ami_image: "{{ ami_search.results[0].ami_id }}"
 
-- name: Add ssh public key.
+- name: Add ssh public key
   ec2_key:
     aws_access_key: "{{ aws_access_key }}"
     aws_secret_key: "{{ aws_secret_key }}"
