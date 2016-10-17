@@ -27,12 +27,7 @@ Algo VPN (short for "Al Gore", the **V**ice **P**resident of **N**etworks everyw
 
 The easiest way to get an Algo server running is to let it setup a new virtual machine in the cloud for you.
 
-1. Install the dependencies on OS X or Linux:
-```
-sudo easy_install pip
-sudo pip install -r requirements.txt
-```
-
+1. Install the dependencies on OS X or Linux: `sudo easy_install pip && sudo pip install -r requirements.txt`
 2. Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
 3. Start the deploy and follow the instructions: `./algo`
 
@@ -42,17 +37,19 @@ Note: for local or scripted deployment instructions see the [Advanced Usage](/do
 
 ## Configure the VPN Clients
 
-After Algo finishes setting up the server, you can find all the certificates and configuration files that users will need in the `config` directory. Make sure to secure these files since many contain private keys. All files are prefixed with the IP address of the Algo VPN server.
+Certificates and configuration files that users will need are placed in the `config` directory. Make sure to secure these files since many contain private keys. All files are prefixed with the IP address of the Algo VPN server.
 
 ### Apple Devices
 
-Find the corresponding mobileconfig (Apple Profile) for the user and send it to them over AirDrop (or other secure means). Apple Configuration Profiles are all-in-one configuration files for iOS and macOS devices. Installing a profile will fully configure the VPN.
+Find the corresponding mobileconfig (Apple Profile) for each user and send it to them over AirDrop (or other secure means). Apple Configuration Profiles are all-in-one configuration files for iOS and macOS devices and installing a profile will fully configure the VPN.
 
 ### StrongSwan Clients (e.g., OpenWRT)
 
-Find the included user_ipsec.conf, user_ipsec.secrets, user.crt (user certificate), and user.key (private key) files and copy them to your client device.
+Find the included user_ipsec.conf, user_ipsec.secrets, user.crt (user certificate), and user.key (private key) files and copy them to your client device. These may be useful if you plan to set up a point-to-point VPN with OpenWRT or other custom device.
 
 ### Other Devices
+
+Depending on the platform, you may need one or multiple of the following files.
 
 * ca.crt: CA Certificate
 * user_ipsec.conf: StrongSwan client configuration
@@ -61,13 +58,12 @@ Find the included user_ipsec.conf, user_ipsec.secrets, user.crt (user certificat
 * user.key: User Private Key
 * user.mobileconfig: Apple Profile
 * user.p12: User Certificate and Private Key (in PKCS#12 format)
-* user.ssh.pem (optional): SSH authorized_key file
 
 ## Setup an SSH Tunnel
 
-If you turned on the optional SSH tunneling role, then local user accounts will be created for each user in `config.cfg`. None of these user accounts will have shell access and their SSH tunneling options are limited. This was done to ensure that users have the least access required to tunnel through the server.
+If you turned on the optional SSH tunneling role, then local user accounts will be created for each user in `config.cfg` and an SSH authorized_key file will be in the `config` directory (user.ssh.pem). SSH user accounts do not have shell access and their tunneling options are limited. This is done to ensure that users have the least access required to tunnel through the server.
 
-Make sure to access the server using 'ssh -N' for any limited accounts.
+Make sure to access the server using 'ssh -N' with these limited accounts.
 
 ## Adding or Removing Users
 
