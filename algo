@@ -76,32 +76,34 @@ Name the vpn server:
   read -p "
   What region should the server be located in?
     1.   us-east-1           US East (N. Virginia)
-    2.   us-west-1           US West (N. California)
-    3.   us-west-2           US West (Oregon)
-    4.   ap-south-1          Asia Pacific (Mumbai)
-    5.   ap-northeast-2      Asia Pacific (Seoul)
-    6.   ap-southeast-1      Asia Pacific (Singapore)
-    7.   ap-southeast-2      Asia Pacific (Sydney)
-    8.   ap-northeast-1      Asia Pacific (Tokyo)
-    9.   eu-central-1        EU (Frankfurt)
-    10.  eu-west-1           EU (Ireland)
-    11.  sa-east-1           South America (São Paulo)
+    2.   us-east-2           US East (Ohio)
+    3.   us-west-1           US West (N. California)
+    4.   us-west-2           US West (Oregon)
+    5.   ap-south-1          Asia Pacific (Mumbai)
+    6.   ap-northeast-2      Asia Pacific (Seoul)
+    7.   ap-southeast-1      Asia Pacific (Singapore)
+    8.   ap-southeast-2      Asia Pacific (Sydney)
+    9.   ap-northeast-1      Asia Pacific (Tokyo)
+    10.   eu-central-1        EU (Frankfurt)
+    11.  eu-west-1           EU (Ireland)
+    12.  sa-east-1           South America (São Paulo)
 Enter the number of your desired region: 
 [1]: " -r aws_region
   aws_region=${aws_region:-1}
   
   case "$aws_region" in 
     1) region="us-east-1" ;;
-    2) region="us-west-1" ;;
-    3) region="us-west-2" ;;
-    4) region="ap-south-1" ;;
-    5) region="ap-northeast-2" ;;
-    6) region="ap-southeast-1" ;;
-    7) region="ap-southeast-2" ;;
-    8) region="ap-northeast-1" ;;
-    9) region="eu-central-1" ;;
-    10) region="eu-west-1" ;;
-    11) region="sa-east-1" ;;
+    2) region="us-east-2" ;;    
+    3) region="us-west-1" ;;
+    4) region="us-west-2" ;;
+    5) region="ap-south-1" ;;
+    6) region="ap-northeast-2" ;;
+    7) region="ap-southeast-1" ;;
+    8) region="ap-southeast-2" ;;
+    9) region="ap-northeast-1" ;;
+    10) region="eu-central-1" ;;
+    11) region="eu-west-1" ;;
+    12) region="sa-east-1" ;;
   esac
   
 ansible-playbook deploy.yml -t ec2,vpn -e "aws_access_key=$aws_access_key aws_secret_key=$aws_secret_key aws_server_name=$aws_server_name ssh_public_key=$ssh_public_key region=$region"
