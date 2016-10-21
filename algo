@@ -2,11 +2,50 @@
 
 set -e
 
+additional_roles () {
+read -p "
+Do you want to apply security enhancements?
+[y/N]: " -r security_enabled
+security_enabled=${security_enabled:-n}
+if [[ "$security_enabled" == 'y' ]]; then ROLES+=" security"; fi
+
+read -p "
+Do you want to install an HTTP proxy to block ads and decrease traffic usage while surfing?
+[y/N]: " -r proxy_enabled
+proxy_enabled=${proxy_enabled:-n}
+if [[ "$proxy_enabled" == 'y' ]]; then ROLES+=" proxy"; fi
+
+read -p "
+Do you want to install a local DNS resolver to block ads while surfing?
+[y/N]: " -r dns_enabled
+dns_enabled=${dns_enabled:-n}
+if [[ "$dns_enabled" == 'y' ]]; then ROLES+=" dns"; fi
+
+read -p "
+Do you want to use auditd for security monitoring (see config.cfg)?
+[y/N]: " -r logging_enabled
+logging_enabled=${logging_enabled:-n}
+if [[ "$logging_enabled" == 'y' ]]; then ROLES+=" logging"; fi
+
+read -p "
+Do you want each user to have their own account for SSH tunneling?
+[y/N]: " -r ssh_tunneling_enabled
+ssh_tunneling_enabled=${ssh_tunneling_enabled:-n}
+if [[ "$ssh_tunneling_enabled" == 'y' ]]; then ROLES+=" ssh_tunneling"; fi
+
+}
+
+deploy () {
+
+  ansible-playbook deploy.yml -t "${ROLES// /,}" -e "${EXTRA_VARS}"
+
+}
+
 digitalocean () {
   read -p "
 Enter your API token (https://cloud.digitalocean.com/settings/api/tokens):
 : " -rs do_access_token
-  
+
   read -p "
 Enter an existing SSH key name (https://cloud.digitalocean.com/settings/security):
 : " -r do_ssh_name
@@ -30,10 +69,10 @@ Name the vpn server:
     10. Singapore
     11. Toronto
     12. Bangalore
-Enter the number of your desired region: 
+Enter the number of your desired region:
 [7]: " -r region
   region=${region:-7}
-  
+
   case "$region" in
     1) do_region="ams2" ;;
     2) do_region="ams3" ;;
@@ -48,9 +87,9 @@ Enter the number of your desired region:
     11) do_region="tor1" ;;
     12) do_region="blr1" ;;
   esac
-  
-ansible-playbook deploy.yml -t digitalocean,vpn -e "do_access_token=$do_access_token do_ssh_name=$do_ssh_name do_server_name=$do_server_name do_region=$do_region"
 
+ROLES="digitalocean vpn"
+EXTRA_VARS="do_access_token=$do_access_token do_ssh_name=$do_ssh_name do_server_name=$do_server_name do_region=$do_region"
 }
 
 ec2 () {
@@ -63,7 +102,7 @@ Note: Make sure to use either your root key (recommended) or an IAM user with an
 Enter your aws_secret_key (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
 Note: Make sure to use either your root key (recommended) or an IAM user with an acceptable policy attached
 [ABCD...]: " -rs aws_secret_key
-  
+
   read -e -p "
 Enter the local path to your SSH public key:
 : " -i "~/.ssh/id_rsa.pub" -r ssh_public_key
@@ -87,13 +126,13 @@ Name the vpn server:
     10.   eu-central-1        EU (Frankfurt)
     11.  eu-west-1           EU (Ireland)
     12.  sa-east-1           South America (São Paulo)
-Enter the number of your desired region: 
+Enter the number of your desired region:
 [1]: " -r aws_region
   aws_region=${aws_region:-1}
-  
-  case "$aws_region" in 
+
+  case "$aws_region" in
     1) region="us-east-1" ;;
-    2) region="us-east-2" ;;    
+    2) region="us-east-2" ;;
     3) region="us-west-1" ;;
     4) region="us-west-2" ;;
     5) region="ap-south-1" ;;
@@ -105,16 +144,16 @@ Enter the number of your desired region:
     11) region="eu-west-1" ;;
     12) region="sa-east-1" ;;
   esac
-  
-ansible-playbook deploy.yml -t ec2,vpn -e "aws_access_key=$aws_access_key aws_secret_key=$aws_secret_key aws_server_name=$aws_server_name ssh_public_key=$ssh_public_key region=$region"
 
+  ROLES="ec2 vpn"
+  EXTRA_VARS="aws_access_key=$aws_access_key aws_secret_key=$aws_secret_key aws_server_name=$aws_server_name ssh_public_key=$ssh_public_key region=$region"
 }
 
 gce () {
   read -p "
-Enter the local path to your credentials JSON file (https://support.google.com/cloud/answer/6158849?hl=en&ref_topic=6262490#serviceaccounts): 
+Enter the local path to your credentials JSON file (https://support.google.com/cloud/answer/6158849?hl=en&ref_topic=6262490#serviceaccounts):
 : " -r credentials_file
-  
+
   read -e -p "
 Enter the local path to your SSH public key:
 : " -i "~/.ssh/id_rsa.pub" -r ssh_public_key
@@ -141,9 +180,9 @@ Name the vpn server:
     13. East Asia       (Taiwan C)
 Please choose the number of your zone. Press enter for default (#8) zone.
 [8]: " -r region
-  region=${region:-8}  
-  
-  case "$region" in 
+  region=${region:-8}
+
+  case "$region" in
     1) zone="us-central1-a" ;;
     2) zone="us-central1-b" ;;
     3) zone="us-central1-c" ;;
@@ -158,16 +197,16 @@ Please choose the number of your zone. Press enter for default (#8) zone.
     12) zone="asia-east1-b" ;;
     13) zone="asia-east1-c" ;;
   esac
-  
-ansible-playbook deploy.yml -t gce,vpn -e "credentials_file=$credentials_file server_name=$server_name ssh_public_key=$ssh_public_key zone=$zone"
 
+  ROLES="gce vpn"
+  EXTRA_VARS="credentials_file=$credentials_file server_name=$server_name ssh_public_key=$ssh_public_key zone=$zone"
 }
 
 non_cloud () {
   read -p "
 Enter IP address of your server: (use localhost for local installation)
 : " -r server_ip
-  
+
   read -p "
 What user should we use to login on the server? (ignore if you're deploying to localhost)
 [root]: " -r server_user
@@ -176,8 +215,10 @@ What user should we use to login on the server? (ignore if you're deploying to l
   read -p "
 Enter the public IP address of your server: (IMPORTANT! This IP is used to verify the certificate)
 : " -r IP_subject
-  
-  ansible-playbook deploy.yml -t local,vpn -e "server_ip=$server_ip server_user=$server_user IP_subject_alt_name=$IP_subject"
+
+  ROLES="local vpn"
+  EXTRA_VARS="server_ip=$server_ip server_user=$server_user IP_subject_alt_name=$IP_subject"
+
 }
 
 algo_provisioning () {
@@ -201,6 +242,8 @@ Enter the number of your desired provider
     *) exit 1 ;;
   esac
 
+  additional_roles
+  deploy
 }
 
 user_management () {
@@ -210,4 +253,4 @@ user_management () {
 case "$1" in
   update-users) user_management ;;
   *) algo_provisioning ;;
-esac 
+esac
