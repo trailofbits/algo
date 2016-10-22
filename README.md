@@ -43,6 +43,10 @@ Certificates and configuration files that users will need are placed in the `con
 
 Find the corresponding mobileconfig (Apple Profile) for each user and send it to them over AirDrop (or other secure means). Apple Configuration Profiles are all-in-one configuration files for iOS and macOS devices and installing a profile will fully configure the VPN.
 
+### Android Devices
+
+You need to install the [StrongSwan VPN Client for Android 4 and newer](https://play.google.com/store/apps/details?id=org.strongswan.android). Import the corresponding user.p12 certificate to your device. It's very simple to configure the StrongSwan VPN Client, just make a new profile with the IP address of your VPN server and choose which certificate to use.
+
 ### StrongSwan Clients (e.g., OpenWRT)
 
 Find the included user_ipsec.conf, user_ipsec.secrets, user.crt (user certificate), and user.key (private key) files and copy them to your client device. These may be useful if you plan to set up a point-to-point VPN with OpenWRT or other custom device.
