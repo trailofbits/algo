@@ -7,31 +7,31 @@ read -p "
 Do you want to apply security enhancements?
 [y/N]: " -r security_enabled
 security_enabled=${security_enabled:-n}
-if [[ "$security_enabled" == 'y' ]]; then ROLES+=" security"; fi
+if [[ "$security_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" security"; fi
 
 read -p "
 Do you want to install an HTTP proxy to block ads and decrease traffic usage while surfing?
 [y/N]: " -r proxy_enabled
 proxy_enabled=${proxy_enabled:-n}
-if [[ "$proxy_enabled" == 'y' ]]; then ROLES+=" proxy"; fi
+if [[ "$proxy_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" proxy"; fi
 
 read -p "
 Do you want to install a local DNS resolver to block ads while surfing?
 [y/N]: " -r dns_enabled
 dns_enabled=${dns_enabled:-n}
-if [[ "$dns_enabled" == 'y' ]]; then ROLES+=" dns"; fi
+if [[ "$dns_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" dns"; fi
 
 read -p "
 Do you want to use auditd for security monitoring (see config.cfg)?
 [y/N]: " -r logging_enabled
 logging_enabled=${logging_enabled:-n}
-if [[ "$logging_enabled" == 'y' ]]; then ROLES+=" logging"; fi
+if [[ "$logging_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" logging"; fi
 
 read -p "
 Do you want each user to have their own account for SSH tunneling?
 [y/N]: " -r ssh_tunneling_enabled
 ssh_tunneling_enabled=${ssh_tunneling_enabled:-n}
-if [[ "$ssh_tunneling_enabled" == 'y' ]]; then ROLES+=" ssh_tunneling"; fi
+if [[ "$ssh_tunneling_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" ssh_tunneling"; fi
 
 }
 
