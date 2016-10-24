@@ -6,7 +6,7 @@
     marker: '# ANSIBLE_MANAGED_ssh_tunneling_role'
     block: |
       Match Group algo
-          AllowTcpForwarding remote
+          AllowTcpForwarding local
           AllowAgentForwarding no
           AllowStreamLocalForwarding no
           PermitTunnel no
