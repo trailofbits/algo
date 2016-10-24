@@ -1,3 +1,4 @@
 *.retry
 configs/*
 inventory_users
+*.kate-swp
