@@ -2,3 +2,4 @@
 
 dependencies:
   - { role: common, tags: common }
+  - { role: vpn,  tags: vpn }
