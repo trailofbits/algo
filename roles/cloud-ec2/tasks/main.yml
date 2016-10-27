@@ -1,7 +1,7 @@
 - name: Locate official Ubuntu 16.04 AMI for region
   ec2_ami_find:
-    aws_access_key: "{{ aws_access_key }}"
-    aws_secret_key: "{{ aws_secret_key }}"
+    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'))}}"
+    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
     name: "ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"
     owner:  099720109477
     sort: name
@@ -15,8 +15,8 @@
 
 - name: Add ssh public key
   ec2_key:
-    aws_access_key: "{{ aws_access_key }}"
-    aws_secret_key: "{{ aws_secret_key }}"
+    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'))}}"
+    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
     name: VPNKEY
     region: "{{ region }}"
     key_material: "{{ item }}"
@@ -25,8 +25,8 @@
 
 - name: Configure EC2 security group
   ec2_group:
-    aws_access_key: "{{ aws_access_key }}"
-    aws_secret_key: "{{ aws_secret_key }}"
+    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'))}}"
+    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
     name: vpn-secgroup
     description: Security group for VPN servers
     region: "{{ region }}"
@@ -51,8 +51,8 @@
 
 - name: Launch instance
   ec2:
-    aws_access_key: "{{ aws_access_key }}"
-    aws_secret_key: "{{ aws_secret_key }}"
+    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'))}}"
+    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
     keypair: "VPNKEY"
     group: vpn-secgroup
     instance_type: t2.nano
