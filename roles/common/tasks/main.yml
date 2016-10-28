@@ -12,6 +12,8 @@
   args:
     executable: /bin/bash
   register: reboot_required
+  tags:
+    - cloud
 
 - name: Reboot
   shell: sleep 2 && shutdown -r now "Ansible updates triggered"
@@ -19,16 +21,22 @@
   poll: 0
   when: reboot_required is defined and reboot_required.stdout == 'required'
   ignore_errors: true
+  tags:
+    - cloud
 
 - name: Wait for shutdown
   local_action: wait_for host={{ inventory_hostname }} port=22 state=stopped timeout=120
   when: reboot_required is defined and reboot_required.stdout == 'required'
   become: false
+  tags:
+    - cloud
 
 - name: Wait until SSH becomes ready...
   local_action: wait_for host={{ inventory_hostname }} port=22 state=started timeout=120
   when: reboot_required is defined and reboot_required.stdout == 'required'
   become: false
+  tags:
+    - cloud
 
 - name: Disable MOTD on login and SSHD
   replace: dest="{{ item.file }}" regexp="{{ item.regexp }}" replace="{{ item.line }}"
