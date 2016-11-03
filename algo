@@ -35,6 +35,26 @@ Do you want each user to have their own account for SSH tunneling?
 ssh_tunneling_enabled=${ssh_tunneling_enabled:-n}
 if [[ "$ssh_tunneling_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" ssh_tunneling"; fi
 
+read -p "
+Do you want to enable VPN always when connected to Wi-Fi?
+[y/N]: " -r OnDemandEnabled_WIFI
+OnDemandEnabled_WIFI=${OnDemandEnabled_WIFI:-n}
+if [[ "$OnDemandEnabled_WIFI" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" OnDemandEnabled_WIFI=Y"; fi
+
+if [[ "$OnDemandEnabled_WIFI" =~ ^(y|Y)$ ]]; then
+  read -p "
+Do you want to exclude trust Wi-Fi networks from VPN usage? (eg: Your home network. Comma-separated value, eg: HomeMeganet,OfficeSuperWifi,AlgoWiFi)
+: " -r OnDemandEnabled_WIFI_ECXLUDE
+  OnDemandEnabled_WIFI_ECXLUDE=${OnDemandEnabled_WIFI_ECXLUDE:-_null}
+  EXTRA_VARS+=" OnDemandEnabled_WIFI_ECXLUDE=$OnDemandEnabled_WIFI_ECXLUDE"
+fi
+
+read -p "
+Do you want to enable VPN always when connected to the cellular network?
+[y/N]: " -r OnDemandEnabled_Cellular
+OnDemandEnabled_Cellular=${OnDemandEnabled_Cellular:-n}
+if [[ "$OnDemandEnabled_Cellular" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" OnDemandEnabled_Cellular=Y"; fi
+
 }
 
 deploy () {
