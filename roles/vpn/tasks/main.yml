@@ -170,6 +170,9 @@
 - name: Set facts for mobileconfigs
   set_fact:
     proxy_enabled: false
+    pkcs12_PayloadCertificateUUID: "{{ 900000 | random | to_uuid | upper }}"
+    VPN_PayloadIdentifier: "{{ 800000 | random | to_uuid | upper }}"
+    CA_PayloadIdentifier: "{{ 700000 | random | to_uuid | upper }}"
 
 - name: Build the mobileconfigs
   template: src=mobileconfig.j2 dest=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item.0 }}.mobileconfig mode=0600
@@ -224,4 +227,3 @@
 
 - include: iptables.yml
   tags: iptables
-

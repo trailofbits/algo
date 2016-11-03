@@ -44,7 +44,7 @@
                 <key>LocalIdentifier</key>
                 <string>{{ item.0 }}</string>
                 <key>PayloadCertificateUUID</key>
-                <string>1FB2907D-14D3-4BAB-A472-B304F4B7F7D9</string>
+                <string>{{ pkcs12_PayloadCertificateUUID }}</string>
                 <key>CertificateType</key>
                 <string>ECDSA256</string>
                 <key>ServerCertificateIssuerCommonName</key>
@@ -66,11 +66,11 @@
             <key>PayloadDisplayName</key>
             <string>VPN</string>
             <key>PayloadIdentifier</key>
-            <string>com.apple.vpn.managed.D247A30B-6023-4C8E-B3E3-FF1910A65E53</string>
+            <string>com.apple.vpn.managed.{{ VPN_PayloadIdentifier }}</string>
             <key>PayloadType</key>
             <string>com.apple.vpn.managed</string>
             <key>PayloadUUID</key>
-            <string>D247A30B-6023-4C8E-B3E3-FF1910A65E53</string>
+            <string>{{ VPN_PayloadIdentifier }}</string>
             <key>PayloadVersion</key>
             <real>1</real>
             <key>Proxies</key>
@@ -111,11 +111,11 @@
             <key>PayloadDisplayName</key>
             <string>{{ item.0 }}.p12</string>
             <key>PayloadIdentifier</key>
-            <string>com.apple.security.pkcs12.1FB2907D-14D3-4BAB-A472-B304F4B7F7D9</string>
+            <string>com.apple.security.pkcs12.{{ pkcs12_PayloadCertificateUUID }}</string>
             <key>PayloadType</key>
             <string>com.apple.security.pkcs12</string>
             <key>PayloadUUID</key>
-            <string>1FB2907D-14D3-4BAB-A472-B304F4B7F7D9</string>
+            <string>{{ pkcs12_PayloadCertificateUUID }}</string>
             <key>PayloadVersion</key>
             <integer>1</integer>
         </dict>
@@ -131,11 +131,11 @@
             <key>PayloadDisplayName</key>
             <string>{{ IP_subject_alt_name }}</string>
             <key>PayloadIdentifier</key>
-            <string>com.apple.security.root.32EA3AAA-D19E-43EF-B357-608218745A38</string>
+            <string>com.apple.security.root.{{ CA_PayloadIdentifier }}</string>
             <key>PayloadType</key>
             <string>com.apple.security.root</string>
             <key>PayloadUUID</key>
-            <string>32EA3AAA-D19E-43EF-B357-608218745A38</string>
+            <string>{{ CA_PayloadIdentifier }}</string>
             <key>PayloadVersion</key>
             <integer>1</integer>
         </dict>
@@ -148,16 +148,16 @@
 {% endif %}
     <key>PayloadIdentifier</key>
 {% if proxy_enabled is defined and proxy_enabled == true %}
-    <string>donut.local.37CA79B1-FC6A-421F-960A-90F91FC983BA</string>
+    <string>donut.local.{{ 600000 | random | to_uuid | upper }}</string>
   {% else %}
-    <string>donut.local.37CA79B1-FC6A-421F-960A-90F91FC983BE</string>
+    <string>donut.local.{{ 500000 | random | to_uuid | upper }}</string>
 {% endif %}
     <key>PayloadRemovalDisallowed</key>
     <false/>
     <key>PayloadType</key>
     <string>Configuration</string>
     <key>PayloadUUID</key>
-    <string>743B04A8-5725-45A2-B1BB-836F8C16DB0A</string>
+    <string>{{ 400000 | random | to_uuid | upper }}</string>
     <key>PayloadVersion</key>
     <integer>1</integer>
 </dict>
