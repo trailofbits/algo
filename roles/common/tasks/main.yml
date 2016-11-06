@@ -12,7 +12,7 @@
 
 - name: Check if reboot is required
   shell: >
-    if [[ $(readlink -f /vmlinuz) != /boot/vmlinuz-$(uname -r) ]]; then echo "required"; else echo "no"; fi
+    if [[ -e /var/run/reboot-required ]]; then echo "required"; else echo "no"; fi
   args:
     executable: /bin/bash
   register: reboot_required
