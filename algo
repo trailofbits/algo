@@ -105,10 +105,10 @@ Note: Make sure to use either your root key (recommended) or an IAM user with an
 
 
   read -p "
-Enter the local path to your SSH public key (~/.ssh/id_rsa.pub): " -r ssh_public_key_file
-ssh_public_key=${ssh_public_key_file:-$HOME/.ssh/id_rsa.pub}
+Enter the local path to your SSH public key (~/.ssh/id_rsa.pub): " -r ssh_public_key
+  ssh_public_key=${ssh_public_key:-$HOME/.ssh/id_rsa.pub}
 
-  read -p "
+read -p "
 Name the vpn server:
 [algo]: " -r aws_server_name
   aws_server_name=${aws_server_name:-algo}
@@ -157,7 +157,7 @@ Enter the local path to your credentials JSON file (https://support.google.com/c
 
   read -p "
 Enter the local path to your SSH public key (~/.ssh/id_rsa.pub): " -r ssh_public_key
-ssh_public_key=${ssh_public_key_file:-$HOME/.ssh/id_rsa.pub}
+  ssh_public_key=${ssh_public_key:-$HOME/.ssh/id_rsa.pub}
 
   read -p "
 Name the vpn server:
