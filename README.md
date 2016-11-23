@@ -27,7 +27,9 @@ Algo VPN (short for "Al Gore", the **V**ice **P**resident of **N**etworks everyw
 
 The easiest way to get an Algo server running is to let it setup a new virtual machine in the cloud for you.
 
-1. Install the dependencies on OS X or Linux: `sudo easy_install pip && sudo pip install -r requirements.txt`
+1. Install the dependencies  
+1.1. On OS X: `sudo easy_install pip && sudo pip install -r requirements.txt`  
+1.2. On Linux (deb based): `sudo easy_install pip && sudo apt-get install libssl-dev && sudo pip install -r requirements.txt` 
 2. Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
 3. Start the deploy and follow the instructions: `./algo`
 
