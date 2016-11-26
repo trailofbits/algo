@@ -2,6 +2,8 @@
 
 set -e
 
+SKIP_TAGS="_null"
+
 additional_roles () {
 read -p "
 Do you want to apply security enhancements?
@@ -33,11 +35,31 @@ Do you want each user to have their own account for SSH tunneling?
 ssh_tunneling_enabled=${ssh_tunneling_enabled:-n}
 if [[ "$ssh_tunneling_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" ssh_tunneling"; fi
 
+read -p "
+Do you want to enable VPN always when connected to Wi-Fi?
+[y/N]: " -r OnDemandEnabled_WIFI
+OnDemandEnabled_WIFI=${OnDemandEnabled_WIFI:-n}
+if [[ "$OnDemandEnabled_WIFI" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" OnDemandEnabled_WIFI=Y"; fi
+
+if [[ "$OnDemandEnabled_WIFI" =~ ^(y|Y)$ ]]; then
+  read -p "
+Do you want to exclude trust Wi-Fi networks from VPN usage? (eg: Your home network. Comma-separated value, eg: HomeMeganet,OfficeSuperWifi,AlgoWiFi)
+: " -r OnDemandEnabled_WIFI_ECXLUDE
+  OnDemandEnabled_WIFI_ECXLUDE=${OnDemandEnabled_WIFI_ECXLUDE:-_null}
+  EXTRA_VARS+=" OnDemandEnabled_WIFI_ECXLUDE=$OnDemandEnabled_WIFI_ECXLUDE"
+fi
+
+read -p "
+Do you want to enable VPN always when connected to the cellular network?
+[y/N]: " -r OnDemandEnabled_Cellular
+OnDemandEnabled_Cellular=${OnDemandEnabled_Cellular:-n}
+if [[ "$OnDemandEnabled_Cellular" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" OnDemandEnabled_Cellular=Y"; fi
+
 }
 
 deploy () {
 
-  ansible-playbook deploy.yml -t "${ROLES// /,}" -e "${EXTRA_VARS}"
+  ansible-playbook deploy.yml -t "${ROLES// /,}" -e "${EXTRA_VARS}" --skip-tags "${SKIP_TAGS// /,}"
 
 }
 
@@ -88,7 +110,7 @@ Enter the number of your desired region:
     12) do_region="blr1" ;;
   esac
 
-ROLES="digitalocean vpn"
+ROLES="digitalocean vpn cloud"
 EXTRA_VARS="do_access_token=$do_access_token do_ssh_name=$do_ssh_name do_server_name=$do_server_name do_region=$do_region"
 }
 
@@ -146,7 +168,7 @@ Enter the number of your desired region:
     12) region="sa-east-1" ;;
   esac
 
-  ROLES="ec2 vpn"
+  ROLES="ec2 vpn cloud"
   EXTRA_VARS="aws_access_key=$aws_access_key aws_secret_key=$aws_secret_key aws_server_name=$aws_server_name ssh_public_key=$ssh_public_key region=$region"
 }
 
@@ -199,7 +221,7 @@ Please choose the number of your zone. Press enter for default (#8) zone.
     13) zone="asia-east1-c" ;;
   esac
 
-  ROLES="gce vpn"
+  ROLES="gce vpn cloud"
   EXTRA_VARS="credentials_file=$credentials_file server_name=$server_name ssh_public_key=$ssh_public_key zone=$zone"
 }
 
@@ -219,7 +241,7 @@ Enter the public IP address of your server: (IMPORTANT! This IP is used to verif
 
   ROLES="local vpn"
   EXTRA_VARS="server_ip=$server_ip server_user=$server_user IP_subject_alt_name=$IP_subject"
-
+  SKIP_TAGS+=" cloud"
 }
 
 algo_provisioning () {
