@@ -12,15 +12,3 @@
 
 - name: restart iptables
   service: name=netfilter-persistent state=restarted
-
-- name: congrats
-  debug:
-    msg:
-      - "#----------------------------------------------------------------------#"
-      - "#                          Congratulations!                            #"
-      - "#                     Your Algo server is running.                     #"
-      - "#    Config files and certificates are in the ./configs/ directory.    #"
-      - "#              Go to https://whoer.net/ after connecting               #"
-      - "#        and ensure that all your traffic passes through the VPN.      #"
-      - "#          Local DNS resolver and Proxy IP address: {{ local_service_ip }}"
-      - "#----------------------------------------------------------------------#"
