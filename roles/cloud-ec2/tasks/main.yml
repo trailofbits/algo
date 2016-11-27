@@ -66,7 +66,6 @@
 - name: Add new instance to host group
   add_host:
     hostname: "{{ item.public_ip }}"
-    ansible_ssh_private_key_file: "{{ ssh_public_key[:-4] }}"
     groupname: vpn-host
     ansible_ssh_user: ubuntu
     ansible_python_interpreter: "/usr/bin/python2.7"
