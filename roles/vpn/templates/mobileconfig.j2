@@ -90,7 +90,11 @@
                 <key>PayloadCertificateUUID</key>
                 <string>{{ pkcs12_PayloadCertificateUUID }}</string>
                 <key>CertificateType</key>
+{% if Win10_Enabled is defined and Win10_Enabled == "Y" %}
+                <string>RSA2048</string>
+{% else %}
                 <string>ECDSA256</string>
+{% endif %}
                 <key>ServerCertificateIssuerCommonName</key>
                 <string>{{ IP_subject_alt_name }}</string>                
                 <key>RemoteAddress</key>
