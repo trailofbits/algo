@@ -191,6 +191,8 @@
   with_items:
     - "{{ users }}"
 
+
+
 - name: Fetch users P12
   fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 dest=configs/{{ IP_subject_alt_name }}_{{ item }}.p12 flat=yes
   with_items: "{{ users }}"
@@ -213,6 +215,16 @@
 
 - name: Fetch users ipsec secrets
   fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/ipsec_{{ item }}.secrets dest=configs/{{ IP_subject_alt_name }}_{{ item }}_ipsec.secrets flat=yes
+  with_items: "{{ users }}"
+
+- name: Build the windows client powershell script
+  template: src=client_windows.ps1.j2 dest=/{{ easyrsa_dir }}/easyrsa3//pki/private/windows_{{ item }}.ps1 mode=0600
+  when: Win10_Enabled is defined and Win10_Enabled == "Y"
+  with_items: "{{ users }}"
+
+- name: Fetch users windows scripts
+  fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/windows_{{ item }}.ps1 dest=configs/{{ IP_subject_alt_name }}_{{ item }}_windows.ps1 flat=yes
+  when: Win10_Enabled is defined and Win10_Enabled == "Y"
   with_items: "{{ users }}"
 
 - name: Restrict permissions
