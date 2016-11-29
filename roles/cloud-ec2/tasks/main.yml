@@ -25,6 +25,8 @@
 
 - name: Configure EC2 virtual private clouds
   ec2_vpc:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"  
     state: present
     resource_tags: { "Environment":"Algo" }
     region: "{{ region }}"
