@@ -41,6 +41,14 @@ Note: for local or scripted deployment instructions see the [Advanced Usage](/do
 
 Certificates and configuration files that users will need are placed in the `config` directory. Make sure to secure these files since many contain private keys. All files are prefixed with the IP address of the Algo VPN server.
 
+### Windows Devices
+
+You have to import the corresponding client certificate to The Personal store and the corresponding CA certificate to The Local Machine Trusted Root store.<br>
+Add an IKEv2 connection in the network settings and then, activate additional ciphers via powershell:<br>
+`Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo" -AuthenticationTransformConstants SHA25612
+8 -CipherTransformConstants AES256 -EncryptionMethod AES256 -IntegrityCheckMethod SHA256 -DHGroup Group14 -PfsGroup none` (change Algo on the vpn connection name)<br>
+Also, you can find the powershell script and the p12 certificate in the configs directory and run it as Administrator on your machine.
+
 ### Apple Devices
 
 Find the corresponding mobileconfig (Apple Profile) for each user and send it to them over AirDrop (or other secure means). Apple Configuration Profiles are all-in-one configuration files for iOS and macOS devices and installing a profile will fully configure the VPN.
