@@ -9,10 +9,10 @@ conn %default
 
 {% if Win10_Enabled is defined and Win10_Enabled == "Y" %}
     ike=aes128gcm16-sha2_256-prfsha256-ecp256,aes256-sha2_256-prfsha256-modp2048!
-    esp=aes128gcm16-sha2_256-ecp256,aes256-sha1-modp1024!
+    esp=aes128gcm16-sha2_256-ecp256,aes256-sha2_256-modp2048!
 {% else %}
-    ike=aes128gcm16-sha2_256-prfsha256-ecp256
-    esp=aes128gcm16-sha2_256-ecp256
+    ike=aes128gcm16-sha2_256-prfsha256-ecp256!
+    esp=aes128gcm16-sha2_256-ecp256!
 {% endif %}
 
     left=%any
