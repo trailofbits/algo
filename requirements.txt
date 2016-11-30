@@ -1,7 +1,7 @@
 ansible>=2.1
 dopy==0.3.5
-boto
-azure==2.0.0rc5
+boto>=2.5
+azure>=2.0.0rc5
 apache-libcloud
 six
 pyopenssl
