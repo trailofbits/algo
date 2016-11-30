@@ -102,7 +102,11 @@ set_var EASYRSA_DN "cn_only"
 #  * rsa
 #  * ec
 
+{% if Win10_Enabled is defined and Win10_Enabled == "Y" %}
+set_var EASYRSA_ALGO       rsa
+{% else %}
 set_var EASYRSA_ALGO       ec
+{% endif %}
 
 # Define the named curve, used in ec mode only:
 
