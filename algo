@@ -55,6 +55,12 @@ Do you want to enable VPN always when connected to the cellular network?
 OnDemandEnabled_Cellular=${OnDemandEnabled_Cellular:-n}
 if [[ "$OnDemandEnabled_Cellular" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" OnDemandEnabled_Cellular=Y"; fi
 
+read -p "
+Do you want to enable VPN for Windows 10 clients? (Will use insecure algorithms and ciphers)
+[y/N]: " -r Win10_Enabled
+Win10_Enabled=${Win10_Enabled:-n}
+if [[ "$Win10_Enabled" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" Win10_Enabled=Y"; fi
+
 }
 
 deploy () {
