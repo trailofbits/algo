@@ -170,9 +170,6 @@
 - name: Set facts for mobileconfigs
   set_fact:
     proxy_enabled: false
-    pkcs12_PayloadCertificateUUID: "{{ 900000 | random | to_uuid | upper }}"
-    VPN_PayloadIdentifier: "{{ 800000 | random | to_uuid | upper }}"
-    CA_PayloadIdentifier: "{{ 700000 | random | to_uuid | upper }}"
 
 - name: Build the mobileconfigs
   template: src=mobileconfig.j2 dest=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item.0 }}.mobileconfig mode=0600
@@ -190,8 +187,6 @@
   template: src=client_ipsec.secrets.j2 dest=/{{ easyrsa_dir }}/easyrsa3//pki/private/ipsec_{{ item }}.secrets mode=0600
   with_items:
     - "{{ users }}"
-
-
 
 - name: Fetch users P12
   fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 dest=configs/{{ IP_subject_alt_name }}_{{ item }}.p12 flat=yes
