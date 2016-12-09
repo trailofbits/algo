@@ -155,6 +155,7 @@ Name the vpn server:
     10.   eu-central-1        EU (Frankfurt)
     11.  eu-west-1           EU (Ireland)
     12.  sa-east-1           South America (São Paulo)
+    13.  ca-central-1        Canada (Central)
 Enter the number of your desired region:
 [1]: " -r aws_region
   aws_region=${aws_region:-1}
@@ -172,6 +173,7 @@ Enter the number of your desired region:
     10) region="eu-central-1" ;;
     11) region="eu-west-1" ;;
     12) region="sa-east-1" ;;
+    13) region="ca-central-1" ;;
   esac
 
   ROLES="ec2 vpn cloud"
