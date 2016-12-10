@@ -4,7 +4,7 @@
     aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
     name: "ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"
     owner:  099720109477
-    sort: name
+    sort: creationDate
     sort_order: descending
     sort_end: 1
     region: "{{ region }}"
