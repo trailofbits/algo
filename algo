@@ -69,6 +69,81 @@ deploy () {
 
 }
 
+azure () {
+  read -p "
+Enter your azure secret (https://docs.ansible.com/ansible/guide_azure.html#authenticating-with-azure)
+You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
+[...]: " -rs azure_secret
+
+  read -p "
+
+Enter your azure tenant (https://docs.ansible.com/ansible/guide_azure.html#authenticating-with-azure)
+You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
+[...]: " -rs azure_tenant
+
+  read -p "
+
+Enter your azure client_id (https://docs.ansible.com/ansible/guide_azure.html#authenticating-with-azure)
+You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
+[...]: " -rs azure_client_id
+
+  read -p "
+
+Enter your azure subscription_id (https://docs.ansible.com/ansible/guide_azure.html#authenticating-with-azure)
+You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
+[...]: " -rs azure_subscription_id
+
+  read -e -p "
+
+Enter the local path to your SSH public key:
+: " -i "~/.ssh/id_rsa.pub" -r ssh_public_key
+
+  read -p "
+Name the vpn server:
+[algo]: " -r azure_server_name
+  azure_server_name=${azure_server_name:-algo}
+
+  read -p "
+  What region should the server be located in?
+    1.  South Central US
+    2.  Central US
+    3.  North Europe
+    4.  West Europe
+    5.  Southeast Asia
+    6.  Japan West
+    7.  Japan East
+    8.  Australia Southeast
+    9.  Australia East
+    10. Canada Central
+    11. West US 2
+    12. West Central US
+    13. UK South
+    14. UK West
+Enter the number of your desired region:
+[1]: " -r azure_region
+  azure_region=${azure_region:-1}
+
+  case "$azure_region" in
+    1) region="southcentralus" ;;
+    2) region="centralus" ;;
+    3) region="northeurope" ;;
+    4) region="westeurope" ;;
+    5) region="southeastasia" ;;
+    6) region="japanwest" ;;
+    7) region="japaneast" ;;
+    8) region="australiasoutheast" ;;
+    9) region="australiaeast" ;;
+    10) region="canadacentral" ;;
+    11) region="westus2" ;;
+    12) region="westcentralus" ;;
+    13) region="uksouth" ;;
+    14) region="ukwest" ;;
+  esac
+
+  ROLES="azure vpn cloud"
+  EXTRA_VARS="azure_secret=$azure_secret azure_tenant=$azure_tenant azure_client_id=$azure_client_id azure_subscription_id=$azure_subscription_id azure_server_name=$azure_server_name ssh_public_key=$ssh_public_key region=$region"
+}
+
 digitalocean () {
   read -p "
 Enter your API token (https://cloud.digitalocean.com/settings/api/tokens):
@@ -256,7 +331,8 @@ algo_provisioning () {
     1. DigitalOcean
     2. Amazon EC2
     3. Google Compute Engine
-    4. Install to existing Ubuntu server
+    4. Microsoft Azure
+    5. Install to existing Ubuntu server
 
 Enter the number of your desired provider
 : "
@@ -267,7 +343,8 @@ Enter the number of your desired provider
     1) digitalocean; ;;
     2) ec2; ;;
     3) gce; ;;
-    4) non_cloud; ;;
+    4) azure; ;;
+    5) non_cloud; ;;
     *) exit 1 ;;
   esac
 
