@@ -1,72 +1,35 @@
-- name: Locate official Ubuntu 16.04 AMI for region
+- name: Check if the encrypted image already exist
   ec2_ami_find:
-    aws_access_key: "{{ aws_access_key }}"
-    aws_secret_key: "{{ aws_secret_key }}"
-    name: "ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"
-    owner:  099720109477
-    sort: name
+    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'))}}"
+    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
+    owner: self
+    sort: creationDate
     sort_order: descending
     sort_end: 1
-    region: "{{ region }}"
-  register: ami_search
-
-- set_fact:
-    source_ami_image: "{{ ami_search.results[0].ami_id }}"
-
-#
-# https://github.com/ansible/ansible-modules-extras/issues/3565
-#
-#- name: Copy to an encrypted image
-  #ec2_ami_copy:
-    #aws_access_key: "{{ aws_access_key }}"
-    #aws_secret_key: "{{ aws_secret_key }}"
-    #description: ENC_IMAGE
-    #encrypted: yes
-    #name: newimage
-    #region: "{{ region }}"
-    #source_image_id: "{{ source_ami_image }}"
-    #source_region: "{{ region }}"
-  #register:   ec2_ami_copy
-  #when: ami_encrypted_tag is not defined or (ami_encrypted_tag is defined and ami_encrypted_tag != true)
-#- debug: var=ec2_ami_copy
-
-#
-# https://github.com/ansible/ansible-modules-extras/issues/3565
-#
-- name: Copy to an encrypted image
-  shell: >
-    aws ec2 copy-image --source-region '{{ region }}' --region '{{ region }}' --encrypted --source-image-id '{{ source_ami_image }}' --name 'ubuntu-xenial-16.04-amd64-server-encrypted'
-  environment:
-    AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
-    AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
-  register: ec2_ami_copy
-
-- set_fact:
-    ami_image_ouput: "{{ ec2_ami_copy.stdout|from_json }}"
-
-- set_fact:
-    ami_encrypted_image: "{{ ami_image_ouput['ImageId'] }}"
-
-- name: Add tags to the encrypted image
-  ec2_tag:
-    aws_access_key: "{{ aws_access_key }}"
-    aws_secret_key: "{{ aws_secret_key }}"
-    region: "{{ region }}"
-    resource: "{{ ami_encrypted_image }}"
-    state: present
-    tags:
-      Name: "ubuntu-xenial-16.04-amd64-server-encrypted"
-      Encrypted: "true"
-
-- name: Confirm the encrypted image
-  ec2_ami_find:
-    aws_access_key: "{{ aws_access_key }}"
-    aws_secret_key: "{{ aws_secret_key }}"
-    ami_id: "{{ ami_encrypted_image }}"
-    region: "{{ region }}"
-    owner: self
     state: available
-  register: ec2_ami_find_encrypted
-  until: ec2_ami_find_encrypted.results|length > 0
-  retries: 60
-  delay: 10
+    ami_tags:
+      Algo: "encrypted"
+    region: "{{ region }}"
+  register: search_crypt
+
+- set_fact:
+    enc_image: "{{ search_crypt.results[0].image_id }}"
+  when: search_crypt.results
+
+- name: Copy to an encrypted image
+  ec2_ami_copy:
+    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'))}}"
+    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
+    encrypted: yes
+    name: algo
+    region: "{{ region }}"
+    source_image_id: "{{ image_id }}"
+    source_region: "{{ region }}"
+    tags:
+      Algo: "encrypted"
+    wait: true
+  register: enc_image
+  when: enc_image is not defined
+
+- set_fact:
+    image_id: "{{ enc_image.image_id }}"

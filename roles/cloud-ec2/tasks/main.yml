@@ -1,7 +1,7 @@
 - name: Locate official Ubuntu 16.04 AMI for region
   ec2_ami_find:
-    aws_access_key: "{{ aws_access_key }}"
-    aws_secret_key: "{{ aws_secret_key }}"
+    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'))}}"
+    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
     name: "ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"
     owner:  099720109477
     sort: creationDate
@@ -11,7 +11,7 @@
   register: ami_search
 
 - include: encrypt_image.yml
-  when: ami_encrypted_tag is not defined or (ami_encrypted_tag is defined and ami_encrypted_tag != "true1")
+  when: encrypted is defined
 
 - name: Add ssh public key
   ec2_key:
