@@ -39,7 +39,7 @@ Note: for local or scripted deployment instructions see the [Advanced Usage](/do
 
 ## Configure the VPN Clients
 
-Certificates and configuration files that users will need are placed in the `config` directory. Make sure to secure these files since many contain private keys. All files are prefixed with the IP address of the Algo VPN server.
+Certificates and configuration files that users will need are placed in the `configs` directory. Make sure to secure these files since many contain private keys. All files are prefixed with the IP address of the Algo VPN server.
 
 ### Windows Devices
 
@@ -75,7 +75,7 @@ Depending on the platform, you may need one or multiple of the following files.
 
 ## Setup an SSH Tunnel
 
-If you turned on the optional SSH tunneling role, then local user accounts will be created for each user in `config.cfg` and an SSH authorized_key file will be in the `config` directory (user.ssh.pem). SSH user accounts do not have shell access and their tunneling options are limited. This is done to ensure that users have the least access required to tunnel through the server.
+If you turned on the optional SSH tunneling role, then local user accounts will be created for each user in `config.cfg` and an SSH authorized_key file will be in the `configs` directory (user.ssh.pem). SSH user accounts do not have shell access and their tunneling options are limited. This is done to ensure that users have the least access required to tunnel through the server.
 
 Make sure to access the server using 'ssh -N' with these limited accounts.  
 In order to make a tunnel you have to run this command:  
