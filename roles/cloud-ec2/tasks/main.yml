@@ -10,8 +10,11 @@
     region: "{{ region }}"
   register: ami_search
 
+- set_fact:
+    ami_image: "{{ ami_search.results[0].ami_id }}"
+
 - include: encrypt_image.yml
-  when: encrypted is defined
+  tags: [encrypted]
 
 - name: Add ssh public key
   ec2_key:

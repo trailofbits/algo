@@ -1,4 +1,5 @@
 *.retry
+.idea/
 configs/*
 inventory_users
 *.kate-swp

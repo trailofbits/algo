@@ -13,7 +13,7 @@
   register: search_crypt
 
 - set_fact:
-    enc_image: "{{ search_crypt.results[0].image_id }}"
+    ami_image: "{{ search_crypt.results[0].ami_id }}"
   when: search_crypt.results
 
 - name: Copy to an encrypted image
@@ -22,14 +22,16 @@
     aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
     encrypted: yes
     name: algo
+    kms_key_id: "{{ kms_key_id | default(omit) }}"
     region: "{{ region }}"
-    source_image_id: "{{ image_id }}"
+    source_image_id: "{{ ami_image }}"
     source_region: "{{ region }}"
     tags:
       Algo: "encrypted"
     wait: true
   register: enc_image
-  when: enc_image is not defined
+  when: not search_crypt.results
 
 - set_fact:
-    image_id: "{{ enc_image.image_id }}"
+    ami_image: "{{ enc_image.image_id }}"
+  when: not search_crypt.results
