@@ -22,7 +22,7 @@
   pre_tasks:
     - name: Common pre-tasks
       include: playbooks/common.yml
-      tags: [ 'digitalocean', 'ec2', 'gce', 'azure', 'pre' ]
+      tags: [ 'digitalocean', 'ec2', 'gce', 'azure', 'local', 'pre' ]
 
     - name: DigitalOcean pre-tasks
       include: playbooks/digitalocean.yml
