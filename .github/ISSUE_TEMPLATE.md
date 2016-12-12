@@ -10,6 +10,7 @@
 <!--- `pip show <package>` -->
 
 
+
 ### Summary of the problem
 
 
@@ -18,10 +19,18 @@
 
 
 
+### The way of deployment (cloud or local)
+
+
+
 ### Expected behavior
 
 
 
 ### Actual behavior
+
+
+
+### Full log
 
 
