@@ -4,6 +4,11 @@
   vars_files:
     - config.cfg
 
+  pre_tasks:
+    - name: Local pre-tasks
+      include: playbooks/local.yml
+      tags: [ 'cloud' ]
+
   roles:
     - { role: cloud-digitalocean, tags: ['digitalocean'] }
     - { role: cloud-ec2, tags: ['ec2'] }
