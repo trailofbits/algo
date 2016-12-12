@@ -6,13 +6,13 @@ Algo VPN (short for "Al Gore", the **V**ice **P**resident of **N**etworks everyw
 
 ## Features
 
-* Supports only IKEv2 w/ a single cipher suite: AES GCM, SHA2 HMAC, and P-256 DH
+* Supports only IKEv2 w/ a single cipher suite: AES-GCM, HMAC-SHA2, and P-256 DH
 * Generates Apple Profiles to auto-configure iOS and macOS devices
 * Provides helper scripts to add and remove users
 * Blocks ads with a local DNS resolver and HTTP proxy (optional)
-* Sets up limited SSH tunnels for each user (optional)
-* Based on current versions of Ubuntu and StrongSwan
-* Installs to DigitalOcean, Amazon EC2, Google Cloud Engine, or your own server
+* Sets up limited SSH users for tunneling traffic (optional)
+* Based on current versions of Ubuntu and strongSwan
+* Installs to DigitalOcean, Amazon EC2, Google Cloud Engine, Microsoft Azure or your own server
 
 ## Anti-features
 
@@ -25,11 +25,13 @@ Algo VPN (short for "Al Gore", the **V**ice **P**resident of **N**etworks everyw
 
 ## Deploy the Algo Server
 
-The easiest way to get an Algo server running is to let it setup a new virtual machine in the cloud for you.
+The easiest way to get an Algo server running is to let it setup a _new_ virtual machine in the cloud for you.
 
-1. Install the dependencies  
-1.1. On OS X: `sudo easy_install pip && sudo pip install -r requirements.txt`  
-1.2. On Linux (deb based): `sudo easy_install pip && sudo apt-get install libssl-dev && sudo pip install -r requirements.txt` 
+1. Install the dependencies for your operating system:
+
+ OS X: `sudo easy_install pip && sudo pip install -r requirements.txt`  
+ Linux (deb-based): `sudo easy_install pip && sudo apt-get install libssl-dev && sudo pip install -r requirements.txt` 
+
 2. Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
 3. Start the deploy and follow the instructions: `./algo`
 
@@ -41,14 +43,6 @@ Note: for local or scripted deployment instructions see the [Advanced Usage](/do
 
 Certificates and configuration files that users will need are placed in the `configs` directory. Make sure to secure these files since many contain private keys. All files are prefixed with the IP address of the Algo VPN server.
 
-### Windows Devices
-
-You have to import the corresponding client certificate to The Personal store and the corresponding CA certificate to The Local Machine Trusted Root store.<br>
-Add an IKEv2 connection in the network settings and then, activate additional ciphers via powershell:<br>
-`Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo" -AuthenticationTransformConstants SHA25612
-8 -CipherTransformConstants AES256 -EncryptionMethod AES256 -IntegrityCheckMethod SHA256 -DHGroup Group14 -PfsGroup none` (change Algo on the vpn connection name)<br>
-Also, you can find the powershell script and the p12 certificate in the configs directory and run it as Administrator on your machine.
-
 ### Apple Devices
 
 Find the corresponding mobileconfig (Apple Profile) for each user and send it to them over AirDrop (or other secure means). Apple Configuration Profiles are all-in-one configuration files for iOS and macOS devices and installing a profile will fully configure the VPN.
@@ -56,6 +50,15 @@ Find the corresponding mobileconfig (Apple Profile) for each user and send it to
 ### Android Devices
 
 You need to install the [StrongSwan VPN Client for Android 4 and newer](https://play.google.com/store/apps/details?id=org.strongswan.android). Import the corresponding user.p12 certificate to your device. It's very simple to configure the StrongSwan VPN Client, just make a new profile with the IP address of your VPN server and choose which certificate to use.
+
+### Windows
+
+Import your user certificate to your Personal certificate store and your CA certificate to the Local Machine Trusted Root certificate store. Then, add an IKEv2 connection in the network settings and activate additional ciphers for it via Powershell (change the ConnectionName to the name of your IKEv2 connection):
+
+`Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo" -AuthenticationTransformConstants SHA25612
+8 -CipherTransformConstants AES256 -EncryptionMethod AES256 -IntegrityCheckMethod SHA256 -DHGroup Group14 -PfsGroup none`
+
+Note that an all-in-one Powershell script that imports your personal certificate, sets up the VPN connection, and activates the stronger ciphers for it is included in the `configs` folder.
 
 ### StrongSwan Clients (e.g., OpenWRT)
 
@@ -72,15 +75,15 @@ Depending on the platform, you may need one or multiple of the following files.
 * user.key: User Private Key
 * user.mobileconfig: Apple Profile
 * user.p12: User Certificate and Private Key (in PKCS#12 format)
+* user_windows.ps1: Powershell script to setup a VPN connection on Windows
 
 ## Setup an SSH Tunnel
 
-If you turned on the optional SSH tunneling role, then local user accounts will be created for each user in `config.cfg` and an SSH authorized_key file will be in the `configs` directory (user.ssh.pem). SSH user accounts do not have shell access and their tunneling options are limited. This is done to ensure that users have the least access required to tunnel through the server.
+If you turned on the optional SSH tunneling role, then local user accounts will be created for each user in `config.cfg` and an SSH authorized_key files for them will be in the `configs` directory (user.ssh.pem). SSH user accounts do not have shell access and their tunneling options are limited (`ssh -N` is required). This is done to ensure that users have the least access required to tunnel through the server. 
 
-Make sure to access the server using 'ssh -N' with these limited accounts.  
-In order to make a tunnel you have to run this command:  
-`ssh -D 127.0.0.1:1080 -f -q -C -N user@ip -i configs/ip_user.ssh.pem`  
-Don't forget to change `ip` and `user`. And then you can configure your browsers to use 127.0.0.1:1080 as sock4/5
+Use the command below to start an SSH tunnel, replacing `ip` and `user` with your own. Once the tunnel is setup, you can configure a browser or other application to use 127.0.0.1:1080 as a SOCKS proxy to route traffic through Algo.
+
+ `ssh -D 127.0.0.1:1080 -f -q -C -N user@ip -i configs/ip_user.ssh.pem`  
 
 ## Adding or Removing Users
 
@@ -89,7 +92,7 @@ Algo's own scripts can easily add and remove users from the VPN server.
 1. Update the `users` list in your `config.cfg`
 2. Run the command: `./algo update-users`
 
-The Algo VPN server now only contains the users listed in the `config.cfg` file.
+The Algo VPN server now contains only the users listed in the `config.cfg` file.
 
 ## FAQ
 
