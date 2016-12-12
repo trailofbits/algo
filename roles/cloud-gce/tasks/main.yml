@@ -1,6 +1,6 @@
 - set_fact:
     credentials_file_lookup: "{{ lookup('file', '{{ credentials_file }}') }}"
-    ssh_public_key_lookup: "{{ lookup('file', '{{ ssh_public_key }}') }}"
+    ssh_public_key_lookup: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
 
 - name: "Creating a new instance..."
   gce:
@@ -20,6 +20,7 @@
     groups: vpn-host
     ansible_ssh_user: ubuntu
     ansible_python_interpreter: "/usr/bin/python2.7"
+    ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
     cloud_provider: gce
     ipv6_support: no
 
