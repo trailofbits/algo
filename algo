@@ -324,7 +324,7 @@ Enter the public IP address of your server: (IMPORTANT! This IP is used to verif
 
   ROLES="local vpn"
   EXTRA_VARS="server_ip=$server_ip server_user=$server_user IP_subject_alt_name=$IP_subject"
-  SKIP_TAGS+=" cloud"
+  SKIP_TAGS+=" cloud update-alternatives"
 }
 
 algo_provisioning () {
