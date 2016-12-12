@@ -20,7 +20,7 @@
     name: VPNKEY
     region: "{{ region }}"
     key_material: "{{ item }}"
-  with_file: "{{ ssh_public_key }}"
+  with_file: "{{ SSH_keys.public }}"
   register: keypair
 
 - name: Configure EC2 virtual private clouds
@@ -103,6 +103,7 @@
     groupname: vpn-host
     ansible_ssh_user: ubuntu
     ansible_python_interpreter: "/usr/bin/python2.7"
+    ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
     cloud_provider: ec2
     ipv6_support: no
   with_items: "{{ ec2.tagged_instances }}"

@@ -1,12 +1,45 @@
 - name: Set the DigitalOcean Access Token fact
   set_fact:
     do_token: "{{ do_access_token }}"
+    public_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
+
+- name: Get existing SSH keys
+  uri:
+    url: https://api.digitalocean.com/v2/account/keys
+    method: GET
+    HEADER_Content-Type: 'application/json'
+    HEADER_Authorization: "Bearer {{ do_access_token }}"
+    status_code: 200
+    body_format: json
+  register: do_existing_keys
+
+- set_fact:
+    ssh_key_exist: true
+  when: public_key == item.public_key
+  with_items:
+    - "{{ do_existing_keys.json.ssh_keys }}"
+
+- name: Upload the SSH key
+  uri:
+    url: https://api.digitalocean.com/v2/account/keys
+    method: POST
+    HEADER_Content-Type: 'application/json'
+    HEADER_Authorization: "Bearer {{ do_access_token }}"
+    body: >
+      {
+        "name" : "{{ SSH_keys.comment }}",
+        "public_key" : "{{ public_key }}"
+      }
+    status_code: 201
+    body_format: json
+  register: do_ssh_key
+  when: ssh_key_exist is not defined
 
 - name: "Getting your SSH key ID on Digital Ocean..."
   digital_ocean:
     state: present
     command: ssh
-    name: "{{ do_ssh_name }}"
+    name: "{{ SSH_keys.comment }}"
     api_token: "{{ do_access_token }}"
   register: do_ssh_key
 
@@ -30,6 +63,7 @@
     groups: vpn-host
     ansible_ssh_user: root
     ansible_python_interpreter: "/usr/bin/python2.7"
+    ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
     do_access_token: "{{ do_access_token }}"
     do_droplet_id: "{{ do.droplet.id }}"
     cloud_provider: digitalocean
