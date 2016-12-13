@@ -55,7 +55,7 @@
     aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
     keypair: "VPNKEY"
     group: vpn-secgroup
-    instance_type: t2.nano
+    instance_type: t2.micro
     image: "{{ ami_image }}"
     wait: true
     region: "{{ region }}"
