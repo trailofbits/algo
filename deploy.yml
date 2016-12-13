@@ -46,10 +46,6 @@
     - { role: ssh_tunneling, tags: [ 'ssh_tunneling' ] }
     - { role: vpn, tags: [ 'vpn' ] }
 
-  handlers:
-    - name: reload eth0
-      shell: sh -c 'ifdown eth0; ip addr flush dev eth0; ifup eth0'
-
   post_tasks:
     - shell: |
         echo "#----------------------------------------------------------------------#"
