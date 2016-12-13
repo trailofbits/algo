@@ -93,10 +93,10 @@ Enter your azure subscription_id (https://docs.ansible.com/ansible/guide_azure.h
 You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
 [...]: " -rs azure_subscription_id
 
-  read -e -p "
+  read -p "
 
-Enter the local path to your SSH public key:
-: " -i "~/.ssh/id_rsa.pub" -r ssh_public_key
+Enter the local path to your SSH public key (~/.ssh/id_rsa.pub): " -r ssh_public_key
+  ssh_public_key=${ssh_public_key:-$HOME/.ssh/id_rsa.pub}
 
   read -p "
 Name the vpn server:
