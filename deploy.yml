@@ -1,4 +1,4 @@
-- name: Configure the server and install required software
+- name: Configure the server
   hosts: localhost
   tags: algo
   vars_files:
@@ -31,7 +31,7 @@
       tags:
         - cloud
 
-- name: Post-provisioning tasks
+- name: Configure the server and install required software
   hosts: vpn-host
   gather_facts: false
   tags: algo
