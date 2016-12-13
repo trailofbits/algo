@@ -2,16 +2,22 @@
 
 - name: Gather Facts
   setup:
+  tags:
+    - always
 
 - name: Install software updates
   apt: update_cache=yes upgrade=dist
+  tags:
+    - cloud
 
 - name: Check if reboot is required
   shell: >
-    if [[ $(readlink -f /vmlinuz) != /boot/vmlinuz-$(uname -r) ]]; then echo "required"; else echo "no"; fi
+    if [[ -e /var/run/reboot-required ]]; then echo "required"; else echo "no"; fi
   args:
     executable: /bin/bash
   register: reboot_required
+  tags:
+    - cloud
 
 - name: Reboot
   shell: sleep 2 && shutdown -r now "Ansible updates triggered"
@@ -19,22 +25,30 @@
   poll: 0
   when: reboot_required is defined and reboot_required.stdout == 'required'
   ignore_errors: true
+  tags:
+    - cloud
 
 - name: Wait for shutdown
   local_action: wait_for host={{ inventory_hostname }} port=22 state=stopped timeout=120
   when: reboot_required is defined and reboot_required.stdout == 'required'
   become: false
+  tags:
+    - cloud
 
 - name: Wait until SSH becomes ready...
   local_action: wait_for host={{ inventory_hostname }} port=22 state=started timeout=120
   when: reboot_required is defined and reboot_required.stdout == 'required'
   become: false
+  tags:
+    - cloud
 
 - name: Disable MOTD on login and SSHD
   replace: dest="{{ item.file }}" regexp="{{ item.regexp }}" replace="{{ item.line }}"
   with_items:
     - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/login' }
     - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/sshd' }
+  tags:
+    - cloud
 
 - name: Install tools
   apt: name="{{ item }}" state=latest
@@ -47,24 +61,36 @@
     - sendmail
     - iptables-persistent
     - cgroup-tools
+  tags:
+    - always
 
 - name: Loopback for services configured
   template: src=10-loopback-services.cfg.j2 dest=/etc/network/interfaces.d/10-loopback-services.cfg
   notify:
     - restart loopback
+  tags:
+    - always
 
 - name: Loopback included into the network config
   lineinfile: dest=/etc/network/interfaces line='source /etc/network/interfaces.d/10-loopback-services.cfg' state=present
   notify:
     - restart loopback
+  tags:
+    - always
 
 - meta: flush_handlers
+  tags:
+    - always
 
 - name: Enable packet forwarding for IPv4
   sysctl: name="{{ item }}" value=1
   with_items:
     - net.ipv4.ip_forward
     - net.ipv4.conf.all.forwarding
+  tags:
+    - always
 
 - name: Enable packet forwarding for IPv6
   sysctl: name=net.ipv6.conf.all.forwarding value=1
+  tags:
+    - always

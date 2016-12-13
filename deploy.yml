@@ -8,6 +8,7 @@
     - { role: cloud-digitalocean, tags: ['digitalocean'] }
     - { role: cloud-ec2, tags: ['ec2'] }
     - { role: cloud-gce, tags: ['gce'] }
+    - { role: cloud-azure, tags: ['azure'] }
     - { role: local, tags: ['local'] }
 
 - name: Post-provisioning tasks
@@ -21,7 +22,7 @@
   pre_tasks:
     - name: Common pre-tasks
       include: playbooks/common.yml
-      tags: [ 'digitalocean', 'ec2', 'gce', 'pre' ]
+      tags: [ 'digitalocean', 'ec2', 'gce', 'azure', 'local', 'pre' ]
 
     - name: DigitalOcean pre-tasks
       include: playbooks/digitalocean.yml
@@ -39,3 +40,17 @@
     - name: reload eth0
       shell: sh -c 'ifdown eth0; ip addr flush dev eth0; ifup eth0'
 
+  post_tasks:
+    - shell: |
+        echo "#----------------------------------------------------------------------#"
+        echo "#                          Congratulations!                            #"
+        echo "#                     Your Algo server is running.                     #"
+        echo "#    Config files and certificates are in the ./configs/ directory.    #"
+        echo "#              Go to https://whoer.net/ after connecting               #"
+        echo "#        and ensure that all your traffic passes through the VPN.      #"
+        echo "#          Local DNS resolver and Proxy IP address: {{ local_service_ip }}"
+        echo "#----------------------------------------------------------------------#"
+      tags: always
+      register: congrats
+    - debug: msg="{{ congrats.stdout_lines }}"
+      tags: always

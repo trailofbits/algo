@@ -1,5 +1,6 @@
 - name: Enable IPv6 on the droplet
-  uri:
+  local_action:
+    module: uri
     url: "https://api.digitalocean.com/v2/droplets/{{ do_droplet_id }}/actions"
     method: POST
     body:
@@ -8,15 +9,18 @@
     status_code: 201
     HEADER_Authorization: "Bearer {{ do_access_token }}"
     HEADER_Content-Type: "application/json"
+  become: no
 
 - name: Get Droplet networks
-  uri:
+  local_action:
+    module: uri
     url: "https://api.digitalocean.com/v2/droplets/{{ do_droplet_id }}"
     method: GET
     status_code: 200
     HEADER_Authorization: "Bearer {{ do_access_token }}"
     HEADER_Content-Type: "application/json"
   register: droplet_info
+  become: no
 
 - name: IPv6 configured
   template: src=roles/cloud-digitalocean/templates/20-ipv6.cfg.j2 dest=/etc/network/interfaces.d/20-ipv6.cfg owner=root group=root mode=0644

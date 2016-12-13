@@ -3,6 +3,14 @@ conn ikev2-{{ IP_subject_alt_name }}
     {{ key }}={{ value }}
 {% endfor %}
 
+{% if Win10_Enabled is defined and Win10_Enabled == "Y" %}
+    ike=aes128gcm16-sha2_256-prfsha256-ecp256,aes256-sha2_256-prfsha256-modp2048!
+    esp=aes128gcm16-sha2_256-ecp256,aes256-sha1-modp1024!
+{% else %}
+    ike=aes128gcm16-sha2_256-prfsha256-ecp256
+    esp=aes128gcm16-sha2_256-ecp256
+{% endif %}
+
     right={{ IP_subject_alt_name }}
     rightid={{ IP_subject_alt_name }}
     rightsubnet=0.0.0.0/0
