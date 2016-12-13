@@ -21,6 +21,7 @@
     ssh_key_ids: "{{ do_ssh_key.ssh_key.id }}"
     unique_name: yes
     api_token: "{{ do_access_token }}"
+    ipv6: yes
   register: do
 
 - name: Add the droplet to an inventory group
