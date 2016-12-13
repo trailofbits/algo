@@ -28,15 +28,14 @@
   tags:
     - cloud
 
-- name: Wait for shutdown
-  local_action: wait_for host={{ inventory_hostname }} port=22 state=stopped timeout=120
-  when: reboot_required is defined and reboot_required.stdout == 'required'
-  become: false
-  tags:
-    - cloud
-
 - name: Wait until SSH becomes ready...
-  local_action: wait_for host={{ inventory_hostname }} port=22 state=started timeout=120
+  local_action:
+    module: wait_for
+    port: 22
+    host: "{{ inventory_hostname }}"
+    search_regex: OpenSSH
+    delay: 10
+    timeout: 320
   when: reboot_required is defined and reboot_required.stdout == 'required'
   become: false
   tags:

@@ -41,8 +41,15 @@
         ssh_tunneling_enabled: "{{ ssh_tunneling_enabled }}"
         IP_subject: "{{ IP_subject }}"
 
-    - name: Wait for SSH to become available
-      local_action: "wait_for port=22 host={{ server_ip }} timeout=320"
+    - name: Wait until SSH becomes ready...
+      local_action:
+        module: wait_for
+        port: 22
+        host: "{{ server_ip }}"
+        search_regex: "OpenSSH"
+        delay: 10
+        timeout: 320
+        state: present
       become: false
 
 - name: User management

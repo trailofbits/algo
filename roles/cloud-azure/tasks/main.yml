@@ -67,5 +67,5 @@
     cloud_provider: azure
     ipv6_support: no
 
-- name: Wait for SSH to become available
-  local_action: "wait_for port=22 host={{ ip_address }} timeout=320"
+- set_fact:
+    cloud_instance_ip: "{{ ip_address }}"
