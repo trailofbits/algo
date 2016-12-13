@@ -25,6 +25,12 @@
       tags:
         - cloud
 
+    - name: A short pause, in order to be sure the instance is ready
+      pause:
+        seconds: 10
+      tags:
+        - cloud
+
 - name: Post-provisioning tasks
   hosts: vpn-host
   gather_facts: false
