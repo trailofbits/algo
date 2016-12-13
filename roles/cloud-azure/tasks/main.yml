@@ -1,1 +1,71 @@
+---
 
+- set_fact:
+    resource_group: "Algo_{{ region }}"
+
+- name: Create a resource group
+  azure_rm_resourcegroup:
+    secret: "{{ azure_secret | default(lookup('env','AZURE_CLIENT_ID')) }}"
+    tenant: "{{ azure_tenant | default(lookup('env','AZURE_SECRET')) }}"
+    client_id: "{{ azure_client_id | default(lookup('env','AZURE_SUBSCRIPTION_ID')) }}"
+    subscription_id: "{{ azure_subscription_id | default(lookup('env','AZURE_TENANT')) }}"
+    name: "{{ resource_group }}"
+    location: "{{ region }}"
+    tags:
+        service: algo
+
+- name: Create a virtual network
+  azure_rm_virtualnetwork:
+    resource_group: "{{ resource_group }}"
+    name: algo_net
+    address_prefixes: "10.10.0.0/16"
+    tags:
+        service: algo
+
+- name: Create a subnet
+  azure_rm_subnet:
+    resource_group: "{{ resource_group }}"
+    name: algo_subnet
+    address_prefix: "10.10.0.0/24"
+    virtual_network: algo_net
+    tags:
+        service: algo
+
+- name: Create an instance
+  azure_rm_virtualmachine:
+    secret: "{{ azure_secret | default(lookup('env','AZURE_CLIENT_ID')) }}"
+    tenant: "{{ azure_tenant | default(lookup('env','AZURE_SECRET')) }}"
+    client_id: "{{ azure_client_id | default(lookup('env','AZURE_SUBSCRIPTION_ID')) }}"
+    subscription_id: "{{ azure_subscription_id | default(lookup('env','AZURE_TENANT')) }}"
+    resource_group: "{{ resource_group }}"
+    admin_username: ubuntu
+    virtual_network: algo_net
+    name: "{{ azure_server_name }}"
+    ssh_password_enabled: false
+    vm_size: Standard_D1
+    tags:
+      service: algo
+    ssh_public_keys:
+      - { path: "/home/ubuntu/.ssh/authorized_keys", key_data: "{{ lookup('file', '{{ ssh_public_key }}') }}" }
+    image:
+      offer: UbuntuServer
+      publisher: Canonical
+      sku: '16.04-LTS'
+      version: latest
+  register: azure_rm_virtualmachine
+
+- set_fact:
+    ip_address: "{{ azure_rm_virtualmachine.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
+
+- name: Add the instance to an inventory group
+  add_host:
+    name: "{{ ip_address }}"
+    groups: vpn-host
+    ansible_ssh_user: ubuntu
+    ansible_python_interpreter: "/usr/bin/python2.7"
+    easyrsa_p12_export_password: "{{ easyrsa_p12_export_password }}"
+    cloud_provider: azure
+    ipv6_support: no
+
+- name: Wait for SSH to become available
+  local_action: "wait_for port=22 host={{ ip_address }} timeout=320"

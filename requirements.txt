@@ -1,5 +1,6 @@
+ansible>=2.1
 dopy==0.3.5
 boto
-azure>=0.7.1
+azure==2.0.0rc5
 apache-libcloud
 six
