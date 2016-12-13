@@ -24,10 +24,6 @@
       include: playbooks/common.yml
       tags: [ 'digitalocean', 'ec2', 'gce', 'azure', 'local', 'pre' ]
 
-    - name: DigitalOcean pre-tasks
-      include: playbooks/digitalocean.yml
-      tags: [ 'digitalocean' ]
-
   roles:
     - { role: security, tags: [ 'security' ] }
     - { role: proxy, tags: [ 'proxy', 'adblock' ] }
