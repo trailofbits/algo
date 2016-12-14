@@ -3,9 +3,12 @@ config setup
     charondebug="ike 2, knl 2, cfg 2, net 2, esp 2, dmn 2,  mgr 2"
 
 conn %default
-{% for key, value in ipsec_config.iteritems() %}
-    {{ key }}={{ value }}
-{% endfor %}
+    fragmentation=yes
+    rekey=no
+    dpdaction=clear
+    keyexchange=ikev2
+    compress=yes
+    dpddelay=35s
 
 {% if Win10_Enabled is defined and Win10_Enabled == "Y" %}
     ike=aes128gcm16-sha2_256-prfsha256-ecp256,aes256-sha2_256-prfsha256-modp2048!
