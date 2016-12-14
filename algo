@@ -99,10 +99,6 @@ Enter your azure subscription_id (https://docs.ansible.com/ansible/guide_azure.h
 You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
 [...]: " -rs azure_subscription_id
 
-  read -p "
-
-Enter the local path to your SSH public key (~/.ssh/id_rsa.pub): " -r ssh_public_key
-  ssh_public_key=${ssh_public_key:-$HOME/.ssh/id_rsa.pub}
 
   read -p "
 Name the vpn server:
@@ -154,10 +150,6 @@ digitalocean () {
   read -p "
 Enter your API token (https://cloud.digitalocean.com/settings/api/tokens):
 : " -rs do_access_token
-
-  read -p "
-Enter an existing SSH key name (https://cloud.digitalocean.com/settings/security):
-: " -r do_ssh_name
 
   read -p "
 Name the vpn server:
@@ -212,11 +204,6 @@ Enter your aws_secret_key (http://docs.aws.amazon.com/general/latest/gr/managing
 Note: Make sure to use either your root key (recommended) or an IAM user with an acceptable policy attached
 [ABCD...]: " -rs aws_secret_key
 
-
-  read -p "
-Enter the local path to your SSH public key (~/.ssh/id_rsa.pub): " -r ssh_public_key
-  ssh_public_key=${ssh_public_key:-$HOME/.ssh/id_rsa.pub}
-
 read -p "
 Name the vpn server:
 [algo]: " -r aws_server_name
@@ -265,10 +252,6 @@ gce () {
   read -p "
 Enter the local path to your credentials JSON file (https://support.google.com/cloud/answer/6158849?hl=en&ref_topic=6262490#serviceaccounts):
 : " -r credentials_file
-
-  read -p "
-Enter the local path to your SSH public key (~/.ssh/id_rsa.pub): " -r ssh_public_key
-  ssh_public_key=${ssh_public_key:-$HOME/.ssh/id_rsa.pub}
 
   read -p "
 Name the vpn server:

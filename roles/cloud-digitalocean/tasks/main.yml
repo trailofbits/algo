@@ -39,7 +39,7 @@
   digital_ocean:
     state: present
     command: ssh
-    name: "{{ SSH_keys.comment }}"
+    ssh_pub_key: "{{ public_key }}"
     api_token: "{{ do_access_token }}"
   register: do_ssh_key
 
