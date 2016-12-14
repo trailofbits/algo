@@ -1,7 +1,10 @@
 conn ikev2-{{ IP_subject_alt_name }}
-{% for key, value in ipsec_config.iteritems() %}
-    {{ key }}={{ value }}
-{% endfor %}
+    fragmentation=yes
+    rekey=no
+    dpdaction=clear
+    keyexchange=ikev2
+    compress=yes
+    dpddelay=35s
 
 {% if Win10_Enabled is defined and Win10_Enabled == "Y" %}
     ike=aes128gcm16-sha2_256-prfsha256-ecp256,aes256-sha2_256-prfsha256-modp2048!
