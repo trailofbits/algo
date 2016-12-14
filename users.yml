@@ -21,11 +21,6 @@
       default: "n"
       private: no
 
-    - name: "easyrsa_p12_export_password"
-      prompt: "Enter a password for p12 certificates and SSH private keys: (minimum five characters)\n"
-      default: "vpnpw"
-      private: yes
-
     - name: "IP_subject"
       prompt: "Enter public IP address of your server: (IMPORTANT! This IP is used to verify the certificate)\n"
       private: no
@@ -37,7 +32,6 @@
         groupname: vpn-host
         ansible_ssh_user: "{{ server_user }}"
         ansible_python_interpreter: "/usr/bin/python2.7"
-        easyrsa_p12_export_password: "{{ easyrsa_p12_export_password }}"
         ssh_tunneling_enabled: "{{ ssh_tunneling_enabled }}"
         IP_subject: "{{ IP_subject }}"
 
@@ -67,6 +61,13 @@
     - { role: ssh_tunneling, tags: [ 'ssh_tunneling' ], when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y" }
 
   tasks:
+
+    - name: Gather Facts
+      setup:
+
+    - set_fact:
+        easyrsa_p12_export_password: "{{ (ansible_date_time.iso8601_basic|sha1|to_uuid).split('-')[0] }}"
+
     - name: Build the client's pair
       shell: >
         ./easyrsa build-client-full {{ item }} nopass &&
@@ -78,11 +79,9 @@
 
     - name: Build the client's p12
       shell: >
-        openssl pkcs12 -in {{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt -inkey {{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.key -export -name {{ item }} -out /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 -certfile {{ easyrsa_dir }}/easyrsa3//pki/ca.crt -passout pass:{{ easyrsa_p12_export_password }} &&
-        touch '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_p12_initialized'
+        openssl pkcs12 -in {{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt -inkey {{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.key -export -name {{ item }} -out /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 -certfile {{ easyrsa_dir }}/easyrsa3//pki/ca.crt -passout pass:{{ easyrsa_p12_export_password }}
       args:
         chdir: '{{ easyrsa_dir }}/easyrsa3/'
-        creates: '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_p12_initialized'
       with_items: "{{ users }}"
 
     - name: Get active users
@@ -150,4 +149,9 @@
 
     - name: SSH | Fetch users SSH private keys
       fetch: src='/var/jail/{{ item }}/.ssh/id_rsa' dest=configs/{{ IP_subject_alt_name }}_{{ item }}.ssh.pem flat=yes
+      when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
       with_items: "{{ users }}"
+
+  post_tasks:
+    - debug: msg="{{ congrats.split('\n') }}"
+      tags: always

@@ -63,7 +63,6 @@
     groups: vpn-host
     ansible_ssh_user: ubuntu
     ansible_python_interpreter: "/usr/bin/python2.7"
-    easyrsa_p12_export_password: "{{ easyrsa_p12_export_password }}"
     cloud_provider: azure
     ipv6_support: no
 
