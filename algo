@@ -61,6 +61,12 @@ Do you want to enable VPN for Windows 10 clients? (Will use insecure algorithms 
 Win10_Enabled=${Win10_Enabled:-n}
 if [[ "$Win10_Enabled" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" Win10_Enabled=Y"; fi
 
+read -p "
+Do you want to block client-to-client traffic?
+[y/N]: " -r BetweenClients_DROP
+BetweenClients_DROP=${BetweenClients_DROP:-n}
+if [[ "$BetweenClients_DROP" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" BetweenClients_DROP=Y"; fi
+
 }
 
 deploy () {
