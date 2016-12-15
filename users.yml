@@ -25,6 +25,10 @@
       prompt: "Enter public IP address of your server: (IMPORTANT! This IP is used to verify the certificate)\n"
       private: no
 
+    - name: "easyrsa_CA_password"
+      prompt: "Enter the password for the private CA key:\n"
+      private: yes
+
   tasks:
     - name: Add the server to the vpn-host group
       add_host:
@@ -33,6 +37,7 @@
         ansible_ssh_user: "{{ server_user }}"
         ansible_python_interpreter: "/usr/bin/python2.7"
         ssh_tunneling_enabled: "{{ ssh_tunneling_enabled }}"
+        easyrsa_CA_password: "{{ easyrsa_CA_password }}"
         IP_subject: "{{ IP_subject }}"
 
     - name: Wait until SSH becomes ready...
@@ -70,7 +75,8 @@
 
     - name: Build the client's pair
       shell: >
-        ./easyrsa build-client-full {{ item }} nopass &&
+        ./easyrsa gen-req {{ item }} nopass -- -passin pass:"{{ easyrsa_CA_password }}" -subj "/CN={{ item }}" &&
+        ./easyrsa --subject-alt-name='DNS:{{ item }}' sign-req client {{ item }} nopass -- -passin pass:"{{ easyrsa_CA_password }}" &&
         touch '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_initialized'
       args:
         chdir: '{{ easyrsa_dir }}/easyrsa3/'
@@ -93,8 +99,10 @@
 
     - name: Revoke non-existing users
       shell: >
+        openssl ec -in pki/private/ca.key -out pki/private/ca.key -passin pass:"{{ easyrsa_CA_password }}" -passout pass:"" &&
         ipsec pki --signcrl --cacert {{ easyrsa_dir }}/easyrsa3//pki/ca.crt --cakey {{ easyrsa_dir }}/easyrsa3/pki/private/ca.key --reason superseded --cert {{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt > /etc/ipsec.d/crls/{{ item }}.der &&
         ./easyrsa revoke {{ item }} &&
+        openssl ec -aes256 -in pki/private/ca.key -out pki/private/ca.key -passin pass:"" -passout pass:"{{ easyrsa_CA_password }}" &&
         ipsec rereadcrls
       args:
         chdir: '{{ easyrsa_dir }}/easyrsa3/'
