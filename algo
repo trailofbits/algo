@@ -12,12 +12,6 @@ security_enabled=${security_enabled:-n}
 if [[ "$security_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" security"; fi
 
 read -p "
-Do you want to install an HTTP proxy to block ads and decrease traffic usage while surfing?
-[y/N]: " -r proxy_enabled
-proxy_enabled=${proxy_enabled:-n}
-if [[ "$proxy_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" proxy"; fi
-
-read -p "
 Do you want to install a local DNS resolver to block ads while surfing?
 [y/N]: " -r dns_enabled
 dns_enabled=${dns_enabled:-n}
@@ -60,12 +54,6 @@ Do you want to enable VPN for Windows 10 clients? (Will use insecure algorithms 
 [y/N]: " -r Win10_Enabled
 Win10_Enabled=${Win10_Enabled:-n}
 if [[ "$Win10_Enabled" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" Win10_Enabled=Y"; fi
-
-read -p "
-Do you want to block client-to-client traffic?
-[y/N]: " -r BetweenClients_DROP
-BetweenClients_DROP=${BetweenClients_DROP:-n}
-if [[ "$BetweenClients_DROP" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" BetweenClients_DROP=Y"; fi
 
 }
 
