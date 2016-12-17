@@ -4,3 +4,4 @@ boto
 azure==2.0.0rc5
 apache-libcloud
 six
+pyopenssl
