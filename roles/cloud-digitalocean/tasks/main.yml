@@ -41,6 +41,7 @@
     command: ssh
     ssh_pub_key: "{{ public_key }}"
     api_token: "{{ do_access_token }}"
+    name: "{{ SSH_keys.comment }}"
   register: do_ssh_key
 
 - name: "Creating a droplet..."
