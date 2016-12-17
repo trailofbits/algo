@@ -15,6 +15,7 @@ COMMIT
 -A INPUT -p icmp --icmp-type echo-request -m hashlimit --hashlimit-upto 5/s --hashlimit-mode srcip --hashlimit-srcmask 32 --hashlimit-name icmp-echo-drop -j DROP
 -A INPUT -p udp -m multiport --dports 500,4500 -j ACCEPT
 -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW -j ACCEPT
+-A INPUT -p ipencap -m policy --dir in --pol ipsec --proto esp -j ACCEPT
 # TODO:
 # The IP of the resolver should be bound to a DUMMY interface.
 # DUMMY interfaces are the proper way to install IPs without assigning them any
