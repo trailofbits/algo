@@ -29,7 +29,7 @@ The easiest way to get an Algo server running is to let it setup a _new_ virtual
 
 1. Install the dependencies for your operating system:
 
- OS X: `sudo easy_install pip && sudo pip install -r requirements.txt`  
+ OS X: `sudo easy_install pip && sudo pip install --ignore-install -r requirements.txt`
  Linux (deb-based): `sudo easy_install pip && sudo apt-get install build-essential libssl-dev libffi-dev python-dev && sudo pip install -r requirements.txt` 
 
 2. Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
