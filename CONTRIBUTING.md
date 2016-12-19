@@ -7,6 +7,7 @@
 
 * Please review the [FAQ](https://github.com/trailofbits/algo#faq)
 * Please include the full output from your terminal window if appropriate
+* We only support macOS 10.11 and newer
 
 ### Pull Requests
 
