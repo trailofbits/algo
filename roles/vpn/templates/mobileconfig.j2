@@ -138,9 +138,9 @@
             </dict>
             <key>UserDefinedName</key>
 {% if proxy_enabled is defined and proxy_enabled == true %}
-            <string>Algo VPN {{ IP_subject_alt_name }} IKEv2 with proxy</string>
+            <string>{{ IP_subject_alt_name }} IKEv2 with proxy</string>
   {% else %}
-            <string>Algo VPN {{ IP_subject_alt_name }} IKEv2</string>
+            <string>{{ IP_subject_alt_name }} IKEv2</string>
 {% endif %}
             <key>VPNType</key>
             <string>IKEv2</string>
