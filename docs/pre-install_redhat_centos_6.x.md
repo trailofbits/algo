@@ -42,7 +42,7 @@ pip -q install setuptools --upgrade
 
 wget -q https://github.com/trailofbits/algo/archive/master.zip
 unzip master.zip 
-cd algo-master || echo "No Algo directory found" && exit
+cd algo-master || echo "No Algo directory found"
 
 # Must be run from algo-master dir:
 pip -q install -r requirements.txt	# install Algo local (pusher) dependencies
