@@ -30,7 +30,10 @@ The easiest way to get an Algo server running is to let it setup a _new_ virtual
 1. Install the dependencies for your operating system:
 
  OS X: `sudo easy_install pip && sudo pip install --ignore-install -r requirements.txt`
+ 
  Linux (deb-based): `sudo easy_install pip && sudo apt-get install build-essential libssl-dev libffi-dev python-dev && sudo pip install -r requirements.txt` 
+
+ Linux (rpm-based): See the [Pre-Install Documentation for RedHat/CentOS 6.x](docs/pre-install_redhat_centos_6.x.md)
 
 2. Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
 3. Start the deploy and follow the instructions: `./algo`
@@ -53,16 +56,16 @@ You need to install the [StrongSwan VPN Client for Android 4 and newer](https://
 
 ### Windows
 
-Import your user certificate to your Personal certificate store and your CA certificate to the Local Machine Trusted Root certificate store. Then, add an IKEv2 connection in the network settings and activate additional ciphers for it via Powershell (change the ConnectionName to the name of your IKEv2 connection):
+Copy the CA certificate, user certificate, and the user PowerShell script to the client computer. Import the CA certificate to the local machine Trusted Root certificate store. Then, run the included PowerShell script to import the user certificate, set up a VPN connection, and activate stronger ciphers on it.
+
+If you want to perform these steps by hand, you will need to import the user certificate to the Personal certificate store, add an IKEv2 connection in the network settings, then activate stronger ciphers on it via the following PowerShell script:
 
 `Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo" -AuthenticationTransformConstants SHA25612
 8 -CipherTransformConstants AES256 -EncryptionMethod AES256 -IntegrityCheckMethod SHA256 -DHGroup Group14 -PfsGroup none`
 
-Note that an all-in-one Powershell script that imports your personal certificate, sets up the VPN connection, and activates the stronger ciphers for it is included in the `configs` folder.
+### Linux strongSwan Clients (e.g., OpenWRT, Ubuntu, etc.)
 
-### StrongSwan Clients (e.g., OpenWRT)
-
-Find the included user_ipsec.conf, user_ipsec.secrets, user.crt (user certificate), and user.key (private key) files and copy them to your client device. These may be useful if you plan to set up a point-to-point VPN with OpenWRT or other custom device.
+Install strongSwan, then copy the included user_ipsec.conf, user_ipsec.secrets, user.crt (user certificate), and user.key (private key) files to your client device. These may require some customization based on your exact use case. These files were originally generated with a point-to-point OpenWRT-based VPN in mind.
 
 ### Other Devices
 
