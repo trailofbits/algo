@@ -25,8 +25,8 @@
 
 - name: Configure EC2 virtual private clouds
   ec2_vpc:
-    aws_access_key: "{{ aws_access_key }}"
-    aws_secret_key: "{{ aws_secret_key }}"
+    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'))}}"
+    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
     state: present
     resource_tags: { "Environment":"Algo" }
     region: "{{ region }}"
@@ -39,6 +39,8 @@
 
 - name: Set up Public Subnets Route Table
   ec2_vpc_route_table:
+    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'))}}"
+    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
     vpc_id: "{{ vpc.vpc_id }}"
     region: "{{ region }}"
     state: present
