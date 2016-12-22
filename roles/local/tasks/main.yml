@@ -4,6 +4,7 @@
     groups: vpn-host
     ansible_ssh_user: "{{ server_user }}"
     ansible_python_interpreter: "/usr/bin/python2.7"
+    ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
     cloud_provider: local
   when: server_ip != "localhost"
 
@@ -13,6 +14,7 @@
     groups: vpn-host
     ansible_ssh_user: "{{ server_user }}"
     ansible_python_interpreter: "/usr/bin/python2.7"
+    ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
     ansible_connection: local
     cloud_provider: local
   when: server_ip == "localhost"
