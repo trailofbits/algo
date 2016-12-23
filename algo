@@ -5,11 +5,26 @@ set -e
 SKIP_TAGS="_null"
 
 additional_roles () {
+
 read -p "
-Do you want to apply security enhancements?
-[y/N]: " -r security_enabled
-security_enabled=${security_enabled:-n}
-if [[ "$security_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" security"; fi
+Do you want to enable VPN Always-On when connected to the cellular network?
+[y/N]: " -r OnDemandEnabled_Cellular
+OnDemandEnabled_Cellular=${OnDemandEnabled_Cellular:-n}
+if [[ "$OnDemandEnabled_Cellular" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" OnDemandEnabled_Cellular=Y"; fi
+
+read -p "
+Do you want to enable VPN Always-On when connected to Wi-Fi?
+[y/N]: " -r OnDemandEnabled_WIFI
+OnDemandEnabled_WIFI=${OnDemandEnabled_WIFI:-n}
+if [[ "$OnDemandEnabled_WIFI" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" OnDemandEnabled_WIFI=Y"; fi
+
+if [[ "$OnDemandEnabled_WIFI" =~ ^(y|Y)$ ]]; then
+  read -p "
+Do you want to exclude trusted Wi-Fi networks from using the VPN? (e.g., your home network. Comma-separated value, e.g., HomeNet,OfficeWifi,AlgoWiFi)
+: " -r OnDemandEnabled_WIFI_ECXLUDE
+  OnDemandEnabled_WIFI_ECXLUDE=${OnDemandEnabled_WIFI_ECXLUDE:-_null}
+  EXTRA_VARS+=" OnDemandEnabled_WIFI_ECXLUDE=$OnDemandEnabled_WIFI_ECXLUDE"
+fi
 
 read -p "
 Do you want to install a local DNS resolver to block ads while surfing?
@@ -18,39 +33,25 @@ dns_enabled=${dns_enabled:-n}
 if [[ "$dns_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" dns"; EXTRA_VARS+=" local_dns=Y"; fi
 
 read -p "
-Do you want to use auditd for security monitoring (see config.cfg)?
-[y/N]: " -r logging_enabled
-logging_enabled=${logging_enabled:-n}
-if [[ "$logging_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" logging"; fi
-
-read -p "
 Do you want each user to have their own account for SSH tunneling?
 [y/N]: " -r ssh_tunneling_enabled
 ssh_tunneling_enabled=${ssh_tunneling_enabled:-n}
 if [[ "$ssh_tunneling_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" ssh_tunneling"; fi
 
 read -p "
-Do you want to enable VPN always when connected to Wi-Fi?
-[y/N]: " -r OnDemandEnabled_WIFI
-OnDemandEnabled_WIFI=${OnDemandEnabled_WIFI:-n}
-if [[ "$OnDemandEnabled_WIFI" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" OnDemandEnabled_WIFI=Y"; fi
-
-if [[ "$OnDemandEnabled_WIFI" =~ ^(y|Y)$ ]]; then
-  read -p "
-Do you want to exclude trust Wi-Fi networks from VPN usage? (eg: Your home network. Comma-separated value, eg: HomeMeganet,OfficeSuperWifi,AlgoWiFi)
-: " -r OnDemandEnabled_WIFI_ECXLUDE
-  OnDemandEnabled_WIFI_ECXLUDE=${OnDemandEnabled_WIFI_ECXLUDE:-_null}
-  EXTRA_VARS+=" OnDemandEnabled_WIFI_ECXLUDE=$OnDemandEnabled_WIFI_ECXLUDE"
-fi
+Do you want to apply operating system security enhancements on the server?
+[y/N]: " -r security_enabled
+security_enabled=${security_enabled:-n}
+if [[ "$security_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" security"; fi
 
 read -p "
-Do you want to enable VPN always when connected to the cellular network?
-[y/N]: " -r OnDemandEnabled_Cellular
-OnDemandEnabled_Cellular=${OnDemandEnabled_Cellular:-n}
-if [[ "$OnDemandEnabled_Cellular" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" OnDemandEnabled_Cellular=Y"; fi
+Do you want to use auditd for security monitoring? (requires configurationg in config.cfg)
+[y/N]: " -r logging_enabled
+logging_enabled=${logging_enabled:-n}
+if [[ "$logging_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" logging"; fi
 
 read -p "
-Do you want to enable VPN for Windows 10 clients? (Will use insecure algorithms and ciphers)
+Do you want the VPN to support Windows 10 clients? (requires RSA certificates and key exchange, less secure)
 [y/N]: " -r Win10_Enabled
 Win10_Enabled=${Win10_Enabled:-n}
 if [[ "$Win10_Enabled" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" Win10_Enabled=Y"; fi
