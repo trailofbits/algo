@@ -13,7 +13,7 @@
 
 ## Optional Roles
 
-* **Security Enhancements (Reccommended)**
+* **Security Enhancements**
   * Enables [unattended-upgrades](https://help.ubuntu.com/community/AutomaticSecurityUpdates) to ensure available patches are always applied
   * Modify features like core dumps, kernel parameters, and SUID binaries to limit possible attacks
   * Enhances SSH with modern ciphers and seccomp, and restricts access to older, unwanted features like X11 forwarding and SFTP
