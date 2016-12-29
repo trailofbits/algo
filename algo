@@ -7,7 +7,7 @@ SKIP_TAGS="_null"
 additional_roles () {
 
 read -p "
-Do you want to enable VPN Always-On when connected to the cellular network?
+Do you want to enable VPN Always-On when connected to cellular networks?
 [y/N]: " -r OnDemandEnabled_Cellular
 OnDemandEnabled_Cellular=${OnDemandEnabled_Cellular:-n}
 if [[ "$OnDemandEnabled_Cellular" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" OnDemandEnabled_Cellular=Y"; fi
@@ -45,7 +45,7 @@ security_enabled=${security_enabled:-n}
 if [[ "$security_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" security"; fi
 
 read -p "
-Do you want to use auditd for security monitoring? (requires configurationg in config.cfg)
+Do you want to use auditd for security monitoring? (requires configuration in config.cfg)
 [y/N]: " -r logging_enabled
 logging_enabled=${logging_enabled:-n}
 if [[ "$logging_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" logging"; fi
