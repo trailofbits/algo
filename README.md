@@ -48,7 +48,7 @@ Certificates and configuration files that users will need are placed in the `con
 
 ### Apple Devices
 
-Find the corresponding mobileconfig (Apple Profile) for each user and send it to them over AirDrop (or other secure means). Apple Configuration Profiles are all-in-one configuration files for iOS and macOS devices and installing a profile will fully configure the VPN.
+Find the corresponding mobileconfig (Apple Profile) for each user and send it to them over AirDrop or other secure means. Apple Configuration Profiles are all-in-one configuration files for iOS and macOS devices. On macOS, double-clicking a profile to install it will fully configure the VPN. On iOS, users are prompted to install the profile as soon as the AirDrop is accepted.
 
 ### Android Devices
 
