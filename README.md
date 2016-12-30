@@ -12,7 +12,7 @@ Algo VPN (short for "Al Gore", the **V**ice **P**resident of **N**etworks everyw
 * Blocks ads with a local DNS resolver and HTTP proxy (optional)
 * Sets up limited SSH users for tunneling traffic (optional)
 * Based on current versions of Ubuntu and strongSwan
-* Installs to DigitalOcean, Amazon EC2, Google Cloud Engine, Microsoft Azure or your own server
+* Installs to DigitalOcean, Amazon EC2, Google Compute Engine, Microsoft Azure or your own server
 
 ## Anti-features
 
@@ -27,16 +27,17 @@ Algo VPN (short for "Al Gore", the **V**ice **P**resident of **N**etworks everyw
 
 The easiest way to get an Algo server running is to let it setup a _new_ virtual machine in the cloud for you.
 
-1. Install the dependencies for your operating system:
+1. Setup an account on a cloud hosting provider. Algo supports [DigitalOcean](https://www.digitalocean.com/), [Amazon EC2](https://aws.amazon.com/), [Google Compute Engine](https://cloud.google.com/compute/), and [Microsoft Azure](https://azure.microsoft.com/).
+2. Install the dependencies for your operating system:
 
- OS X: `sudo easy_install pip && sudo pip install --ignore-install -r requirements.txt`
+ macOS: `sudo easy_install pip && sudo pip install --ignore-install -r requirements.txt`
  
  Linux (deb-based): `sudo easy_install pip && sudo apt-get update && sudo apt-get install build-essential libssl-dev libffi-dev python-dev && sudo pip install -r requirements.txt`
 
  Linux (rpm-based): See the [Pre-Install Documentation for RedHat/CentOS 6.x](docs/pre-install_redhat_centos_6.x.md)
 
-2. Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
-3. Start the deploy and follow the instructions: `./algo`
+3. Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
+4. Start the deploy and follow the instructions by running: `./algo`. There are several optional features available. None are required for a fully functional VPN server. These features are described in greater detail in [ROLES.md](docs/ROLES.md).
 
 That's it! You now have an Algo VPN server on the internet.
 
@@ -171,3 +172,7 @@ Storing debug log for failure in /Users/algore/Library/Logs/pip.log
 ```
 
 You are running an old version of `pip` that cannot build the `pycrypto` dependency. Upgrade to a new version of `pip` by running `sudo pip install -U pip`.
+
+### Little Snitch is broken when connected to the VPN
+
+Little Snitch is not compatible with IPSEC VPNs due to a known bug in macOS and there is no solution. The Little Snitch "filter" does not get incoming packets from IPSEC VPNs and, therefore, cannot evaluate any rules over them. Their developers have filed a bug report with Apple but there has been no response. There is nothing they or Algo can do to resolve this problem on their own. You can read more about this problem in [issue #134](https://github.com/trailofbits/algo/issues/134).
