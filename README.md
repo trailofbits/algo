@@ -102,7 +102,7 @@ The Algo VPN server now contains only the users listed in the `config.cfg` file.
 
 ### Has Algo been audited?
 
-No. This project is under active development. We're happy to [accept and fix issues](https://github.com/trailofbits/algo/issues) as they are identified. Use Algo at your own risk. If you find a security issue of any severity, please [contact us on Slack](https://empireslacking.herokuapp.com).
+No. This project is under [active development](https://github.com/trailofbits/algo/projects/1). We're happy to [accept and fix issues](https://github.com/trailofbits/algo/issues) as they are identified. Use Algo at your own risk. If you find a security issue of any severity, please [contact us on Slack](https://empireslacking.herokuapp.com).
 
 ### Why aren't you using Tor?
 
