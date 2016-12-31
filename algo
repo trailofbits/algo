@@ -21,9 +21,9 @@ if [[ "$OnDemandEnabled_WIFI" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" OnDemandEnabled_
 if [[ "$OnDemandEnabled_WIFI" =~ ^(y|Y)$ ]]; then
   read -p "
 Do you want to exclude trusted Wi-Fi networks from using the VPN? (e.g., your home network. Comma-separated value, e.g., HomeNet,OfficeWifi,AlgoWiFi)
-: " -r OnDemandEnabled_WIFI_ECXLUDE
-  OnDemandEnabled_WIFI_ECXLUDE=${OnDemandEnabled_WIFI_ECXLUDE:-_null}
-  EXTRA_VARS+=" OnDemandEnabled_WIFI_ECXLUDE=$OnDemandEnabled_WIFI_ECXLUDE"
+: " -r OnDemandEnabled_WIFI_EXCLUDE
+  OnDemandEnabled_WIFI_EXCLUDE=${OnDemandEnabled_WIFI_EXCLUDE:-_null}
+  EXTRA_VARS+=" OnDemandEnabled_WIFI_EXCLUDE=$OnDemandEnabled_WIFI_EXCLUDE"
 fi
 
 read -p "

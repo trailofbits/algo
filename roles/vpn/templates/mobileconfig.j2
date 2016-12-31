@@ -12,8 +12,8 @@
                 <integer>1</integer>
               <key>OnDemandRules</key>
               <array>
-{% if OnDemandEnabled_WIFI_ECXLUDE is defined and OnDemandEnabled_WIFI_ECXLUDE != '_null' %}
-{% set WIFI_ECXLUDE_LIST = OnDemandEnabled_WIFI_ECXLUDE.split(',') %}
+{% if OnDemandEnabled_WIFI_EXCLUDE is defined and OnDemandEnabled_WIFI_EXCLUDE != '_null' %}
+{% set WIFI_EXCLUDE_LIST = OnDemandEnabled_WIFI_EXCLUDE.split(',') %}
                   <dict>
                       <key>Action</key>
                       <string>Disconnect</string>
@@ -21,7 +21,7 @@
                       <string>WiFi</string>
                       <key>SSIDMatch</key>
                       <array>
-{% for network_name in WIFI_ECXLUDE_LIST %}
+{% for network_name in WIFI_EXCLUDE_LIST %}
                           <string>{{ network_name }}</string>
 {% endfor %}
                       </array>
