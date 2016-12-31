@@ -35,7 +35,7 @@ cd algo && ./algo
 Example for DigitalOcean:
 
 ```
-ansible-playbook deploy.yml -t digitalocean,vpn -e 'do_access_token=my_secret_token do_ssh_name=my_ssh_key do_server_name=algo.local do_region=ams2'
+ansible-playbook deploy.yml -t digitalocean,vpn -e 'do_access_token=my_secret_token do_server_name=algo.local do_region=ams2'
 ```
 
 ### Roles
@@ -60,7 +60,6 @@ Server roles:
 Required variables:
 
 - do_access_token
-- do_ssh_name
 - do_server_name
 - do_region
 
