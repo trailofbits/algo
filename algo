@@ -174,7 +174,7 @@ Enter the number of your desired region:
   esac
 
 ROLES="digitalocean vpn cloud"
-EXTRA_VARS="do_access_token=$do_access_token do_ssh_name=$do_ssh_name do_server_name=$do_server_name do_region=$do_region"
+EXTRA_VARS="do_access_token=$do_access_token do_server_name=$do_server_name do_region=$do_region"
 }
 
 ec2 () {
