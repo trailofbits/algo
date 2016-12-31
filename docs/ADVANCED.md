@@ -32,13 +32,33 @@ cd algo && ./algo
 
 ## Scripted Deployment
 
+You can also run an algo installation using the `ansible-playbook` command. This
+allows specifying how you want to configure your VPN server without using the
+interactive `algo` command. This may be more appropriate if, for example,
+you want to periodically destroy and rebuild your VPN server and access keys.
+
 Example for DigitalOcean:
 
 ```
-ansible-playbook deploy.yml -t digitalocean,vpn -e 'do_access_token=my_secret_token do_ssh_name=my_ssh_key do_server_name=algo.local do_region=ams2'
+ansible-playbook deploy.yml -t digitalocean,vpn -e 'do_access_token=my_secret_token do_ssh_name=my_ssh_key do_server_name=algo.local do_region=ams2 OnDemandEnabled_Cellular=Y'
+```
+
+WARNING: This command will not currently run successfully unless you have
+pre-generated SSH keys in the expected location in the `configs` dir and the SSH
+keys are named `algo.pem` and `algo.pem.pub`. You can manually generate those
+keys by running the `algo` command to completion at least once, or by running
+the following command to manually generate the `configs` dir and an RSA 2048
+SSH keypair with no password.
+
+```
+mkdir configs && ssh-keygen -b 2048 -C algo@local -t rsa -f configs/algo.pem -q -N ""
 ```
 
 ### Roles
+
+The `ansible-playbook` command accepts the `-t` or `TAGS` option. You can
+pass tags as comma separated tag values. Ansible will only run plays
+and tasks tagged with these values. Select from the tags shown. 
 
 Cloud roles:
  
@@ -55,7 +75,24 @@ Server roles:
 - role: security, tags: security
 - role: ssh_tunneling, tags: ssh_tunneling
 
-### Digital Ocean
+### Variables
+
+The `ansible-playbook` command accepts the `-e` or `--extra-vars` option. You can
+pass options as space separated key=value pairs. Here are some of the option keys
+you can pass. Those that are required are noted.
+
+#### Common Variables
+
+You can force the `*.mobileconfig` files generated in the `configs` dir to force
+your client device to use the VPN when on WiFi or a Cellular network. This may
+only work on Apple devices currently. `OnDemandEnabled_WIFI` and
+`OnDemandEnabled_Cellular` both expect a value of `Y` to indicate you want
+to enable these options.
+
+- OnDemandEnabled_WIFI=Y
+- OnDemandEnabled_Cellular=Y
+
+#### Digital Ocean
 
 Required variables:
 
@@ -79,7 +116,7 @@ Possible regions:
 - tor1
 - blr1
 
-### Google Cloud Engine
+#### Google Cloud Engine
 
 Required variables:
 
@@ -104,7 +141,7 @@ Possible zones:
 - asia-east1-b
 - asia-east1-c
 
-### Amazon EC2
+#### Amazon EC2
 
 Required variables:
 
@@ -129,7 +166,7 @@ Possible regions:
 - eu-west-1
 - sa-east-1
 
-### Local Installation
+#### Local Installation
 
 Required variables:
 
