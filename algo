@@ -45,12 +45,6 @@ security_enabled=${security_enabled:-n}
 if [[ "$security_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" security"; fi
 
 read -p "
-Do you want to use auditd for security monitoring? (requires configuration in config.cfg)
-[y/N]: " -r logging_enabled
-logging_enabled=${logging_enabled:-n}
-if [[ "$logging_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" logging"; fi
-
-read -p "
 Do you want the VPN to support Windows 10 clients? (requires RSA certificates and key exchange, less secure)
 [y/N]: " -r Win10_Enabled
 Win10_Enabled=${Win10_Enabled:-n}
