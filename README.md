@@ -12,7 +12,7 @@ Algo VPN (short for "Al Gore", the **V**ice **P**resident of **N**etworks everyw
 * Blocks ads with a local DNS resolver and HTTP proxy (optional)
 * Sets up limited SSH users for tunneling traffic (optional)
 * Based on current versions of Ubuntu and strongSwan
-* Installs to DigitalOcean, Amazon EC2, Google Compute Engine, Microsoft Azure or your own server
+* Installs to DigitalOcean, Amazon EC2, Google Compute Engine, Microsoft Azure, or your own server
 
 ## Anti-features
 
@@ -28,7 +28,7 @@ Algo VPN (short for "Al Gore", the **V**ice **P**resident of **N**etworks everyw
 The easiest way to get an Algo server running is to let it setup a _new_ virtual machine in the cloud for you.
 
 1. Setup an account on a cloud hosting provider. Algo supports [DigitalOcean](https://www.digitalocean.com/), [Amazon EC2](https://aws.amazon.com/), [Google Compute Engine](https://cloud.google.com/compute/), and [Microsoft Azure](https://azure.microsoft.com/).
-2. Install the dependencies for your operating system:
+2. [Download Algo](https://github.com/trailofbits/algo/archive/master.zip) and install the dependencies for your operating system. Open a terminal and `cd` into the directory where you have Algo, then:
 
  macOS: `sudo easy_install pip && sudo pip install --ignore-install -r requirements.txt`
  
@@ -36,7 +36,7 @@ The easiest way to get an Algo server running is to let it setup a _new_ virtual
 
  Linux (rpm-based): See the [Pre-Install Documentation for RedHat/CentOS 6.x](docs/pre-install_redhat_centos_6.x.md)
 
-3. Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
+3. Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
 4. Start the deploy and follow the instructions by running: `./algo`. There are several optional features available. None are required for a fully functional VPN server. These features are described in greater detail in [ROLES.md](docs/ROLES.md).
 
 That's it! You now have an Algo VPN server on the internet.
@@ -45,7 +45,7 @@ Note: for local or scripted deployment instructions see the [Advanced Usage](/do
 
 ## Configure the VPN Clients
 
-Certificates and configuration files that users will need are placed in the `configs` directory. Make sure to secure these files since many contain private keys. All files are prefixed with the IP address of the Algo VPN server.
+Certificates and configuration files that users will need are placed in the `configs` directory. Make sure to secure these files since many contain private keys. All files are prefixed with the IP address of your new Algo VPN server.
 
 ### Apple Devices
 
@@ -83,7 +83,7 @@ Depending on the platform, you may need one or multiple of the following files.
 
 ## Setup an SSH Tunnel
 
-If you turned on the optional SSH tunneling role, then local user accounts will be created for each user in `config.cfg` and an SSH authorized_key files for them will be in the `configs` directory (user.ssh.pem). SSH user accounts do not have shell access, cannot authenticate with a password, and have limited tunneling options (e.g., `ssh -N` is required). This is done to ensure that users have the least access required to tunnel through the server and can perform no other actions.
+If you turned on the optional SSH tunneling role, then local user accounts will be created for each user in `config.cfg` and an SSH authorized_key files for them will be in the `configs` directory (user.ssh.pem). SSH user accounts do not have shell access, cannot authenticate with a password, and only have limited tunneling options (e.g., `ssh -N` is required). This is done to ensure that SSH users have the least access required to tunnel through the server and can perform no other actions.
 
 Use the example command below to start an SSH tunnel by replacing `user` and `ip` with your own. Once the tunnel is setup, you can configure a browser or other application to use 127.0.0.1:1080 as a SOCKS proxy to route traffic through the Algo server.
 
