@@ -110,7 +110,7 @@ Possible options for `region`:
 - eu-west-2
 - sa-east-1
 
-### Google Cloud Engine
+### Google Compute Engine
 
 Required variables:
 
