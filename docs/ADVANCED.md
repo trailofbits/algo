@@ -1,25 +1,10 @@
 # Advanced Usage
 
-## Requirements
-
-Before you begin, make sure you have installed all the dependencies necessary for your use case. Algo depends on the software below and most of it will be installed via the `requirements.txt` file.
-
-* ansible >= 2.1
-* python >= 2.6
-* [dopy=0.3.5](https://github.com/Wiredcraft/dopy)
-* [boto](https://github.com/boto/boto)
-* [azure >= 0.7.1](https://github.com/Azure/azure-sdk-for-python)
-* [apache-libcloud](https://github.com/apache/libcloud)
-* [libcloud](https://curl.haxx.se/docs/caextract.html) (for Mac OS)
-* [six](https://github.com/JioCloud/python-six) 
-* SHell or BASH
-* libselinux-python (for RedHat based distros)
+Make sure you have installed all the dependencies necessary for your operating system as described in the README.
 
 ## Local Deployment
 
-**Warning**: If you run Algo on your existing server, the iptables rules will be overwritten. If you don't want to overwite the rules, just skip the `iptables` tag. You can find some information about tags below.
-
-It is possible to download the Algo scripts to your own Ubuntu server and run the scripts locally. You need to install ansible to run Algo on Ubuntu. Installing ansible via pip requires pulling in a lot of dependencies, including a full compiler suite. It is easier to use apt, however, Ubuntu 16.04 only comes with ansible 2.0.0.2. Therefore, to use apt you must use the ansible PPA, and using a PPA requires installing `software-properties-common`.
+It is possible to download the Algo scripts to your own Ubuntu server and run the scripts locally. You need to install Ansible to run Algo on Ubuntu. Installing ansible via pip requires pulling in a lot of dependencies, including a full compiler suite. It would be easier to use apt, however, Ubuntu 16.04 only comes with Ansible 2.0.0.2. Therefore, to use apt you must use the ansible PPA, and using a PPA requires installing `software-properties-common`.
 
 tl;dr:
 
@@ -30,9 +15,17 @@ git clone https://github.com/trailofbits/algo
 cd algo && ./algo
 ```
 
+**Warning**: If you run Algo on your existing server, the iptables rules will be overwritten. If you don't want to overwite the rules, you must deploy via `ansible-playbook` and skip the `iptables` tag as described below.
+
 ## Scripted Deployment
 
-Example for DigitalOcean:
+You can deploy Algo non-interactively by running the Ansible playbooks directly with `ansible-playbook`.
+
+`ansible-playbook` accepts "tags" via the `-t` or `TAGS` options. You can pass tags as a list of comma separated values. Ansible will only run plays (install roles) with the specified tags.
+
+`ansible-playbook` accepts variables via the `-e` or `--extra-vars` option. You can pass variables as space separated key=value pairs. Algo requires certain variables that are listed below.
+
+Here is a full example for DigitalOcean:
 
 ```
 ansible-playbook deploy.yml -t digitalocean,vpn -e 'do_access_token=my_secret_token do_server_name=algo.local do_region=ams2'
@@ -48,12 +41,25 @@ Cloud roles:
 
 Server roles:
 
-- role: vpn, tags: vpn 
+- role: vpn, tags: vpn
 - role: dns_adblocking, tags: dns, adblock
 - role: proxy, tags: proxy, adblock
 - role: logging, tags: logging
 - role: security, tags: security
 - role: ssh_tunneling, tags: ssh_tunneling
+
+Note: The `vpn` role generates Apple profiles with On-Demand Wifi and Cellular if you pass the following variables:
+
+- OnDemandEnabled_WIFI=Y
+- OnDemandEnabled_Cellular=Y
+
+### Local Installation
+
+Required variables:
+
+- server_ip
+- server_user
+- IP_subject_alt_name
 
 ### Digital Ocean
 
@@ -63,7 +69,7 @@ Required variables:
 - do_server_name
 - do_region
 
-Possible regions:
+Possible options for `do_region`:
 
 - ams2
 - ams3
@@ -78,6 +84,32 @@ Possible regions:
 - tor1
 - blr1
 
+### Amazon EC2
+
+Required variables:
+
+- aws_access_key
+- aws_secret_key
+- aws_server_name
+- ssh_public_key
+- region
+
+Possible options for `region`:
+
+- us-east-1
+- us-east-2
+- us-west-1
+- us-west-2
+- ap-south-1
+- ap-northeast-2
+- ap-southeast-1
+- ap-southeast-2
+- ap-northeast-1
+- eu-central-1
+- eu-west-1
+- eu-west-2
+- sa-east-1
+
 ### Google Cloud Engine
 
 Required variables:
@@ -87,7 +119,7 @@ Required variables:
 - ssh_public_key
 - zone
 
-Possible zones:
+Possible options for `zone`:
 
 - us-central1-a
 - us-central1-b
@@ -102,36 +134,3 @@ Possible zones:
 - asia-east1-a
 - asia-east1-b
 - asia-east1-c
-
-### Amazon EC2
-
-Required variables:
-
-- aws_access_key
-- aws_secret_key
-- aws_server_name
-- ssh_public_key
-- region
-
-Possible regions:
-
-- us-east-1
-- us-east-2
-- us-west-1
-- us-west-2
-- ap-south-1
-- ap-northeast-2
-- ap-southeast-1
-- ap-southeast-2
-- ap-northeast-1
-- eu-central-1
-- eu-west-1
-- sa-east-1
-
-### Local Installation
-
-Required variables:
-
-- server_ip
-- server_user
-- IP_subject_alt_name
