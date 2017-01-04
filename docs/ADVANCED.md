@@ -28,10 +28,14 @@ You can deploy Algo non-interactively by running the Ansible playbooks directly 
 Here is a full example for DigitalOcean:
 
 ```
-ansible-playbook deploy.yml -t digitalocean,vpn -e 'do_access_token=my_secret_token do_server_name=algo.local do_region=ams2'
+ansible-playbook deploy.yml -t digitalocean,vpn,cloud -e 'do_access_token=my_secret_token do_server_name=algo.local do_region=ams2'
 ```
 
 ### Roles
+
+Required tags:
+
+- cloud
 
 Cloud roles:
  
@@ -51,9 +55,14 @@ Server roles:
 Note: The `vpn` role generates Apple profiles with On-Demand Wifi and Cellular if you pass the following variables:
 
 - OnDemandEnabled_WIFI=Y
+- OnDemandEnabled_WIFI_EXCLUDE=HomeNet
 - OnDemandEnabled_Cellular=Y
 
 ### Local Installation
+
+Required tags:
+
+- local
 
 Required variables:
 
