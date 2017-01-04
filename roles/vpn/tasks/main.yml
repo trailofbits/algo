@@ -127,7 +127,7 @@
 
 - name: Build the server pair
   shell: >
-    ./easyrsa gen-req {{ IP_subject_alt_name }} batch nopass -- -passin pass:qwe1 -subj "/CN={{ IP_subject_alt_name }}" &&
+    ./easyrsa gen-req {{ IP_subject_alt_name }} batch nopass -- -subj "/CN={{ IP_subject_alt_name }}" &&
     ./easyrsa --subject-alt-name='DNS:{{ IP_subject_alt_name }},IP:{{ IP_subject_alt_name }}' sign-req server {{ IP_subject_alt_name }} -- -passin pass:"{{ easyrsa_CA_password }}" &&
     touch '{{ easyrsa_dir }}/easyrsa3/pki/server_initialized'
   args:
