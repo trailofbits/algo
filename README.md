@@ -1,3 +1,5 @@
+![AlgoVPN Logo](logo.png)
+
 # Algo VPN
 
 [![Slack Status](https://empireslacking.herokuapp.com/badge.svg)](https://empireslacking.herokuapp.com)
