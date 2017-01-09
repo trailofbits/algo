@@ -25,10 +25,11 @@ Algo VPN (short for "Al Gore", the **V**ice **P**resident of **N**etworks everyw
 
 ## Deploy the Algo Server
 
-The easiest way to get an Algo server running is to let it setup a _new_ virtual machine in the cloud for you.
+The easiest way to get an Algo server running is to let it set up a _new_ virtual machine in the cloud for you.
 
-1. Setup an account on a cloud hosting provider. Algo supports [DigitalOcean](https://www.digitalocean.com/), [Amazon EC2](https://aws.amazon.com/), [Google Compute Engine](https://cloud.google.com/compute/), and [Microsoft Azure](https://azure.microsoft.com/).
-2. [Download Algo](https://github.com/trailofbits/algo/archive/master.zip) and install the dependencies for your operating system. Open a terminal and `cd` into the directory where you have Algo, then:
+1. Setup an account on a cloud hosting provider. Algo supports [DigitalOcean](https://www.digitalocean.com/) (most user friendly), [Amazon EC2](https://aws.amazon.com/), [Google Compute Engine](https://cloud.google.com/compute/), and [Microsoft Azure](https://azure.microsoft.com/).
+2. [Download Algo](https://github.com/trailofbits/algo/archive/master.zip)
+3. Install Algo's dependencies for your operating system. To do this, open a terminal and `cd` into the directory where you downloaded Algo, then:
 
  macOS: `sudo easy_install pip && sudo pip install --ignore-install -r requirements.txt`
  
@@ -36,8 +37,8 @@ The easiest way to get an Algo server running is to let it setup a _new_ virtual
 
  Linux (rpm-based): See the [Pre-Install Documentation for RedHat/CentOS 6.x](docs/pre-install_redhat_centos_6.x.md)
 
-3. Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
-4. Start the deploy and follow the instructions by running: `./algo`. There are several optional features available. None are required for a fully functional VPN server. These features are described in greater detail in [ROLES.md](docs/ROLES.md).
+4. Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
+5. Start the deploy. Return to your terminal, run `./algo`, and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [ROLES.md](docs/ROLES.md).
 
 That's it! You now have an Algo VPN server on the internet.
 
