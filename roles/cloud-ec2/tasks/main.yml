@@ -13,6 +13,9 @@
 - set_fact:
     ami_image: "{{ ami_search.results[0].ami_id }}"
 
+- include: encrypt_image.yml
+  tags: [encrypted]
+
 - name: Add ssh public key
   ec2_key:
     aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'))}}"

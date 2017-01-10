@@ -2,7 +2,7 @@
 
 set -e
 
-SKIP_TAGS="_null"
+SKIP_TAGS="_null encrypted"
 
 additional_roles () {
 
