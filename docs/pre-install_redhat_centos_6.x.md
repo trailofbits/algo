@@ -52,6 +52,7 @@ cd algo-master || echo "No Algo directory found"
 pip -q install -r requirements.txt
 
 # Edit the userlist and any other settings you desire
+cp config.cfg.sample config.cfg
 nano config.cfg
 # Now you can run the Algo installer!
 ./algo
