@@ -119,6 +119,10 @@ Possible options for `region`:
 - eu-west-2
 - sa-east-1
 
+Additional tags:
+
+- [encrypted](https://aws.amazon.com/blogs/aws/new-encrypted-ebs-boot-volumes/) (enabled by default)
+
 ### Google Compute Engine
 
 Required variables:
