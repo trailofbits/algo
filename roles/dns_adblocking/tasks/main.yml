@@ -14,6 +14,7 @@
 
 - name: Enforce the dnsmasq AppArmor policy
   shell: aa-enforce usr.sbin.dnsmasq
+  tags: ['apparmor']
 
 - name: Ensure that the dnsmasq service directory exist
   file: path=/etc/systemd/system/dnsmasq.service.d/ state=directory mode=0755  owner=root group=root
