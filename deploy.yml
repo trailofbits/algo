@@ -60,3 +60,6 @@
   post_tasks:
     - debug: msg="{{ congrats.split('\n') }}"
       tags: always
+
+    - debug: msg="{{ additional_information.split('\n') }}"
+      tags: cloud
