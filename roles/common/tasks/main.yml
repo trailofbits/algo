@@ -60,6 +60,7 @@
     - sendmail
     - iptables-persistent
     - cgroup-tools
+    - openssl
   tags:
     - always
 
