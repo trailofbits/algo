@@ -19,6 +19,7 @@
 
 - name: Enforce the privoxy AppArmor policy
   shell: aa-enforce usr.sbin.privoxy
+  tags: ['apparmor']
 
 - name: Ensure that the privoxy service directory exist
   file: path=/etc/systemd/system/privoxy.service.d/ state=directory mode=0755  owner=root group=root
