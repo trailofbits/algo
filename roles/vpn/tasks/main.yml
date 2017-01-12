@@ -241,15 +241,6 @@
     chdir: "configs/{{ IP_subject_alt_name }}/pki/"
   with_items: "{{ users }}"
 
-- name: Register p12 PayloadContent
-  local_action: >
-    shell cat private/{{ item }}.p12 | base64
-  register:  PayloadContent
-  become: no
-  args:
-    chdir: "configs/{{ IP_subject_alt_name }}/pki/"
-  with_items: "{{ users }}"
-
 - name: Set facts for mobileconfigs
   set_fact:
     proxy_enabled: false
