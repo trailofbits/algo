@@ -38,6 +38,7 @@
   pre_tasks:
     - set_fact:
         IP_subject_alt_name: "{{ IP_subject }}"
+        easyrsa_p12_export_password: "{{ (ansible_date_time.iso8601_basic|sha1|to_uuid).split('-')[0] }}"
 
   roles:
     - { role: ssh_tunneling, tags: [ 'ssh_tunneling' ], when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y" }
@@ -46,9 +47,6 @@
 
     - name: Gather Facts
       setup:
-
-    - set_fact:
-        easyrsa_p12_export_password: "{{ (ansible_date_time.iso8601_basic|sha1|to_uuid).split('-')[0] }}"
 
     - name: Cheking the signature algorithm
       local_action: >
