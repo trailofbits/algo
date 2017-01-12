@@ -6,7 +6,7 @@ CAPW=`cat /tmp/ca_password`
 
 sed -i 's/- jack$/- jack_test/' config.cfg
 
-ansible-playbook users.yml -e "server_ip=$LXC_IP server_user=root ssh_tunneling_enabled=y IP_subject=$LXC_IP easyrsa_CA_password=sBo9uybTcflp"
+ansible-playbook users.yml -e "server_ip=$LXC_IP server_user=root ssh_tunneling_enabled=y IP_subject=$LXC_IP easyrsa_CA_password=$CAPW"
 
 cd configs/$LXC_IP/pki/
 
