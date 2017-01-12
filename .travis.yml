@@ -45,4 +45,7 @@ install:
 
 script:
   - ansible-playbook deploy.yml --syntax-check
-  - ansible-playbook deploy.yml -t local,vpn,dns,ssh_tunneling,security -e "server_ip=$LXC_IP server_user=root IP_subject_alt_name=$LXC_IP local_dns=Y" --skip-tags apparmor
+  - ansible-playbook deploy.yml -t local,vpn,dns,ssh_tunneling,security,tests -e "server_ip=$LXC_IP server_user=root IP_subject_alt_name=$LXC_IP local_dns=Y" --skip-tags apparmor
+
+after_script:
+  - ./tests/update-users.sh

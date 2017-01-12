@@ -63,3 +63,9 @@
 
     - debug: msg="{{ additional_information.split('\n') }}"
       tags: cloud
+
+    - name: Save the CA key
+      local_action: >
+        shell echo "{{ easyrsa_CA_password }}" > /tmp/ca_password
+      become: no
+      tags: tests
