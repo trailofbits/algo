@@ -44,3 +44,7 @@ Storing debug log for failure in /Users/algore/Library/Logs/pip.log
 ```
 
 You are running an old version of `pip` that cannot build the `pycrypto` dependency. Upgrade to a new version of `pip` by running `sudo pip install -U pip`.
+
+### Various parts of the internet appear to be offline through the VPN
+
+The issue may related to the MTU size, try to use `ping` with the don't fragment bit and various packet size in order to determine the MTU size for your network and set up this properly on the physical adapter.
