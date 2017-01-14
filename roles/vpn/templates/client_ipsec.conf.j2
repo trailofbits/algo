@@ -3,7 +3,7 @@ conn ikev2-{{ IP_subject_alt_name }}
     rekey=no
     dpdaction=clear
     keyexchange=ikev2
-    compress=yes
+    compress=no
     dpddelay=35s
 
 {% if Win10_Enabled is defined and Win10_Enabled == "Y" %}
