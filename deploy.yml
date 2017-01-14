@@ -7,7 +7,7 @@
   pre_tasks:
     - name: Local pre-tasks
       include: playbooks/local.yml
-      tags: [ 'cloud' ]
+      tags: [ 'always' ]
 
   roles:
     - { role: cloud-digitalocean, tags: ['digitalocean'] }
