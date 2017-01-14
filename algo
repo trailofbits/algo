@@ -50,6 +50,12 @@ Do you want the VPN to support Windows 10 clients? (requires RSA certificates an
 Win10_Enabled=${Win10_Enabled:-n}
 if [[ "$Win10_Enabled" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" Win10_Enabled=Y"; fi
 
+read -p "
+Do you want to delete the CA key? (if you choose 'yes', you cannot update users)
+[Y/n]: " -r Delete_CAKEY
+Delete_CAKEY=${Delete_CAKEY:-y}
+if [[ "$Delete_CAKEY" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" Delete_CAKEY=Y"; fi
+
 }
 
 deploy () {
