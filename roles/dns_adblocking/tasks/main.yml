@@ -6,6 +6,7 @@
 
 - name: Dnsmasq profile for apparmor configured
   template: src=usr.sbin.dnsmasq.j2 dest=/etc/apparmor.d/usr.sbin.dnsmasq owner=root group=root mode=0600
+  when: apparmor_enabled is defined and apparmor_enabled == true
   notify:
     - restart dnsmasq
 
@@ -14,6 +15,7 @@
 
 - name: Enforce the dnsmasq AppArmor policy
   shell: aa-enforce usr.sbin.dnsmasq
+  when: apparmor_enabled is defined and apparmor_enabled == true
   tags: ['apparmor']
 
 - name: Ensure that the dnsmasq service directory exist

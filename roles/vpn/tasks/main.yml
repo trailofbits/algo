@@ -15,6 +15,7 @@
 
 - name: Enforcing ipsec with apparmor
   shell: aa-enforce "{{ item }}"
+  when: apparmor_enabled is defined and apparmor_enabled == true
   with_items:
     - /usr/lib/ipsec/charon
     - /usr/lib/ipsec/lookip
