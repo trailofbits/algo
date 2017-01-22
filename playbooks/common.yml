@@ -5,3 +5,10 @@
   raw: sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
   tags:
     - update-alternatives
+
+- name: Ensure the algo ssh key exist on the server
+  authorized_key:
+    user: "{{ ansible_ssh_user }}"
+    state: present
+    key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
+  tags: [ 'always' ]

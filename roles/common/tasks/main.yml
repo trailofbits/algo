@@ -94,3 +94,12 @@
   sysctl: name=net.ipv6.conf.all.forwarding value=1
   tags:
     - always
+
+- name: Check apparmor support
+  shell: apparmor_status
+  ignore_errors: yes
+  register: apparmor_status
+
+- set_fact:
+    apparmor_enabled: true
+  when: '"profiles are in enforce mode" in apparmor_status.stdout'
