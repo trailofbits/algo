@@ -77,4 +77,4 @@
         state: absent
       become: no
       tags: always
-      when: Delete_CAKEY is defined and Delete_CAKEY == "Y"
+      when: Store_CAKEY is defined and Store_CAKEY == "N"
