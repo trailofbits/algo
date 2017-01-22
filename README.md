@@ -33,7 +33,7 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
 
  macOS: `sudo easy_install pip && sudo pip install --ignore-install -r requirements.txt`
  
- Linux (deb-based): `sudo easy_install pip && sudo apt-get update && sudo apt-get install build-essential libssl-dev libffi-dev python-dev -y && sudo pip install -r requirements.txt`
+ Linux (deb-based): `sudo apt-get update && sudo apt-get install python-pip build-essential libssl-dev libffi-dev python-dev -y && sudo pip install -r requirements.txt`
 
  Linux (rpm-based): See the [Pre-Install Documentation for RedHat/CentOS 6.x](docs/pre-install_redhat_centos_6.x.md)
 
