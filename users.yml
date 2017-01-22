@@ -50,7 +50,7 @@
 
     - name: Cheking the signature algorithm
       local_action: >
-          shell openssl x509 -text -in certs/82.196.1.93.crt  | grep 'Signature Algorithm' | head -n1
+          shell openssl x509 -text -in certs/{{ IP_subject_alt_name }}.crt  | grep 'Signature Algorithm' | head -n1
       become: no
       register: sig_algo
       args:
