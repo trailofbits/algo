@@ -3,16 +3,20 @@
     do_token: "{{ do_access_token }}"
     public_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
 
-- name: "Delete the existing Algo SSH keys"
-  digital_ocean:
-    state: absent
-    command: ssh
-    api_token: "{{ do_access_token }}"
-    name: "{{ SSH_keys.comment }}"
-  register: ssh_keys
-  until: ssh_keys.changed != 1
-  retries: 10
-  delay: 1
+- block:
+    - name: "Delete the existing Algo SSH keys"
+      digital_ocean:
+        state: absent
+        command: ssh
+        api_token: "{{ do_access_token }}"
+        name: "{{ SSH_keys.comment }}"
+      register: ssh_keys
+      until: ssh_keys.changed != true
+      retries: 10
+      delay: 1
+  rescue:
+    - fail:
+        msg: "Please, ensure that your API token is not read-only."
 
 - name: "Upload the SSH key"
   digital_ocean:
