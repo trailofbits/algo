@@ -9,6 +9,12 @@
 - set_fact:
     easyrsa_p12_export_password: "{{ (ansible_date_time.iso8601_basic|sha1|to_uuid).split('-')[0] }}"
     easyrsa_CA_password: "{{ CA_password.stdout }}"
+    IP_subject_alt_name: "{{ IP_subject_alt_name }}"
+
+- name: Change the algorithm to RSA
+  set_fact:
+    algo_params: "rsa:2048"
+  when: Win10_Enabled is defined and Win10_Enabled == "Y"
 
 - name: Install StrongSwan
   apt: name=strongswan state=latest update_cache=yes
@@ -97,153 +103,206 @@
   when: item in strongswan_enabled_plugins
   with_items: "{{ strongswan_plugins.stdout_lines }}"
 
-- name: Fetch easy-rsa-ipsec from git
-  git:
-    repo: git://github.com/ValdikSS/easy-rsa-ipsec.git
-    version: ipsec-with-patches
-    dest: "{{ easyrsa_dir }}"
-
-- name: Setup the vars file from our template
-  template: src=easy-rsa.vars.j2 dest={{ easyrsa_dir }}/easyrsa3/vars
-
 - name: Ensure the pki directory is not exist
-  file: dest={{ easyrsa_dir }}/easyrsa3/pki state=absent
+  local_action:
+    module: file
+    dest: configs/{{ IP_subject_alt_name }}/pki
+    state: absent
+  become: no
   when: easyrsa_reinit_existent == True
 
-- name: Build the pki enviroments
-  shell: >
-    ./easyrsa init-pki &&
-    touch '{{ easyrsa_dir }}/easyrsa3/pki/pki_initialized'
-  args:
-    chdir: '{{ easyrsa_dir }}/easyrsa3/'
-    creates: '{{ easyrsa_dir }}/easyrsa3/pki/pki_initialized'
+- name: Ensure the pki directories are exist
+  local_action:
+    module: file
+    dest: "configs/{{ IP_subject_alt_name }}/pki/{{ item }}"
+    state: directory
+    recurse: yes
+  become: no
+  with_items:
+    - ecparams
+    - certs
+    - crl
+    - newcerts
+    - private
+    - reqs
+
+- name: Ensure the files are exist
+  local_action:
+    module: file
+    dest: "configs/{{ IP_subject_alt_name }}/pki/{{ item }}"
+    state: touch
+  become: no
+  with_items:
+    - ".rnd"
+    - "private/.rnd"
+    - "index.txt"
+    - "index.txt.attr"
+    - "serial"
+
+- name: Generate the openssl server configs
+  local_action:
+    module: template
+    src: openssl.cnf.j2
+    dest: "configs/{{ IP_subject_alt_name }}/pki/openssl.cnf"
+  become: no
 
 - name: Build the CA pair
-  shell: >
-    ./easyrsa --batch build-ca -- -passout pass:"{{ easyrsa_CA_password }}" &&
-    touch {{ easyrsa_dir }}/easyrsa3/pki/ca_initialized
+  local_action: >
+    shell openssl ecparam -name prime256v1 -out ecparams/prime256v1.pem &&
+      openssl req -utf8 -new -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }} -config openssl.cnf -keyout private/cakey.pem -out cacert.pem -x509 -days 3650 -batch -passout pass:"{{ easyrsa_CA_password }}" &&
+      touch {{ IP_subject_alt_name }}_ca_generated
+  become: no
   args:
-    chdir: '{{ easyrsa_dir }}/easyrsa3/'
-    creates: '{{ easyrsa_dir }}/easyrsa3/pki/ca_initialized'
-  notify:
-    - restart strongswan
+    chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+    creates: "{{ IP_subject_alt_name }}_ca_generated"
+  environment:
+    subjectAltName: "DNS:{{ IP_subject_alt_name }},IP:{{ IP_subject_alt_name }}"
+
+- name: Copy the CA certificate
+  local_action:
+    module: copy
+    src: "configs/{{ IP_subject_alt_name }}/pki/cacert.pem"
+    dest: "configs/{{ IP_subject_alt_name }}/cacert.pem"
+    mode: 0600
+  become: no
+
+- name: Generate the serial number
+  local_action: >
+    shell echo 01 > serial &&
+      touch serial_generated
+  become: no
+  args:
+    chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+    creates: serial_generated
 
 - name: Build the server pair
-  shell: >
-    ./easyrsa gen-req {{ IP_subject_alt_name }} batch nopass -- -subj "/CN={{ IP_subject_alt_name }}" &&
-    ./easyrsa --subject-alt-name='DNS:{{ IP_subject_alt_name }},IP:{{ IP_subject_alt_name }}' sign-req server {{ IP_subject_alt_name }} -- -passin pass:"{{ easyrsa_CA_password }}" &&
-    touch '{{ easyrsa_dir }}/easyrsa3/pki/server_initialized'
+  local_action: >
+    shell openssl req -utf8 -new -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }} -config openssl.cnf -keyout private/{{ IP_subject_alt_name }}.key -out reqs/{{ IP_subject_alt_name }}.req -nodes -passin pass:"{{ easyrsa_CA_password }}" -subj "/CN={{ IP_subject_alt_name }}" -batch &&
+    openssl ca -utf8 -in reqs/{{ IP_subject_alt_name }}.req -out certs/{{ IP_subject_alt_name }}.crt -config openssl.cnf -days 3650 -batch -passin pass:"{{ easyrsa_CA_password }}" -subj "/CN={{ IP_subject_alt_name }}" &&
+    touch certs/{{ IP_subject_alt_name }}_crt_generated
+  become: no
   args:
-    chdir: '{{ easyrsa_dir }}/easyrsa3/'
-    creates: '{{ easyrsa_dir }}/easyrsa3/pki/server_initialized'
-  notify:
-    - restart strongswan
+    chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+    creates: certs/{{ IP_subject_alt_name }}_crt_generated
+  environment:
+    subjectAltName: "DNS:{{ IP_subject_alt_name }},IP:{{ IP_subject_alt_name }}"
 
 - name: Build the client's pair
-  shell: >
-    ./easyrsa gen-req {{ item }} nopass -- -passin pass:"{{ easyrsa_CA_password }}" -subj "/CN={{ item }}" &&
-    ./easyrsa --subject-alt-name='DNS:{{ item }}' sign-req client {{ item }} nopass -- -passin pass:"{{ easyrsa_CA_password }}" &&
-    touch '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_initialized'
+  local_action: >
+   shell openssl req -utf8 -new -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }} -config openssl.cnf -keyout private/{{ item }}.key -out reqs/{{ item }}.req -nodes -passin pass:"{{ easyrsa_CA_password }}" -subj "/CN={{ item }}" -batch &&
+      openssl ca -utf8 -in reqs/{{ item }}.req -out certs/{{ item }}.crt -config openssl.cnf -days 3650 -batch -passin pass:"{{ easyrsa_CA_password }}" -subj "/CN={{ item }}" &&
+      touch certs/{{ item }}_crt_generated
+  become: no
   args:
-    chdir: '{{ easyrsa_dir }}/easyrsa3/'
-    creates: '{{ easyrsa_dir }}/easyrsa3/pki/{{ item }}_initialized'
+    chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+    creates: certs/{{ item }}_crt_generated
+  environment:
+    subjectAltName: "DNS:{{ item }}"
   with_items: "{{ users }}"
 
 - name: Build the client's p12
-  shell: >
-    openssl pkcs12 -in {{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt -inkey {{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.key -export -name {{ item }} -out /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 -certfile {{ easyrsa_dir }}/easyrsa3//pki/ca.crt -passout pass:"{{ easyrsa_p12_export_password }}"
+  local_action: >
+    shell openssl pkcs12 -in certs/{{ item }}.crt -inkey private/{{ item }}.key -export -name {{ item }} -out private/{{ item }}.p12 -certfile cacert.pem -passout pass:"{{ easyrsa_p12_export_password }}"
+  become: no
   args:
-    chdir: '{{ easyrsa_dir }}/easyrsa3/'
+    chdir: "configs/{{ IP_subject_alt_name }}/pki/"
   with_items: "{{ users }}"
 
+- name: Copy the p12 certificates
+  local_action:
+    module: copy
+    src: "configs/{{ IP_subject_alt_name }}/pki/private/{{ item }}.p12"
+    dest: "configs/{{ IP_subject_alt_name }}/{{ item }}.p12"
+    mode: 0600
+  become: no
+  with_items:
+    - "{{ users }}"
+
 - name: Copy the CA cert to the strongswan directory
-  copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/ca.crt' dest=/etc/ipsec.d/cacerts/ca.crt owner=strongswan group=root mode=0600
+  copy: src='configs/{{ IP_subject_alt_name }}/pki/cacert.pem' dest=/etc/ipsec.d/cacerts/ca.crt owner=strongswan group=root mode=0600
   notify:
     - restart strongswan
 
 - name: Copy the server cert to the strongswan directory
-  copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/issued/{{ IP_subject_alt_name }}.crt' dest=/etc/ipsec.d/certs/{{ IP_subject_alt_name }}.crt owner=strongswan group=root mode=0600
+  copy: src='configs/{{ IP_subject_alt_name }}/pki/certs/{{ IP_subject_alt_name }}.crt' dest=/etc/ipsec.d/certs/{{ IP_subject_alt_name }}.crt owner=strongswan group=root mode=0600
   notify:
     - restart strongswan
 
 - name: Copy the server key to the strongswan directory
-  copy: remote_src=True src='{{ easyrsa_dir }}/easyrsa3/pki/private/{{ IP_subject_alt_name }}.key' dest=/etc/ipsec.d/private/{{ IP_subject_alt_name }}.key owner=strongswan group=root mode=0600
+  copy: src='configs/{{ IP_subject_alt_name }}/pki/private/{{ IP_subject_alt_name }}.key' dest=/etc/ipsec.d/private/{{ IP_subject_alt_name }}.key owner=strongswan group=root mode=0600
   notify:
     - restart strongswan
 
 - name: Register p12 PayloadContent
-  shell: >
-    cat /{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 | base64
+  local_action: >
+    shell cat private/{{ item }}.p12 | base64
   register:  PayloadContent
+  become: no
+  args:
+    chdir: "configs/{{ IP_subject_alt_name }}/pki/"
   with_items: "{{ users }}"
-
-- name: Register CA PayloadContent
-  shell: >
-    cat /{{ easyrsa_dir }}/easyrsa3/pki/ca.crt | base64
-  register:  PayloadContentCA
 
 - name: Set facts for mobileconfigs
   set_fact:
     proxy_enabled: false
+    PayloadContentCA: "{{ lookup('file' , 'configs/{{ IP_subject_alt_name }}/pki/cacert.pem')|b64encode }}"
 
 - name: Build the mobileconfigs
-  template: src=mobileconfig.j2 dest=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item.0 }}.mobileconfig mode=0600
+  local_action:
+    module: template
+    src: mobileconfig.j2
+    dest: configs/{{ IP_subject_alt_name }}/{{ item.0 }}.mobileconfig
+    mode: 0600
+  become: no
   with_together:
     - "{{ users }}"
     - "{{ PayloadContent.results }}"
   no_log: True
 
 - name: Build the client ipsec config file
-  template: src=client_ipsec.conf.j2 dest=/{{ easyrsa_dir }}/easyrsa3//pki/private/ipsec_{{ item }}.conf mode=0600
+  local_action:
+    module: template
+    src: client_ipsec.conf.j2
+    dest: configs/{{ IP_subject_alt_name }}/ipsec_{{ item }}.conf
+    mode: 0600
+  become: no
   with_items:
     - "{{ users }}"
 
 - name: Build the client ipsec secret file
-  template: src=client_ipsec.secrets.j2 dest=/{{ easyrsa_dir }}/easyrsa3//pki/private/ipsec_{{ item }}.secrets mode=0600
+  local_action:
+    module: template
+    src: client_ipsec.secrets.j2
+    dest: configs/{{ IP_subject_alt_name }}/ipsec_{{ item }}.secrets
+    mode: 0600
+  become: no
   with_items:
     - "{{ users }}"
 
-- name: Fetch users P12
-  fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.p12 dest=configs/{{ IP_subject_alt_name }}_{{ item }}.p12 flat=yes
-  with_items: "{{ users }}"
-
-- name: Fetch users mobileconfig
-  fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.mobileconfig dest=configs/{{ IP_subject_alt_name }}_{{ item }}.mobileconfig flat=yes
-  with_items: "{{ users }}"
-
-- name: Fetch users certificates
-  fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/issued/{{ item }}.crt dest=configs/{{ IP_subject_alt_name }}_{{ item }}.crt flat=yes
-  with_items: "{{ users }}"
-
-- name: Fetch users keys
-  fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/{{ item }}.key dest=configs/{{ IP_subject_alt_name }}_{{ item }}.key flat=yes
-  with_items: "{{ users }}"
-
-- name: Fetch users ipsec configs
-  fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/ipsec_{{ item }}.conf dest=configs/{{ IP_subject_alt_name }}_{{ item }}_ipsec.conf flat=yes
-  with_items: "{{ users }}"
-
-- name: Fetch users ipsec secrets
-  fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/ipsec_{{ item }}.secrets dest=configs/{{ IP_subject_alt_name }}_{{ item }}_ipsec.secrets flat=yes
-  with_items: "{{ users }}"
-
 - name: Build the windows client powershell script
-  template: src=client_windows.ps1.j2 dest=/{{ easyrsa_dir }}/easyrsa3//pki/private/windows_{{ item }}.ps1 mode=0600
+  local_action:
+    module: template
+    src: client_windows.ps1.j2
+    dest: configs/{{ IP_subject_alt_name }}/windows_{{ item }}.ps1
+    mode: 0600
+  become: no
   when: Win10_Enabled is defined and Win10_Enabled == "Y"
   with_items: "{{ users }}"
 
-- name: Fetch users windows scripts
-  fetch: src=/{{ easyrsa_dir }}/easyrsa3//pki/private/windows_{{ item }}.ps1 dest=configs/{{ IP_subject_alt_name }}_{{ item }}_windows.ps1 flat=yes
-  when: Win10_Enabled is defined and Win10_Enabled == "Y"
-  with_items: "{{ users }}"
-
-- name: Restrict permissions
+- name: Restrict permissions for the remote private directories
   file: path="{{ item }}" state=directory mode=0700  owner=strongswan group=root
   with_items:
     - /etc/ipsec.d/private
 
-- name: Fetch server CA certificate
-  fetch: src=/{{ easyrsa_dir }}/easyrsa3/pki/ca.crt dest=configs/{{ IP_subject_alt_name }}_ca.crt flat=yes
+- name: Restrict permissions for the local private directories
+  local_action:
+    module: file
+    path: "{{ item }}"
+    state: directory
+    mode: 0700
+  become: no
+  with_items:
+    - configs/{{ IP_subject_alt_name }}
 
 - include: iptables.yml
   tags: iptables
