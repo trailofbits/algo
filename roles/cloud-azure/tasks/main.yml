@@ -5,10 +5,10 @@
 
 - name: Create a resource group
   azure_rm_resourcegroup:
-    secret: "{{ azure_secret | default(lookup('env','AZURE_CLIENT_ID')) }}"
-    tenant: "{{ azure_tenant | default(lookup('env','AZURE_SECRET')) }}"
-    client_id: "{{ azure_client_id | default(lookup('env','AZURE_SUBSCRIPTION_ID')) }}"
-    subscription_id: "{{ azure_subscription_id | default(lookup('env','AZURE_TENANT')) }}"
+    secret: "{{ azure_secret | default(lookup('env','AZURE_SECRET')) }}"
+    tenant: "{{ azure_tenant | default(lookup('env','AZURE_TENANT')) }}"
+    client_id: "{{ azure_client_id | default(lookup('env','AZURE_CLIENT_ID')) }}"
+    subscription_id: "{{ azure_subscription_id | default(lookup('env','AZURE_SUBSCRIPTION_ID')) }}"
     name: "{{ resource_group }}"
     location: "{{ region }}"
     tags:
@@ -16,6 +16,10 @@
 
 - name: Create a virtual network
   azure_rm_virtualnetwork:
+    secret: "{{ azure_secret | default(lookup('env','AZURE_SECRET')) }}"
+    tenant: "{{ azure_tenant | default(lookup('env','AZURE_TENANT')) }}"
+    client_id: "{{ azure_client_id | default(lookup('env','AZURE_CLIENT_ID')) }}"
+    subscription_id: "{{ azure_subscription_id | default(lookup('env','AZURE_SUBSCRIPTION_ID')) }}"
     resource_group: "{{ resource_group }}"
     name: algo_net
     address_prefixes: "10.10.0.0/16"
@@ -24,6 +28,10 @@
 
 - name: Create a subnet
   azure_rm_subnet:
+    secret: "{{ azure_secret | default(lookup('env','AZURE_SECRET')) }}"
+    tenant: "{{ azure_tenant | default(lookup('env','AZURE_TENANT')) }}"
+    client_id: "{{ azure_client_id | default(lookup('env','AZURE_CLIENT_ID')) }}"
+    subscription_id: "{{ azure_subscription_id | default(lookup('env','AZURE_SUBSCRIPTION_ID')) }}"
     resource_group: "{{ resource_group }}"
     name: algo_subnet
     address_prefix: "10.10.0.0/24"
@@ -33,10 +41,10 @@
 
 - name: Create an instance
   azure_rm_virtualmachine:
-    secret: "{{ azure_secret | default(lookup('env','AZURE_CLIENT_ID')) }}"
-    tenant: "{{ azure_tenant | default(lookup('env','AZURE_SECRET')) }}"
-    client_id: "{{ azure_client_id | default(lookup('env','AZURE_SUBSCRIPTION_ID')) }}"
-    subscription_id: "{{ azure_subscription_id | default(lookup('env','AZURE_TENANT')) }}"
+    secret: "{{ azure_secret | default(lookup('env','AZURE_SECRET')) }}"
+    tenant: "{{ azure_tenant | default(lookup('env','AZURE_TENANT')) }}"
+    client_id: "{{ azure_client_id | default(lookup('env','AZURE_CLIENT_ID')) }}"
+    subscription_id: "{{ azure_subscription_id | default(lookup('env','AZURE_SUBSCRIPTION_ID')) }}"
     resource_group: "{{ resource_group }}"
     admin_username: ubuntu
     virtual_network: algo_net
