@@ -1,9 +1,9 @@
 ## Table of Contents
 
-1. [Error: "You have not agreed to the Xcode license agreements"](#error-you-have-not-agreed-to-the-xcode-license-agreements)
-2. [Error: "fatal error: 'openssl/opensslv.h' file not found"](#error-fatal-error-opensslopensslvh-file-not-found)
-3. [Little Snitch is broken when connected to the VPN](#little-snitch-is-broken-when-connected-to-the-vpn)
-4. [Various websites appear to be offline through the VPN](#various-websites-appear-to-be-offline-through-the-vpn)
+1. [Error: "You have not agreed to the Xcode license agreements"](#1-error-you-have-not-agreed-to-the-xcode-license-agreements)
+2. [Error: "fatal error: 'openssl/opensslv.h' file not found"](#2-error-fatal-error-opensslopensslvh-file-not-found)
+3. [Little Snitch is broken when connected to the VPN](#3-little-snitch-is-broken-when-connected-to-the-vpn)
+4. [Various websites appear to be offline through the VPN](#4-various-websites-appear-to-be-offline-through-the-vpn)
 
 ### 1. Error: "You have not agreed to the Xcode license agreements"
 
