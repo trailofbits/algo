@@ -45,6 +45,10 @@ Storing debug log for failure in /Users/algore/Library/Logs/pip.log
 
 You are running an old version of `pip` that cannot build the `pycrypto` dependency. Upgrade to a new version of `pip` by running `sudo pip install -U pip`.
 
-### Various parts of the internet appear to be offline through the VPN
+### Little Snitch is broken when connected to the VPN
 
-The issue may related to the MTU size, try to use `ping` with the don't fragment bit and various packet size in order to determine the MTU size for your network and set up this properly on the physical adapter.
+Little Snitch is not compatible with IPSEC VPNs due to a known bug in macOS and there is no solution. The Little Snitch "filter" does not get incoming packets from IPSEC VPNs and, therefore, cannot evaluate any rules over them. Their developers have filed a bug report with Apple but there has been no response. There is nothing they or Algo can do to resolve this problem on their own. You can read more about this problem in [issue #134](https://github.com/trailofbits/algo/issues/134).
+
+### Various websites appear to be offline through the VPN
+
+This issue appears intermittently due to issues with MTU size. If you experience this issue, we recommend filing a ticket for assistance. Advanced users can troubleshoot the correct MTU size by retrying `ping` with the "don't fragment" bit size and decreasing packet size. This will determine the correct MTU size for your network, which you then need to update on your network adapter.
