@@ -101,10 +101,10 @@ The Algo VPN server now contains only the users listed in the `config.cfg` file.
 
 ## Documentation
 
-* The [FAQ](docs/FAQ.md) includes answers to common questions.
-* The [Troubleshooting](docs/TROUBLESHOOTING.md) doc includes answers to common technical issues.
-* The [Roles](docs/ROLES.md) doc includes a description of optional Algo VPN server features.
-* The [Advanced Usage](docs/ADVANCED.md) doc describes how to run Algo VPN directly from Ansible.
+* [Advanced Usage](docs/ADVANCED.md) describes how to run Algo VPN directly from Ansible.
+* [FAQ](docs/FAQ.md) includes answers to common questions.
+* [Roles](docs/ROLES.md) includes a description of optional Algo VPN server features.
+* [Troubleshooting](docs/TROUBLESHOOTING.md) includes answers to common technical issues.
 
 ## Endorsements
 
