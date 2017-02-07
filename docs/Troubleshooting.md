@@ -1,4 +1,11 @@
-### Error: "You have not agreed to the Xcode license agreements"
+## Table of Contents
+
+1. [Error: "You have not agreed to the Xcode license agreements"](#error-you-have-not-agreed-to-the-xcode-license-agreements)
+2. [Error: "fatal error: 'openssl/opensslv.h' file not found"](#error-fatal-error-opensslopensslvh-file-not-found)
+3. [Little Snitch is broken when connected to the VPN](#little-snitch-is-broken-when-connected-to-the-vpn)
+4. [Various websites appear to be offline through the VPN](#various-websites-appear-to-be-offline-through-the-vpn)
+
+### 1. Error: "You have not agreed to the Xcode license agreements"
 
 On macOS, did you try to install the dependencies with pip and encounter the following error?
 
@@ -22,7 +29,7 @@ Storing debug log for failure in /Users/algore/Library/Logs/pip.log
 
 The Xcode compiler is installed but requires you to accept its license agreement prior to using it. Run `xcodebuild -license` to agree and then retry installing the dependencies.
 
-### Error: "fatal error: 'openssl/opensslv.h' file not found"
+### 2. Error: "fatal error: 'openssl/opensslv.h' file not found"
 
 On macOS, did you try to install pycrypto and encounter the following error?
 
@@ -45,10 +52,10 @@ Storing debug log for failure in /Users/algore/Library/Logs/pip.log
 
 You are running an old version of `pip` that cannot build the `pycrypto` dependency. Upgrade to a new version of `pip` by running `sudo pip install -U pip`.
 
-### Little Snitch is broken when connected to the VPN
+### 3. Little Snitch is broken when connected to the VPN
 
 Little Snitch is not compatible with IPSEC VPNs due to a known bug in macOS and there is no solution. The Little Snitch "filter" does not get incoming packets from IPSEC VPNs and, therefore, cannot evaluate any rules over them. Their developers have filed a bug report with Apple but there has been no response. There is nothing they or Algo can do to resolve this problem on their own. You can read more about this problem in [issue #134](https://github.com/trailofbits/algo/issues/134).
 
-### Various websites appear to be offline through the VPN
+### 4. Various websites appear to be offline through the VPN
 
 This issue appears intermittently due to issues with MTU size. If you experience this issue, we recommend filing a ticket for assistance. Advanced users can troubleshoot the correct MTU size by retrying `ping` with the "don't fragment" bit size and decreasing packet size. This will determine the correct MTU size for your network, which you then need to update on your network adapter.
