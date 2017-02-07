@@ -125,8 +125,6 @@ OpenVPN does not have out-of-the-box client support on any major desktop or mobi
 
 Alpine Linux is not supported out-of-the-box by any major cloud provider. We are interested in supporting Free-, Open-, and HardenedBSD. Follow along or contribute to our BSD support in [this issue](https://github.com/trailofbits/algo/issues/35).
 
-## [Troubleshooting](docs/Troubleshooting.md)
+## [Troubleshooting](docs/TROUBLESHOOTING.md)
 
-### Little Snitch is broken when connected to the VPN
-
-Little Snitch is not compatible with IPSEC VPNs due to a known bug in macOS and there is no solution. The Little Snitch "filter" does not get incoming packets from IPSEC VPNs and, therefore, cannot evaluate any rules over them. Their developers have filed a bug report with Apple but there has been no response. There is nothing they or Algo can do to resolve this problem on their own. You can read more about this problem in [issue #134](https://github.com/trailofbits/algo/issues/134).
+If you have issues deploying and using the Algo VPN server, check the [troubleshooting](docs/TROUBLESHOOTING.md) documentation for solutions to common problems.
