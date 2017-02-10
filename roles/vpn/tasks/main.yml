@@ -189,15 +189,15 @@
 
 - name: Build the client's pair
   local_action: >
-   shell openssl req -utf8 -new -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }} -config openssl.cnf -keyout private/{{ item }}.key -out reqs/{{ item }}.req -nodes -passin pass:"{{ easyrsa_CA_password }}" -subj "/CN={{ IP_subject_alt_name }}_{{ item }}" -batch &&
-      openssl ca -utf8 -in reqs/{{ item }}.req -out certs/{{ item }}.crt -config openssl.cnf -days 3650 -batch -passin pass:"{{ easyrsa_CA_password }}" -subj "/CN={{ IP_subject_alt_name }}_{{ item }}" &&
+   shell openssl req -utf8 -new -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }} -config openssl.cnf -keyout private/{{ item }}.key -out reqs/{{ item }}.req -nodes -passin pass:"{{ easyrsa_CA_password }}" -subj "/CN={{ item }}" -batch &&
+      openssl ca -utf8 -in reqs/{{ item }}.req -out certs/{{ item }}.crt -config openssl.cnf -days 3650 -batch -passin pass:"{{ easyrsa_CA_password }}" -subj "/CN={{ item }}" &&
       touch certs/{{ item }}_crt_generated
   become: no
   args:
     chdir: "configs/{{ IP_subject_alt_name }}/pki/"
     creates: certs/{{ item }}_crt_generated
   environment:
-    subjectAltName: "DNS:{{ IP_subject_alt_name }}_{{ item }},IP:{{ IP_subject_alt_name }}"
+    subjectAltName: "DNS:{{ item }},IP:{{ IP_subject_alt_name }}"
   with_items: "{{ users }}"
 
 - name: Build the client's p12
