@@ -71,7 +71,7 @@
         chdir: "configs/{{ IP_subject_alt_name }}/pki/"
         creates: certs/{{ item }}_crt_generated
       environment:
-        subjectAltName: "DNS:{{ item }},IP:{{ IP_subject_alt_name }}"
+        subjectAltName: "DNS:{{ item }}"
       with_items: "{{ users }}"
 
     - name: Build the client's p12
@@ -86,7 +86,7 @@
       local_action:
         module: copy
         src: "configs/{{ IP_subject_alt_name }}/pki/private/{{ item }}.p12"
-        dest: "configs/{{ IP_subject_alt_name }}/{{ IP_subject_alt_name }}_{{ item }}.p12"
+        dest: "configs/{{ IP_subject_alt_name }}/{{ item }}.p12"
         mode: 0600
       become: no
       with_items:
@@ -110,7 +110,7 @@
         chdir: "configs/{{ IP_subject_alt_name }}/pki/"
         creates: crl/{{ item }}_revoked
       environment:
-        subjectAltName: "DNS:{{ item }},IP:{{ IP_subject_alt_name }}"
+        subjectAltName: "DNS:{{ item }}"
       when: item not in users
       with_items: "{{ valid_certs.stdout_lines }}"
 
