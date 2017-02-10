@@ -71,7 +71,7 @@
         chdir: "configs/{{ IP_subject_alt_name }}/pki/"
         creates: certs/{{ item }}_crt_generated
       environment:
-        subjectAltName: "DNS:{{ IP_subject_alt_name }}"
+        subjectAltName: "DNS:{{ IP_subject_alt_name }}_{{ item }},IP:{{ IP_subject_alt_name }}"
       with_items: "{{ users }}"
 
     - name: Build the client's p12
@@ -110,7 +110,7 @@
         chdir: "configs/{{ IP_subject_alt_name }}/pki/"
         creates: crl/{{ item }}_revoked
       environment:
-        subjectAltName: "DNS:{{ IP_subject_alt_name }}"
+        subjectAltName: "DNS:{{ IP_subject_alt_name }}_{{ item }},IP:{{ IP_subject_alt_name }}"
       when: item not in users
       with_items: "{{ valid_certs.stdout_lines }}"
 
