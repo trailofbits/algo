@@ -99,7 +99,7 @@ Algo's own scripts can easily add and remove users from the VPN server.
 
 The Algo VPN server now contains only the users listed in the `config.cfg` file.
 
-## Documentation
+## Additional Documentation
 
 * [Advanced Usage](docs/ADVANCED.md) describes how to deploy an Algo VPN server directly from Ansible.
 * [FAQ](docs/FAQ.md) includes answers to common questions.
