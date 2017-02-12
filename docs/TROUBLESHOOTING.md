@@ -4,6 +4,7 @@
 2. [Error: "fatal error: 'openssl/opensslv.h' file not found"](#2-error-fatal-error-opensslopensslvh-file-not-found)
 3. [Little Snitch is broken when connected to the VPN](#3-little-snitch-is-broken-when-connected-to-the-vpn)
 4. [Various websites appear to be offline through the VPN](#4-various-websites-appear-to-be-offline-through-the-vpn)
+5. [I have a problem not covered here](#5-i-have-a-problem-not-covered here)
 
 ### 1. Error: "You have not agreed to the Xcode license agreements"
 
@@ -58,4 +59,9 @@ Little Snitch is not compatible with IPSEC VPNs due to a known bug in macOS and 
 
 ### 4. Various websites appear to be offline through the VPN
 
-This issue appears intermittently due to issues with MTU size. If you experience this issue, we recommend filing a ticket for assistance. Advanced users can troubleshoot the correct MTU size by retrying `ping` with the "don't fragment" bit size and decreasing packet size. This will determine the correct MTU size for your network, which you then need to update on your network adapter.
+This issue appears intermittently due to issues with MTU size. If you experience this issue, we recommend [filing an issue](https://github.com/trailofbits/algo/issues/new) for assistance. Advanced users can troubleshoot the correct MTU size by retrying `ping` with the "don't fragment" bit size and decreasing packet size. This will determine the correct MTU size for your network, which you then need to update on your network adapter.
+
+### 5. I have a problem not covered here
+
+If you have an issue that you cannot solve with the guidance here, [join our Slack](https://empireslacking.herokuapp.com/) and ask for help in the #tool-algo channel or [file an issue](https://github.com/trailofbits/algo/issues/new) that describes the problem and we'll do our best to help you.
+
