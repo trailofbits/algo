@@ -4,7 +4,7 @@
 2. [Error: "fatal error: 'openssl/opensslv.h' file not found"](#2-error-fatal-error-opensslopensslvh-file-not-found)
 3. [Little Snitch is broken when connected to the VPN](#3-little-snitch-is-broken-when-connected-to-the-vpn)
 4. [Various websites appear to be offline through the VPN](#4-various-websites-appear-to-be-offline-through-the-vpn)
-5. [I have a problem not covered here](#5-i-have-a-problem-not-covered here)
+5. [I have a problem not covered here](#5-i-have-a-problem-not-covered-here)
 
 ### 1. Error: "You have not agreed to the Xcode license agreements"
 
