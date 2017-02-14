@@ -41,7 +41,7 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
 4. Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
 5. Start the deployment. Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [ROLES.md](docs/ROLES.md).
 
-That's it! You now have an Algo VPN server on the internet. You will get a message like the one below when the server deployment process completes and your server is ready. Take note of the p12 password in case you need it later.
+That's it! You will get the message below when the server deployment process completes. You now have an Algo server on the internet. Take note of the p12 (user certificate) password in case you need it later.
 
 ```
         "\"#----------------------------------------------------------------------#\"", 
@@ -51,7 +51,7 @@ That's it! You now have an Algo VPN server on the internet. You will get a messa
         "\"#              Go to https://whoer.net/ after connecting               #\"", 
         "\"#        and ensure that all your traffic passes through the VPN.      #\"", 
         "\"#          Local DNS resolver and Proxy IP address: 172.16.0.1         #\"", 
-        "\"#                The p12 and SSH keys password is a3044565             #\"", 
+        "\"#                The p12 and SSH keys password is XXXXXXXX             #\"", 
         "\"#----------------------------------------------------------------------#\"", 
 ```
 
