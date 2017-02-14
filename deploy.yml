@@ -49,6 +49,10 @@
       include: playbooks/common.yml
       tags: [ 'digitalocean', 'ec2', 'gce', 'azure', 'local', 'pre' ]
 
+    - set_fact:
+        cloud_deployment: true
+      tags: ['cloud']
+
   roles:
     - { role: security, tags: [ 'security' ] }
     - { role: proxy, tags: [ 'proxy', 'adblock' ] }
@@ -58,11 +62,13 @@
     - { role: vpn, tags: [ 'vpn' ] }
 
   post_tasks:
-    - debug: msg="{{ congrats.split('\n') }}"
+    - debug:
+        msg:
+          - "{{ congrats.common.split('\n') }}"
+          - "    {{ congrats.p12_pass }}"
+          - "    {% if Store_CAKEY is defined and Store_CAKEY == 'N' %}{% else %}{{ congrats.ca_key_pass }}{% endif %}"
+          - "    {% if cloud_deployment is defined %}{{ congrats.ssh_access }}{% endif %}"
       tags: always
-
-    - debug: msg="{{ additional_information.split('\n') }}"
-      tags: cloud
 
     - name: Save the CA key password
       local_action: >
