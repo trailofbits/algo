@@ -202,7 +202,10 @@
       with_items: "{{ users }}"
 
   post_tasks:
-    - debug: msg="{{ congrats.split('\n') }}"
+    - debug:
+        msg:
+          - "{{ congrats.common.split('\n') }}"
+          - "    {{ congrats.p12_pass }}"
       tags: always
 
   handlers:
