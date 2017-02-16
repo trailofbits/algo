@@ -1,0 +1,11 @@
+{
+    "uuid": "{{ 600000 | random | to_uuid }}",
+    "name": "Algo VPN {{ IP_subject_alt_name }}",
+    "type": "ikev2-cert",
+    "remote": {
+        "addr": "{{ IP_subject_alt_name }}"
+    },
+    "local": {
+        "p12": "{{ item.1.stdout }}"
+    }
+}
