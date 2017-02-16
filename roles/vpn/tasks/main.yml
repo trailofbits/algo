@@ -259,6 +259,18 @@
     - "{{ PayloadContent.results }}"
   no_log: True
 
+- name: Build the strongswan app android config
+  local_action:
+    module: template
+    src: sswan.j2
+    dest: configs/{{ IP_subject_alt_name }}/{{ item.0 }}.sswan
+    mode: 0600
+  become: no
+  with_together:
+    - "{{ users }}"
+    - "{{ PayloadContent.results }}"
+  no_log: True
+
 - name: Build the client ipsec config file
   local_action:
     module: template
