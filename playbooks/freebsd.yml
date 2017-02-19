@@ -1,0 +1,9 @@
+---
+
+- name: FreeBSD | Install prerequisites
+  raw: sleep 10 && sudo pkg install -y python27
+
+- name: FreeBSD | Configure defaults
+  raw: sudo ln -sf /usr/local/bin/python2.7 /usr/bin/python2.7
+
+- include: facts/FreeBSD.yml

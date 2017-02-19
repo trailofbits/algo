@@ -11,6 +11,16 @@ charon {
 	}
 	user = strongswan
 	group = strongswan
+
+	filelog {
+	  /var/log/charon.log {
+	      time_format = %b %e %T
+	      ike_name = yes
+	      append = no
+	      default = 1
+	      flush_line = yes
+	  }
+	}
 }
 
 include strongswan.d/*.conf

@@ -1,2 +1,2 @@
 - name: restart ssh
-  service: name=ssh state=restarted
+  service: name="{{ ssh_service_name|default('ssh') }}" state=restarted
