@@ -39,7 +39,14 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
 
  Linux (rpm-based): See the [Pre-Install Documentation for RedHat/CentOS 6.x](docs/pre-install_redhat_centos_6.x.md)
 
-4. Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
+4. Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list. 
+Don't forget to escape nicknames, if needed. e.g. for leading zero in nicknames: 
+    ```
+    users:
+     - '001'
+     - '002'
+     - '003' 
+    ```
 5. Start the deployment. Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [ROLES.md](docs/ROLES.md).
 
 That's it! You will get the message below when the server deployment process completes. You now have an Algo server on the internet. Take note of the p12 (user certificate) password in case you need it later.
