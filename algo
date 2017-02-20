@@ -293,11 +293,11 @@ Please choose the number of your zone. Press enter for default (#8) zone.
 
 non_cloud () {
   read -p "
-Enter IP address of your server: (use localhost for local installation)
+Enter the IP address of your server: (or use localhost for local installation)
 : " -r server_ip
 
   read -p "
-What user should we use to login on the server? (ignore if you're deploying to localhost)
+What user should we use to login on the server? (note: passwordless login required, or ignore if you're deploying to localhost)
 [root]: " -r server_user
   server_user=${server_user:-root}
 
@@ -340,11 +340,11 @@ Enter the number of your desired provider
 user_management () {
 
   read -p "
-Enter IP address of your server: (use localhost for local installation)
+Enter the IP address of your server: (or use localhost for local installation)
 : " -r server_ip
 
   read -p "
-What user should we use to login on the server? (ignore if you're deploying to localhost)
+What user should we use to login on the server? (note: passwordless login required, or ignore if you're deploying to localhost)
 [root]: " -r server_user
   server_user=${server_user:-root}
 
