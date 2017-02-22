@@ -9,6 +9,12 @@
       include: playbooks/local.yml
       tags: [ 'always' ]
 
+    - name: Local pre-tasks
+      include: playbooks/local_ssh.yml
+      become: false
+      when: Deployed_By_Algo is defined and Deployed_By_Algo == "Y"
+      tags: [ 'local' ]      
+
   roles:
     - { role: cloud-digitalocean, tags: ['digitalocean'] }
     - { role: cloud-ec2, tags: ['ec2'] }
@@ -17,24 +23,10 @@
     - { role: local, tags: ['local'] }
 
   post_tasks:
-    - name: Wait until SSH becomes ready...
-      local_action:
-        module: wait_for
-        port: 22
-        host: "{{ cloud_instance_ip }}"
-        search_regex: "OpenSSH"
-        delay: 10
-        timeout: 320
-        state: present
+    - name: Local pre-tasks
+      include: playbooks/post.yml
       become: false
-      tags:
-        - cloud
-
-    - name: A short pause, in order to be sure the instance is ready
-      pause:
-        seconds: 10
-      tags:
-        - cloud
+      tags: [ 'cloud' ]
 
 - name: Configure the server and install required software
   hosts: vpn-host
