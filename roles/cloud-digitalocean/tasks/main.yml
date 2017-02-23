@@ -14,7 +14,19 @@
       until: ssh_keys.changed != true
       retries: 10
       delay: 1
+
   rescue:
+    - name: Collect the fail error
+      digital_ocean:
+        state: absent
+        command: ssh
+        api_token: "{{ do_access_token }}"
+        name: "{{ SSH_keys.comment }}"
+      register: ssh_keys
+      ignore_errors: yes
+
+    - debug: var=ssh_keys
+
     - fail:
         msg: "Please, ensure that your API token is not read-only."
 
