@@ -17,7 +17,7 @@
   when: Win10_Enabled is defined and Win10_Enabled == "Y"
 
 - name: Install StrongSwan
-  apt: name=strongswan state=latest update_cache=yes
+  apt: name=strongswan state=latest update_cache=yes install_recommends=yes
 
 - name: Enforcing ipsec with apparmor
   shell: aa-enforce "{{ item }}"
