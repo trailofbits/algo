@@ -1,6 +1,11 @@
 - name: Gather Facts
   setup:
 
+- name: Enable IPv6
+  set_fact:
+    ipv6_support: true
+  when: ansible_default_ipv6.gateway is defined
+
 - name: Generate password for the CA key
   shell: >
     < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-12};echo;
