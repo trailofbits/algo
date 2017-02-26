@@ -31,29 +31,39 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
 
 1. Setup an account on a cloud hosting provider. Algo supports [DigitalOcean](https://www.digitalocean.com/) (most user friendly), [Amazon EC2](https://aws.amazon.com/), [Google Compute Engine](https://cloud.google.com/compute/), and [Microsoft Azure](https://azure.microsoft.com/).
 2. [Download Algo](https://github.com/trailofbits/algo/archive/master.zip)
-3. Install Algo's dependencies for your operating system. To do this, open a terminal and `cd` into the directory where you downloaded Algo, then:
+3. Install Algo's core dependencies for your operating system. To do this, open a terminal and `cd` into the directory where you downloaded Algo, then:
 
- macOS: `sudo easy_install pip && sudo pip install --ignore-install -r requirements.txt`
- 
- Linux (deb-based): `sudo apt-get update && sudo apt-get install python-pip python-setuptools build-essential libssl-dev libffi-dev python-dev -y && sudo pip install -r requirements.txt`
+ macOS: `sudo easy_install pip`
+
+ Linux (deb-based): `sudo apt-get update && sudo apt-get install python-pip python-setuptools build-essential libssl-dev libffi-dev python-dev -y`
 
  Linux (rpm-based): See the [Pre-Install Documentation for RedHat/CentOS 6.x](docs/pre-install_redhat_centos_6.x.md)
 
-4. Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
-5. Start the deployment. Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [ROLES.md](docs/ROLES.md).
+4. Configure and initialize a python virtual environment to manage Algo's python dependencies. Again from the directory where you have downloaded Algo, run:
+
+ `virtualenv env && source env/bin/activate && pip install -r requirements.txt`
+
+ Important: the virtual environment needs to be active whenever you are running Algo commands. This means that if you, for example, need to add or remove users, you must run
+
+ `source env/bin/activate`
+
+ first.
+
+5. Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
+6. Start the deployment. Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [ROLES.md](docs/ROLES.md).
 
 That's it! You will get the message below when the server deployment process completes. You now have an Algo server on the internet. Take note of the p12 (user certificate) password in case you need it later.
 
 ```
-        "\"#----------------------------------------------------------------------#\"", 
-        "\"#                          Congratulations!                            #\"", 
-        "\"#                     Your Algo server is running.                     #\"", 
-        "\"#    Config files and certificates are in the ./configs/ directory.    #\"", 
-        "\"#              Go to https://whoer.net/ after connecting               #\"", 
-        "\"#        and ensure that all your traffic passes through the VPN.      #\"", 
-        "\"#          Local DNS resolver and Proxy IP address: 172.16.0.1         #\"", 
-        "\"#                The p12 and SSH keys password is XXXXXXXX             #\"", 
-        "\"#----------------------------------------------------------------------#\"", 
+        "\"#----------------------------------------------------------------------#\"",
+        "\"#                          Congratulations!                            #\"",
+        "\"#                     Your Algo server is running.                     #\"",
+        "\"#    Config files and certificates are in the ./configs/ directory.    #\"",
+        "\"#              Go to https://whoer.net/ after connecting               #\"",
+        "\"#        and ensure that all your traffic passes through the VPN.      #\"",
+        "\"#          Local DNS resolver and Proxy IP address: 172.16.0.1         #\"",
+        "\"#                The p12 and SSH keys password is XXXXXXXX             #\"",
+        "\"#----------------------------------------------------------------------#\"",
 ```
 
 Note: Advanced users who want to install Algo on top of a server they already own or want to script the deployment of Algo onto a network of servers, please see the [Advanced Usage](/docs/ADVANCED.md) documentation.
@@ -102,7 +112,7 @@ If you turned on the optional SSH tunneling role, then local user accounts will 
 
 Use the example command below to start an SSH tunnel by replacing `user` and `ip` with your own. Once the tunnel is setup, you can configure a browser or other application to use 127.0.0.1:1080 as a SOCKS proxy to route traffic through the Algo server.
 
- `ssh -D 127.0.0.1:1080 -f -q -C -N user@ip -i configs/ip_user.ssh.pem`  
+ `ssh -D 127.0.0.1:1080 -f -q -C -N user@ip -i configs/ip_user.ssh.pem`
 
 ## Adding or Removing Users
 
