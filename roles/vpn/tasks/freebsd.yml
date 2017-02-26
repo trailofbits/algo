@@ -1,4 +1,4 @@
 ---
-  
-- name: FreeBSD | Enable strongswan
+
+- name: FreeBSD / HardenedBSD | Enable strongswan
   lineinfile: dest=/etc/rc.conf regexp=^strongswan_enable= line='strongswan_enable="YES"'

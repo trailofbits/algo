@@ -1,4 +1,4 @@
-# FreeBSD
+# FreeBSD / HardenedBSD
 
 It is only possible to install Algo on existing systems only in order to avoid recompiling the kernel while deploying
 
