@@ -1,6 +1,11 @@
 - name: Gather Facts
   setup:
 
+- name: Enable IPv6
+  set_fact:
+    ipv6_support: true
+  when: ansible_default_ipv6.gateway is defined
+
 - name: Generate password for the CA key
   shell: >
     < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-12};echo;
@@ -17,7 +22,7 @@
   when: Win10_Enabled is defined and Win10_Enabled == "Y"
 
 - name: Install StrongSwan
-  apt: name=strongswan state=latest update_cache=yes
+  apt: name=strongswan state=latest update_cache=yes install_recommends=yes
 
 - name: Enforcing ipsec with apparmor
   shell: aa-enforce "{{ item }}"
@@ -46,9 +51,8 @@
 
 - name: Configure ip6tables so IPSec traffic can traverse the tunnel
   iptables: ip_version=ipv6 table=nat chain=POSTROUTING source="{{ vpn_network_ipv6 }}" jump=MASQUERADE
-  when: ((security_enabled is not defined) or
-        (security_enabled is defined and security_enabled != "y")) and
-        ipv6_support is defined and ipv6_support == "yes"
+  when: ((security_enabled is not defined) or (security_enabled is defined and security_enabled != "y")) and
+        (ipv6_support is defined and ipv6_support == true)
   notify:
     - save iptables
 
