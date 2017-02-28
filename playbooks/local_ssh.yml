@@ -18,6 +18,7 @@
     dest: "~/.ssh/config"
     marker: "# {mark} ALGO MANAGED BLOCK {{ cloud_instance_ip|default(server_ip) }}"
     insertbefore: BOF
+    create: yes
     block: |
       Host {{ cloud_instance_ip|default(server_ip) }}
       	IdentityFile ~/.ssh/algo.pem
