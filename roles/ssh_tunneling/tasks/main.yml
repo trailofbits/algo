@@ -57,13 +57,23 @@
   template: src=known_hosts.j2 dest=/root/.ssh/{{ IP_subject_alt_name }}_known_hosts
 
 - name: Fetch users SSH private keys
-  fetch: src='/var/jail/{{ item }}/.ssh/id_ecdsa' dest=configs/{{ IP_subject_alt_name }}/{{ IP_subject_alt_name }}_{{ item }}.ssh.pem flat=yes
+  fetch: src='/var/jail/{{ item }}/.ssh/id_ecdsa' dest=configs/{{ IP_subject_alt_name }}/{{ item }}.ssh.pem flat=yes
   with_items: "{{ users }}"
 
 - name: Change mode for SSH private keys
-  local_action: file path=configs/{{ IP_subject_alt_name }}/{{ IP_subject_alt_name }}_{{ item }}.ssh.pem mode=0600
+  local_action: file path=configs/{{ IP_subject_alt_name }}/{{ item }}.ssh.pem mode=0600
   with_items: "{{ users }}"
   become: false
 
 - name: Fetch the known_hosts file
   fetch: src='/root/.ssh/{{ IP_subject_alt_name }}_known_hosts' dest=configs/{{ IP_subject_alt_name }}/{{ IP_subject_alt_name }}_known_hosts flat=yes
+
+- name: Build the client ssh config
+  local_action:
+    module: template
+    src: ssh_config.j2
+    dest: configs/{{ IP_subject_alt_name }}/{{ item }}.ssh_config
+    mode: 0600
+  become: no
+  with_items:
+    - "{{ users }}"

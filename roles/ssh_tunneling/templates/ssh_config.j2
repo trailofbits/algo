@@ -1,0 +1,7 @@
+Host algo
+  DynamicForward 127.0.0.1:1080
+  LogLevel quiet
+  Compression yes
+  IdentityFile {{ item }}.ssh.pem
+  User {{ item }}
+  Hostname {{ IP_subject_alt_name }}
