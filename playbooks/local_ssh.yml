@@ -1,0 +1,23 @@
+---
+
+- name: Ensure the local ssh directory is exist
+  local_action:
+    module: file
+    path: "~/.ssh/"
+    state: directory
+
+- name: Copy the algo ssh key to the local ssh directory
+  local_action:
+    module: copy
+    src: configs/algo.pem
+    dest: ~/.ssh/algo.pem
+    mode: '0600'
+
+- name: Configure the local ssh config
+  blockinfile:
+    dest: "~/.ssh/config"
+    marker: "# {mark} ALGO MANAGED BLOCK {{ cloud_instance_ip|default(server_ip) }}"
+    insertbefore: BOF
+    block: |
+      Host {{ cloud_instance_ip|default(server_ip) }}
+      	IdentityFile ~/.ssh/algo.pem
