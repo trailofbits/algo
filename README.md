@@ -35,9 +35,11 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
 
  macOS: `sudo easy_install pip`
 
- Linux (deb-based): `sudo apt-get update && sudo apt-get install python-pip python-setuptools build-essential libssl-dev libffi-dev python-dev -y`
+ Linux (deb-based): `sudo apt-get update && sudo apt-get install python-pip python-setuptools build-essential libssl-dev libffi-dev python-dev python-virtualenv -y`
 
  Linux (rpm-based): See the [Pre-Install Documentation for RedHat/CentOS 6.x](docs/pre-install_redhat_centos_6.x.md)
+
+ Windows: See the [Windows documentation](docs/WINDOWS.md)
 
 4. Configure and initialize a python virtual environment to manage Algo's python dependencies. Again from the directory where you have downloaded Algo, run:
 
