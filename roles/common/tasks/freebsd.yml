@@ -3,6 +3,7 @@
 - set_fact:
     tools:
       - git
+      - subversion
       - screen
       - coreutils
       - openssl

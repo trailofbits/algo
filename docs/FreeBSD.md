@@ -1,6 +1,6 @@
 # FreeBSD / HardenedBSD
 
-It is only possible to install Algo on existing systems only in order to avoid recompiling the kernel while deploying
+It is only possible to install Algo on existing systems only. We support only 11 version for now.
 
 ## Pre-paring the system
 
@@ -18,6 +18,10 @@ device	crypto
 * vpn
 * ssh_tunneling
 * dns_adblocking
+
+## Additional variables
+
+* rebuild_kernel - set to `true` if you want to let Algo to rebuild your kernel if needed (Takes a lot of time)
 
 ## Installation
 
