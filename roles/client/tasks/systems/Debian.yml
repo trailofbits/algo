@@ -1,0 +1,5 @@
+---
+
+- set_fact:
+    prerequisites: []
+    configs_prefix: /etc/

@@ -1,0 +1,73 @@
+- name: Gather Facts
+  setup:
+
+- name: Include system based facts and tasks
+  include: systems/main.yml
+
+- name: Cheking the signature algorithm
+  local_action: >
+      shell openssl x509 -text -in certs/{{ IP_subject_alt_name }}.crt  | grep 'Signature Algorithm' | head -n1
+  become: no
+  register: sig_algo
+  args:
+    chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+
+- name: Change the algorithm to RSA
+  set_fact:
+    Win10_Enabled: "Y"
+  when: '"ecdsa" not in sig_algo.stdout'
+
+- name: Install prerequisites
+  package: name="{{ item }}" state=present
+  with_items:
+    - "{{ prerequisites }}"
+
+- name: Install StrongSwan
+  package: name=strongswan state=present
+
+- name: Setup the ipsec config
+  template:
+    src: "roles/vpn/templates/client_ipsec.conf.j2"
+    dest: "{{ configs_prefix }}/ipsec.{{ IP_subject_alt_name }}.conf"
+    mode: '0644'
+  with_items:
+    - "{{ user }}"
+  notify:
+    - restart strongswan
+
+- name: Setup the ipsec secrets
+  template:
+    src: "roles/vpn/templates/client_ipsec.secrets.j2"
+    dest: "{{ configs_prefix }}/ipsec.{{ IP_subject_alt_name }}.secrets"
+    mode: '0600'
+  with_items:
+    - "{{ user }}"
+  notify:
+    - restart strongswan
+
+- name: Include additional ipsec config
+  lineinfile:
+    dest: "{{ item.dest }}"
+    line: "{{ item.line }}"
+    create: yes
+  with_items:
+    - dest: "{{ configs_prefix }}/ipsec.conf"
+      line: "include ipsec.*.conf"
+    - dest: "{{ configs_prefix }}/ipsec.secrets"
+      line: "include ipsec.*.secrets"
+  notify:
+    - restart strongswan
+
+- name: Setup the certificates and keys
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - src: "configs/{{ IP_subject_alt_name }}/pki/certs/{{ user }}.crt"
+      dest: "{{ configs_prefix }}/ipsec.d/certs/{{ IP_subject_alt_name }}_{{ user }}.crt"
+    - src: "configs/{{ IP_subject_alt_name }}/pki/cacert.pem"
+      dest: "{{ configs_prefix }}/ipsec.d/cacerts/{{ IP_subject_alt_name }}.pem"
+    - src: "configs/{{ IP_subject_alt_name }}/pki/private/{{ user }}.key"
+      dest: "{{ configs_prefix }}/ipsec.d/private/{{ IP_subject_alt_name }}_{{ user }}.key"
+  notify:
+    - restart strongswan

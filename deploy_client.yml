@@ -1,0 +1,31 @@
+- name: Configure the client
+  hosts: localhost
+  tasks:
+    - name: Add the droplet to an inventory group
+      add_host:
+        name: "{{ client_ip }}"
+        groups: client-host
+        ansible_ssh_user: "{{ server_user }}"
+
+- name: Configure the client and install required software
+  hosts: client-host
+  gather_facts: false
+  become: true
+  vars_files:
+    - config.cfg
+
+  pre_tasks:
+    - name: Get the OS
+      raw: uname -a
+      register: distribution
+
+    - name: Ubuntu Xenial | Install prerequisites 
+      raw: >
+        test -x /usr/bin/python2.7 ||
+        sudo apt-get update -qq && sudo apt-get install -qq -y python2.7 &&
+        sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
+      changed_when: false
+      when: "'ubuntu' in distribution.stdout"
+
+  roles:
+    - { role: client, tags: ['client'] }
