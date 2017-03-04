@@ -8,3 +8,6 @@
 
 - include: CentOS.yml
   when: ansible_distribution == 'CentOS'
+
+- include: Fedora.yml
+  when: ansible_distribution == 'Fedora'

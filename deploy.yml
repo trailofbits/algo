@@ -13,7 +13,7 @@
       include: playbooks/local_ssh.yml
       become: false
       when: Deployed_By_Algo is defined and Deployed_By_Algo == "Y"
-      tags: [ 'local' ]      
+      tags: [ 'local' ]
 
   roles:
     - { role: cloud-digitalocean, tags: ['digitalocean'] }
