@@ -31,7 +31,7 @@
     dest: "{{ configs_prefix }}/ipsec.{{ IP_subject_alt_name }}.conf"
     mode: '0644'
   with_items:
-    - "{{ user }}"
+    - "{{ vpn_user }}"
   notify:
     - restart strongswan
 
@@ -41,7 +41,7 @@
     dest: "{{ configs_prefix }}/ipsec.{{ IP_subject_alt_name }}.secrets"
     mode: '0600'
   with_items:
-    - "{{ user }}"
+    - "{{ vpn_user }}"
   notify:
     - restart strongswan
 
@@ -63,11 +63,11 @@
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   with_items:
-    - src: "configs/{{ IP_subject_alt_name }}/pki/certs/{{ user }}.crt"
-      dest: "{{ configs_prefix }}/ipsec.d/certs/{{ IP_subject_alt_name }}_{{ user }}.crt"
+    - src: "configs/{{ IP_subject_alt_name }}/pki/certs/{{ vpn_user }}.crt"
+      dest: "{{ configs_prefix }}/ipsec.d/certs/{{ IP_subject_alt_name }}_{{ vpn_user }}.crt"
     - src: "configs/{{ IP_subject_alt_name }}/pki/cacert.pem"
       dest: "{{ configs_prefix }}/ipsec.d/cacerts/{{ IP_subject_alt_name }}.pem"
-    - src: "configs/{{ IP_subject_alt_name }}/pki/private/{{ user }}.key"
-      dest: "{{ configs_prefix }}/ipsec.d/private/{{ IP_subject_alt_name }}_{{ user }}.key"
+    - src: "configs/{{ IP_subject_alt_name }}/pki/private/{{ vpn_user }}.key"
+      dest: "{{ configs_prefix }}/ipsec.d/private/{{ IP_subject_alt_name }}_{{ vpn_user }}.key"
   notify:
     - restart strongswan
