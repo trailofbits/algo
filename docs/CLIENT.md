@@ -7,10 +7,10 @@ The playbook is `deploy_client.yml`
 
 ### Required variables:
 
-* client_ip - the IP address of your client machine (You can use `localhost` in order to deploy locally)
-* vpn_user - the username. (Ensure that you have valid certificates and keys in the `configs/SERVER_ip/pki/` directory)
-* client_ssh_user - the username that we need to use in order to connect to the client machine via SSH (ignore if you are deploying locally)
-* server_ip - the vpn server ip address
+* `client_ip` - The IP address of your client machine (You can use `localhost` in order to deploy locally)
+* `vpn_user` - The username. (Ensure that you have valid certificates and keys in the `configs/SERVER_ip/pki/` directory)
+* `client_ssh_user` - The username that we need to use in order to connect to the client machine via SSH (ignore if you are deploying locally)
+* `server_ip` - The vpn server ip address
 
 ### Example:
 
