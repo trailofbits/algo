@@ -85,11 +85,11 @@
       Authorization: "Bearer {{ do_access_token }}"
   register: do_droplets
 
-- name: Ensure the group ec2 exists in the dynamic inventory file
+- name: Ensure the group digitalocean exists in the dynamic inventory file
   lineinfile:
     state: present
     dest: configs/inventory.dynamic
-    line: '[digitalocean]'  
+    line: '[digitalocean]'
 
 - name: Populate the dynamic inventory
   lineinfile:
