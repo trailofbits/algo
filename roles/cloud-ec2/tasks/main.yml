@@ -96,6 +96,7 @@
     region: "{{ region }}"
     instance_tags:
       name: "{{ aws_server_name }}"
+      Environment: Algo
     exact_count: 1
     count_tag:
       name: "{{ aws_server_name }}"
@@ -115,3 +116,29 @@
 
 - set_fact:
     cloud_instance_ip: "{{ ec2.tagged_instances[0].public_ip }}"
+
+- name: Get EC2 instances
+  ec2_remote_facts:
+    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'))}}"
+    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
+    region: "{{ region }}"
+    filters:
+      instance-state-name: running
+      "tag:Environment": Algo
+  register: algo_instances
+
+- name: Ensure the group ec2 exists in the dynamic inventory file
+  lineinfile:
+    state: present
+    dest: configs/inventory.dynamic
+    line: '[ec2]'
+
+- name: Populate the dynamic inventory
+  lineinfile:
+    state: present
+    dest: configs/inventory.dynamic
+    insertafter: '\[ec2\]'
+    regexp: "^{{ item.public_ip_address }}.*"
+    line: "{{ item.public_ip_address }}"
+  with_items:
+    - "{{ algo_instances.instances }}"

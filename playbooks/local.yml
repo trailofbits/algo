@@ -12,3 +12,14 @@
 
 - name: Change mode for the SSH private key
   local_action: file path=configs/algo.pem mode=0600
+
+- name: Ensure the dynamic inventory exists
+  blockinfile:
+    dest: configs/inventory.dynamic
+    marker: "# {mark} ALGO MANAGED BLOCK"
+    create: yes
+    block: |
+      [algo:children]
+      {% for group in dynamic_inventory_groups %}
+      {{ group }}
+      {% endfor %}
