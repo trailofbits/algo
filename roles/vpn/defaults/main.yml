@@ -1,0 +1,21 @@
+---
+
+strongswan_enabled_plugins:
+  - aes
+  - gcm
+  - hmac
+  - kernel-netlink
+  - nonce
+  - openssl
+  - pem
+  - pgp
+  - pkcs12
+  - pkcs7
+  - pkcs8
+  - pubkey
+  - random
+  - revocation
+  - sha2
+  - socket-default
+  - stroke
+  - x509

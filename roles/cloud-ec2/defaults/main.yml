@@ -1,0 +1,5 @@
+---
+
+ec2_vpc_nets:
+  cidr_block: 172.251.0.0/23
+  subnet_cidr: 172.251.1.0/24
