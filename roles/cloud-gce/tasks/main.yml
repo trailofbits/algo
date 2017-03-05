@@ -12,6 +12,8 @@
     credentials_file: "{{ credentials_file  }}"
     project_id: "{{ credentials_file_lookup.project_id  }}"
     metadata: '{"sshKeys":"root:{{ ssh_public_key_lookup }}"}'
+    tags:
+      - "environment: algo"
   register: google_vm
 
 - name: Add the instance to an inventory group
@@ -38,3 +40,17 @@
 
 - set_fact:
     cloud_instance_ip: "{{ google_vm.instance_data[0].public_ip }}"
+
+- name: Ensure the group gce exists in the dynamic inventory file
+  lineinfile:
+    state: present
+    dest: configs/inventory.dynamic
+    line: '[gce]'
+
+- name: Populate the dynamic inventory
+  lineinfile:
+    state: present
+    dest: configs/inventory.dynamic
+    insertafter: '\[gce\]'
+    regexp: "^{{ google_vm.instance_data[0].public_ip }}.*"
+    line: "{{ google_vm.instance_data[0].public_ip }}"
