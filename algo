@@ -303,7 +303,8 @@ What user should we use to login on the server? (note: passwordless login requir
 
   read -p "
 Enter the public IP address of your server: (IMPORTANT! This IP is used to verify the certificate)
-: " -r IP_subject
+[$server_ip]: " -r IP_subject
+  IP_subject=${IP_subject:-$server_ip}
 
   ROLES="local vpn"
   EXTRA_VARS="server_ip=$server_ip server_user=$server_user IP_subject_alt_name=$IP_subject"
