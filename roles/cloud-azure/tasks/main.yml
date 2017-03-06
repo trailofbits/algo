@@ -12,7 +12,7 @@
     name: "{{ resource_group }}"
     location: "{{ region }}"
     tags:
-        service: algo
+      Environment: Algo
 
 - name: Create a virtual network
   azure_rm_virtualnetwork:
@@ -24,7 +24,7 @@
     name: algo_net
     address_prefixes: "10.10.0.0/16"
     tags:
-        service: algo
+      Environment: Algo
 
 - name: Create a subnet
   azure_rm_subnet:
@@ -37,7 +37,7 @@
     address_prefix: "10.10.0.0/24"
     virtual_network: algo_net
     tags:
-        service: algo
+      Environment: Algo
 
 - name: Create an instance
   azure_rm_virtualmachine:
@@ -52,7 +52,7 @@
     ssh_password_enabled: false
     vm_size: Standard_D1
     tags:
-      service: algo
+      Environment: Algo
     ssh_public_keys:
       - { path: "/home/ubuntu/.ssh/authorized_keys", key_data: "{{ lookup('file', '{{ SSH_keys.public }}') }}" }
     image:
