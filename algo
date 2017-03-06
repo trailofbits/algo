@@ -66,28 +66,27 @@ deploy () {
 
 azure () {
   read -p "
-Enter your azure secret (https://docs.ansible.com/ansible/guide_azure.html#authenticating-with-azure)
+Enter your azure secret id (https://github.com/trailofbits/algo/blob/master/docs/AZURE.md)
 You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
 [...]: " -rs azure_secret
 
   read -p "
 
-Enter your azure tenant (https://docs.ansible.com/ansible/guide_azure.html#authenticating-with-azure)
+Enter your azure tenant id (https://github.com/trailofbits/algo/blob/master/docs/AZURE.md)
 You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
 [...]: " -rs azure_tenant
 
   read -p "
 
-Enter your azure client_id (https://docs.ansible.com/ansible/guide_azure.html#authenticating-with-azure)
+Enter your azure client id (application id) (https://github.com/trailofbits/algo/blob/master/docs/AZURE.md)
 You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
 [...]: " -rs azure_client_id
 
   read -p "
 
-Enter your azure subscription_id (https://docs.ansible.com/ansible/guide_azure.html#authenticating-with-azure)
+Enter your azure subscription id (https://github.com/trailofbits/algo/blob/master/docs/AZURE.md)
 You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
 [...]: " -rs azure_subscription_id
-
 
   read -p "
 Name the vpn server:
