@@ -1,3 +1,5 @@
+### Authenticating with Azure
+
 | Instruction | Screenshot(s) |
 | ----------- | ---------- |
 | 1. Go to https://portal.azure.com/ | |
