@@ -101,6 +101,7 @@
     count_tag:
       name: "{{ aws_server_name }}"
     assign_public_ip: yes
+    instance_initiated_shutdown_behavior: terminate
   register: ec2
 
 - name: Add new instance to host group
