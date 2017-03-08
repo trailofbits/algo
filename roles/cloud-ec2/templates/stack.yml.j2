@@ -38,12 +38,6 @@ Resources:
           Value: Algo
       VpcId: !Ref VPC
 
-  # SubnetIPv6:
-  #   Type: AWS::EC2::SubnetCidrBlock
-  #   Properties:
-  #     Ipv6CidrBlock: !Ref VPCIPv6
-  #     SubnetId: !Ref Subnet
-
   VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
@@ -79,6 +73,20 @@ Resources:
       RouteTableId: !Ref RouteTable
       DestinationIpv6CidrBlock: "::/0"
       GatewayId: !Ref InternetGateway
+
+  # SubnetIPv6:
+  #   Type: AWS::EC2::SubnetCidrBlock
+  #   DependsOn:
+  #     - RouteIPv6
+  #     - VPC
+  #     - VPCIPv6
+  #   Properties:
+  #     Ipv6CidrBlock:
+  #       "Fn::Join":
+  #           - ""
+  #           - - !Select [0, !Split [ "::", !GetAtt VPC.Ipv6CidrBlocks ]]
+  #             - "::dead:beef/64"
+  #     SubnetId: !Ref Subnet
 
   RouteSubnet:
     Type: "AWS::EC2::SubnetRouteTableAssociation"
