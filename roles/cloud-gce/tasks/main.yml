@@ -13,7 +13,7 @@
     project_id: "{{ credentials_file_lookup.project_id  }}"
     metadata: '{"sshKeys":"root:{{ ssh_public_key_lookup }}"}'
     tags:
-      - "environment: algo"
+      - "environment-algo"
   register: google_vm
 
 - name: Add the instance to an inventory group
