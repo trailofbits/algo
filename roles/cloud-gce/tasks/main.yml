@@ -1,6 +1,13 @@
 - set_fact:
-    credentials_file_lookup: "{{ lookup('file', '{{ credentials_file }}') }}"
+    credentials_file_path: "{{ credentials_file | default(lookup('env','GCE_CREDENTIALS_FILE_PATH')) }}"
     ssh_public_key_lookup: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
+
+- set_fact:
+    credentials_file_lookup: "{{ lookup('file', '{{ credentials_file_path }}') }}"
+
+- set_fact:
+    service_account_email: "{{ credentials_file_lookup.client_email | default(lookup('env','GCE_EMAIL')) }}"
+    project_id: "{{ credentials_file_lookup.project_id | default(lookup('env','GCE_PROJECT')) }}"
 
 - name: "Creating a new instance..."
   gce:
@@ -8,9 +15,9 @@
     zone: "{{ zone }}"
     machine_type: f1-micro
     image: ubuntu-1604
-    service_account_email: "{{ credentials_file_lookup.client_email  }}"
-    credentials_file: "{{ credentials_file  }}"
-    project_id: "{{ credentials_file_lookup.project_id  }}"
+    service_account_email: "{{ service_account_email  }}"
+    credentials_file: "{{ credentials_file_path  }}"
+    project_id: "{{ project_id  }}"
     metadata: '{"sshKeys":"root:{{ ssh_public_key_lookup }}"}'
     tags:
       - "environment-algo"
