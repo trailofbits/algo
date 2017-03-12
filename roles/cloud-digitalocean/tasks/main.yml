@@ -1,6 +1,6 @@
 - name: Set the DigitalOcean Access Token fact
   set_fact:
-    do_token: "{{ do_access_token }}"
+    do_token: "{{ do_access_token | default(lookup('env','DO_API_TOKEN')) }}"
     public_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
 
 - block:
@@ -8,7 +8,7 @@
       digital_ocean:
         state: absent
         command: ssh
-        api_token: "{{ do_access_token }}"
+        api_token: "{{ do_token }}"
         name: "{{ SSH_keys.comment }}"
       register: ssh_keys
       until: ssh_keys.changed != true
@@ -20,7 +20,7 @@
       digital_ocean:
         state: absent
         command: ssh
-        api_token: "{{ do_access_token }}"
+        api_token: "{{ do_token }}"
         name: "{{ SSH_keys.comment }}"
       register: ssh_keys
       ignore_errors: yes
@@ -35,7 +35,7 @@
     state: present
     command: ssh
     ssh_pub_key: "{{ public_key }}"
-    api_token: "{{ do_access_token }}"
+    api_token: "{{ do_token }}"
     name: "{{ SSH_keys.comment }}"
   register: do_ssh_key
 
@@ -49,7 +49,7 @@
     image_id: "ubuntu-16-04-x64"
     ssh_key_ids: "{{ do_ssh_key.ssh_key.id }}"
     unique_name: yes
-    api_token: "{{ do_access_token }}"
+    api_token: "{{ do_token }}"
     ipv6: yes
   register: do
 
@@ -60,7 +60,7 @@
     ansible_ssh_user: root
     ansible_python_interpreter: "/usr/bin/python2.7"
     ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
-    do_access_token: "{{ do_access_token }}"
+    do_access_token: "{{ do_token }}"
     do_droplet_id: "{{ do.droplet.id }}"
     cloud_provider: digitalocean
     ipv6_support: true
@@ -72,7 +72,7 @@
   digital_ocean_tag:
     name: "Environment:Algo"
     resource_id: "{{ do.droplet.id }}"
-    api_token: "{{ do_access_token }}"
+    api_token: "{{ do_token }}"
     state: present
 
 - name: Get droplets
@@ -82,7 +82,7 @@
     status_code: 200
     headers:
       Content-Type: "application/json"
-      Authorization: "Bearer {{ do_access_token }}"
+      Authorization: "Bearer {{ do_token }}"
   register: do_droplets
 
 - name: Ensure the group digitalocean exists in the dynamic inventory file
