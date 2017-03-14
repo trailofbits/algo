@@ -26,6 +26,35 @@
     tags:
       Environment: Algo
 
+- name: Create a security group
+  azure_rm_securitygroup:
+    secret: "{{ azure_secret | default(lookup('env','AZURE_SECRET')) }}"
+    tenant: "{{ azure_tenant | default(lookup('env','AZURE_TENANT')) }}"
+    client_id: "{{ azure_client_id | default(lookup('env','AZURE_CLIENT_ID')) }}"
+    subscription_id: "{{ azure_subscription_id | default(lookup('env','AZURE_SUBSCRIPTION_ID')) }}"
+    resource_group: "{{ resource_group }}"
+    name: AlgoSecGroup
+    purge_rules: yes
+    rules:
+      - name: AllowSSH
+        protocol: Tcp
+        destination_port_range: 22
+        access: Allow
+        priority: 100
+        direction: Inbound
+      - name: AllowIPSEC500
+        protocol: Udp
+        destination_port_range: 500
+        access: Allow
+        priority: 110
+        direction: Inbound
+      - name: AllowIPSEC4500
+        protocol: Udp
+        destination_port_range: 4500
+        access: Allow
+        priority: 120
+        direction: Inbound
+
 - name: Create a subnet
   azure_rm_subnet:
     secret: "{{ azure_secret | default(lookup('env','AZURE_SECRET')) }}"
@@ -36,6 +65,7 @@
     name: algo_subnet
     address_prefix: "10.10.0.0/24"
     virtual_network: algo_net
+    security_group_name: AlgoSecGroup
     tags:
       Environment: Algo
 
@@ -64,6 +94,19 @@
 
 - set_fact:
     ip_address: "{{ azure_rm_virtualmachine.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
+    networkinterface_name: "{{ azure_rm_virtualmachine.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].name }}"
+
+- name: Ensure the network interface includes all required parameters
+  azure_rm_networkinterface:
+    secret: "{{ azure_secret | default(lookup('env','AZURE_SECRET')) }}"
+    tenant: "{{ azure_tenant | default(lookup('env','AZURE_TENANT')) }}"
+    client_id: "{{ azure_client_id | default(lookup('env','AZURE_CLIENT_ID')) }}"
+    subscription_id: "{{ azure_subscription_id | default(lookup('env','AZURE_SUBSCRIPTION_ID')) }}"
+    name: "{{ networkinterface_name }}"
+    resource_group: "{{ resource_group }}"
+    virtual_network_name: algo_net
+    subnet_name: algo_subnet
+    security_group_name: AlgoSecGroup
 
 - name: Add the instance to an inventory group
   add_host:
