@@ -1,0 +1,27 @@
+---
+
+- name: Copy the keys to the strongswan directory
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  with_items:
+    - src: "configs/{{ IP_subject_alt_name }}/pki/cacert.pem"
+      dest: "{{ config_prefix|default('/') }}etc/ipsec.d/cacerts/ca.crt"
+      owner: strongswan
+      group: "{{ root_group|default('root') }}"
+      mode: "0600"
+    - src: "configs/{{ IP_subject_alt_name }}/pki/certs/{{ IP_subject_alt_name }}.crt"
+      dest: "{{ config_prefix|default('/') }}etc/ipsec.d/certs/{{ IP_subject_alt_name }}.crt"
+      owner: strongswan
+      group: "{{ root_group|default('root') }}"
+      mode: "0600"
+    - src: "configs/{{ IP_subject_alt_name }}/pki/private/{{ IP_subject_alt_name }}.key"
+      dest: "{{ config_prefix|default('/') }}etc/ipsec.d/private/{{ IP_subject_alt_name }}.key"
+      owner: strongswan
+      group: "{{ root_group|default('root') }}"
+      mode: "0600"
+  notify:
+    - restart strongswan

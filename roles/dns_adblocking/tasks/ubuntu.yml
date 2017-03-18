@@ -1,0 +1,21 @@
+---
+
+- name: Ubuntu | Dnsmasq profile for apparmor configured
+  template: src=usr.sbin.dnsmasq.j2 dest=/etc/apparmor.d/usr.sbin.dnsmasq owner=root group=root mode=0600
+  when: apparmor_enabled is defined and apparmor_enabled == true
+  notify:
+    - restart dnsmasq
+
+- name: Ubuntu | Enforce the dnsmasq AppArmor policy
+  shell: aa-enforce usr.sbin.dnsmasq
+  when: apparmor_enabled is defined and apparmor_enabled == true
+  tags: ['apparmor']
+
+- name: Ubuntu | Ensure that the dnsmasq service directory exist
+  file: path=/etc/systemd/system/dnsmasq.service.d/ state=directory mode=0755  owner=root group=root
+
+- name: Ubuntu | Setup the cgroup limitations for the ipsec daemon
+  template: src=100-CustomLimitations.conf.j2 dest=/etc/systemd/system/dnsmasq.service.d/100-CustomLimitations.conf
+  notify:
+    - daemon-reload
+    - restart dnsmasq
