@@ -62,14 +62,14 @@
                     <key>IntegrityAlgorithm</key>
                     <string>SHA2-256</string>
                     <key>LifeTimeInMinutes</key>
-                    <integer>1440</integer>
+                    <integer>20</integer>
                 </dict>
                 <key>DeadPeerDetectionRate</key>
                 <string>Medium</string>
                 <key>DisableMOBIKE</key>
                 <integer>0</integer>
                 <key>DisableRedirect</key>
-                <integer>0</integer>
+                <integer>1</integer>
                 <key>EnableCertificateRevocationCheck</key>
                 <integer>0</integer>
                 <key>EnablePFS</key>
@@ -83,7 +83,7 @@
                     <key>IntegrityAlgorithm</key>
                     <string>SHA2-256</string>
                     <key>LifeTimeInMinutes</key>
-                    <integer>1440</integer>
+                    <integer>20</integer>
                 </dict>
                 <key>LocalIdentifier</key>
                 <string>{{ item.0 }}</string>
@@ -96,7 +96,7 @@
                 <string>ECDSA256</string>
 {% endif %}
                 <key>ServerCertificateIssuerCommonName</key>
-                <string>{{ IP_subject_alt_name }}</string>                
+                <string>{{ IP_subject_alt_name }}</string>
                 <key>RemoteAddress</key>
                 <string>{{ IP_subject_alt_name }}</string>
                 <key>RemoteIdentifier</key>

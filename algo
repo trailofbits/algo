@@ -7,13 +7,13 @@ SKIP_TAGS="_null encrypted"
 additional_roles () {
 
 read -p "
-Do you want to enable VPN Always-On when connected to cellular networks?
+Do you want to enable VPN On Demand when connected to cellular networks?
 [y/N]: " -r OnDemandEnabled_Cellular
 OnDemandEnabled_Cellular=${OnDemandEnabled_Cellular:-n}
 if [[ "$OnDemandEnabled_Cellular" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" OnDemandEnabled_Cellular=Y"; fi
 
 read -p "
-Do you want to enable VPN Always-On when connected to Wi-Fi?
+Do you want to enable VPN On Demand when connected to Wi-Fi?
 [y/N]: " -r OnDemandEnabled_WIFI
 OnDemandEnabled_WIFI=${OnDemandEnabled_WIFI:-n}
 if [[ "$OnDemandEnabled_WIFI" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" OnDemandEnabled_WIFI=Y"; fi
