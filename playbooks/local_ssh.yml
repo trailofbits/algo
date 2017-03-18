@@ -9,7 +9,7 @@
 - name: Copy the algo ssh key to the local ssh directory
   local_action:
     module: copy
-    src: configs/algo.pem
+    src: "{{ SSH_keys.private }}"
     dest: ~/.ssh/algo.pem
     mode: '0600'
 

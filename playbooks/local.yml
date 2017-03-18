@@ -3,15 +3,15 @@
 - name: Generate the SSH private key
   local_action: shell echo -e  'n' | ssh-keygen -b 2048 -C {{ SSH_keys.comment }} -t rsa -f {{ SSH_keys.private }} -q -N ""
   args:
-    creates: configs/algo.pem
+    creates: "{{ SSH_keys.public }}"
 
 - name: Generate the SSH public key
-  local_action: shell echo `ssh-keygen -y -f configs/algo.pem` {{ SSH_keys.comment }} > {{ SSH_keys.public }}
+  local_action: shell echo `ssh-keygen -y -f {{ SSH_keys.private }}` {{ SSH_keys.comment }} > {{ SSH_keys.public }}
   args:
-    creates: configs/algo.pem.pub
+    creates: "{{ SSH_keys.public }}"
 
 - name: Change mode for the SSH private key
-  local_action: file path=configs/algo.pem mode=0600
+  local_action: file path={{ SSH_keys.private }} mode=0600
 
 - name: Ensure the dynamic inventory exists
   blockinfile:
