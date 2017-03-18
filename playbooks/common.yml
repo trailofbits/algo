@@ -1,10 +1,16 @@
-- name: Install prerequisites
-  raw: sleep 10 && sudo apt-get update -qq && sudo apt-get install -qq -y python2.7
+---
 
-- name: Configure defaults
-  raw: sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
-  tags:
-    - update-alternatives
+- name: Check the system
+  raw: uname -a
+  register: OS
+
+- name: Ubuntu pre-tasks
+  include: ubuntu.yml
+  when: '"Ubuntu" in OS.stdout'
+
+- name: FreeBSD pre-tasks
+  include: freebsd.yml
+  when: '"FreeBSD" in OS.stdout'
 
 - name: Ensure the algo ssh key exist on the server
   authorized_key:

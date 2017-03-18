@@ -1,0 +1,79 @@
+---
+
+- name: Register p12 PayloadContent
+  local_action: >
+    shell cat private/{{ item }}.p12 | base64
+  register:  PayloadContent
+  become: no
+  args:
+    chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+  with_items: "{{ users }}"
+
+- name: Set facts for mobileconfigs
+  set_fact:
+    proxy_enabled: false
+    PayloadContentCA: "{{ lookup('file' , 'configs/{{ IP_subject_alt_name }}/pki/cacert.pem')|b64encode }}"
+
+- name: Build the mobileconfigs
+  local_action:
+    module: template
+    src: mobileconfig.j2
+    dest: configs/{{ IP_subject_alt_name }}/{{ item.0 }}.mobileconfig
+    mode: 0600
+  become: no
+  with_together:
+    - "{{ users }}"
+    - "{{ PayloadContent.results }}"
+  no_log: True
+
+- name: Build the strongswan app android config
+  local_action:
+    module: template
+    src: sswan.j2
+    dest: configs/{{ IP_subject_alt_name }}/{{ item.0 }}.sswan
+    mode: 0600
+  become: no
+  with_together:
+    - "{{ users }}"
+    - "{{ PayloadContent.results }}"
+  no_log: True
+
+- name: Build the client ipsec config file
+  local_action:
+    module: template
+    src: client_ipsec.conf.j2
+    dest: configs/{{ IP_subject_alt_name }}/ipsec_{{ item }}.conf
+    mode: 0600
+  become: no
+  with_items:
+    - "{{ users }}"
+
+- name: Build the client ipsec secret file
+  local_action:
+    module: template
+    src: client_ipsec.secrets.j2
+    dest: configs/{{ IP_subject_alt_name }}/ipsec_{{ item }}.secrets
+    mode: 0600
+  become: no
+  with_items:
+    - "{{ users }}"
+
+- name: Build the windows client powershell script
+  local_action:
+    module: template
+    src: client_windows.ps1.j2
+    dest: configs/{{ IP_subject_alt_name }}/windows_{{ item }}.ps1
+    mode: 0600
+  become: no
+  when: Win10_Enabled is defined and Win10_Enabled == "Y"
+  with_items: "{{ users }}"
+
+- name: Restrict permissions for the local private directories
+  local_action:
+    module: file
+    path: "{{ item }}"
+    state: directory
+    mode: 0700
+  become: no
+  with_items:
+    - configs/{{ IP_subject_alt_name }}

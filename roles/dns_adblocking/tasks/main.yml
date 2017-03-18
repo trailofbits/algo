@@ -2,55 +2,41 @@
   setup:
 
 - name: Dnsmasq installed
-  apt: name=dnsmasq state=latest
+  package: name=dnsmasq
 
-- name: Dnsmasq profile for apparmor configured
-  template: src=usr.sbin.dnsmasq.j2 dest=/etc/apparmor.d/usr.sbin.dnsmasq owner=root group=root mode=0600
-  when: apparmor_enabled is defined and apparmor_enabled == true
-  notify:
-    - restart dnsmasq
+- name: Ensure that the dnsmasq user exist
+  user: name=dnsmasq groups=nogroup append=yes state=present
 
 - name: The dnsmasq directory created
   file: dest=/var/lib/dnsmasq state=directory mode=0755 owner=dnsmasq group=nogroup
 
-- name: Enforce the dnsmasq AppArmor policy
-  shell: aa-enforce usr.sbin.dnsmasq
-  when: apparmor_enabled is defined and apparmor_enabled == true
-  tags: ['apparmor']
+- include: ubuntu.yml
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
-- name: Ensure that the dnsmasq service directory exist
-  file: path=/etc/systemd/system/dnsmasq.service.d/ state=directory mode=0755  owner=root group=root
-
-- name: Setup the cgroup limitations for the ipsec daemon
-  template: src=100-CustomLimitations.conf.j2 dest=/etc/systemd/system/dnsmasq.service.d/100-CustomLimitations.conf
-  notify:
-    - daemon-reload
-    - restart dnsmasq
+- include: freebsd.yml
+  when: ansible_distribution == 'FreeBSD'
 
 - meta: flush_handlers
 
 - name: Dnsmasq configured
-  template: src=dnsmasq.conf.j2 dest=/etc/dnsmasq.conf
+  template: src=dnsmasq.conf.j2 dest="{{ config_prefix|default('/') }}etc/dnsmasq.conf"
   notify:
     - restart dnsmasq
 
 - name: Adblock script created
-  template: src=adblock.sh dest=/opt/adblock.sh owner=root group=root mode=0755
+  template: src=adblock.sh dest=/usr/local/sbin/adblock.sh owner=root group="{{ root_group|default('root') }}" mode=0755
 
 - name: Adblock script added to cron
   cron:
     name: Adblock hosts update
     minute: 10
     hour: 2
-    job: /opt/adblock.sh
+    job: /usr/local/sbin/adblock.sh
     user: dnsmasq
 
 - name: Update adblock hosts
   shell: >
-    /opt/adblock.sh
-  become: true
-  become_user: dnsmasq
+    sudo -u dnsmasq "/usr/local/sbin/adblock.sh"
 
 - name: Dnsmasq enabled and started
   service: name=dnsmasq state=started enabled=yes
-

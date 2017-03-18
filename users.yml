@@ -36,6 +36,9 @@
     - config.cfg
 
   pre_tasks:
+    - name: Common pre-tasks
+      include: playbooks/common.yml
+
     - set_fact:
         IP_subject_alt_name: "{{ IP_subject }}"
         easyrsa_p12_export_password: "{{ p12_export_password|default((ansible_date_time.iso8601_basic|sha1|to_uuid).split('-')[0]) }}"
@@ -117,7 +120,7 @@
     - name: Copy the revoked certificates to the vpn server
       copy:
         src: configs/{{ IP_subject_alt_name }}/pki/crl/{{ item }}.crt
-        dest: /etc/ipsec.d/crls/{{ item }}.crt
+        dest: "{{ config_prefix|default('/') }}etc/ipsec.d/crls/{{ item }}.crt"
       when: item not in users
       with_items: "{{ valid_certs.stdout_lines }}"
       notify:

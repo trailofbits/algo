@@ -5,101 +5,24 @@
   tags:
     - always
 
-- name: Install software updates
-  apt: update_cache=yes upgrade=dist
-  tags:
-    - cloud
+- include: ubuntu.yml
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
-- name: Check if reboot is required
-  shell: >
-    if [[ -e /var/run/reboot-required ]]; then echo "required"; else echo "no"; fi
-  args:
-    executable: /bin/bash
-  register: reboot_required
-  tags:
-    - cloud
-
-- name: Reboot
-  shell: sleep 2 && shutdown -r now "Ansible updates triggered"
-  async: 1
-  poll: 0
-  when: reboot_required is defined and reboot_required.stdout == 'required'
-  ignore_errors: true
-  tags:
-    - cloud
-
-- name: Wait until SSH becomes ready...
-  local_action:
-    module: wait_for
-    port: 22
-    host: "{{ inventory_hostname }}"
-    search_regex: OpenSSH
-    delay: 10
-    timeout: 320
-  when: reboot_required is defined and reboot_required.stdout == 'required'
-  become: false
-  tags:
-    - cloud
-
-- name: Disable MOTD on login and SSHD
-  replace: dest="{{ item.file }}" regexp="{{ item.regexp }}" replace="{{ item.line }}"
-  with_items:
-    - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/login' }
-    - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/sshd' }
-  tags:
-    - cloud
+- include: freebsd.yml
+  when: ansible_distribution == 'FreeBSD'
 
 - name: Install tools
-  apt: name="{{ item }}" state=latest
+  package: name="{{ item }}" state=present
   with_items:
-    - git
-    - screen
-    - apparmor-utils
-    - uuid-runtime
-    - coreutils
-    - sendmail
-    - iptables-persistent
-    - cgroup-tools
-    - openssl
-  tags:
-    - always
-
-- name: Loopback for services configured
-  template: src=10-loopback-services.cfg.j2 dest=/etc/network/interfaces.d/10-loopback-services.cfg
-  notify:
-    - restart loopback
-  tags:
-    - always
-
-- name: Loopback included into the network config
-  lineinfile: dest=/etc/network/interfaces line='source /etc/network/interfaces.d/10-loopback-services.cfg' state=present
-  notify:
-    - restart loopback
-  tags:
-    - always
-
-- meta: flush_handlers
+    - "{{ tools }}"
   tags:
     - always
 
 - name: Enable packet forwarding for IPv4
   sysctl: name="{{ item }}" value=1
   with_items:
-    - net.ipv4.ip_forward
-    - net.ipv4.conf.all.forwarding
+    - "{{ sysctl.forwarding }}"
   tags:
     - always
 
-- name: Enable packet forwarding for IPv6
-  sysctl: name=net.ipv6.conf.all.forwarding value=1
-  tags:
-    - always
-
-- name: Check apparmor support
-  shell: apparmor_status
-  ignore_errors: yes
-  register: apparmor_status
-
-- set_fact:
-    apparmor_enabled: true
-  when: '"profiles are in enforce mode" in apparmor_status.stdout'
+- meta: flush_handlers

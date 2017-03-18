@@ -1,0 +1,10 @@
+---
+
+- set_fact:
+    config_prefix: "/usr/local/"
+    root_group: wheel
+    ssh_service_name: sshd
+    apparmor_enabled: false
+    strongswan_additional_plugins:
+      - kernel-pfroute
+      - kernel-pfkey

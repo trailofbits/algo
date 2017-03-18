@@ -1,0 +1,9 @@
+---
+
+- name: Ubuntu | Install prerequisites
+  raw: sleep 10 && sudo apt-get update -qq && sudo apt-get install -qq -y python2.7
+
+- name: Ubuntu | Configure defaults
+  raw: sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
+  tags:
+    - update-alternatives

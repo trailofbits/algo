@@ -1,0 +1,4 @@
+---
+
+- name: FreeBSD / HardenedBSD | Enable dnsmasq
+  lineinfile: dest=/etc/rc.conf regexp=^dnsmasq_enable= line='dnsmasq_enable="YES"'

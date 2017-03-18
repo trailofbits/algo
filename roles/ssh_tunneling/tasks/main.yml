@@ -6,7 +6,7 @@
 - name: Ensure that the sshd_config file has desired options
   blockinfile:
     dest: /etc/ssh/sshd_config
-    marker: '# ANSIBLE_MANAGED_ssh_tunneling_role'
+    marker: '# {mark} ANSIBLE MANAGED BLOCK ssh_tunneling_role'
     block: |
       Match Group algo
           AllowTcpForwarding local
@@ -21,7 +21,7 @@
   group: name=algo state=present
 
 - name: Ensure that the jail directory exist
-  file: path=/var/jail/ state=directory mode=0755  owner=root group=root
+  file: path=/var/jail/ state=directory mode=0755 owner=root group="{{ root_group|default('root') }}"
 
 - name: Ensure that the SSH users exist
   user:
