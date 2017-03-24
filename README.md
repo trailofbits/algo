@@ -41,20 +41,14 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
 
  Windows: See the [Windows documentation](docs/WINDOWS.md)
 
-4. Configure and initialize a python virtual environment to manage Algo's python dependencies. Again from the directory where you have downloaded Algo, run:
+4. Install Algo's remaining dependencies for your operating system.
 
  `pip install virtualenv && virtualenv env && source env/bin/activate && pip install -r requirements.txt`
-
- Important: the virtual environment needs to be active whenever you are running Algo commands. This means that if you, for example, need to add or remove users, you must run
-
- `source env/bin/activate`
-
- first.
 
 5. Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
 6. Start the deployment. Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [ROLES.md](docs/ROLES.md).
 
-That's it! You will get the message below when the server deployment process completes. You now have an Algo server on the internet. Take note of the p12 (user certificate) password in case you need it later.
+That's it! You will get the message below when the server deployment process completes. You now have an Algo server on the internet. Take note of the p12 (user certificate) password in case you need it later. You can now setup a client to connect it, e.g. your iPhone or laptop. Proceed to [Configure the VPN Clients](https://github.com/trailofbits/algo#configure-the-vpn-clients) below.
 
 ```
         "\"#----------------------------------------------------------------------#\"",
@@ -68,7 +62,9 @@ That's it! You will get the message below when the server deployment process com
         "\"#----------------------------------------------------------------------#\"",
 ```
 
-Note: Advanced users who want to install Algo on top of a server they already own or want to script the deployment of Algo onto a network of servers, please see the [Advanced Usage](/docs/ADVANCED.md) documentation.
+Note: If you want to run Algo at any point in the future, you must first "reactivate" the dependencies for it. To reactivate them, open your terminal, use `cd` to navigate to the directory with Algo, then run `source env/bin/activate`. For example, they should be activated before you run the [update-users script](https://github.com/trailofbits/algo#adding-or-removing-users).
+
+Advanced users who want to install Algo on top of a server they already own or want to script the deployment of Algo onto a network of servers, please see the [Advanced Usage](/docs/ADVANCED.md) documentation.
 
 ## Configure the VPN Clients
 
@@ -121,7 +117,8 @@ Use the example command below to start an SSH tunnel by replacing `user` and `ip
 Algo's own scripts can easily add and remove users from the VPN server.
 
 1. Update the `users` list in your `config.cfg`
-2. Run the command: `./algo update-users`
+2. Open a terminal, `cd` to the algo directory, and activate the virtual environment with `source env/bin/activate`
+3. Run the command: `./algo update-users`
 
 The Algo VPN server now contains only the users listed in the `config.cfg` file.
 
