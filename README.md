@@ -41,7 +41,7 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
 
  Windows: See the [Windows documentation](docs/WINDOWS.md)
 
-4. Install Algo's remaining dependencies for your operating system.
+4. Install Algo's remaining dependencies for your operating system. Using the same terminal window as the previous step, run:
 
  `pip install virtualenv && virtualenv env && source env/bin/activate && pip install -r requirements.txt`
 
