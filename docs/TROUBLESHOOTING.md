@@ -6,7 +6,7 @@
 4. [Various websites appear to be offline through the VPN](#4-various-websites-appear-to-be-offline-through-the-vpn)
 5. [Bad owner or permissions on .ssh](#5-bad-owner-or-permissions-on-ssh)
 6. [Error: "TypeError: must be str, not bytes"](#6-error-typerror-must-be-str-not-bytes)
-7. [I have a problem not covered here](i-have-a-problem-not-covered-here)
+7. [I have a problem not covered here](#i-have-a-problem-not-covered-here)
 
 ### 1. Error: "You have not agreed to the Xcode license agreements"
 
