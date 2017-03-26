@@ -95,11 +95,11 @@
     wait: true
     region: "{{ region }}"
     instance_tags:
-      name: "{{ aws_server_name }}"
+      Name: "{{ aws_server_name }}"
       Environment: Algo
     exact_count: 1
     count_tag:
-      name: "{{ aws_server_name }}"
+      Name: "{{ aws_server_name }}"
     assign_public_ip: yes
     instance_initiated_shutdown_behavior: terminate
   register: ec2
