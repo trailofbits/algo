@@ -25,8 +25,12 @@ Install additional packages:
 
 `sudo apt-get update && sudo apt-get install python-pip python-setuptools build-essential libssl-dev libffi-dev python-dev python-virtualenv git -y`
 
+Install Six:
+
+`pip install six`
+
 Clone the Algo repository:
 
-`https://github.com/trailofbits/algo && cd algo`
+`git clone https://github.com/trailofbits/algo && cd algo`
 
 Now, you can go through the [README](https://github.com/trailofbits/algo#deploy-the-algo-server) (start from the 4th step) and deploy your Algo server!
