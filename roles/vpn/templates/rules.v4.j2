@@ -41,3 +41,4 @@ COMMIT
 -A FORWARD -p tcp -m multiport --ports 137,139 -j DROP
 -A FORWARD -m conntrack --ctstate NEW -s {{ vpn_network }} -m policy --pol ipsec --dir in -j ACCEPT
 COMMIT
+
