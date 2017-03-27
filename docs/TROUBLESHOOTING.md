@@ -6,7 +6,8 @@
 4. [Various websites appear to be offline through the VPN](#4-various-websites-appear-to-be-offline-through-the-vpn)
 5. [Bad owner or permissions on .ssh](#5-bad-owner-or-permissions-on-ssh)
 6. [Error: "TypeError: must be str, not bytes"](#6-error-typeerror-must-be-str-not-bytes)
-7. [I have a problem not covered here](#i-have-a-problem-not-covered-here)
+7. [The region you want is not available](#7-the-region-you-want-is-not-available)
+8. [I have a problem not covered here](#i-have-a-problem-not-covered-here)
 
 ### 1. Error: "You have not agreed to the Xcode license agreements"
 
@@ -84,6 +85,10 @@ fatal: [localhost -> localhost]: FAILED! => {"changed": false, "failed": true, "
 ```
 
 You may be trying to run Algo with Python3. Algo uses [Ansible](https://github.com/ansible/ansible) which has issues with Python3, although this situation is improving over time. Try running Algo with Python2 to fix this issue. Open your terminal and `cd` to the directory with Algo, then run: ``virtualenv -p `which python2.7` env && source env/bin/activate && pip install -r requirements.txt``
+
+### 7. The region you want is not available
+
+You want to install Algo to a specific region in a cloud provider, but that region is not available in the list give to you by the installer. In that case, you should [file an issue](https://github.com/trailofbits/algo/issues/new). Cloud providers add new regions on a regular basis and we don't always keep up. File an issue and give us information about what region is missing and we'll add it.
 
 ### I have a problem not covered here
 
