@@ -43,12 +43,14 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
 
 4. Install Algo's remaining dependencies for your operating system. Using the same terminal window as the previous step, run:
 
- `pip install virtualenv && virtualenv env && source env/bin/activate && pip install -r requirements.txt`
+ `sudo pip install virtualenv && virtualenv env && source env/bin/activate && pip install -r requirements.txt`
 
 5. Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
 6. Start the deployment. Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [ROLES.md](docs/ROLES.md).
 
-That's it! You will get the message below when the server deployment process completes. You now have an Algo server on the internet. Take note of the p12 (user certificate) password in case you need it later. You can now setup a client to connect it, e.g. your iPhone or laptop. Proceed to [Configure the VPN Clients](https://github.com/trailofbits/algo#configure-the-vpn-clients) below.
+That's it! You will get the message below when the server deployment process completes. You now have an Algo server on the internet. Take note of the p12 (user certificate) password in case you need it later.
+
+You can now setup clients to connect it, e.g. your iPhone or laptop. Proceed to [Configure the VPN Clients](https://github.com/trailofbits/algo#configure-the-vpn-clients) below.
 
 ```
         "\"#----------------------------------------------------------------------#\"",
@@ -62,7 +64,7 @@ That's it! You will get the message below when the server deployment process com
         "\"#----------------------------------------------------------------------#\"",
 ```
 
-Note: If you want to run Algo at any point in the future, you must first "reactivate" the dependencies for it. To reactivate them, open your terminal, use `cd` to navigate to the directory with Algo, then run `source env/bin/activate`. For example, they should be activated before you run the [update-users script](https://github.com/trailofbits/algo#adding-or-removing-users).
+Note: If you want to run Algo again at any point in the future, you must first "reactivate" the dependencies for it. To reactivate them, open your terminal, use `cd` to navigate to the directory with Algo, then run `source env/bin/activate`.
 
 Advanced users who want to install Algo on top of a server they already own or want to script the deployment of Algo onto a network of servers, please see the [Advanced Usage](/docs/ADVANCED.md) documentation.
 
