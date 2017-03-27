@@ -88,7 +88,7 @@ You may be trying to run Algo with Python3. Algo uses [Ansible](https://github.c
 
 ### 7. The region you want is not available
 
-You want to install Algo to a specific region in a cloud provider, but that region is not available in the list give to you by the installer. In that case, you should [file an issue](https://github.com/trailofbits/algo/issues/new). Cloud providers add new regions on a regular basis and we don't always keep up. File an issue and give us information about what region is missing and we'll add it.
+You want to install Algo to a specific region in a cloud provider, but that region is not available in the list given by the installer. In that case, you should [file an issue](https://github.com/trailofbits/algo/issues/new). Cloud providers add new regions on a regular basis and we don't always keep up. File an issue and give us information about what region is missing and we'll add it.
 
 ### I have a problem not covered here
 
