@@ -30,8 +30,8 @@ Algo VPN is a set of Ansible scripts that simplifies the setup of a personal IPS
 The easiest way to get an Algo server running is to let it set up a _new_ virtual machine in the cloud for you.
 
 1. Setup an account on a cloud hosting provider. Algo supports [DigitalOcean](https://www.digitalocean.com/) (most user friendly), [Amazon EC2](https://aws.amazon.com/), [Google Compute Engine](https://cloud.google.com/compute/), and [Microsoft Azure](https://azure.microsoft.com/).
-2. [Download Algo](https://github.com/trailofbits/algo/archive/master.zip)
-3. Install Algo's core dependencies for your operating system. To do this, open a terminal and `cd` into the directory where you downloaded Algo, then:
+2. [Download Algo](https://github.com/trailofbits/algo/archive/master.zip) and decompress it in a convienent location.
+3. Install Algo's core dependencies for your operating system. To do this, open the Terminal app and `cd` into the directory where you downloaded Algo, then run:
 
  macOS: `sudo easy_install pip`
 
@@ -41,9 +41,9 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
 
  Windows: See the [Windows documentation](docs/WINDOWS.md)
 
-4. Install Algo's remaining dependencies for your operating system. Using the same terminal window as the previous step, run:
+4. Install Algo's remaining dependencies for your operating system. Using the same terminal window as the previous step and run the command below. If you're on macOS, this may prompt you to install `cc` which you should accept.
 
- `sudo pip install virtualenv && virtualenv env && source env/bin/activate && pip install -r requirements.txt`
+ `pip install virtualenv && virtualenv env && source env/bin/activate && pip install -r requirements.txt`
 
 5. Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
 6. Start the deployment. Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [ROLES.md](docs/ROLES.md).
