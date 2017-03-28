@@ -94,7 +94,7 @@ Name the vpn server:
   azure_server_name=${azure_server_name:-algo}
 
   read -p "
-  What region should the server be located in?
+  What region should the server be located in? (https://azure.microsoft.com/en-us/regions/)
     1.  South Central US
     2.  Central US
     3.  North Europe
@@ -109,6 +109,19 @@ Name the vpn server:
     12. West Central US
     13. UK South
     14. UK West
+    15. West US
+    16. Brazil South
+    17. Canada Central
+    18. Central India
+    19. East Asia
+    20. Germany Central
+    21. Germany Northeast
+    22. Korea Central
+    23. Korea South
+    24. North Central US
+    25. South India
+    26. West India
+    
 Enter the number of your desired region:
 [1]: " -r azure_region
   azure_region=${azure_region:-1}
@@ -128,6 +141,18 @@ Enter the number of your desired region:
     12) region="westcentralus" ;;
     13) region="uksouth" ;;
     14) region="ukwest" ;;
+    15) region="westus" ;;
+    16) region="brazilsouth" ;;
+    17) region="canadacentral" ;;
+    18) region="centralindia" ;;
+    19) region="eastasia" ;;
+    20) region="germanycentral" ;;
+    21) region="germanynortheast" ;;
+    22) region="koreacentral" ;;
+    23) region="koreasouth" ;;
+    24) region="northcentralus" ;;
+    25) region="southindia" ;;
+    26) region="westindia" ;;
   esac
 
   ROLES="azure vpn cloud"
