@@ -130,8 +130,24 @@ Enter the number of your desired region:
     14) region="ukwest" ;;
   esac
 
+  read -p "
+  What size do you want your VM?
+  1) Standard D1 (not available in all regions)
+  2) Standard D1 v2
+  3) A0 (cheapest)
+Enter the number of your desired size
+[1]: " -r azure_vm_size
+  azure_vm_size=${azure_vm_size:-1}
+  
+  case "$azure_vm_size" in
+    1) vm_size="Standard_D1"
+    2) vm_size="Standard_D1_v2"
+    3) vm_size="ExtraSmall"
+  esac
+  #source for sizes: https://docs.microsoft.com/en-us/azure/cloud-services/cloud-services-sizes-specs
+
   ROLES="azure vpn cloud"
-  EXTRA_VARS="azure_secret=$azure_secret azure_tenant=$azure_tenant azure_client_id=$azure_client_id azure_subscription_id=$azure_subscription_id azure_server_name=$azure_server_name ssh_public_key=$ssh_public_key region=$region"
+  EXTRA_VARS="azure_secret=$azure_secret azure_tenant=$azure_tenant azure_client_id=$azure_client_id azure_subscription_id=$azure_subscription_id azure_server_name=$azure_server_name ssh_public_key=$ssh_public_key region=$region vm_size=$vm_size"
 }
 
 digitalocean () {
