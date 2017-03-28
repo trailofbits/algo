@@ -159,7 +159,8 @@ Enter the number of your desired region:
   What size do you want your VM?
   1) Standard D1 (not available in all regions)
   2) Standard D1 v2
-  3) A0 (cheapest)
+  3) Standard A0 (cheap)
+  4) Basic A0 (cheapest)
 Enter the number of your desired size
 [1]: " -r azure_vm_size
   azure_vm_size=${azure_vm_size:-1}
@@ -168,6 +169,7 @@ Enter the number of your desired size
     1) vm_size="Standard_D1"
     2) vm_size="Standard_D1_v2"
     3) vm_size="ExtraSmall"
+    4) vm_size="Basic_A0"
   esac
   #source for sizes: https://docs.microsoft.com/en-us/azure/cloud-services/cloud-services-sizes-specs
 
