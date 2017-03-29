@@ -31,23 +31,39 @@ Algo VPN is a set of Ansible scripts that simplifies the setup of a personal IPS
 
 The easiest way to get an Algo server running is to let it set up a _new_ virtual machine in the cloud for you.
 
-1. Setup an account on a cloud hosting provider. Algo supports [DigitalOcean](https://www.digitalocean.com/) (most user friendly), [Amazon EC2](https://aws.amazon.com/), [Google Compute Engine](https://cloud.google.com/compute/), and [Microsoft Azure](https://azure.microsoft.com/).
-2. [Download Algo](https://github.com/trailofbits/algo/archive/master.zip) and decompress it in a convenient location.
-3. Install Algo's core dependencies for your operating system. To do this, open the Terminal app and `cd` into the directory where you downloaded Algo, then run:
+1. **Setup an account on a cloud hosting provider.** Algo supports [DigitalOcean](https://www.digitalocean.com/) (most user friendly), [Amazon EC2](https://aws.amazon.com/), [Google Compute Engine](https://cloud.google.com/compute/), and [Microsoft Azure](https://azure.microsoft.com/).
 
- macOS: `sudo easy_install pip`
+2. [Download Algo](https://github.com/trailofbits/algo/archive/master.zip) and decompress it in a convenient location on your local machine.
 
- Linux (deb-based): `sudo apt-get update && sudo apt-get install python-pip python-setuptools build-essential libssl-dev libffi-dev python-dev python-virtualenv -y`
+3. Install Algo's core dependencies. Open the Terminal. The `python` interpreter you use to deploy Algo must be python2. If you don't know what this means, you're probably fine. `cd` into the directory where you downloaded Algo, then run:
+    
+    - macOS:
+      ```bash
+      $ python -m ensurepip --user
+      $ python -m pip install --user --upgrade virtualenv
+      ```
+    - Linux (deb-based): 
+      ```bash
+      $ sudo apt-get update && sudo apt-get install \
+          build-essential \
+          libssl-dev \
+          libffi-dev \
+          python-dev \
+          python-pip \
+          python-setuptools \
+          python-virtualenv -y
+      ```
+     - Linux (rpm-based): See the [Pre-Install Documentation for RedHat/CentOS 6.x](docs/pre-install_redhat_centos_6.x.md)
+     - Windows: See the [Windows documentation](docs/WINDOWS.md)
 
- Linux (rpm-based): See the [Pre-Install Documentation for RedHat/CentOS 6.x](docs/pre-install_redhat_centos_6.x.md)
-
- Windows: See the [Windows documentation](docs/WINDOWS.md)
-
-4. Install Algo's remaining dependencies for your operating system. Using the same terminal window as the previous step and run the command below. If you're on macOS, this may prompt you to install `cc` which you should accept.
-
- `pip install virtualenv && virtualenv env && source env/bin/activate && pip install -r requirements.txt`
+4. Install Algo's remaining dependencies for your operating system. Using the same terminal window as the previous step run the command below.
+    ```bash
+    $ python -m virtualenv env && source env/bin/activate && python -m pip install -r requirements.txt 
+    ```
+    On macOS, you may be prompted to install `cc` which you should accept.
 
 5. Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
+
 6. Start the deployment. Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [ROLES.md](docs/ROLES.md).
 
 That's it! You will get the message below when the server deployment process completes. You now have an Algo server on the internet. Take note of the p12 (user certificate) password in case you need it later.
