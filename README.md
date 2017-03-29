@@ -30,7 +30,7 @@ Algo VPN is a set of Ansible scripts that simplifies the setup of a personal IPS
 The easiest way to get an Algo server running is to let it set up a _new_ virtual machine in the cloud for you.
 
 1. Setup an account on a cloud hosting provider. Algo supports [DigitalOcean](https://www.digitalocean.com/) (most user friendly), [Amazon EC2](https://aws.amazon.com/), [Google Compute Engine](https://cloud.google.com/compute/), and [Microsoft Azure](https://azure.microsoft.com/).
-2. [Download Algo](https://github.com/trailofbits/algo/archive/master.zip) and decompress it in a convienent location.
+2. [Download Algo](https://github.com/trailofbits/algo/archive/master.zip) and decompress it in a convenient location.
 3. Install Algo's core dependencies for your operating system. To do this, open the Terminal app and `cd` into the directory where you downloaded Algo, then run:
 
  macOS: `sudo easy_install pip`
