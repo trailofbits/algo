@@ -93,7 +93,7 @@ You want to install Algo to a specific region in a cloud provider, but that regi
 
 ### 8. Error: "ansible-playbook: command not found"
 
-You tried to install Algo and you get an error during the install that reads "ansible-playbook: command not found."
+You tried to install Algo and you see an error that reads "ansible-playbook: command not found."
 
 You did not finish step 4 in the installation instructions, "[Install Algo's remaining dependencies](https://github.com/trailofbits/algo#deploy-the-algo-server)." Algo depends on [Ansible](https://github.com/ansible/ansible), an automation framework, and this error indicates that you do not have Ansible installed. Ansible is installed by `pip` when you run `python -m pip install -r requirements.txt`. You must complete the installation instructions to run the Algo server deployment process.
 
