@@ -7,7 +7,7 @@
 5. [Bad owner or permissions on .ssh](#5-bad-owner-or-permissions-on-ssh)
 6. [Error: "TypeError: must be str, not bytes"](#6-error-typeerror-must-be-str-not-bytes)
 7. [The region you want is not available](#7-the-region-you-want-is-not-available)
-8. [Error: "ansible-playbook: command not found"](#8-ansible-playbook-command-not-found)
+8. [Error: "ansible-playbook: command not found"](#8-error-ansible-playbook-command-not-found)
 9. [I have a problem not covered here](#i-have-a-problem-not-covered-here)
 
 ### 1. Error: "You have not agreed to the Xcode license agreements"
