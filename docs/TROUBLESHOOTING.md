@@ -7,7 +7,8 @@
 5. [Bad owner or permissions on .ssh](#5-bad-owner-or-permissions-on-ssh)
 6. [Error: "TypeError: must be str, not bytes"](#6-error-typeerror-must-be-str-not-bytes)
 7. [The region you want is not available](#7-the-region-you-want-is-not-available)
-8. [I have a problem not covered here](#i-have-a-problem-not-covered-here)
+8. [Error: "ansible-playbook: command not found"](#8-ansible-playbook-command-not-found)
+9. [I have a problem not covered here](#i-have-a-problem-not-covered-here)
 
 ### 1. Error: "You have not agreed to the Xcode license agreements"
 
@@ -89,6 +90,12 @@ You may be trying to run Algo with Python3. Algo uses [Ansible](https://github.c
 ### 7. The region you want is not available
 
 You want to install Algo to a specific region in a cloud provider, but that region is not available in the list given by the installer. In that case, you should [file an issue](https://github.com/trailofbits/algo/issues/new). Cloud providers add new regions on a regular basis and we don't always keep up. File an issue and give us information about what region is missing and we'll add it.
+
+### 8. Error: "ansible-playbook: command not found"
+
+You tried to install Algo and you get an error during the install that reads "ansible-playbook: command not found."
+
+You did not finish step 4 in the installation instructions, "[Install Algo's remaining dependencies](https://github.com/trailofbits/algo#deploy-the-algo-server)." Algo depends on [Ansible](https://github.com/ansible/ansible), an automation framework, and this error indicates that you do not have Ansible installed. Ansible is installed by `pip` when you run `python -m pip install -r requirements.txt`. You must complete the installation instructions to run the Algo server deployment process.
 
 ### I have a problem not covered here
 
