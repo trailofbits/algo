@@ -253,37 +253,41 @@ Name the vpn server:
 
   read -p "
   What zone should the server be located in?
-    1. Central US       (Iowa A)
-    2. Central US       (Iowa B)
-    3. Central US       (Iowa C)
-    4. Central US       (Iowa F)
-    5. Eastern US       (South Carolina B)
-    6. Eastern US       (South Carolina C)
-    7. Eastern US       (South Carolina D)
-    8. Western Europe   (Belgium B)
-    9. Western Europe   (Belgium C)
-    10. Western Europe  (Belgium D)
-    11. East Asia       (Taiwan A)
-    12. East Asia       (Taiwan B)
-    13. East Asia       (Taiwan C)
+    1. Western US       (Oregon A)
+    2. Western US       (Oregon B)
+    3. Central US       (Iowa A)
+    4. Central US       (Iowa B)
+    5. Central US       (Iowa C)
+    6. Central US       (Iowa F)
+    7. Eastern US       (South Carolina B)
+    8. Eastern US       (South Carolina C)
+    9. Eastern US       (South Carolina D)
+    10. Western Europe  (Belgium B)
+    11. Western Europe  (Belgium C)
+    12. Western Europe  (Belgium D)
+    13. East Asia       (Taiwan A)
+    14. East Asia       (Taiwan B)
+    15. East Asia       (Taiwan C)
 Please choose the number of your zone. Press enter for default (#8) zone.
 [8]: " -r region
   region=${region:-8}
 
   case "$region" in
-    1) zone="us-central1-a" ;;
-    2) zone="us-central1-b" ;;
-    3) zone="us-central1-c" ;;
-    4) zone="us-central1-f" ;;
-    5) zone="us-east1-b" ;;
-    6) zone="us-east1-c" ;;
-    7) zone="us-east1-d" ;;
-    8) zone="europe-west1-b" ;;
-    9) zone="europe-west1-c" ;;
-    10) zone="europe-west1-d" ;;
-    11) zone="asia-east1-a" ;;
-    12) zone="asia-east1-b" ;;
-    13) zone="asia-east1-c" ;;
+    1) zone="us-west1-a" ;;
+    2) zone="us-west1-b" ;;
+    3) zone="us-central1-a" ;;
+    4) zone="us-central1-b" ;;
+    5) zone="us-central1-c" ;;
+    6) zone="us-central1-f" ;;
+    7) zone="us-east1-b" ;;
+    8) zone="us-east1-c" ;;
+    9) zone="us-east1-d" ;;
+    10) zone="europe-west1-b" ;;
+    11) zone="europe-west1-c" ;;
+    12) zone="europe-west1-d" ;;
+    13) zone="asia-east1-a" ;;
+    14) zone="asia-east1-b" ;;
+    15) zone="asia-east1-c" ;;
   esac
 
   ROLES="gce vpn cloud"
