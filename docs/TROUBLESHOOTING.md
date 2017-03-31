@@ -92,4 +92,4 @@ You want to install Algo to a specific region in a cloud provider, but that regi
 
 ### I have a problem not covered here
 
-If you have an issue that you cannot solve with the guidance here, [join our Slack](https://empireslacking.herokuapp.com/) and ask for help in the #tool-algo channel or [file an issue](https://github.com/trailofbits/algo/issues/new) that describes the problem and we'll do our best to help you.
+If you have an issue that you cannot solve with the guidance here, [join our Slack](https://empireslacking.herokuapp.com/) and ask for help in the #tool-algo channel. You may also [file an issue](https://github.com/trailofbits/algo/issues/new) that describes the problem and we'll do our best to help you.

@@ -7,13 +7,13 @@
 [![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CYZZD39GXUJ3E)
 [![Patreon](https://img.shields.io/badge/back_on-patreon-red.svg)](https://www.patreon.com/algovpn)
 
-Algo VPN is a set of Ansible scripts that simplifies the setup of a personal IPSEC VPN. It contains the most secure defaults available, works with common cloud providers, and does not require client software on most devices.
+Algo VPN is a set of Ansible scripts that simplify the setup of a personal IPSEC VPN. It uses the most secure defaults available, works with common cloud providers, and does not require client software on most devices.
 
 ## Features
 
-* Supports only IKEv2 w/ a single cipher suite: AES-GCM, HMAC-SHA2, and P-256 DH
-* Generates Apple Profiles to auto-configure iOS and macOS devices
-* Provides helper scripts to add and remove users
+* Supports only IKEv2, with a single cipher suite: AES-GCM, HMAC-SHA2, and P-256 DH
+* Generates Apple profiles to auto-configure iOS and macOS devices
+* Includes helper scripts to add and remove users
 * Blocks ads with a local DNS resolver and HTTP proxy (optional)
 * Sets up limited SSH users for tunneling traffic (optional)
 * Based on current versions of Ubuntu and strongSwan
@@ -34,16 +34,16 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
 
 1. **Setup an account on a cloud hosting provider.** Algo supports [DigitalOcean](https://www.digitalocean.com/) (most user friendly), [Amazon EC2](https://aws.amazon.com/), [Google Compute Engine](https://cloud.google.com/compute/), and [Microsoft Azure](https://azure.microsoft.com/).
 
-2. [Download Algo](https://github.com/trailofbits/algo/archive/master.zip) and decompress it in a convenient location on your local machine.
+2. [Download Algo](https://github.com/trailofbits/algo/archive/master.zip) and unzip it in a convenient location on your local machine.
 
-3. Install Algo's core dependencies. Open the Terminal. The `python` interpreter you use to deploy Algo must be python2. If you don't know what this means, you're probably fine. `cd` into the directory where you downloaded Algo, then run:
-    
+3. Install Algo's core dependencies. Open the Terminal. The `python` interpreter you use to deploy Algo must be python2. If you don't know what this means, you're probably fine. `cd` into the `algo-master` directory where you unzipped Algo, then run:
+
     - macOS:
       ```bash
       $ python -m ensurepip --user
       $ python -m pip install --user --upgrade virtualenv
       ```
-    - Linux (deb-based): 
+    - Linux (deb-based):
       ```bash
       $ sudo apt-get update && sudo apt-get install \
           build-essential \
@@ -59,7 +59,7 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
 
 4. Install Algo's remaining dependencies for your operating system. Using the same terminal window as the previous step run the command below.
     ```bash
-    $ python -m virtualenv env && source env/bin/activate && python -m pip install -r requirements.txt 
+    $ python -m virtualenv env && source env/bin/activate && python -m pip install -r requirements.txt
     ```
     On macOS, you may be prompted to install `cc` which you should accept.
 
@@ -89,7 +89,7 @@ Advanced users who want to install Algo on top of a server they already own or w
 
 ## Configure the VPN Clients
 
-Certificates and configuration files that users will need are placed in the `configs` directory. Make sure to secure these files since many contain private keys. All files are prefixed with the IP address of your new Algo VPN server.
+Distribute the configuration files to your users, so they can connect to the VPN.  Certificates and configuration files that users will need are placed in the `configs` directory. Make sure to secure these files since many contain private keys. All files are saved under a subdirectory named with the IP address of your new Algo VPN server.
 
 ### Apple Devices
 
@@ -97,7 +97,7 @@ Find the corresponding mobileconfig (Apple Profile) for each user and send it to
 
 ### Android Devices
 
-You need to install the [StrongSwan VPN Client for Android 4 and newer](https://play.google.com/store/apps/details?id=org.strongswan.android) because no version of Android supports IKEv2. Import the corresponding user.p12 certificate to your device. See the [Android setup instructions](/docs/ANDROID.md) for more detailed steps.
+You need to install the [strongSwan VPN Client for Android 4 and newer](https://play.google.com/store/apps/details?id=org.strongswan.android) because no version of Android supports IKEv2. Import the corresponding user.p12 certificate to your device. See the [Android setup instructions](/docs/ANDROID.md) for more detailed steps.
 
 ### Windows
 
@@ -117,8 +117,8 @@ Install strongSwan, then copy the included user_ipsec.conf, user_ipsec.secrets, 
 Depending on the platform, you may need one or multiple of the following files.
 
 * ca.crt: CA Certificate
-* user_ipsec.conf: StrongSwan client configuration
-* user_ipsec.secrets: StrongSwan client configuration
+* user_ipsec.conf: strongSwan client configuration
+* user_ipsec.secrets: strongSwan client configuration
 * user.crt: User Certificate
 * user.key: User Private Key
 * user.mobileconfig: Apple Profile
