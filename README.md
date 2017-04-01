@@ -171,4 +171,4 @@ We accept donations via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xc
 
 Use our [referral code](https://m.do.co/c/4d7f4ff9cfe4) when you sign up to Digital Ocean for a $10 credit. It helps support our development costs.
 
-We also accept and appreciate contributions of new code and bugfixes via Github Pull Requests. Thanks
+We also accept and appreciate contributions of new code and bugfixes via Github Pull Requests. Thanks!
