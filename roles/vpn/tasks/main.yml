@@ -33,7 +33,7 @@
 - include: freebsd.yml
   when: ansible_distribution == 'FreeBSD'
 
-- name: Install StrongSwan
+- name: Install strongSwan
   package: name=strongswan state=present
 
 - include: ipec_configuration.yml
@@ -43,5 +43,5 @@
 
 - meta: flush_handlers
 
-- name: StrongSwan started
+- name: strongSwan started
   service: name=strongswan state=started

@@ -7,27 +7,27 @@ SKIP_TAGS="_null encrypted"
 additional_roles () {
 
 read -p "
-Do you want to enable VPN On Demand when connected to cellular networks?
+Do you want macOS/iOS clients to enable \"VPN On Demand\" when connected to cellular networks?
 [y/N]: " -r OnDemandEnabled_Cellular
 OnDemandEnabled_Cellular=${OnDemandEnabled_Cellular:-n}
 if [[ "$OnDemandEnabled_Cellular" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" OnDemandEnabled_Cellular=Y"; fi
 
 read -p "
-Do you want to enable VPN On Demand when connected to Wi-Fi?
+Do you want macOS/iOS clients to enable \"VPN On Demand\" when connected to Wi-Fi?
 [y/N]: " -r OnDemandEnabled_WIFI
 OnDemandEnabled_WIFI=${OnDemandEnabled_WIFI:-n}
 if [[ "$OnDemandEnabled_WIFI" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" OnDemandEnabled_WIFI=Y"; fi
 
 if [[ "$OnDemandEnabled_WIFI" =~ ^(y|Y)$ ]]; then
   read -p "
-Do you want to exclude trusted Wi-Fi networks from using the VPN? (e.g., your home network. Comma-separated value, e.g., HomeNet,OfficeWifi,AlgoWiFi)
+List the names of trusted Wi-Fi networks (if any) that macOS/iOS clients exclude from using the VPN (e.g., your home network. Comma-separated value, e.g., HomeNet,OfficeWifi,AlgoWiFi)
 : " -r OnDemandEnabled_WIFI_EXCLUDE
   OnDemandEnabled_WIFI_EXCLUDE=${OnDemandEnabled_WIFI_EXCLUDE:-_null}
   EXTRA_VARS+=" OnDemandEnabled_WIFI_EXCLUDE=\"$OnDemandEnabled_WIFI_EXCLUDE\""
 fi
 
 read -p "
-Do you want to install a local DNS resolver to block ads while surfing?
+Do you want to install a DNS resolver on this VPN server, to block ads while surfing?
 [y/N]: " -r dns_enabled
 dns_enabled=${dns_enabled:-n}
 if [[ "$dns_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" dns"; EXTRA_VARS+=" local_dns=Y"; fi
@@ -51,7 +51,7 @@ Win10_Enabled=${Win10_Enabled:-n}
 if [[ "$Win10_Enabled" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" Win10_Enabled=Y"; fi
 
 read -p "
-Do you want to store the CA key? (required for update-users script, but less secure)
+Do you want to retain the CA key? (required to add users in the future, but less secure)
 [y/N]: " -r Store_CAKEY
 Store_CAKEY=${Store_CAKEY:-N}
 if [[ "$Store_CAKEY" =~ ^(n|N)$ ]]; then EXTRA_VARS+=" Store_CAKEY=N"; fi

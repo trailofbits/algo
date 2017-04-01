@@ -1,9 +1,9 @@
-**NOTE:** If you are a Project Fi user, you must disable WiFi Assistant before continuing. See the [StrongSwan documentation](https://wiki.strongswan.org/projects/strongswan/wiki/AndroidVPNClient) for details.
+**NOTE:** If you are a Project Fi user, you must disable WiFi Assistant before continuing. See the [strongSwan documentation](https://wiki.strongswan.org/projects/strongswan/wiki/AndroidVPNClient) for details.
 
 | Instruction | Screenshot(s) |
 | ----------- | ---------- |
 | 1. Copy your `{username}.p12` certificate to your phone's internal storage. | |
-| 2. [Install the StrongSwan VPN Client](https://play.google.com/store/apps/details?id=org.strongswan.android) (Android 4+) | |
+| 2. [Install the strongSwan VPN Client](https://play.google.com/store/apps/details?id=org.strongswan.android) (Android 4+) | |
 | 3. Open the app and tap "ADD VPN PROFILE" in the top right.  | [![step3-thumb]][step3-screen]  |
 | 4. Enter the IP address or hostname of your Algo server and set the "VPN Type" to "IKEv2 Certificate". | [![step4-thumb]][step4-screen] |
 | 5. Tap "Select user certificate". You will be shown a prompt, tap "INSTALL". | [![step5-thumb]][step5-screen] |
@@ -14,8 +14,8 @@
 | 10. You will be returned to the main menu, and your newly-configured VPN profile should be listed. Tap the profile to connect. | [![step10-thumb]][step10-screen] |
 
 ## Troubleshooting
-### Tapping the VPN profile in StrongSwan has no effect.
-Ensure that "WiFi Assistant" and any other always-on VPNs are disabled before attempting to enable a StrongSwan VPN. If any other VPN is active, StrongSwan may silently fail to initialize a VPN connection. On Android 7, your can manage your VPNs by going to: Settings > Tap "More" under "Wireless & networks" > VPN > tap the gear icon next to any non-strongSwan VPNs listed and ensure they are disabled.
+### Tapping the VPN profile in strongSwan has no effect.
+Ensure that "WiFi Assistant" and any other always-on VPNs are disabled before attempting to enable a strongSwan VPN. If any other VPN is active, strongSwan may silently fail to initialize a VPN connection. On Android 7, your can manage your VPNs by going to: Settings > Tap "More" under "Wireless & networks" > VPN > tap the gear icon next to any non-strongSwan VPNs listed and ensure they are disabled.
 
 
 [step3-thumb]: https://i.imgur.com/LPwIGJE.png

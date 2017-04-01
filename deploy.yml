@@ -23,7 +23,7 @@
     - { role: local, tags: ['local'] }
 
   post_tasks:
-    - name: Local pre-tasks
+    - name: Local post-tasks
       include: playbooks/post.yml
       become: false
       tags: [ 'cloud' ]

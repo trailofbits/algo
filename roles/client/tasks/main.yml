@@ -22,7 +22,7 @@
   with_items:
     - "{{ prerequisites }}"
 
-- name: Install StrongSwan
+- name: Install strongSwan
   package: name=strongswan state=present
 
 - name: Setup the ipsec config
