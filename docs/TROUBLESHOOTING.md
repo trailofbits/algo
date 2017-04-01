@@ -104,4 +104,4 @@ This setting is enforced on your client device via the Apple profile you put on 
 
 ### I have a problem not covered here
 
-If you have an issue that you cannot solve with the guidance here, [join our Slack](https://empireslacking.herokuapp.com/) and ask for help in the #tool-algo channel. You may also [file an issue](https://github.com/trailofbits/algo/issues/new) that describes the problem and we'll do our best to help you.
+If you have an issue that you cannot solve with the guidance here, [file an issue](https://github.com/trailofbits/algo/issues/new) that describes the problem and we'll do our best to help you. You can also [join our Slack](https://empireslacking.herokuapp.com/) and ask for help in the **#tool-algo** channel.
