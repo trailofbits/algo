@@ -8,7 +8,7 @@
 6. [Little Snitch is broken when connected to the VPN](#6-little-snitch-is-broken-when-connected-to-the-vpn)
 7. [Various websites appear to be offline through the VPN](#7-various-websites-appear-to-be-offline-through-the-vpn)
 8. [The region you want is not available](#8-the-region-you-want-is-not-available)
-9. [I want to change the list of trusted Wifi networks on my Apple device](#9-i-want-to-change-the-list-of-trusted-Wifi-networks-on-my-Apple-device)
+9. [I want to change the list of trusted Wifi networks on my Apple device](#9-i-want-to-change-the-list-of-trusted-wifi-networks-on-my-apple-device)
 10. [I have a problem not covered here](#i-have-a-problem-not-covered-here)
 
 ### 1. Error: "You have not agreed to the Xcode license agreements"
@@ -58,7 +58,7 @@ Storing debug log for failure in /Users/algore/Library/Logs/pip.log
 
 You are running an old version of `pip` that cannot build the `pycrypto` dependency. Upgrade to a new version of `pip` by running `sudo pip install -U pip`.
 
-### 6. Error: "TypeError: must be str, not bytes"
+### 3. Error: "TypeError: must be str, not bytes"
 
 You tried to install Algo and you see many repeated errors referencing `TypeError`, such as `TypeError: '>=' not supported between instances of 'TypeError' and 'int'` and `TypeError: must be str, not bytes`. For example:
 
@@ -70,7 +70,7 @@ fatal: [localhost -> localhost]: FAILED! => {"changed": false, "failed": true, "
 
 You may be trying to run Algo with Python3. Algo uses [Ansible](https://github.com/ansible/ansible) which has issues with Python3, although this situation is improving over time. Try running Algo with Python2 to fix this issue. Open your terminal and `cd` to the directory with Algo, then run: ``virtualenv -p `which python2.7` env && source env/bin/activate && pip install -r requirements.txt``
 
-### 8. Error: "ansible-playbook: command not found"
+### 4. Error: "ansible-playbook: command not found"
 
 You tried to install Algo and you see an error that reads "ansible-playbook: command not found."
 
