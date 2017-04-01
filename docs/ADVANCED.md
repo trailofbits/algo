@@ -1,6 +1,6 @@
 # Advanced Usage
 
-Make sure you have installed all the dependencies necessary for your operating system as described in the README.
+Make sure you have installed all the dependencies necessary for your operating system as described in the [README](../README.md).
 
 ## Local Deployment
 
@@ -38,7 +38,7 @@ Required tags:
 - cloud
 
 Cloud roles:
- 
+
 - role: cloud-digitalocean, tags: digitalocean
 - role: cloud-ec2, tags: ec2
 - role: cloud-gce, tags: gce

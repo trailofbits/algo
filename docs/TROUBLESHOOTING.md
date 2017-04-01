@@ -99,4 +99,4 @@ You did not finish step 4 in the installation instructions, "[Install Algo's rem
 
 ### I have a problem not covered here
 
-If you have an issue that you cannot solve with the guidance here, [join our Slack](https://empireslacking.herokuapp.com/) and ask for help in the #tool-algo channel or [file an issue](https://github.com/trailofbits/algo/issues/new) that describes the problem and we'll do our best to help you.
+If you have an issue that you cannot solve with the guidance here, [join our Slack](https://empireslacking.herokuapp.com/) and ask for help in the #tool-algo channel. You may also [file an issue](https://github.com/trailofbits/algo/issues/new) that describes the problem and we'll do our best to help you.

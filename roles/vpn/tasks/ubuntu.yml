@@ -3,7 +3,7 @@
 - set_fact:
     strongswan_additional_plugins: []
 
-- name: Ubuntu | Install StrongSwan
+- name: Ubuntu | Install strongSwan
   apt: name=strongswan state=latest update_cache=yes install_recommends=yes
 
 - name: Ubuntu | Enforcing ipsec with apparmor
