@@ -165,3 +165,7 @@ The Algo VPN server now contains only the users listed in the `config.cfg` file.
 > Algo is really easy and secure.
 
 -- [the grugq](https://twitter.com/thegrugq/status/786249040228786176)
+
+## Support Algo VPN
+
+If you want to support Algo VPN we accept donations via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CYZZD39GXUJ3E), [Patreon](https://www.patreon.com/algovpn), and [Flattr](ttps://flattr.com/submit/auto?fid=kxw60j&url=https%3A%2F%2Fgithub.com%2Ftrailofbits%2Falgo). We also accept and appreciate contributions of new code and bugfixes via Github Pull Requests. Thanks!
