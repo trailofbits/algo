@@ -80,7 +80,6 @@
     virtual_network: algo_net
     name: "{{ azure_server_name }}"
     ssh_password_enabled: false
-    # I have no idea how to use the variable I created and passed from Algo. Do I need this lookup stuff?
     vm_size: "{{ vm_size | default(lookup('env','VM_SIZE')) }}"
     tags:
       Environment: Algo
