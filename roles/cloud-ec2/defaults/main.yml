@@ -1,5 +1,5 @@
 ---
 
 ec2_vpc_nets:
-  cidr_block: 172.16.0.0/12
-  subnet_cidr: 172.30.0.0/23
+  cidr_block: 172.16.0.0/16
+  subnet_cidr: 172.16.254.0/23
