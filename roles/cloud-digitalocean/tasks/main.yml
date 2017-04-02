@@ -68,7 +68,7 @@
 - set_fact:
     cloud_instance_ip: "{{ do.droplet.ip_address }}"
 
-- name: Tag the groplet
+- name: Tag the droplet
   digital_ocean_tag:
     name: "Environment:Algo"
     resource_id: "{{ do.droplet.id }}"
