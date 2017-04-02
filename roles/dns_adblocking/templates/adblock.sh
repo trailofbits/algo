@@ -31,7 +31,7 @@ awk '{sub(/\r$/,"");print $1,$2}' "$TEMP"|sort -u > "$TEMP_SORTED"
 #Filter (if applicable)
 if [ -s "/var/lib/dnsmasq/white.list" ]
 then
-    #Filter the blacklist, supressing whitelist matches
+    #Filter the blacklist, suppressing whitelist matches
     #  This is relatively slow =-(
     echo 'Filtering white list...'
     egrep -v "^[[:space:]]*$" /var/lib/dnsmasq/white.list | awk '/^[^#]/ {sub(/\r$/,"");print $1}' | grep -vf - "$TEMP_SORTED" > /var/lib/dnsmasq/block.hosts

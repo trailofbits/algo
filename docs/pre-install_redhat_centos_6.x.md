@@ -19,7 +19,7 @@ Fix GPG key warnings during Ansible rpm install:
 
 ``rpm --import https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-6``
 
-Fix GPG key warning during offical Software Collections (SCL) package install:
+Fix GPG key warning during official Software Collections (SCL) package install:
 
 ``rpm --import https://raw.githubusercontent.com/sclorg/centos-release-scl/master/centos-release-scl/RPM-GPG-KEY-CentOS-SIG-SCLo``
 
@@ -33,7 +33,7 @@ yum -y -q install centos-release-SCL
 yum -y -q install python27-python-devel python27-python-setuptools python27-python-pip
 yum -y -q install openssl-devel libffi-devel automake gcc gcc-c++ kernel-devel wget unzip ansible nano 
 
-# Enable 2.7 default for this session (needs re-run beween logins & reboots)
+# Enable 2.7 default for this session (needs re-run between logins & reboots)
 # shellcheck disable=SC1091
 source /opt/rh/python27/enable
 # We're now defaulted to 2.7 

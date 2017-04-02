@@ -191,7 +191,7 @@ addn-hosts=/var/lib/dnsmasq/block.hosts
 # add names to the DNS for the IPv6 address of SLAAC-configured dual-stack 
 # hosts. Use the DHCPv4 lease to derive the name, network segment and 
 # MAC address and assume that the host will also have an
-# IPv6 address calculated using the SLAAC alogrithm.
+# IPv6 address calculated using the SLAAC algorithm.
 #dhcp-range=1234::, ra-names
 
 # Do Router Advertisements, BUT NOT DHCP for this subnet.
@@ -212,7 +212,7 @@ addn-hosts=/var/lib/dnsmasq/block.hosts
 #dhcp-range=1234::, ra-stateless, ra-names
 
 # Do router advertisements for all subnets where we're doing DHCPv6
-# Unless overriden by ra-stateless, ra-names, et al, the router 
+# Unless overridden by ra-stateless, ra-names, et al, the router 
 # advertisements will have the M and O bits set, so that the clients
 # get addresses and configuration from DHCPv6, and the A bit reset, so the 
 # clients don't use SLAAC addresses.
@@ -290,7 +290,7 @@ addn-hosts=/var/lib/dnsmasq/block.hosts
 # Give a fixed IPv6 address and name to client with 
 # DUID 00:01:00:01:16:d2:83:fc:92:d4:19:e2:d8:b2
 # Note the MAC addresses CANNOT be used to identify DHCPv6 clients.
-# Note also the they [] around the IPv6 address are obilgatory.
+# Note also the they [] around the IPv6 address are obligatory.
 #dhcp-host=id:00:01:00:01:16:d2:83:fc:92:d4:19:e2:d8:b2, fred, [1234::5] 
 
 # Ignore any clients which are not specified in dhcp-host lines
@@ -347,7 +347,7 @@ addn-hosts=/var/lib/dnsmasq/block.hosts
 # Send DHCPv6 option. Note [] around IPv6 addresses.
 #dhcp-option=option6:dns-server,[1234::77],[1234::88]
 
-# Send DHCPv6 option for namservers as the machine running 
+# Send DHCPv6 option for nameservers as the machine running 
 # dnsmasq and another.
 #dhcp-option=option6:dns-server,[::],[1234::88]
 
@@ -527,7 +527,7 @@ addn-hosts=/var/lib/dnsmasq/block.hosts
 # (using /etc/hosts) then that name can be specified as the
 # tftp_servername (the third option to dhcp-boot) and in that
 # case dnsmasq resolves this name and returns the resultant IP
-# addresses in round robin fasion. This facility can be used to
+# addresses in round robin fashion. This facility can be used to
 # load balance the tftp load among a set of servers.
 #dhcp-boot=/var/ftpd/pxelinux.0,boothost,tftp_server_name
 
@@ -648,7 +648,7 @@ addn-hosts=/var/lib/dnsmasq/block.hosts
 # Provide an alias for a "local" DNS name. Note that this _only_ works
 # for targets which are names from DHCP or /etc/hosts. Give host
 # "bert" another name, bertrand
-#cname=bertand,bert
+#cname=bertrand,bert
 
 # For debugging purposes, log each DNS query as it passes through
 # dnsmasq.
