@@ -33,7 +33,7 @@ yum -y -q install centos-release-SCL
 yum -y -q install python27-python-devel python27-python-setuptools python27-python-pip
 yum -y -q install openssl-devel libffi-devel automake gcc gcc-c++ kernel-devel wget unzip ansible nano 
 
-# Enable 2.7 default for this session (needs re-run beween logins & reboots)
+# Enable 2.7 default for this session (needs re-run between logins & reboots)
 # shellcheck disable=SC1091
 source /opt/rh/python27/enable
 # We're now defaulted to 2.7 
