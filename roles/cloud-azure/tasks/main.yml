@@ -80,7 +80,7 @@
     virtual_network: algo_net
     name: "{{ azure_server_name }}"
     ssh_password_enabled: false
-    vm_size: "{{ vm_size | default(lookup('env','VM_SIZE')) }}"
+    vm_size: Basic_A0
     tags:
       Environment: Algo
     ssh_public_keys:
