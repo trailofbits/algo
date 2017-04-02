@@ -19,7 +19,7 @@ Fix GPG key warnings during Ansible rpm install:
 
 ``rpm --import https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-6``
 
-Fix GPG key warning during offical Software Collections (SCL) package install:
+Fix GPG key warning during official Software Collections (SCL) package install:
 
 ``rpm --import https://raw.githubusercontent.com/sclorg/centos-release-scl/master/centos-release-scl/RPM-GPG-KEY-CentOS-SIG-SCLo``
 
