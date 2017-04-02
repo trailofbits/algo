@@ -12,7 +12,7 @@
 | 8. Go to the **Main menu**, **Azure Active Directory** and click on **Properties**. Copy and save somewhere the **Directory ID**  | [![step8-thumb]][step8-screen]  |
 | 9. Go to the **Main menu**, **Subscriptions** and click on the subscription you want you use in Algo. Copy and save the subscription id from the **Overview** tab | [![step9-thumb]][step9-screen]  |
 | 10. Go to the **Access control (IAM)** tab and click to **Add** | [![step10-thumb]][step10-screen]  |
-| 11. Select a role (Contibutor will enough for all)| [![step11-thumb]][step11-screen] |
+| 11. Select a role (Contributor will enough for all)| [![step11-thumb]][step11-screen] |
 | 12. Swith next to **Add users** and search by the **App name** (the name from the 4th step) and select it. | [![step12-thumb]][step12-screen]  |
 
 Now you can use Environment Variables:

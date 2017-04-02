@@ -51,7 +51,7 @@
     - name: Gather Facts
       setup:
 
-    - name: Cheking the signature algorithm
+    - name: Checking the signature algorithm
       local_action: >
           shell openssl x509 -text -in certs/{{ IP_subject_alt_name }}.crt  | grep 'Signature Algorithm' | head -n1
       become: no

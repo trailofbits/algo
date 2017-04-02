@@ -15,7 +15,7 @@ git clone https://github.com/trailofbits/algo
 cd algo && ./algo
 ```
 
-**Warning**: If you run Algo on your existing server, the iptables rules will be overwritten. If you don't want to overwite the rules, you must deploy via `ansible-playbook` and skip the `iptables` tag as described below.
+**Warning**: If you run Algo on your existing server, the iptables rules will be overwritten. If you don't want to overwrite the rules, you must deploy via `ansible-playbook` and skip the `iptables` tag as described below.
 
 ## Scripted Deployment
 
