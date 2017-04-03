@@ -10,7 +10,8 @@
 8. [The region you want is not available](#8-the-region-you-want-is-not-available)
 9. [I want to change the list of trusted Wifi networks on my Apple device](#9-i-want-to-change-the-list-of-trusted-wifi-networks-on-my-apple-device)
 10. [Error: "The VPN Service payload could not be installed"](#10-error-the-vpn-service-payload-could-not-be-installed)
-11. [I have a problem not covered here](#i-have-a-problem-not-covered-here)
+11. [I can't get my router to connect to the Algo server](#11-i-cant-get-my-router-to-connect-to-my-algo-server)
+12. [I have a problem not covered here](#i-have-a-problem-not-covered-here)
 
 ### 1. Error: "You have not agreed to the Xcode license agreements"
 
@@ -106,7 +107,11 @@ This setting is enforced on your client device via the Apple profile you put on 
 ### 10. Error: "The VPN Service payload could not be installed."
 
 You tried to install the Apple profile on one of your devices and you received an error stating `The "VPN Service" payload could not be installed. The VPN service could not be created.` Client support for Algo VPN is limited to modern operating systems, e.g. macOS 10.11+, iOS 9+. Please upgrade your operating system and try again.
- 
+
+### 11. I can't get my router to connect to the Algo server
+
+In order to connect to the Algo VPN server, your router must support IKEv2, ECC certificate-based authentication, and the cipher suite we use. See the ipsec.conf files we generate in the `config` folder for more information. Note that we do not officially support routers as clients for Algo VPN at this time, though patches and documentation for them are welcome (for example, see open issues for [Ubiquiti](https://github.com/trailofbits/algo/issues/307) and [pfSense](https://github.com/trailofbits/algo/issues/292)).
+
 ### I have a problem not covered here
 
 If you have an issue that you cannot solve with the guidance here, [file an issue](https://github.com/trailofbits/algo/issues/new) that describes the problem and we'll do our best to help you. You can also [join our Slack](https://empireslacking.herokuapp.com/) and ask for help in the **#tool-algo** channel.
