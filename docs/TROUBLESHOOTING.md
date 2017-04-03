@@ -10,7 +10,7 @@
 8. [The region you want is not available](#8-the-region-you-want-is-not-available)
 9. [I want to change the list of trusted Wifi networks on my Apple device](#9-i-want-to-change-the-list-of-trusted-wifi-networks-on-my-apple-device)
 10. [Error: "The VPN Service payload could not be installed"](#10-error-the-vpn-service-payload-could-not-be-installed)
-11. [I can't get my router to connect to the Algo server](#11-i-cant-get-my-router-to-connect-to-my-algo-server)
+11. [I can't get my router to connect to the Algo server](#11-i-cant-get-my-router-to-connect-to-the-algo-server)
 12. [I have a problem not covered here](#i-have-a-problem-not-covered-here)
 
 ### 1. Error: "You have not agreed to the Xcode license agreements"
