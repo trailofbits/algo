@@ -101,7 +101,14 @@ You need to install the [strongSwan VPN Client for Android 4 and newer](https://
 
 ### Windows
 
-Copy the CA certificate, user certificate, and the user PowerShell script to the client computer. Import the CA certificate to the local machine Trusted Root certificate store. Then, run the included PowerShell script to import the user certificate, set up a VPN connection, and activate stronger ciphers on it.
+Copy the CA certificate, user certificate, and the user PowerShell script to the client computer. Import the CA certificate to the local machine Trusted Root certificate store. Then, run the included PowerShell script to import the user certificate, set up a VPN connection, and activate stronger ciphers on it. The powershell script has to be run as administrator, so first open Powershell as Administrator.  Additionally, if you have never used powershell before, you will need to change the Execution Policy to allow unsigned scripts to run.  Execute the following command in Powershell to do so.
+```powershell
+Set-ExecutionPolicy Unrestricted -Scope CurrentUser
+```
+For local machine security, revert the change after you run the script with the following.
+```powershell
+Set-ExecutionPolicy Restricted -Scope CurrentUser
+```
 
 If you want to perform these steps by hand, you will need to import the user certificate to the Personal certificate store, add an IKEv2 connection in the network settings, then activate stronger ciphers on it via the following PowerShell script:
 
