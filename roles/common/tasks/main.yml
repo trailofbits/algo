@@ -18,8 +18,8 @@
   tags:
     - always
 
-- name: Enable packet forwarding for IPv4
-  sysctl: name="{{ item }}" value=1
+- name: Sysctl tuning
+  sysctl: name="{{ item.item }}" value="{{ item.value }}"
   with_items:
     - "{{ sysctl|default([]) }}"
   tags:
