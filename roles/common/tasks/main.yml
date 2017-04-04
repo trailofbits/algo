@@ -14,14 +14,14 @@
 - name: Install tools
   package: name="{{ item }}" state=present
   with_items:
-    - "{{ tools }}"
+    - "{{ tools|default([]) }}"
   tags:
     - always
 
 - name: Enable packet forwarding for IPv4
   sysctl: name="{{ item }}" value=1
   with_items:
-    - "{{ sysctl.forwarding }}"
+    - "{{ sysctl|default([]) }}"
   tags:
     - always
 

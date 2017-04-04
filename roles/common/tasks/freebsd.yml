@@ -10,9 +10,8 @@
       - bash
       - wget
     sysctl:
-      forwarding:
-        - net.inet.ip.forwarding
-        - net.inet6.ip6.forwarding
+      - net.inet.ip.forwarding
+      - net.inet6.ip6.forwarding
   tags:
     - always
 
