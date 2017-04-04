@@ -11,7 +11,8 @@
 9. [I want to change the list of trusted Wifi networks on my Apple device](#9-i-want-to-change-the-list-of-trusted-wifi-networks-on-my-apple-device)
 10. [Error: "The VPN Service payload could not be installed"](#10-error-the-vpn-service-payload-could-not-be-installed)
 11. [I can't get my router to connect to the Algo server](#11-i-cant-get-my-router-to-connect-to-the-algo-server)
-12. [I have a problem not covered here](#i-have-a-problem-not-covered-here)
+12. [I can't get Network Manager to connect to the Algo Server)[#12-i-cant-get-network-manager-to-connect-to-the-algo-server)
+13. [I have a problem not covered here](#i-have-a-problem-not-covered-here)
 
 ### 1. Error: "You have not agreed to the Xcode license agreements"
 
@@ -111,6 +112,10 @@ You tried to install the Apple profile on one of your devices and you received a
 ### 11. I can't get my router to connect to the Algo server
 
 In order to connect to the Algo VPN server, your router must support IKEv2, ECC certificate-based authentication, and the cipher suite we use. See the ipsec.conf files we generate in the `config` folder for more information. Note that we do not officially support routers as clients for Algo VPN at this time, though patches and documentation for them are welcome (for example, see open issues for [Ubiquiti](https://github.com/trailofbits/algo/issues/307) and [pfSense](https://github.com/trailofbits/algo/issues/292)).
+
+### 12. I can't get Network Manager to connect to the Algo server
+
+You're trying to connect Ubuntu or Debian to the Algo server through the Network Manager GUI but it's not working. Many versions of Ubuntu and some older versions of Debian bundle a [broken version of Network Manager](https://github.com/trailofbits/algo/issues/263] without support for modern standards or the strongSwan server. You must upgrade to Ubuntu 17.04 or Debian 9 Stretch, each of which contain the required minimum version of Network Manager.
 
 ### I have a problem not covered here
 
