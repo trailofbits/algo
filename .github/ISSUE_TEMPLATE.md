@@ -1,5 +1,5 @@
 ### OS / Environment
-
+<!--- where do you run Algo? -->
 
 
 ### Ansible version
@@ -11,7 +11,6 @@
 pip show <package> (all the packages from requirements.txt)
 PUT THE OUTPUT HERE. DON'T NEED TO PASTE requirements.txt
 ```
-
 
 
 ### Summary of the problem
@@ -35,5 +34,5 @@ PUT THE OUTPUT HERE. DON'T NEED TO PASTE requirements.txt
 
 
 ### Full log
-
+<!--- Put here the FULL LOG after you run the ./algo script -->
 
