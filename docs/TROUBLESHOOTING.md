@@ -119,4 +119,4 @@ You're trying to connect Ubuntu or Debian to the Algo server through the Network
 
 ### I have a problem not covered here
 
-If you have an issue that you cannot solve with the guidance here, [file an issue](https://github.com/trailofbits/algo/issues/new) that describes the problem and we'll do our best to help you. You can also [join our Slack](https://empireslacking.herokuapp.com/) and ask for help in the **#tool-algo** channel.
+If you have an issue that you cannot solve with the guidance here, [file an issue](https://github.com/trailofbits/algo/issues/new) that describes the problem and we'll do our best to help you. You can also [join our Slack](https://empireslacking.herokuapp.com/) and ask for help in the **#algo-support** channel.
