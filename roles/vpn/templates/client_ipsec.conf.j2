@@ -7,11 +7,11 @@ conn ikev2-{{ IP_subject_alt_name }}
     dpddelay=35s
 
 {% if Win10_Enabled is defined and Win10_Enabled == "Y" %}
-    ike=aes128gcm16-sha2_256-prfsha256-ecp256,aes256-sha2_256-prfsha256-modp2048!
-    esp=aes128gcm16-sha2_256-ecp256,aes256-sha1-modp1024!
+    ike={{ ciphers.windows.ike }}
+    esp={{ ciphers.windows.esp }}
 {% else %}
-    ike=aes128gcm16-sha2_256-prfsha256-ecp256
-    esp=aes128gcm16-sha2_256-ecp256
+    ike={{ ciphers.defaults.ike }}
+    esp={{ ciphers.defaults.esp }}
 {% endif %}
 
     right={{ IP_subject_alt_name }}
