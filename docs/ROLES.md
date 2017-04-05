@@ -24,9 +24,6 @@
 * **DNS-based Adblocking**
   * Install the [dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html) local resolver with a blacklist for advertising domains
   * Constrains dnsmasq with AppArmor and cgroups CPU and memory limitations
-* **Security Monitoring and Logging**
-  * Configures [auditd](https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Security_Guide/chap-system_auditing.html) and rsyslog to log data useful for investigating security incidents
-  * Sends logs to a configured email address on a regular basis
 * **SSH Tunneling**
   * Adds a restricted `algo` group with no shell access and limited SSH forwarding options
   * Creates one limited, local account per user and an SSH public key for each

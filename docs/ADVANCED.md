@@ -48,7 +48,6 @@ Server roles:
 - role: vpn, tags: vpn
 - role: dns_adblocking, tags: dns, adblock
 - role: proxy, tags: proxy, adblock
-- role: logging, tags: logging
 - role: security, tags: security
 - role: ssh_tunneling, tags: ssh_tunneling
 
@@ -117,7 +116,6 @@ Possible options for `region`:
 - eu-central-1
 - eu-west-1
 - eu-west-2
-- sa-east-1
 
 Additional tags:
 
