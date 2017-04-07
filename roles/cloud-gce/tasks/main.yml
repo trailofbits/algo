@@ -15,10 +15,10 @@
     zone: "{{ zone }}"
     machine_type: f1-micro
     image: ubuntu-1604
-    service_account_email: "{{ service_account_email  }}"
-    credentials_file: "{{ credentials_file_path  }}"
-    project_id: "{{ project_id  }}"
-    metadata: '{"sshKeys":"root:{{ ssh_public_key_lookup }}"}'
+    service_account_email: "{{ service_account_email }}"
+    credentials_file: "{{ credentials_file_path }}"
+    project_id: "{{ project_id }}"
+    metadata: '{"ssh-keys":"ubuntu:{{ ssh_public_key_lookup }}"}'
     tags:
       - "environment-algo"
   register: google_vm
