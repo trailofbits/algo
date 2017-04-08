@@ -3,6 +3,7 @@
 set -e
 
 SKIP_TAGS="_null encrypted"
+ADDITIONAL_PROMPT="[pasted values will not be displayed]"
 
 additional_roles () {
 
@@ -68,32 +69,38 @@ azure () {
   read -p "
 Enter your azure secret id (https://github.com/trailofbits/algo/blob/master/docs/AZURE.md)
 You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
+$ADDITIONAL_PROMPT
 [...]: " -rs azure_secret
 
   read -p "
 
 Enter your azure tenant id (https://github.com/trailofbits/algo/blob/master/docs/AZURE.md)
 You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
+$ADDITIONAL_PROMPT
 [...]: " -rs azure_tenant
 
   read -p "
 
 Enter your azure client id (application id) (https://github.com/trailofbits/algo/blob/master/docs/AZURE.md)
 You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
+$ADDITIONAL_PROMPT
 [...]: " -rs azure_client_id
 
   read -p "
 
 Enter your azure subscription id (https://github.com/trailofbits/algo/blob/master/docs/AZURE.md)
 You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
+$ADDITIONAL_PROMPT
 [...]: " -rs azure_subscription_id
 
   read -p "
+
 Name the vpn server:
 [algo]: " -r azure_server_name
   azure_server_name=${azure_server_name:-algo}
 
   read -p "
+
   What region should the server be located in? (https://azure.microsoft.com/en-us/regions/)
     1.  South Central US
     2.  Central US
@@ -161,16 +168,18 @@ Enter the number of your desired region:
 
 digitalocean () {
   read -p "
-Enter your API token (https://cloud.digitalocean.com/settings/api/tokens):
-[pasted values will not be displayed]
+Enter your API token. The token must have read and write permissions (https://cloud.digitalocean.com/settings/api/tokens):
+$ADDITIONAL_PROMPT
 : " -rs do_access_token
 
   read -p "
+
 Name the vpn server:
 [algo.local]: " -r do_server_name
   do_server_name=${do_server_name:-algo.local}
 
   read -p "
+
   What region should the server be located in?
     1.  Amsterdam        (Datacenter 2)
     2.  Amsterdam        (Datacenter 3)
@@ -211,21 +220,24 @@ ec2 () {
   read -p "
 Enter your aws_access_key (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
 Note: Make sure to use either your root key (recommended) or an IAM user with an acceptable policy attached
-[pasted values will not be displayed]
+$ADDITIONAL_PROMPT
 [AKIA...]: " -rs aws_access_key
 
   read -p "
+
 Enter your aws_secret_key (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
 Note: Make sure to use either your root key (recommended) or an IAM user with an acceptable policy attached
-[pasted values will not be displayed]
+$ADDITIONAL_PROMPT
 [ABCD...]: " -rs aws_secret_key
 
 read -p "
+
 Name the vpn server:
 [algo]: " -r aws_server_name
   aws_server_name=${aws_server_name:-algo}
 
   read -p "
+
   What region should the server be located in?
     1.   us-east-1           US East (N. Virginia)
     2.   us-east-2           US East (Ohio)
@@ -271,11 +283,13 @@ Enter the local path to your credentials JSON file (https://support.google.com/c
 : " -r credentials_file
 
   read -p "
+
 Name the vpn server:
 [algo]: " -r server_name
   server_name=${server_name:-algo}
 
   read -p "
+
   What zone should the server be located in?
     1. Western US       (Oregon A)
     2. Western US       (Oregon B)
@@ -324,11 +338,13 @@ Enter the IP address of your server: (or use localhost for local installation)
 : " -r server_ip
 
   read -p "
+
 What user should we use to login on the server? (note: passwordless login required, or ignore if you're deploying to localhost)
 [root]: " -r server_user
   server_user=${server_user:-root}
 
   read -p "
+
 Enter the public IP address of your server: (IMPORTANT! This IP is used to verify the certificate)
 [$server_ip]: " -r IP_subject
   IP_subject=${IP_subject:-$server_ip}
@@ -338,6 +354,7 @@ Enter the public IP address of your server: (IMPORTANT! This IP is used to verif
   SKIP_TAGS+=" cloud update-alternatives"
 
   read -p "
+
 Was this server deployed by Algo previously?
 [y/N]: " -r Deployed_By_Algo
 Deployed_By_Algo=${Deployed_By_Algo:-n}
@@ -390,11 +407,12 @@ ssh_tunneling_enabled=${ssh_tunneling_enabled:-n}
 
   read -p "
 Enter the public IP address of your server: (IMPORTANT! This IP is used to verify the certificate)
-: " -r IP_subject
+[$server_ip]: " -r IP_subject
+  IP_subject=${IP_subject:-$server_ip}
 
   read -p "
 Enter the password for the private CA key:
-[pasted values will not be displayed]
+$ADDITIONAL_PROMPT
 : " -rs easyrsa_CA_password
 
 ansible-playbook users.yml -e "server_ip=$server_ip server_user=$server_user ssh_tunneling_enabled=$ssh_tunneling_enabled IP_subject=$IP_subject easyrsa_CA_password=$easyrsa_CA_password"
