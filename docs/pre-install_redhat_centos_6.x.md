@@ -40,15 +40,19 @@ source /opt/rh/python27/enable
 
 # Upgrade pip itself
 pip -q install --upgrade pip
-# # python-devel needed to prevent setup.py crash, pycrypto 2.7.1 needed for latest security patch
+# python-devel needed to prevent setup.py crash
 pip -q install pycrypto       
+# pycrypto 2.7.1 needed for latest security patch
 pip -q install setuptools --upgrade
+# virtualenv to make installing dependencies easier
+pip -q install virtualenv
 
 wget -q https://github.com/trailofbits/algo/archive/master.zip
 unzip master.zip 
 cd algo-master || echo "No Algo directory found"
 
-# Install the local Algo dependencies (must be run from algo-master)
+# Set up a virtualenv and install the local Algo dependencies (must be run from algo-master)
+virtualenv env && source env/bin/activate
 pip -q install -r requirements.txt
 
 # Edit the userlist and any other settings you desire
