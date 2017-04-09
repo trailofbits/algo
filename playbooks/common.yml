@@ -17,4 +17,4 @@
     user: "{{ ansible_ssh_user }}"
     state: present
     key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
-  tags: [ 'always' ]
+  tags: [ 'cloud' ]
