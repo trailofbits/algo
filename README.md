@@ -102,12 +102,16 @@ You need to install the [strongSwan VPN Client for Android 4 and newer](https://
 
 ### Windows
 
-Copy the CA certificate, user certificate, and the user PowerShell script to the client computer. Import the CA certificate to the local machine Trusted Root certificate store. Then, run the included PowerShell script to import the user certificate, set up a VPN connection, and activate stronger ciphers on it. 
-The PowerShell script has to be run as Administrator, so first open PowerShell as Administrator, then navigate to your copied files. If you have never used PowerShell before, you will need to change the Execution Policy to allow unsigned scripts to run. Execute the following command in PowerShell to do so.
+Copy the CA certificate, user certificate, and the user PowerShell script to the client computer. Import the CA certificate to the local machine Trusted Root certificate store. Then, run the included PowerShell script to import the user certificate, set up a VPN connection, and activate stronger ciphers on it.
+
+The PowerShell script has to be run as Administrator. Open PowerShell as Administrator, then navigate to your copied files. If you have never used PowerShell before, you will need to change the Execution Policy to allow unsigned scripts to run. Run the following command in PowerShell to do so.
+
 ```powershell
 Set-ExecutionPolicy Unrestricted -Scope CurrentUser
 ```
-After you execute the user script remember to revert the policy change before you close the PowerShell window.
+
+After you execute the setup script, set this restriction back in place before you close the PowerShell window.
+
 ```powershell
 Set-ExecutionPolicy Restricted -Scope CurrentUser
 ```
@@ -124,14 +128,13 @@ Install strongSwan, then copy the included user_ipsec.conf, user_ipsec.secrets, 
 
 Depending on the platform, you may need one or multiple of the following files.
 
-* ca.crt: CA Certificate
-* user_ipsec.conf: strongSwan client configuration
-* user_ipsec.secrets: strongSwan client configuration
-* user.crt: User Certificate
-* user.key: User Private Key
+* cacert.pem: CA Certificate
 * user.mobileconfig: Apple Profile
 * user.p12: User Certificate and Private Key (in PKCS#12 format)
-* user_windows.ps1: Powershell script to setup a VPN connection on Windows
+* user.sswan: Android strongSwan Profile
+* ipsec_user.conf: strongSwan client configuration
+* ipsec_user.secrets: strongSwan client configuration
+* windows_user.ps1: Powershell script to help setup a VPN connection on Windows
 
 ## Setup an SSH Tunnel
 
