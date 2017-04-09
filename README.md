@@ -102,6 +102,8 @@ You need to install the [strongSwan VPN Client for Android 4 and newer](https://
 
 ### Windows
 
+Windows clients have a more complicated setup than most others. Follow the steps below to set one up:
+
 1. Copy the CA certificate (`cacert.pem`), user certificate (`$user.p12`), and the user PowerShell script (`windows_$user.ps1`) to the client computer.
 2. Import the CA certificate to the local machine Trusted Root certificate store.
 3. Open PowerShell as Administrator. Navigate to your copied files.
@@ -111,22 +113,24 @@ You need to install the [strongSwan VPN Client for Android 4 and newer](https://
 Set-ExecutionPolicy Unrestricted -Scope CurrentUser
 ```
 
-5. In the same PowerShell window, run the included PowerShell script to import the user certificate, set up a VPN connection, and activate stronger ciphers on it. 
-6. After you execute the user script remember to revert the policy change before you close the PowerShell window.
+5. In the same PowerShell window, run the included PowerShell script to import the user certificate, set up a VPN connection, and activate stronger ciphers on it.
+6. After you execute the user script, set the Execution Policy back before you close the PowerShell window.
 
 ```powershell
 Set-ExecutionPolicy Restricted -Scope CurrentUser
 ```
 
-And that's it! If you want to perform these steps by hand, you will need to import the user certificate to the Personal certificate store, add an IKEv2 connection in the network settings, then activate stronger ciphers on it via the following PowerShell script:
+Your VPN is now installed and ready to use.
+
+If you want to perform these steps by hand, you will need to import the user certificate to the Personal certificate store, add an IKEv2 connection in the network settings, then activate stronger ciphers on it via the following PowerShell script:
 
 ```powershell
 Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo" -AuthenticationTransformConstants SHA256128 -CipherTransformConstants AES256 -EncryptionMethod AES256 -IntegrityCheckMethod SHA256 -DHGroup Group14 -PfsGroup none
 ```
 
-### Linux strongSwan Clients (e.g., OpenWRT, Ubuntu, etc.)
+### Linux strongSwan Clients (e.g., OpenWRT, Ubuntu Server, etc.)
 
-Install strongSwan, then copy the included user_ipsec.conf, user_ipsec.secrets, user.crt (user certificate), and user.key (private key) files to your client device. These may require some customization based on your exact use case. These files were originally generated with a point-to-point OpenWRT-based VPN in mind.
+Install strongSwan, then copy the included ipsec_user.conf, ipsec_user.secrets, user.crt (user certificate), and user.key (private key) files to your client device. These will require customization based on your exact use case. These files were originally generated with a point-to-point OpenWRT-based VPN in mind.
 
 ### Other Devices
 
