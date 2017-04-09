@@ -19,6 +19,7 @@
     credentials_file: "{{ credentials_file_path }}"
     project_id: "{{ project_id }}"
     metadata: '{"ssh-keys":"ubuntu:{{ ssh_public_key_lookup }}"}'
+    ip_forward: true
     tags:
       - "environment-algo"
   register: google_vm
