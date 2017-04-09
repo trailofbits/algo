@@ -102,21 +102,23 @@ You need to install the [strongSwan VPN Client for Android 4 and newer](https://
 
 ### Windows
 
-Copy the CA certificate, user certificate, and the user PowerShell script to the client computer. Import the CA certificate to the local machine Trusted Root certificate store. Then, run the included PowerShell script to import the user certificate, set up a VPN connection, and activate stronger ciphers on it.
-
-The PowerShell script has to be run as Administrator. Open PowerShell as Administrator, then navigate to your copied files. If you have never used PowerShell before, you will need to change the Execution Policy to allow unsigned scripts to run. Run the following command in PowerShell to do so.
+1. Copy the CA certificate (`cacert.pem`), user certificate (`$user.p12`), and the user PowerShell script (`windows_$user.ps1`) to the client computer.
+2. Import the CA certificate to the local machine Trusted Root certificate store.
+3. Open PowerShell as Administrator. Navigate to your copied files.
+4. If you haven't already, you will need to change the Execution Policy to allow unsigned scripts to run.
 
 ```powershell
 Set-ExecutionPolicy Unrestricted -Scope CurrentUser
 ```
 
-After you execute the setup script, set this restriction back in place before you close the PowerShell window.
+5. In the same PowerShell window, run the included PowerShell script to import the user certificate, set up a VPN connection, and activate stronger ciphers on it. 
+6. After you execute the user script remember to revert the policy change before you close the PowerShell window.
 
 ```powershell
 Set-ExecutionPolicy Restricted -Scope CurrentUser
 ```
 
-If you want to perform these steps by hand, you will need to import the user certificate to the Personal certificate store, add an IKEv2 connection in the network settings, then activate stronger ciphers on it via the following PowerShell script:
+And that's it! If you want to perform these steps by hand, you will need to import the user certificate to the Personal certificate store, add an IKEv2 connection in the network settings, then activate stronger ciphers on it via the following PowerShell script:
 
 ```powershell
 Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo" -AuthenticationTransformConstants SHA256128 -CipherTransformConstants AES256 -EncryptionMethod AES256 -IntegrityCheckMethod SHA256 -DHGroup Group14 -PfsGroup none
