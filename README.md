@@ -118,7 +118,9 @@ Set-ExecutionPolicy Restricted -Scope CurrentUser
 
 If you want to perform these steps by hand, you will need to import the user certificate to the Personal certificate store, add an IKEv2 connection in the network settings, then activate stronger ciphers on it via the following PowerShell script:
 
-`Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo" -AuthenticationTransformConstants SHA256128 -CipherTransformConstants AES256 -EncryptionMethod AES256 -IntegrityCheckMethod SHA256 -DHGroup Group14 -PfsGroup none`
+```powershell
+Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo" -AuthenticationTransformConstants SHA256128 -CipherTransformConstants AES256 -EncryptionMethod AES256 -IntegrityCheckMethod SHA256 -DHGroup Group14 -PfsGroup none
+```
 
 ### Linux strongSwan Clients (e.g., OpenWRT, Ubuntu, etc.)
 
@@ -176,6 +178,10 @@ The Algo VPN server now contains only the users listed in the `config.cfg` file.
 > Algo is really easy and secure.
 
 -- [the grugq](https://twitter.com/thegrugq/status/786249040228786176)
+
+> I played around with Algo VPN, a set of scripts that let you set up a VPN in the cloud in very little time, even if you don’t know much about development. I’ve got to say that I was quite impressed with Trail of Bits’ approach.
+
+-- Romain Dillet for [TechCrunch](https://techcrunch.com/2017/04/09/how-i-made-my-own-vpn-server-in-15-minutes/)
 
 ## Support Algo VPN
 
