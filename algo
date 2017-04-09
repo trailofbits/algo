@@ -367,9 +367,9 @@ algo_provisioning () {
   What provider would you like to use?
     1. DigitalOcean
     2. Amazon EC2
-    3. Google Compute Engine
-    4. Microsoft Azure
-    5. Install to existing Ubuntu server
+    3. Microsoft Azure
+    4. Google Compute Engine (only for testing, see issue #369)
+    5. Install to existing Ubuntu 16.04 server
 
 Enter the number of your desired provider
 : "
@@ -379,8 +379,8 @@ Enter the number of your desired provider
   case "$N" in
     1) digitalocean; ;;
     2) ec2; ;;
-    3) gce; ;;
-    4) azure; ;;
+    3) azure; ;;
+    4) gce; ;;
     5) non_cloud; ;;
     *) exit 1 ;;
   esac
