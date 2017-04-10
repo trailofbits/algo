@@ -1,7 +1,7 @@
 ---
 
 - name: Generate the SSH private key
-  local_action: shell echo -e  'n' | ssh-keygen -C {{ SSH_keys.comment }} -t ed25519 -f {{ SSH_keys.private }} -q -N ""
+  local_action: shell echo -e  'n' | ssh-keygen -b 2048 -C {{ SSH_keys.comment }} -t rsa -f {{ SSH_keys.private }} -q -N ""
   args:
     creates: "{{ SSH_keys.private }}"
 
