@@ -67,28 +67,28 @@ deploy () {
 
 azure () {
   read -p "
-Enter your azure secret id (https://github.com/trailofbits/algo/blob/master/docs/AZURE.md)
+Enter your azure secret id (https://github.com/trailofbits/algo/blob/master/docs/cloud-azure.md)
 You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
 $ADDITIONAL_PROMPT
 [...]: " -rs azure_secret
 
   read -p "
 
-Enter your azure tenant id (https://github.com/trailofbits/algo/blob/master/docs/AZURE.md)
+Enter your azure tenant id (https://github.com/trailofbits/algo/blob/master/docs/cloud-azure.md)
 You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
 $ADDITIONAL_PROMPT
 [...]: " -rs azure_tenant
 
   read -p "
 
-Enter your azure client id (application id) (https://github.com/trailofbits/algo/blob/master/docs/AZURE.md)
+Enter your azure client id (application id) (https://github.com/trailofbits/algo/blob/master/docs/cloud-azure.md)
 You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
 $ADDITIONAL_PROMPT
 [...]: " -rs azure_client_id
 
   read -p "
 
-Enter your azure subscription id (https://github.com/trailofbits/algo/blob/master/docs/AZURE.md)
+Enter your azure subscription id (https://github.com/trailofbits/algo/blob/master/docs/cloud-azure.md)
 You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
 $ADDITIONAL_PROMPT
 [...]: " -rs azure_subscription_id

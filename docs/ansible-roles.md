@@ -1,6 +1,6 @@
 # Ansible Roles
 
-## Required Roles
+## Required roles
 
 * **Common**
   * Installs several required packages and software updates, then reboots if necessary
@@ -11,7 +11,7 @@
   * Bundles the appropriate certificates into Apple mobileconfig profiles for each user
   * Configures IPtables to block traffic that might pose a risk to VPN users, such as [SMB/CIFS](https://medium.com/@ValdikSS/deanonymizing-windows-users-and-capturing-microsoft-and-vpn-accounts-f7e53fe73834)
 
-## Optional Roles
+## Optional roles
 
 * **Security Enhancements**
   * Enables [unattended-upgrades](https://help.ubuntu.com/community/AutomaticSecurityUpdates) to ensure available patches are always applied

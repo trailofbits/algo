@@ -1,3 +1,5 @@
+# Troubleshooting
+
 ## Table of Contents
 
 1. [Error: "You have not agreed to the Xcode license agreements"](#1-error-you-have-not-agreed-to-the-xcode-license-agreements)

@@ -1,8 +1,8 @@
-# FreeBSD / HardenedBSD
+# FreeBSD / HardenedBSD server setup
 
 It is only possible to install Algo on existing systems only. We support only 11 version for now.
 
-## Pre-paring the system
+## System preparation
 
 Ensure that the following kernel options are enabled:
 
@@ -21,8 +21,10 @@ device	crypto
 
 ## Additional variables
 
-* rebuild_kernel - set to `true` if you want to let Algo to rebuild your kernel if needed (Takes a lot of time)
+* rebuild_kernel - set to `true` if you want to let Algo to rebuild your kernel if needed (takes a lot of time)
 
 ## Installation
 
-`ansible-playbook deploy.yml -t local,vpn -e "server_ip=$server_ip server_user=$server_user IP_subject_alt_name=$server_ip Store_CAKEY=N" --skip-tags cloud`
+```shell
+ansible-playbook deploy.yml -t local,vpn -e "server_ip=$server_ip server_user=$server_user IP_subject_alt_name=$server_ip Store_CAKEY=N" --skip-tags cloud
+```
