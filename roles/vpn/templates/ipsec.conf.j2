@@ -11,8 +11,8 @@ conn %default
     dpddelay=35s
 
 {% if Win10_Enabled is defined and Win10_Enabled == "Y" %}
-    ike={{ ciphers.windows.ike }}
-    esp={{ ciphers.windows.esp }}
+    ike={{ ciphers.compat.ike }}
+    esp={{ ciphers.compat.esp }}
 {% else %}
     ike={{ ciphers.defaults.ike }}
     esp={{ ciphers.defaults.esp }}
