@@ -1,3 +1,3 @@
 certutil -f -p {{ easyrsa_p12_export_password }} -importpfx .\{{ item }}.p12
 Add-VpnConnection -name "Algo VPN {{ IP_subject_alt_name }} IKEv2" -ServerAddress "{{ IP_subject_alt_name }}" -TunnelType IKEv2 -AuthenticationMethod MachineCertificate -EncryptionLevel Required
-Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo VPN {{ IP_subject_alt_name }} IKEv2" -AuthenticationTransformConstants SHA256128 -CipherTransformConstants AES256 -EncryptionMethod AES256 -IntegrityCheckMethod SHA256 -DHGroup Group14 -PfsGroup none
+Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo VPN {{ IP_subject_alt_name }} IKEv2" -AuthenticationTransformConstants SHA256128 -CipherTransformConstants AES128 -EncryptionMethod AES128 -IntegrityCheckMethod SHA256 -DHGroup Group14 -PfsGroup none
