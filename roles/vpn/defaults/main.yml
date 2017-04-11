@@ -19,3 +19,11 @@ strongswan_enabled_plugins:
   - socket-default
   - stroke
   - x509
+
+ciphers:
+  defaults:
+    ike: aes128gcm16-sha2_512-prfsha512-ecp256!
+    esp: aes128gcm16-sha2_512-ecp256!
+  compat:
+    ike: aes128-sha2_512-prfsha512-ecp256,aes128gcm16-sha2_512-prfsha512-ecp256,aes128-sha2_256-prfsha256-modp2048!
+    esp: aes128-sha2_512-ecp256,aes128gcm16-sha2_512-ecp256,aes128-sha2_256-modp2048!

@@ -11,11 +11,11 @@ conn %default
     dpddelay=35s
 
 {% if Win10_Enabled is defined and Win10_Enabled == "Y" %}
-    ike=aes128gcm16-sha2_256-prfsha256-ecp256,aes256-sha2_256-prfsha256-modp2048!
-    esp=aes128gcm16-sha2_256-ecp256,aes256-sha2_256-modp2048!
+    ike={{ ciphers.compat.ike }}
+    esp={{ ciphers.compat.esp }}
 {% else %}
-    ike=aes128gcm16-sha2_256-prfsha256-ecp256!
-    esp=aes128gcm16-sha2_256-ecp256!
+    ike={{ ciphers.defaults.ike }}
+    esp={{ ciphers.defaults.esp }}
 {% endif %}
 
     left=%any
