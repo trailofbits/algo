@@ -22,7 +22,7 @@
                       <key>SSIDMatch</key>
                       <array>
 {% for network_name in WIFI_EXCLUDE_LIST %}
-                          <string>{{ network_name }}</string>
+                          <string>{{ network_name|e }}</string>
 {% endfor %}
                       </array>
                   </dict>
