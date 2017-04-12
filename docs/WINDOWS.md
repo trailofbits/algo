@@ -25,6 +25,10 @@ Install additional packages:
 
 `sudo apt-get update && sudo apt-get install python-pip python-setuptools build-essential libssl-dev libffi-dev python-dev python-virtualenv git -y`
 
+Install Six:
+
+`pip install six`
+
 Clone the Algo repository:
 
 `git clone https://github.com/trailofbits/algo && cd algo`
