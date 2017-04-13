@@ -9,7 +9,7 @@
 * Cloud setup
   - [Azure](cloud-azure.md)
 * Server setup
-  - [RedHat/CentOS 6.x](server-centos6.md)
+  - [RedHat/CentOS 6.x](server-redhat-centos6.md)
   - [FreeBSD](server-freebsd.md)
 * [Troubleshooting](troubleshooting.md)
 * [FAQ](faq.md)
