@@ -1,4 +1,4 @@
-### Authenticating with Azure
+# Azure cloud setup
 
 | Instruction | Screenshot(s) |
 | ----------- | ---------- |
@@ -22,7 +22,7 @@ Now you can use Environment Variables:
 * AZURE_TENANT - from the 8th step
 * AZURE_SUBSCRIPTION_ID - from the 9th step
 
-or create the credentials file ~/.azure/credentials:
+or create the credentials file ``~/.azure/credentials`:
 
 ```
 [default]

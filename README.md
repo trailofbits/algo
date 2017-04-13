@@ -55,8 +55,8 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
           python-setuptools \
           python-virtualenv -y
       ```
-     - Linux (rpm-based): See the [Pre-Install Documentation for RedHat/CentOS 6.x](docs/pre-install_redhat_centos_6.x.md)
-     - Windows: See the [Windows documentation](docs/WINDOWS.md)
+     - Linux (rpm-based): See the [Pre-Install Documentation for RedHat/CentOS 6.x](docs/server-redhat-centos-6.md)
+     - Windows: See the [Windows documentation](docs/client-windows.md)
 
 4. Install Algo's remaining dependencies for your operating system. Using the same terminal window as the previous step run the command below.
     ```bash
@@ -66,7 +66,7 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
 
 5. Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
 
-6. Start the deployment. Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [ROLES.md](docs/ROLES.md).
+6. Start the deployment. Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [ansible-roles.md](docs/ansible-roles.md).
 
 That's it! You will get the message below when the server deployment process completes. You now have an Algo server on the internet. Take note of the p12 (user certificate) password in case you need it later.
 
@@ -86,7 +86,7 @@ You can now setup clients to connect it, e.g. your iPhone or laptop. Proceed to 
 
 Note: If you want to run Algo again at any point in the future, you must first "reactivate" the dependencies for it. To reactivate them, open your terminal, use `cd` to navigate to the directory with Algo, then run `source env/bin/activate`.
 
-Advanced users who want to install Algo on top of a server they already own or want to script the deployment of Algo onto a network of servers, please see the [Advanced Usage](/docs/ADVANCED.md) documentation.
+Advanced users who want to install Algo on top of a server they already own or want to script the deployment of Algo onto a network of servers, please see the [Advanced Usage](/docs/advanced-usage.md) documentation.
 
 ## Configure the VPN Clients
 
@@ -98,7 +98,7 @@ Find the corresponding mobileconfig (Apple Profile) for each user and send it to
 
 ### Android Devices
 
-You need to install the [strongSwan VPN Client for Android 4 and newer](https://play.google.com/store/apps/details?id=org.strongswan.android) because no version of Android supports IKEv2. Import the corresponding user.p12 certificate to your device. See the [Android setup instructions](/docs/ANDROID.md) for more detailed steps.
+You need to install the [strongSwan VPN Client for Android 4 and newer](https://play.google.com/store/apps/details?id=org.strongswan.android) because no version of Android supports IKEv2. Import the corresponding user.p12 certificate to your device. See the [Android setup instructions](/docs/client-android.md) for more detailed steps.
 
 ### Windows
 
@@ -164,10 +164,10 @@ The Algo VPN server now contains only the users listed in the `config.cfg` file.
 
 ## Additional Documentation
 
-* [Advanced Usage](docs/ADVANCED.md) describes how to deploy an Algo VPN server directly from Ansible.
-* [FAQ](docs/FAQ.md) includes answers to common questions.
-* [Roles](docs/ROLES.md) includes a description of optional Algo VPN server features.
-* [Troubleshooting](docs/TROUBLESHOOTING.md) includes answers to common technical issues.
+* [Advanced Usage](docs/anvanced-usage.md) describes how to deploy an Algo VPN server directly from Ansible.
+* [FAQ](docs/faq.md) includes answers to common questions.
+* [Roles](docs/ansible-roles.md) includes a description of optional Algo VPN server features.
+* [Troubleshooting](docs/troubleshooting.md) includes answers to common technical issues.
 
 ## Endorsements
 

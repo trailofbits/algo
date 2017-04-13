@@ -1,4 +1,4 @@
-# Client installation
+# Linux client setup
 
 It's possible to deploy an ipsec connection on Linux clients.
 Supported distributives are: Debian, Ubuntu, CentOS, Fedora
@@ -14,4 +14,6 @@ The playbook is `deploy_client.yml`
 
 ### Example:
 
-`ansible-playbook deploy_client.yml -e 'client_ip=client.com vpn_user=jack server_ip=vpn-server.com server_ssh_user=root'`
+```shell
+ansible-playbook deploy_client.yml -e 'client_ip=client.com vpn_user=jack server_ip=vpn-server.com server_ssh_user=root'
+```
