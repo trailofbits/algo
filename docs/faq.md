@@ -1,12 +1,12 @@
 # FAQ
 
-[Has Algo been audited?](#has-algo-been-audited)
-[Why aren't you using Tor?](#why-arent-you-using-tor)
-[Why aren't you using Racoon, LibreSwan, or OpenSwan?](#why-arent-you-using-racoon-libreswan-or-openswan)
-[Why aren't you using a memory-safe or verified IKE daemon?](#why-arent-you-using-a-memory-safe-or-verified-ike-daemon)
-[Why aren't you using OpenVPN?](#why-arent-you-using-openvpn)
-[Why aren't you using Alpine Linux, OpenBSD, or HardenedBSD?](#why-arent-you-using-alpine-linux-openbsd-or-hardenedbsd)
-[Where did the name "Algo" come from?](#where-did-the-name-algo-come-from)
+* [Has Algo been audited?](#has-algo-been-audited)
+* [Why aren't you using Tor?](#why-arent-you-using-tor)
+* [Why aren't you using Racoon, LibreSwan, or OpenSwan?](#why-arent-you-using-racoon-libreswan-or-openswan)
+* [Why aren't you using a memory-safe or verified IKE daemon?](#why-arent-you-using-a-memory-safe-or-verified-ike-daemon)
+* [Why aren't you using OpenVPN?](#why-arent-you-using-openvpn)
+* [Why aren't you using Alpine Linux, OpenBSD, or HardenedBSD?](#why-arent-you-using-alpine-linux-openbsd-or-hardenedbsd)
+* [Where did the name "Algo" come from?](#where-did-the-name-algo-come-from)
 
 ## Has Algo been audited?
 
