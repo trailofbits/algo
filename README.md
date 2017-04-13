@@ -132,14 +132,14 @@ Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo" -AuthenticationTransf
 
 Install strongSwan, then copy the included ipsec_user.conf, ipsec_user.secrets, user.crt (user certificate), and user.key (private key) files to your client device. These will require customization based on your exact use case. These files were originally generated with a point-to-point OpenWRT-based VPN in mind.
 
-#### Ubuntu 16.04  example
-1. Edit ```/etc/ipsec.conf``` to add the connection from ipsec_user.conf. Make sure that the ```leftcert``` entry is correct for the user.crt filename. 
-2. Edit ```/etc/ipsec.secrets``` to add your user.key entry. Again make sure your file name is correct. 
-    e.g. ```xx.xxx.xx.xxx : ECDSA user.key```
-3. Copy ```user.crt``` to ```/etc/ipsec.d/certs```
-4. Copy ```user.key``` to ```/etc/ipsec.d/private```
-5. Start the client connection with ```sudo ipsec up <conn-name>```
-6. Shutdown if needed with ```sudo ipsec down <conn-name>```
+#### Ubuntu Server 16.04 example
+
+1. `/etc/ipsec.d/certs`: copy `user.crt` here
+2. `/etc/ipsec.d/private`: copy `user.key` here
+3. `/etc/ipsec.secrets`: add your `user.key`, e.g. `xx.xxx.xx.xxx : ECDSA user.key`.
+4. `/etc/ipsec.conf`: add the connection from `ipsec_user.conf` and update the value for `leftcert`
+5. `sudo ipsec up <conn-name>`: start the ipsec tunnel
+6. `sudo ipsec down <conn-name>`: shutdown the ipsec tunnel
 
 ### Other Devices
 
