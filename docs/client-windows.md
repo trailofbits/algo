@@ -1,6 +1,4 @@
-# Windows
-
-## How to run Algo on Windows 10
+# Windows client prerequisites
 
 Before run Algo, you have to have:
 
@@ -23,10 +21,14 @@ The subsystem will be installed, then Windows will require a reboot. Reboot, the
 
 Install additional packages:
 
-`sudo apt-get update && sudo apt-get install python-pip python-setuptools build-essential libssl-dev libffi-dev python-dev python-virtualenv git -y`
+```shell
+sudo apt-get update && sudo apt-get install python-pip python-setuptools build-essential libssl-dev libffi-dev python-dev python-virtualenv git -y
+```
 
 Clone the Algo repository:
 
-`git clone https://github.com/trailofbits/algo && cd algo`
+```shell
+git clone https://github.com/trailofbits/algo && cd algo
+```
 
 Now, you can go through the [README](https://github.com/trailofbits/algo#deploy-the-algo-server) (start from the 4th step) and deploy your Algo server!
