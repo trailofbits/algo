@@ -136,7 +136,7 @@ Install strongSwan, then copy the included ipsec_user.conf, ipsec_user.secrets, 
 
 1. `/etc/ipsec.d/certs`: copy `user.crt` here
 2. `/etc/ipsec.d/private`: copy `user.key` here
-3. `/etc/ipsec.secrets`: add your `user.key`, e.g. `xx.xxx.xx.xxx : ECDSA user.key`.
+3. `/etc/ipsec.secrets`: add your `user.key` to the list, e.g. `xx.xxx.xx.xxx : ECDSA user.key`
 4. `/etc/ipsec.conf`: add the connection from `ipsec_user.conf` and update the value for `leftcert`
 5. `sudo ipsec up <conn-name>`: start the ipsec tunnel
 6. `sudo ipsec down <conn-name>`: shutdown the ipsec tunnel
