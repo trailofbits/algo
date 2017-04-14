@@ -90,7 +90,7 @@
     keypair: "VPNKEY"
     vpc_subnet_id: "{{ vpc.subnets[0].id }}"
     group: vpn-secgroup
-    instance_type: t2.micro
+    instance_type: "{{ cloud_providers.ec2.size }}"
     image: "{{ ami_image }}"
     wait: true
     region: "{{ region }}"
