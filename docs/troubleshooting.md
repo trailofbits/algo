@@ -99,6 +99,17 @@ Little Snitch is not compatible with IPSEC VPNs due to a known bug in macOS and 
 
 This issue appears intermittently due to issues with MTU size. If you experience this issue, we recommend [filing an issue](https://github.com/trailofbits/algo/issues/new) for assistance. Advanced users can troubleshoot the correct MTU size by retrying `ping` with the "don't fragment" bit size and decreasing packet size. This will determine the correct MTU size for your network, which you then need to update on your network adapter.
 
+e.g. In Linux (client -- Ubuntu 16.04), determine your MTU size (after you're connected via ipsec)
+```
+$ ping -M do -s 1500 www.google.com
+PING www.google.com (74.125.22.147) 1500(1528) bytes of data.
+ping: local error: Message too long, mtu=1438
+```
+Set your MTU size on the network adapter (wlan0 or eth0)
+```
+$ sudo ifconfig wlan0 mtu 1438
+```
+
 ### 8. The region you want is not available
 
 You want to install Algo to a specific region in a cloud provider, but that region is not available in the list given by the installer. In that case, you should [file an issue](https://github.com/trailofbits/algo/issues/new). Cloud providers add new regions on a regular basis and we don't always keep up. File an issue and give us information about what region is missing and we'll add it.
