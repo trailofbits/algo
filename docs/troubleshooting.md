@@ -99,7 +99,7 @@ Little Snitch is not compatible with IPSEC VPNs due to a known bug in macOS and 
 
 This issue appears intermittently due to issues with MTU size. If you experience this issue, we recommend [filing an issue](https://github.com/trailofbits/algo/issues/new) for assistance. Advanced users can troubleshoot the correct MTU size by retrying `ping` with the "don't fragment" bit size and decreasing packet size. This will determine the correct MTU size for your network, which you then need to update on your network adapter.
 
-e.g. In Linux, determine your MTU size (after you're connected via ipsec)
+e.g. In Linux (client -- Ubuntu 16.04), determine your MTU size (after you're connected via ipsec)
 ```
 $ ping -M do -s 1500 www.google.com
 PING www.google.com (74.125.22.147) 1500(1528) bytes of data.
