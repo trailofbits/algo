@@ -21,7 +21,7 @@ conn ikev2-{{ IP_subject_alt_name }}
 
     leftsourceip=%config
     leftauth=pubkey
-    leftcert={{ IP_subject_alt_name }}_{{ item }}.crt
+    leftcert={{ item }}.crt
     leftfirewall=yes
     left=%defaultroute
 
