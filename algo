@@ -2,6 +2,15 @@
 
 set -e
 
+ACTIVATE_SCRIPT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/env/bin/activate"
+if [ -f "$ACTIVATE_SCRIPT" ]
+then
+	source $ACTIVATE_SCRIPT
+else
+	echo "$ACTIVATE_SCRIPT not found.  Did you follow documentation to install dependencies?"
+	exit 1
+fi
+
 SKIP_TAGS="_null encrypted"
 ADDITIONAL_PROMPT="[pasted values will not be displayed]"
 
@@ -252,10 +261,10 @@ Name the vpn server:
     11.  eu-west-1           EU (Ireland)
     12.  eu-west-2           EU (London)
     13.  ca-central-1        Canada (Central)
+    14.  sa-east-1           São Paulo
 Enter the number of your desired region:
 [1]: " -r aws_region
   aws_region=${aws_region:-1}
-  # sa-east-1 region does not support the size instance we use.
 
   case "$aws_region" in
     1) region="us-east-1" ;;
@@ -271,6 +280,7 @@ Enter the number of your desired region:
     11) region="eu-west-1" ;;
     12) region="eu-west-2";;
     13) region="ca-central-1" ;;
+    14) region="sa-east-1" ;;
   esac
 
   ROLES="ec2 vpn cloud"
