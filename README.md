@@ -141,6 +141,8 @@ Install strongSwan, then copy the included ipsec_user.conf, ipsec_user.secrets, 
 5. `sudo ipsec up <conn-name>`: start the ipsec tunnel
 6. `sudo ipsec down <conn-name>`: shutdown the ipsec tunnel
 
+Note: If you encounter an error such as `configured DH group ECP_256 not supported`, try installing `strongswan-plugin-openssl`. Per [StrongSwan Documentation](https://wiki.strongswan.org/projects/strongswan/wiki/IKEv2CipherSuites), this DH group is supported by the openssl plugin.
+
 ### Other Devices
 
 Depending on the platform, you may need one or multiple of the following files.
@@ -191,7 +193,6 @@ The Algo VPN server now contains only the users listed in the `config.cfg` file.
 -- [The Register](https://twitter.com/TheRegister/status/825076303657177088)
 
 > Algo is really easy and secure.
-
 -- [the grugq](https://twitter.com/thegrugq/status/786249040228786176)
 
 > I played around with Algo VPN, a set of scripts that let you set up a VPN in the cloud in very little time, even if you don’t know much about development. I’ve got to say that I was quite impressed with Trail of Bits’ approach.
