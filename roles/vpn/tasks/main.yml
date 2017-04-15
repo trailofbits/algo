@@ -8,7 +8,7 @@
 
 - name: Generate password for the CA key
   shell: >
-    openssl rand -hex 6
+    openssl rand -hex 16
   register: CA_password
 
 - set_fact:
