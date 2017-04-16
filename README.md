@@ -142,6 +142,17 @@ Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo" -AuthenticationTransf
 8. `sudo ipsec up <conn-name>`: start the ipsec tunnel
 9. `sudo ipsec down <conn-name>`: shutdown the ipsec tunnel
 
+## LAN Passthrough
+
+To enable your device to access other devices on the LAN, add the following to `/etc/ipsec.conf`, replacing `192.168.1.1/24` with whatever subnet your LAN uses:
+
+    conn lan-passthrough
+    leftsubnet=192.168.1.1/24
+    rightsubnet=192.168.1.1/24
+    authby=never # No authentication necessary
+    type=pass # passthrough
+    auto=route # no need to ipsec up lan-passthrough - it will just work
+
 ### Other Devices
 
 Depending on the platform, you may need one or multiple of the following files.
