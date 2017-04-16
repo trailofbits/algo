@@ -55,7 +55,7 @@ security_enabled=${security_enabled:-n}
 if [[ "$security_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" security"; fi
 
 read -p "
-Do you want the VPN to support Windows 10 clients? (requires RSA certificates and key exchange, less secure)
+Do you want the VPN to support Windows 10 or Linux Desktop clients? (enables compatible ciphers and key exchange, less secure)
 [y/N]: " -r Win10_Enabled
 Win10_Enabled=${Win10_Enabled:-n}
 if [[ "$Win10_Enabled" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" Win10_Enabled=Y"; fi
