@@ -19,6 +19,6 @@
     create: yes
     block: |
       [algo:children]
-      {% for group in dynamic_inventory_groups %}
+      {% for group in cloud_providers.keys() %}
       {{ group }}
       {% endfor %}
