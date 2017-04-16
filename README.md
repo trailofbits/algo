@@ -133,7 +133,7 @@ Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo" -AuthenticationTransf
 #### Ubuntu Server 16.04 example
 
 1. Install Strongswan: `sudo apt-get install strongswan strongswan-plugin-openssl` Plugin required per [StrongSwan Documentation](https://wiki.strongswan.org/projects/strongswan/wiki/IKEv2CipherSuites), as the ECP_256 DH group is supported by the openssl plugin.
-2. `/etc/ipsec.d/certs`: copy `user.crt` here from `algo-master/configs/<name>/pki/certs/`.
+2. `/etc/ipsec.d/certs`: copy `user.crt` here from `algo-master/configs/<name>/pki/certs`.
 3. `/etc/ipsec.d/private`: copy `user.key` here from `algo-master/configs/<name>/pki/private`.
 4. `/etc/ipsec.d/cacerts`: copy `cacert.pem` here from `algo-master/configs/<name>/cacert.pem`.
 5. `/etc/ipsec.secrets`: add your `user.key` to the list, e.g. `xx.xxx.xx.xxx : ECDSA user.key`, like in `ipsec_user.secrets` but matching the `user.key` filename.
