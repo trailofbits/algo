@@ -53,9 +53,6 @@
     ssh-keyscan {{ IP_subject_alt_name }} 2>/dev/null
   register: ssh_fingerprints
 
-- name: The known_hosts file created
-  template: src=known_hosts.j2 dest=/root/.ssh/{{ IP_subject_alt_name }}_known_hosts
-
 - name: Fetch users SSH private keys
   fetch: src='/var/jail/{{ item }}/.ssh/id_ecdsa' dest=configs/{{ IP_subject_alt_name }}/{{ item }}.ssh.pem flat=yes
   with_items: "{{ users }}"
@@ -66,7 +63,11 @@
   become: false
 
 - name: Fetch the known_hosts file
-  fetch: src='/root/.ssh/{{ IP_subject_alt_name }}_known_hosts' dest=configs/{{ IP_subject_alt_name }}/{{ IP_subject_alt_name }}_known_hosts flat=yes
+  local_action:
+    module: template
+    src: known_hosts.j2
+    dest: configs/{{ IP_subject_alt_name }}/known_hosts
+  become: no
 
 - name: Build the client ssh config
   local_action:
