@@ -1,7 +1,11 @@
+- set_fact:
+    access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'), true) }}"
+    secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true) }}"
+
 - name: Locate official Ubuntu 16.04 AMI for region
   ec2_ami_find:
-    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'))}}"
-    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
     name: "ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"
     owner:  099720109477
     sort: creationDate
@@ -18,8 +22,8 @@
 
 - name: Add ssh public key
   ec2_key:
-    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'))}}"
-    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
     name: VPNKEY
     region: "{{ region }}"
     key_material: "{{ item }}"
@@ -28,8 +32,8 @@
 
 - name: Configure EC2 virtual private clouds
   ec2_vpc:
-    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'))}}"
-    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
     state: present
     resource_tags: { "Environment":"Algo" }
     region: "{{ region }}"
@@ -42,8 +46,8 @@
 
 - name: Set up Public Subnets Route Table
   ec2_vpc_route_table:
-    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'))}}"
-    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
     vpc_id: "{{ vpc.vpc_id }}"
     region: "{{ region }}"
     state: present
@@ -58,8 +62,8 @@
 
 - name: Configure EC2 security group
   ec2_group:
-    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'))}}"
-    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
     name: vpn-secgroup
     description: Security group for VPN servers
     region: "{{ region }}"
@@ -85,8 +89,8 @@
 
 - name: Launch instance
   ec2:
-    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'))}}"
-    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
     keypair: "VPNKEY"
     vpc_subnet_id: "{{ vpc.subnets[0].id }}"
     group: vpn-secgroup
@@ -120,8 +124,8 @@
 
 - name: Get EC2 instances
   ec2_remote_facts:
-    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'))}}"
-    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
     region: "{{ region }}"
     filters:
       instance-state-name: running

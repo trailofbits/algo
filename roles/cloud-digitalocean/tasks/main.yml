@@ -1,6 +1,6 @@
 - name: Set the DigitalOcean Access Token fact
   set_fact:
-    do_token: "{{ do_access_token | default(lookup('env','DO_API_TOKEN')) }}"
+    do_token: "{{ do_access_token | default(lookup('env','DO_API_TOKEN'), true) }}"
     public_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
 
 - block:
