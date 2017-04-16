@@ -130,18 +130,17 @@ Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo" -AuthenticationTransf
 
 ### Linux strongSwan Clients (e.g., OpenWRT, Ubuntu Server, etc.)
 
-Install strongSwan, then copy the included ipsec_user.conf, ipsec_user.secrets, user.crt (user certificate), and user.key (private key) files to your client device. These will require customization based on your exact use case. These files were originally generated with a point-to-point OpenWRT-based VPN in mind.
-
 #### Ubuntu Server 16.04 example
 
-1. `/etc/ipsec.d/certs`: copy `user.crt` here
-2. `/etc/ipsec.d/private`: copy `user.key` here
-3. `/etc/ipsec.secrets`: add your `user.key` to the list, e.g. `xx.xxx.xx.xxx : ECDSA user.key`
-4. `/etc/ipsec.conf`: add the connection from `ipsec_user.conf` and update the value for `leftcert`
-5. `sudo ipsec up <conn-name>`: start the ipsec tunnel
-6. `sudo ipsec down <conn-name>`: shutdown the ipsec tunnel
-
-Note: If you encounter an error such as `configured DH group ECP_256 not supported`, try installing `strongswan-plugin-openssl`. Per [StrongSwan Documentation](https://wiki.strongswan.org/projects/strongswan/wiki/IKEv2CipherSuites), this DH group is supported by the openssl plugin.
+1. Install Strongswan: `sudo apt-get install strongswan strongswan-plugin-openssl` Plugin required per [StrongSwan Documentation](https://wiki.strongswan.org/projects/strongswan/wiki/IKEv2CipherSuites), as the ECP_256 DH group is supported by the openssl plugin.
+2. `/etc/ipsec.d/certs`: copy `user.crt` here
+3. `/etc/ipsec.d/private`: copy `user.key` here
+4. `/etc/ipsec.secrets`: add your `user.key` to the list, e.g. `xx.xxx.xx.xxx : ECDSA user.key`, like in `ipsec_user.secrets` but matching the `user.key` filename.
+5. `/etc/ipsec.conf`: add the connection from `ipsec_user.conf` and update the value for `leftcert` to match the `user.crt` filename.
+6. `/etc/ipsec.d/cacerts`: copy `cacert.pem` here
+7. `sudo ipsec restart`: pick up config changes
+8. `sudo ipsec up <conn-name>`: start the ipsec tunnel
+9. `sudo ipsec down <conn-name>`: shutdown the ipsec tunnel
 
 ### Other Devices
 
