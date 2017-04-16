@@ -207,6 +207,7 @@ The Algo VPN server now contains only the users listed in the `config.cfg` file.
 -- [The Register](https://twitter.com/TheRegister/status/825076303657177088)
 
 > Algo is really easy and secure.
+
 -- [the grugq](https://twitter.com/thegrugq/status/786249040228786176)
 
 > I played around with Algo VPN, a set of scripts that let you set up a VPN in the cloud in very little time, even if you don’t know much about development. I’ve got to say that I was quite impressed with Trail of Bits’ approach.
