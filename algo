@@ -137,6 +137,8 @@ Name the vpn server:
     24. North Central US
     25. South India
     26. West India
+    27. East US
+    28. East US 2
 
 Enter the number of your desired region:
 [1]: " -r azure_region
@@ -169,6 +171,8 @@ Enter the number of your desired region:
     24) region="northcentralus" ;;
     25) region="southindia" ;;
     26) region="westindia" ;;
+    27) region="eastus" ;;
+    28) region="eastus2" ;;
   esac
 
   ROLES="azure vpn cloud"
