@@ -58,11 +58,11 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
      - Linux (rpm-based): See the [Pre-Install Documentation for RedHat/CentOS 6.x](docs/server-redhat-centos6.md)
      - Windows: See the [Windows documentation](docs/client-windows.md)
 
-4. Install Algo's remaining dependencies for your operating system. Using the same terminal window as the previous step run the command below.
+4. Install Algo's remaining dependencies for your operating system. Use the same terminal window as the previous step and run:
     ```bash
     $ python -m virtualenv env && source env/bin/activate && python -m pip install -U pip && python -m pip install -r requirements.txt
     ```
-    On macOS, you may be prompted to install `cc` which you should accept.
+    On macOS, you may be prompted to install `cc`. You should press accept.
 
 5. Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
 
