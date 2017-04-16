@@ -53,6 +53,9 @@
     ssh-keyscan {{ IP_subject_alt_name }} 2>/dev/null
   register: ssh_fingerprints
 
+- name: Ensure root .ssh directory exists
+  file: path=/root/.ssh state=directory mode=0700
+
 - name: The known_hosts file created
   template: src=known_hosts.j2 dest=/root/.ssh/{{ IP_subject_alt_name }}_known_hosts
 
