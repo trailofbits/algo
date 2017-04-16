@@ -144,14 +144,14 @@ Install strongSwan, then copy the included ipsec_user.conf, ipsec_user.secrets, 
 8. `sudo ipsec up <conn-name>`: start the ipsec tunnel
 9. `sudo ipsec down <conn-name>`: shutdown the ipsec tunnel
 
-One common use case is to let your computer access your local LAN without going through the VPN. To enable your device to access other devices on the LAN, add the following to `/etc/ipsec.conf` and replace `192.168.1.1/24` with the subnet your LAN uses:
+One common use case is to let your server access your local LAN without going through the VPN. Set up a passthrough connection by adding the following to `/etc/ipsec.conf`. Replace `192.168.1.1/24` with the subnet your LAN uses:
 
     conn lan-passthrough
     leftsubnet=192.168.1.1/24
     rightsubnet=192.168.1.1/24
     authby=never # No authentication necessary
     type=pass # passthrough
-    auto=route # no need to ipsec up lan-passthrough - it will just work
+    auto=route # no need to ipsec up lan-passthrough
 
 ### Other Devices
 
