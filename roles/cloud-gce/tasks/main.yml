@@ -13,7 +13,7 @@
   gce:
     instance_names: "{{ server_name }}"
     zone: "{{ zone }}"
-    machine_type: f1-micro
+    machine_type: "{{ cloud_providers.gce.size }}"
     image: ubuntu-1604
     service_account_email: "{{ service_account_email }}"
     credentials_file: "{{ credentials_file_path }}"

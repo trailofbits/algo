@@ -58,11 +58,11 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
      - Linux (rpm-based): See the [Pre-Install Documentation for RedHat/CentOS 6.x](docs/server-redhat-centos6.md)
      - Windows: See the [Windows documentation](docs/client-windows.md)
 
-4. Install Algo's remaining dependencies for your operating system. Using the same terminal window as the previous step run the command below.
+4. Install Algo's remaining dependencies for your operating system. Use the same terminal window as the previous step and run:
     ```bash
-    $ python -m virtualenv env && source env/bin/activate && python -m pip install -r requirements.txt
+    $ python -m virtualenv env && source env/bin/activate && python -m pip install -U pip && python -m pip install -r requirements.txt
     ```
-    On macOS, you may be prompted to install `cc` which you should accept.
+    On macOS, you may be prompted to install `cc`. You should press accept if so.
 
 5. Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
 
@@ -128,18 +128,34 @@ If you want to perform these steps by hand, you will need to import the user cer
 Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo" -AuthenticationTransformConstants SHA256128 -CipherTransformConstants AES256 -EncryptionMethod AES256 -IntegrityCheckMethod SHA256 -DHGroup Group14 -PfsGroup none
 ```
 
+### Linux Network Manager Clients (e.g., Ubuntu, Debian, or Fedora Desktop)
+
+Network Manager does not support AES-GCM. In order to support Linux Desktop clients, please choose the "compatible" cryptography and use at least Network Manager 1.4.1. See [Issue #263](https://github.com/trailofbits/algo/issues/263) for more information.
+
 ### Linux strongSwan Clients (e.g., OpenWRT, Ubuntu Server, etc.)
 
 Install strongSwan, then copy the included ipsec_user.conf, ipsec_user.secrets, user.crt (user certificate), and user.key (private key) files to your client device. These will require customization based on your exact use case. These files were originally generated with a point-to-point OpenWRT-based VPN in mind.
 
 #### Ubuntu Server 16.04 example
 
-1. `/etc/ipsec.d/certs`: copy `user.crt` here
-2. `/etc/ipsec.d/private`: copy `user.key` here
-3. `/etc/ipsec.secrets`: add your `user.key` to the list, e.g. `xx.xxx.xx.xxx : ECDSA user.key`
-4. `/etc/ipsec.conf`: add the connection from `ipsec_user.conf` and update the value for `leftcert`
-5. `sudo ipsec up <conn-name>`: start the ipsec tunnel
-6. `sudo ipsec down <conn-name>`: shutdown the ipsec tunnel
+1. `sudo apt-get install strongswan strongswan-plugin-openssl`: install strongSwan
+2. `/etc/ipsec.d/certs`: copy `user.crt` from `algo-master/configs/<name>/pki/certs`
+3. `/etc/ipsec.d/private`: copy `user.key` from `algo-master/configs/<name>/pki/private`
+4. `/etc/ipsec.d/cacerts`: copy `cacert.pem` from `algo-master/configs/<name>/cacert.pem`
+5. `/etc/ipsec.secrets`: add your `user.key` to the list, e.g. `xx.xxx.xx.xxx : ECDSA user.key`
+6. `/etc/ipsec.conf`: add the connection from `ipsec_user.conf` and update `leftcert` to match the `user.crt` filename
+7. `sudo ipsec restart`: pick up config changes
+8. `sudo ipsec up <conn-name>`: start the ipsec tunnel
+9. `sudo ipsec down <conn-name>`: shutdown the ipsec tunnel
+
+One common use case is to let your server access your local LAN without going through the VPN. Set up a passthrough connection by adding the following to `/etc/ipsec.conf`. Replace `192.168.1.1/24` with the subnet your LAN uses:
+
+    conn lan-passthrough
+    leftsubnet=192.168.1.1/24
+    rightsubnet=192.168.1.1/24
+    authby=never # No authentication necessary
+    type=pass # passthrough
+    auto=route # no need to ipsec up lan-passthrough
 
 ### Other Devices
 
@@ -197,6 +213,10 @@ The Algo VPN server now contains only the users listed in the `config.cfg` file.
 > I played around with Algo VPN, a set of scripts that let you set up a VPN in the cloud in very little time, even if you don’t know much about development. I’ve got to say that I was quite impressed with Trail of Bits’ approach.
 
 -- [Romain Dillet](https://twitter.com/romaindillet/status/851037243728965632) for [TechCrunch](https://techcrunch.com/2017/04/09/how-i-made-my-own-vpn-server-in-15-minutes/)
+
+> If you’re uncomfortable shelling out the cash to an anonymous, random VPN provider, this is the best solution.
+
+-- [Thorin Klosowski](https://twitter.com/kingthor) for [Lifehacker](http://lifehacker.com/how-to-set-up-your-own-completely-free-vpn-in-the-cloud-1794302432)
 
 ## Support Algo VPN
 

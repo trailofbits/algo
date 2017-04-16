@@ -80,7 +80,7 @@
     virtual_network: algo_net
     name: "{{ azure_server_name }}"
     ssh_password_enabled: false
-    vm_size: Basic_A0
+    vm_size: "{{ cloud_providers.azure.size }}"
     tags:
       Environment: Algo
     ssh_public_keys:
@@ -91,7 +91,7 @@
       sku: '16.04-LTS'
       version: latest
   register: azure_rm_virtualmachine
-  
+
   # To-do: Add error handling - if vm_size requested is not available, can we fall back to another, ideally with a prompt?
 
 - set_fact:
