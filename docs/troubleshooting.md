@@ -14,7 +14,8 @@
 10. [Error: "The VPN Service payload could not be installed"](#10-error-the-vpn-service-payload-could-not-be-installed)
 11. [I can't get my router to connect to the Algo server](#11-i-cant-get-my-router-to-connect-to-the-algo-server)
 12. [I can't get Network Manager to connect to the Algo Server](#12-i-cant-get-network-manager-to-connect-to-the-algo-server)
-13. [I have a problem not covered here](#i-have-a-problem-not-covered-here)
+13. [IKEAUTH request never makes it to the server](#13-ikeauth-request-never-makes-it-to-the-server)
+14. [I have a problem not covered here](#i-have-a-problem-not-covered-here)
 
 ### 1. Error: "You have not agreed to the Xcode license agreements"
 
@@ -129,6 +130,10 @@ In order to connect to the Algo VPN server, your router must support IKEv2, ECC 
 ### 12. I can't get Network Manager to connect to the Algo server
 
 You're trying to connect Ubuntu or Debian to the Algo server through the Network Manager GUI but it's not working. Many versions of Ubuntu and some older versions of Debian bundle a [broken version of Network Manager](https://github.com/trailofbits/algo/issues/263) without support for modern standards or the strongSwan server. You must upgrade to Ubuntu 17.04 or Debian 9 Stretch, each of which contain the required minimum version of Network Manager.
+
+### 13. IKEAUTH request never makes it to the server
+If you can see IKE_SA_INIT request/repsonses, yet the IKE_AUTH request never makes it to the server.
+It is possible that the IKE_AUTH payload is too big to fit in a single IP datagram, and so is fragmented. Many consumer routers and cable modems ship with 'Block Fragmented IP packets'. Try disabling any firewall settings on the router related to blocking or dropping IP fragments. https://github.com/trailofbits/algo/issues/305
 
 ### I have a problem not covered here
 
