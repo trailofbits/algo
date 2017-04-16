@@ -214,6 +214,10 @@ The Algo VPN server now contains only the users listed in the `config.cfg` file.
 
 -- [Romain Dillet](https://twitter.com/romaindillet/status/851037243728965632) for [TechCrunch](https://techcrunch.com/2017/04/09/how-i-made-my-own-vpn-server-in-15-minutes/)
 
+> If you’re uncomfortable shelling out the cash to an anonymous, random VPN provider, this is the best solution.
+
+-- [Thorin Klosowski](https://twitter.com/kingthor) for [Lifehacker](http://lifehacker.com/how-to-set-up-your-own-completely-free-vpn-in-the-cloud-1794302432)
+
 ## Support Algo VPN
 
 All donations support continued development. Thanks!
