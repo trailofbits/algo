@@ -44,17 +44,21 @@
   tags:
     - cloud
 
-- name: Loopback for services configured
-  template: src=10-loopback-services.cfg.j2 dest=/etc/network/interfaces.d/10-loopback-services.cfg
+- name: Dummy interface for services configured
+  template: src=10-dummy-services.cfg.j2 dest=/etc/network/interfaces.d/10-dummy-services.cfg
   notify:
-    - restart loopback
+    - load dummy
+    - add dummy
+    - restart dummy
   tags:
     - always
 
-- name: Loopback included into the network config
-  lineinfile: dest=/etc/network/interfaces line='source /etc/network/interfaces.d/10-loopback-services.cfg' state=present
+- name: Dummy interface included into the network config
+  lineinfile: dest=/etc/network/interfaces line='source /etc/network/interfaces.d/10-dummy-services.cfg' state=present
   notify:
-    - restart loopback
+    - load dummy
+    - add dummy
+    - restart dummy
   tags:
     - always
 

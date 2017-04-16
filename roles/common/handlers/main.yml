@@ -7,12 +7,18 @@
 - name: flush routing cache
   shell: echo 1 > /proc/sys/net/ipv4/route/flush
 
-- name: restart loopback
-  shell: ifdown lo:100 && ifup lo:100
-
 - name: restart loopback bsd
   shell: >
     ifconfig lo100 destroy || true &&
     ifconfig lo100 create &&
     ifconfig lo100 inet {{ local_service_ip }} netmask 255.255.255.255 &&
     ifconfig lo100 inet6 FCAA::1/64; echo $?
+
+- name: load dummy
+  shell: modprobe dummy
+
+- name: add dummy
+  shell: ip link add dummy100 type dummy
+
+- name: restart dummy
+  shell: ifdown --force dummy100 && ifup dummy100
