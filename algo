@@ -349,7 +349,8 @@ Please choose the number of your zone. Press enter for default (#8) zone.
 non_cloud () {
   read -p "
 Enter the IP address of your server: (or use localhost for local installation)
-: " -r server_ip
+[localhost]: " -r server_ip
+  server_ip=${server_ip:-localhost}
 
   read -p "
 
@@ -357,11 +358,22 @@ What user should we use to login on the server? (note: passwordless login requir
 [root]: " -r server_user
   server_user=${server_user:-root}
 
+if [ "x${server_ip}" = "xlocalhost" ]; then
+	myip=""
+else
+	myip=${server_ip}
+fi
+
   read -p "
 
 Enter the public IP address of your server: (IMPORTANT! This IP is used to verify the certificate)
-[$server_ip]: " -r IP_subject
-  IP_subject=${IP_subject:-$server_ip}
+[$myip]: " -r IP_subject
+  IP_subject=${IP_subject:-$myip}
+
+if [ "x${IP_subject}" = "x" ]; then
+	echo "no server IP given. exiting."
+	exit 1
+fi
 
   ROLES="local vpn"
   EXTRA_VARS="server_ip=$server_ip server_user=$server_user IP_subject_alt_name=$IP_subject"
