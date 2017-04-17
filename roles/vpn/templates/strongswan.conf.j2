@@ -11,7 +11,7 @@ charon {
 	}
 	user = strongswan
 	group = strongswan
-
+{% if ansible_distribution == 'FreeBSD' %}
 	filelog {
 	  /var/log/charon.log {
 	      time_format = %b %e %T
@@ -21,6 +21,7 @@ charon {
 	      flush_line = yes
 	  }
 	}
+{% endif %}
 }
 
 include strongswan.d/*.conf
