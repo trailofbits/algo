@@ -12,14 +12,3 @@
     src: "{{ SSH_keys.private }}"
     dest: ~/.ssh/algo.pem
     mode: '0600'
-
-- name: Configure the local ssh config
-  local_action:
-    module: blockinfile
-    dest: "~/.ssh/config"
-    marker: "# {mark} ALGO MANAGED BLOCK {{ cloud_instance_ip|default(server_ip) }}"
-    insertbefore: BOF
-    create: yes
-    block: |
-      Host {{ cloud_instance_ip|default(server_ip) }}
-      	IdentityFile ~/.ssh/algo.pem

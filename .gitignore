@@ -4,3 +4,4 @@ configs/*
 inventory_users
 *.kate-swp
 env
+.DS_Store
