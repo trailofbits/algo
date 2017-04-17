@@ -12,6 +12,8 @@ Resources:
       EnableDnsHostnames: true
       InstanceTenancy: default
       Tags:
+        - Key: Name
+          Value: Algo
         - Key: Environment
           Value: Algo
 
@@ -27,6 +29,8 @@ Resources:
       Tags:
         - Key: Environment
           Value: Algo
+        - Key: Name
+          Value: Algo
 
   Subnet:
     Type: AWS::EC2::Subnet
@@ -35,6 +39,8 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Environment
+          Value: Algo
+        - Key: Name
           Value: Algo
       VpcId: !Ref VPC
 
@@ -50,6 +56,8 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Environment
+          Value: Algo
+        - Key: Name
           Value: Algo
 
   Route:
@@ -106,18 +114,23 @@ Resources:
       VpcId: !Ref VPC
       GroupDescription: Enable SSH and IPsec
       SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: '22'
-        ToPort: '22'
-        CidrIp: 0.0.0.0/0
-      - IpProtocol: udp
-        FromPort: '500'
-        ToPort: '500'
-        CidrIp: 0.0.0.0/0
-      - IpProtocol: udp
-        FromPort: '4500'
-        ToPort: '4500'
-        CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: udp
+          FromPort: '500'
+          ToPort: '500'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: udp
+          FromPort: '4500'
+          ToPort: '4500'
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: Algo
+        - Key: Environment
+          Value: Algo
 
   EC2Instance:
     Type: AWS::EC2::Instance
@@ -139,7 +152,7 @@ Resources:
               owner: "ubuntu"
               group: "ubuntu"
     Properties:
-      InstanceType: t2.micro
+      InstanceType: {{ cloud_providers.ec2.size }}
       InstanceInitiatedShutdownBehavior: terminate
       SecurityGroupIds:
         - Ref: InstanceSecurityGroup
@@ -155,6 +168,11 @@ Resources:
             easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
             cfn-init -v --stack {{ stack_name }} --resource EC2Instance --region {{ region }}
             cfn-signal -e $? --stack {{ stack_name }} --resource EC2Instance --region {{ region }}
+      Tags:
+        - Key: Name
+          Value: Algo
+        - Key: Environment
+          Value: Algo
 
 Outputs:
   # PublicIPv6Cidr:

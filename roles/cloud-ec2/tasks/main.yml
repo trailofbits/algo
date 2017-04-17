@@ -1,6 +1,7 @@
 - set_fact:
     access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'), true) }}"
     secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true) }}"
+    stack_name: "{{ aws_server_name | replace('.', '-') }}"
 
 - name: Locate official Ubuntu 16.04 AMI for region
   ec2_ami_find:
