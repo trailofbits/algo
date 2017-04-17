@@ -1,5 +1,5 @@
 - set_fact:
-    credentials_file_path: "{{ credentials_file | default(lookup('env','GCE_CREDENTIALS_FILE_PATH')) }}"
+    credentials_file_path: "{{ credentials_file | default(lookup('env','GCE_CREDENTIALS_FILE_PATH'), true) }}"
     ssh_public_key_lookup: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
 
 - set_fact:
