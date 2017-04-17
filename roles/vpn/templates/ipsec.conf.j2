@@ -1,11 +1,11 @@
 config setup
-    uniqueids = never # allow multiple connections per user
+    uniqueids = replace
     charondebug="ike 2, knl 2, cfg 2, net 2, esp 2, dmn 2,  mgr 2"
 
 conn %default
     fragmentation=yes
     rekey=no
-    dpdaction=clear
+    dpdaction=none
     keyexchange=ikev2
     compress=yes
     dpddelay=35s
