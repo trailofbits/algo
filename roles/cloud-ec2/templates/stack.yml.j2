@@ -82,19 +82,19 @@ Resources:
       DestinationIpv6CidrBlock: "::/0"
       GatewayId: !Ref InternetGateway
 
-  # SubnetIPv6:
-  #   Type: AWS::EC2::SubnetCidrBlock
-  #   DependsOn:
-  #     - RouteIPv6
-  #     - VPC
-  #     - VPCIPv6
-  #   Properties:
-  #     Ipv6CidrBlock:
-  #       "Fn::Join":
-  #           - ""
-  #           - - !Select [0, !Split [ "::", !GetAtt VPC.Ipv6CidrBlocks ]]
-  #             - "::dead:beef/64"
-  #     SubnetId: !Ref Subnet
+  SubnetIPv6:
+    Type: AWS::EC2::SubnetCidrBlock
+    DependsOn:
+      - RouteIPv6
+      - VPC
+      - VPCIPv6
+    Properties:
+      Ipv6CidrBlock:
+        "Fn::Join":
+            - ""
+            - - !Select [0, !Split [ "::", !Select [0, !GetAtt VPC.Ipv6CidrBlocks] ]]
+              - "::dead:beef/64"
+      SubnetId: !Ref Subnet
 
   RouteSubnet:
     Type: "AWS::EC2::SubnetRouteTableAssociation"
@@ -135,6 +135,7 @@ Resources:
   EC2Instance:
     Type: AWS::EC2::Instance
     DependsOn:
+      - SubnetIPv6
       - Subnet
       - InstanceSecurityGroup
     Metadata:
@@ -158,11 +159,13 @@ Resources:
         - Ref: InstanceSecurityGroup
       ImageId: {{ ami_image }}
       SubnetId: !Ref Subnet
-      # Ipv6AddressCount: 1
+      Ipv6AddressCount: 1
       UserData:
         "Fn::Base64":
           !Sub |
             #!/bin/bash -xe
+            echo "iface eth0 inet6 dhcp" >> /etc/network/interfaces.d/60-eth0-with-ipv6.cfg
+            dhclient -6 -N
             apt-get update
             apt-get -y install python-setuptools
             easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
@@ -175,8 +178,6 @@ Resources:
           Value: Algo
 
 Outputs:
-  # PublicIPv6Cidr:
-  #   Value: !GetAtt VPC.Ipv6CidrBlocks
   PublicIP:
     Value:
       Fn::GetAtt:
