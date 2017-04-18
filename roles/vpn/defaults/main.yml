@@ -22,8 +22,8 @@ strongswan_enabled_plugins:
 
 ciphers:
   defaults:
-    ike: aes128gcm16-sha2_512-prfsha512-ecp256!
-    esp: aes128gcm16-sha2_512-ecp256!
+    ike: aes128gcm16-prfsha512-ecp256!
+    esp: aes128gcm16-ecp256!
   compat:
-    ike: aes128gcm16-sha2_512-prfsha512-ecp256,aes128-sha2_512-prfsha512-ecp256,aes128-sha2_256-prfsha256-modp2048!
-    esp: aes128gcm16-sha2_512-ecp256,aes128-sha2_512-ecp256,aes128-sha2_256-modp2048!
+    ike: aes128gcm16-prfsha512-ecp256,aes128-sha2_512-prfsha512-ecp256,aes128-sha2_512-prfsha512-modp2048!
+    esp: aes128gcm16-ecp256,aes128-sha2_512-ecp256,aes128-sha2_512-prfsha512-modp2048!
