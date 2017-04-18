@@ -12,13 +12,13 @@ Algo VPN is a set of Ansible scripts that simplify the setup of a personal IPSEC
 
 ## Features
 
-* Supports only IKEv2, with a single cipher suite: AES-GCM, HMAC-SHA2, and P-256 DH
+* Supports only IKEv2 with strong crypto: AES-GCM, SHA2, and P-256
 * Generates Apple profiles to auto-configure iOS and macOS devices
-* Includes helper scripts to add and remove users
+* Includes a helper script to add and remove users
 * Blocks ads with a local DNS resolver and HTTP proxy (optional)
 * Sets up limited SSH users for tunneling traffic (optional)
 * Based on current versions of Ubuntu and strongSwan
-* Installs to DigitalOcean, Amazon EC2, Google Compute Engine, Microsoft Azure, or your own server
+* Installs to DigitalOcean, Amazon EC2, Microsoft Azure, Google Compute Engine, or your own server
 
 ## Anti-features
 
