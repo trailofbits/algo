@@ -31,6 +31,8 @@ COMMIT
 -A INPUT -p icmpv6 --icmpv6-type neighbor-solicitation -m hl --hl-eq 255 -j ACCEPT
 -A INPUT -p icmpv6 --icmpv6-type neighbor-advertisement -m hl --hl-eq 255 -j ACCEPT
 -A INPUT -p icmpv6 --icmpv6-type redirect -m hl --hl-eq 255 -j ACCEPT
+# DHCP in AWS
+-A INPUT -m state --state NEW -m udp -p udp --dport 546 -d fe80::/64 -j ACCEPT
 # TODO:
 # The IP of the resolver should be bound to a DUMMY interface.
 # DUMMY interfaces are the proper way to install IPs without assigning them any
