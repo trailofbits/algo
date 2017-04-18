@@ -131,9 +131,11 @@ In order to connect to the Algo VPN server, your router must support IKEv2, ECC 
 
 You're trying to connect Ubuntu or Debian to the Algo server through the Network Manager GUI but it's not working. Many versions of Ubuntu and some older versions of Debian bundle a [broken version of Network Manager](https://github.com/trailofbits/algo/issues/263) without support for modern standards or the strongSwan server. You must upgrade to Ubuntu 17.04 or Debian 9 Stretch, each of which contain the required minimum version of Network Manager.
 
-### 13. IKEAUTH request never makes it to the server
-If you can see IKE_SA_INIT request/repsonses, yet the IKE_AUTH request never makes it to the server.
-It is possible that the IKE_AUTH payload is too big to fit in a single IP datagram, and so is fragmented. Many consumer routers and cable modems ship with 'Block Fragmented IP packets'. Try disabling any firewall settings on the router related to blocking or dropping IP fragments. https://github.com/trailofbits/algo/issues/305
+### 13. "Error 809" or IKE_AUTH requests that never make it to the server
+
+On Windows, this issue may manifest with an error message that says "The network connection between your computer and the VPN server could not be established because the remote server is not responding... This is Error 809." On other operating systems, you may try to debug the issue by capturing packets with tcpdump and notice that, while IKE_SA_INIT request and responses are exchanged between the client and server, IKE_AUTH requests never make it to the server.
+
+It is possible that the IKE_AUTH payload is too big to fit in a single IP datagram, and so is fragmented. Many consumer routers and cable modems ship with 'Block Fragmented IP packets'. Many consumer routers and cable modems ship with a feature that blocks "fragmented IP packets." Try logging into your router and disabling any firewall settings related to blocking or dropping fragmented IP packets. For more information, see [Issue #305](https://github.com/trailofbits/algo/issues/305).
 
 ### I have a problem not covered here
 
