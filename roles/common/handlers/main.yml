@@ -15,10 +15,13 @@
     ifconfig lo100 inet6 FCAA::1/64; echo $?
 
 - name: load dummy
-  shell: modprobe dummy
+  modprobe:
+    name: dummy
+    state: present
+    params: 'numdummies=2'
 
 - name: add dummy
-  shell: ip link add dummy100 type dummy
+  shell: ip link add dummy1 type dummy || /bin/true
 
 - name: restart dummy
-  shell: ifdown --force dummy100 && ifup dummy100
+  shell: ifdown --force dummy1 && ifup dummy1

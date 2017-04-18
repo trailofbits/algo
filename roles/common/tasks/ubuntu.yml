@@ -44,6 +44,18 @@
   tags:
     - cloud
 
+- name: Use dummy module on startup
+  lineinfile: dest=/etc/modules-load.d/modules.conf line='dummy' state=present create=yes
+  tags:
+    - always
+
+- name: Configure 2 dummies
+  lineinfile: dest=/etc/modprobe.d/dummy.conf line='options dummy numdummies=2' state=present create=yes
+  notify:
+    - load dummy
+  tags:
+    - always
+
 - name: Dummy interface for services configured
   template: src=10-dummy-services.cfg.j2 dest=/etc/network/interfaces.d/10-dummy-services.cfg
   notify:
