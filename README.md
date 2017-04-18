@@ -84,8 +84,6 @@ You can now setup clients to connect it, e.g. your iPhone or laptop. Proceed to 
         "\"#----------------------------------------------------------------------#\"",
 ```
 
-Note: If you want to run Algo again at any point in the future, you must first "reactivate" the dependencies for it. To reactivate them, open your terminal, use `cd` to navigate to the directory with Algo, then run `source env/bin/activate`.
-
 Advanced users who want to install Algo on top of a server they already own or want to script the deployment of Algo onto a network of servers, please see the [Advanced Usage](/docs/advanced-usage.md) documentation.
 
 ## Configure the VPN Clients
@@ -176,6 +174,17 @@ If you turned on the optional SSH tunneling role, then local user accounts will 
 Use the example command below to start an SSH tunnel by replacing `user` and `ip` with your own. Once the tunnel is setup, you can configure a browser or other application to use 127.0.0.1:1080 as a SOCKS proxy to route traffic through the Algo server.
 
  `ssh -D 127.0.0.1:1080 -f -q -C -N user@ip -i configs/ip_user.ssh.pem`
+
+## SSH into Algo Server
+
+To SSH into the Algo server for administrative purposes you can use the example command below by replacing `ip` with your own:
+
+ `ssh ubuntu@ip -i ~/.ssh/algo.pem`
+ 
+If you find yourself regularly logging into Algo then it will be useful to load your Algo ssh key automatically.  Add the following snippet to the bottom of `~/.bash_profile` to add it to your shell environment permanently.
+ 
+ `ssh-add ~/.ssh/algo > /dev/null 2>&1`
+
 
 ## Adding or Removing Users
 
