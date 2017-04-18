@@ -26,4 +26,4 @@ ciphers:
     esp: aes128gcm16-ecp256!
   compat:
     ike: aes128gcm16-prfsha512-ecp256,aes128-sha2_512-prfsha512-ecp256,aes128-sha2_512-prfsha512-modp2048!
-    esp: aes128gcm16-ecp256,aes128-sha2_512-ecp256,aes128-sha2_512-prfsha512-modp2048!
+    esp: aes128gcm16-ecp256,aes128-sha2_512-prfsha512-ecp256,aes128-sha2_512-prfsha512-modp2048!
