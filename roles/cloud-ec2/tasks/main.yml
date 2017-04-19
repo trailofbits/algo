@@ -108,9 +108,20 @@
     instance_initiated_shutdown_behavior: terminate
   register: ec2
 
+- name: Allocate an EIP for the instances
+  ec2_eip:
+    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'))}}"
+    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'))}}"
+    region: "{{ region }}"
+    release_on_disassociation: yes
+    reuse_existing_ip_allowed: yes
+    in_vpc: yes
+    device_id: "{{ ec2.tagged_instances[0].id }}"
+  register: eip
+
 - name: Add new instance to host group
   add_host:
-    hostname: "{{ item.public_ip }}"
+    hostname: "{{ eip.public_ip }}"
     groupname: vpn-host
     ansible_ssh_user: ubuntu
     ansible_python_interpreter: "/usr/bin/python2.7"
@@ -120,7 +131,7 @@
   with_items: "{{ ec2.tagged_instances }}"
 
 - set_fact:
-    cloud_instance_ip: "{{ ec2.tagged_instances[0].public_ip }}"
+    cloud_instance_ip: "{{ eip.public_ip }}"
 
 - name: Get EC2 instances
   ec2_remote_facts:
