@@ -210,8 +210,8 @@ The Algo VPN server now contains only the users listed in the `config.cfg` file.
   - Deploy to an [unsupported cloud provider](cloud-unsupported.md)
 * Advanced Deployment
   - Deploy to local [FreeBSD](deploy-to-freebsd.md) servers
-  - Deploy to local [Ubuntu 16.04](local-deployment.md) servers
-  - Deploy with [Ansible](scripted-deployment.md)
+  - Deploy to local [Ubuntu 16.04](deploy-to-ubuntu.md) servers
+  - Deploy with [Ansible](deploy-with-ansible.md)
 * [FAQ](faq.md)
 * [Troubleshooting](troubleshooting.md)
 
