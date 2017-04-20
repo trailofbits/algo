@@ -1,5 +1,4 @@
-- name: Gather Facts
-  setup:
+---
 
 - name: Dnsmasq installed
   package: name=dnsmasq
