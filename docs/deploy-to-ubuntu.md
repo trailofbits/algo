@@ -1,6 +1,8 @@
 # Local deployment
 
-It is possible to download the Algo scripts to your own Ubuntu server and run the scripts locally. You need to install Ansible to run Algo on Ubuntu. Installing ansible via pip requires pulling in a lot of dependencies, including a full compiler suite. It would be easier to use apt, however, Ubuntu 16.04 only comes with Ansible 2.0.0.2. Therefore, to use apt you must use the ansible PPA, and using a PPA requires installing `software-properties-common`.
+It is possible to download the Algo scripts to your own Ubuntu 16.04 server and run the scripts locally.
+
+In order to start, you need to install Ansible. Installing Ansible via pip requires pulling in a lot of dependencies, including a full compiler suite. It would be easier to use apt, however, Ubuntu 16.04 only comes with Ansible 2.0.0.2. The easiest solution is to install the Ansible PPA for a newer version of Ansible via apt, however, using a PPA requires installing `software-properties-common`.
 
 tl;dr:
 
