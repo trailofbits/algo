@@ -112,27 +112,27 @@ You want to install Algo to a specific region in a cloud provider, but that regi
 
 ## Connection Problems
 
-### 1. I want to change the list of trusted Wifi networks on my Apple device
+### I want to change the list of trusted Wifi networks on my Apple device
 
 This setting is enforced on your client device via the Apple profile you put on it. You can edit the profile with new settings, then load it on your device to change the settings. You can use the [Apple Configurator](https://itunes.apple.com/us/app/apple-configurator-2/id1037126344?mt=12) to edit and resave the profile. Advanced users can edit the file directly in a text editor. Use the [Configuration Profile Reference](https://developer.apple.com/library/content/featuredarticles/iPhoneConfigurationProfileRef/Introduction/Introduction.html) for information about the file format and other available options. If you're not comfortable editing the profile, you can also simply redeploy a new Algo server with different settings to receive a new auto-generated profile.
 
-### 2. Error: "The VPN Service payload could not be installed."
+### Error: "The VPN Service payload could not be installed."
 
 You tried to install the Apple profile on one of your devices and you received an error stating `The "VPN Service" payload could not be installed. The VPN service could not be created.` Client support for Algo VPN is limited to modern operating systems, e.g. macOS 10.11+, iOS 9+. Please upgrade your operating system and try again.
 
-### 3. Little Snitch is broken when connected to the VPN
+### Little Snitch is broken when connected to the VPN
 
 Little Snitch is not compatible with IPSEC VPNs due to a known bug in macOS and there is no solution. The Little Snitch "filter" does not get incoming packets from IPSEC VPNs and, therefore, cannot evaluate any rules over them. Their developers have filed a bug report with Apple but there has been no response. There is nothing they or Algo can do to resolve this problem on their own. You can read more about this problem in [issue #134](https://github.com/trailofbits/algo/issues/134).
 
-### 4. I can't get my router to connect to the Algo server
+### I can't get my router to connect to the Algo server
 
 In order to connect to the Algo VPN server, your router must support IKEv2, ECC certificate-based authentication, and the cipher suite we use. See the ipsec.conf files we generate in the `config` folder for more information. Note that we do not officially support routers as clients for Algo VPN at this time, though patches and documentation for them are welcome (for example, see open issues for [Ubiquiti](https://github.com/trailofbits/algo/issues/307) and [pfSense](https://github.com/trailofbits/algo/issues/292)).
 
-### 5. I can't get Network Manager to connect to the Algo server
+### I can't get Network Manager to connect to the Algo server
 
 You're trying to connect Ubuntu or Debian to the Algo server through the Network Manager GUI but it's not working. Many versions of Ubuntu and some older versions of Debian bundle a [broken version of Network Manager](https://github.com/trailofbits/algo/issues/263) without support for modern standards or the strongSwan server. You must upgrade to Ubuntu 17.04 or Debian 9 Stretch, each of which contain the required minimum version of Network Manager.
 
-### 6. Various websites appear to be offline through the VPN
+### Various websites appear to be offline through the VPN
 
 This issue appears intermittently due to issues with MTU size. If you experience this issue, we recommend [filing an issue](https://github.com/trailofbits/algo/issues/new) for assistance. Advanced users can troubleshoot the correct MTU size by retrying `ping` with the "don't fragment" bit set, then decreasing packet size until it works. This will determine the correct MTU size for your network, which you then need to update on your network adapter.
 
@@ -147,7 +147,7 @@ Then, set the MTU size on your network adapter (wlan0 or eth0):
 $ sudo ifconfig wlan0 mtu 1438
 ```
 
-### 7. "Error 809" or IKE_AUTH requests that never make it to the server
+### "Error 809" or IKE_AUTH requests that never make it to the server
 
 On Windows, this issue may manifest with an error message that says "The network connection between your computer and the VPN server could not be established because the remote server is not responding... This is Error 809." On other operating systems, you may try to debug the issue by capturing packets with tcpdump and notice that, while IKE_SA_INIT request and responses are exchanged between the client and server, IKE_AUTH requests never make it to the server.
 
