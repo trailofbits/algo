@@ -32,9 +32,6 @@ OpenVPN does not have out-of-the-box client support on any major desktop or mobi
 
 Alpine Linux is not supported out-of-the-box by any major cloud provider. We are interested in supporting Free-, Open-, and HardenedBSD. Follow along or contribute to our BSD support in [this issue](https://github.com/trailofbits/algo/issues/35).
 
-## Why does Algo only support a single cipher suite? #231
-
-
 ## Where did the name "Algo" come from?
 
 Algo is short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhere for [inventing the Internet](https://www.youtube.com/watch?v=BnFJ8cHAlco).
