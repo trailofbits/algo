@@ -1,0 +1,18 @@
+---
+
+- name: Make a cloudformation template
+  template:
+    src: stack.yml.j2
+    dest: "configs/{{ aws_server_name }}.yml"
+
+- name: Deploy the template
+  cloudformation:
+    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'), true)}}"
+    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true)}}"
+    stack_name: "{{ stack_name }}"
+    state: "present"
+    region: "{{ region }}"
+    template: "configs/{{ aws_server_name }}.yml"
+    tags:
+      Environment: Algo
+  register: stack
