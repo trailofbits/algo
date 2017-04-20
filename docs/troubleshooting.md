@@ -114,8 +114,7 @@ You want to install Algo to a specific region in a cloud provider, but that regi
 
 Look here if you deployed an Algo server but now have a problem connecting to it with a client.
 
-
-### I'm blocked or get CAPTCHAs when I access certain websites #458
+### I'm blocked or get CAPTCHAs when I access certain websites
 
 This is normal.
 
