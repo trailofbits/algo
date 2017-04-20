@@ -47,7 +47,6 @@ Server roles:
 
 - role: vpn, tags: vpn
 - role: dns_adblocking, tags: dns, adblock
-- role: proxy, tags: proxy, adblock
 - role: security, tags: security
 - role: ssh_tunneling, tags: ssh_tunneling
 

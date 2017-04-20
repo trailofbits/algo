@@ -47,7 +47,6 @@
 
   roles:
     - { role: security, tags: [ 'security' ] }
-    - { role: proxy, tags: [ 'proxy', 'adblock' ] }
     - { role: dns_adblocking, tags: ['dns', 'adblock' ] }
     - { role: ssh_tunneling, tags: [ 'ssh_tunneling' ] }
     - { role: vpn, tags: [ 'vpn' ] }
