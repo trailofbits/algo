@@ -232,14 +232,13 @@ EXTRA_VARS="do_access_token=$do_access_token do_server_name=$do_server_name do_r
 ec2 () {
   read -p "
 Enter your aws_access_key (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
-Note: Make sure to use either your root key (recommended) or an IAM user with an acceptable policy attached
+Note: Make sure to use an IAM user with an acceptable policy attached (see https://github.com/trailofbits/algo/blob/master/docs/deploy-with-ansible.md).
 $ADDITIONAL_PROMPT
 [AKIA...]: " -rs aws_access_key
 
   read -p "
 
 Enter your aws_secret_key (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
-Note: Make sure to use either your root key (recommended) or an IAM user with an acceptable policy attached
 $ADDITIONAL_PROMPT
 [ABCD...]: " -rs aws_secret_key
 
