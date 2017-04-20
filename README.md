@@ -198,11 +198,22 @@ The Algo VPN server now contains only the users listed in the `config.cfg` file.
 
 ## Additional Documentation
 
-* [FAQ](docs/faq.md): answers to common design questions.
-* [Troubleshooting](docs/troubleshooting.md) includes answers to common technical issues.
-* [Roles](docs/ansible-roles.md): a description of optional features.
-* [Local Deployment](docs/local-deployment.md): Instructions for deploying Algo to your own server
-* [Scripted Deployments](docs/scripted-deployment.md): instructions for non-interactive scripting of Algo deploys
+* Setup instructions
+  - Documentation for avaialble [Ansible roles](setup-roles.md)
+  - Deploy from [RedHat/CentOS 6.x](setup-redhat-centos6.md)
+* Client setup
+  - Setup [Windows](client-windows.md) clients
+  - Setup [Android](client-android.md) clients
+  - Setup [Generic/Linux](client-generic.md) clients with Ansible
+* Cloud setup
+  - Configure [Azure](cloud-azure.md)
+  - Deploy to an [unsupported cloud provider](cloud-unsupported.md)
+* Advanced Deployment
+  - Deploy to local [FreeBSD](deploy-to-freebsd.md) servers
+  - Deploy to local [Ubuntu 16.04](local-deployment.md) servers
+  - Deploy with [Ansible](scripted-deployment.md)
+* [FAQ](faq.md)
+* [Troubleshooting](troubleshooting.md)
 
 ## Endorsements
 
