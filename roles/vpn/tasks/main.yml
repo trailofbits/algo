@@ -1,25 +1,4 @@
-- name: Gather Facts
-  setup:
-
-- name: Enable IPv6
-  set_fact:
-    ipv6_support: true
-  when: ansible_default_ipv6.gateway is defined
-
-- name: Generate password for the CA key
-  shell: >
-    openssl rand -hex 16
-  register: CA_password
-
-- set_fact:
-    easyrsa_p12_export_password: "{{ p12_export_password|default((ansible_date_time.iso8601_basic|sha1|to_uuid).split('-')[0]) }}"
-    easyrsa_CA_password: "{{ CA_password.stdout }}"
-    IP_subject_alt_name: "{{ IP_subject_alt_name }}"
-
-- name: Change the algorithm to RSA
-  set_fact:
-    algo_params: "rsa:2048"
-  when: Win10_Enabled is defined and Win10_Enabled == "Y"
+---
 
 - name: Ensure that the strongswan group exist
   group: name=strongswan state=present
