@@ -1,8 +1,5 @@
 ---
 
-- set_fact:
-    IP_subject_alt_name: "{{ IP_subject_alt_name }}"
-
 - name: Ensure that the sshd_config file has desired options
   blockinfile:
     dest: /etc/ssh/sshd_config
