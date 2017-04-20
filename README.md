@@ -204,7 +204,7 @@ The Algo VPN server now contains only the users listed in the `config.cfg` file.
 * Client setup
   - Setup [Windows](client-windows.md) clients
   - Setup [Android](client-android.md) clients
-  - Setup [Generic/Linux](client-generic.md) clients with Ansible
+  - Setup [Generic/Linux](client-linux.md) clients with Ansible
 * Cloud setup
   - Configure [Azure](cloud-azure.md)
   - Deploy to an [unsupported cloud provider](cloud-unsupported.md)
