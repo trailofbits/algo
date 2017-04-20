@@ -40,10 +40,6 @@
     - name: Common pre-tasks
       include: playbooks/common.yml
 
-    - set_fact:
-        IP_subject_alt_name: "{{ IP_subject }}"
-        easyrsa_p12_export_password: "{{ p12_export_password|default((ansible_date_time.iso8601_basic|sha1|to_uuid).split('-')[0]) }}"
-
   roles:
     - { role: ssh_tunneling, tags: [ 'ssh_tunneling' ], when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y" }
 

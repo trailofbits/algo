@@ -15,7 +15,7 @@ Algo VPN is a set of Ansible scripts that simplify the setup of a personal IPSEC
 * Supports only IKEv2 with strong crypto: AES-GCM, SHA2, and P-256
 * Generates Apple profiles to auto-configure iOS and macOS devices
 * Includes a helper script to add and remove users
-* Blocks ads with a local DNS resolver and HTTP proxy (optional)
+* Blocks ads with a local DNS resolver (optional)
 * Sets up limited SSH users for tunneling traffic (optional)
 * Based on current versions of Ubuntu and strongSwan
 * Installs to DigitalOcean, Amazon EC2, Microsoft Azure, Google Compute Engine, or your own server
@@ -79,7 +79,7 @@ You can now setup clients to connect it, e.g. your iPhone or laptop. Proceed to 
         "\"#    Config files and certificates are in the ./configs/ directory.    #\"",
         "\"#              Go to https://whoer.net/ after connecting               #\"",
         "\"#        and ensure that all your traffic passes through the VPN.      #\"",
-        "\"#          Local DNS resolver and Proxy IP address: 172.16.0.1         #\"",
+        "\"#                    Local DNS resolver 172.16.0.1                     #\"",
         "\"#                The p12 and SSH keys password is XXXXXXXX             #\"",
         "\"#----------------------------------------------------------------------#\"",
 ```
@@ -180,9 +180,9 @@ Use the example command below to start an SSH tunnel by replacing `user` and `ip
 To SSH into the Algo server for administrative purposes you can use the example command below by replacing `ip` with your own:
 
  `ssh ubuntu@ip -i ~/.ssh/algo.pem`
- 
+
 If you find yourself regularly logging into Algo then it will be useful to load your Algo ssh key automatically.  Add the following snippet to the bottom of `~/.bash_profile` to add it to your shell environment permanently.
- 
+
  `ssh-add ~/.ssh/algo > /dev/null 2>&1`
 
 

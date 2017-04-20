@@ -17,10 +17,6 @@
   * Enables [unattended-upgrades](https://help.ubuntu.com/community/AutomaticSecurityUpdates) to ensure available patches are always applied
   * Modify features like core dumps, kernel parameters, and SUID binaries to limit possible attacks
   * Enhances SSH with modern ciphers and seccomp, and restricts access to old or unwanted features like X11 forwarding and SFTP
-* **Proxy-based Adblocking and Compression**
-  * Installs [Privoxy](https://www.privoxy.org/) with an ad blocking ruleset
-  * Installs Apache with [mod_pagespeed](http://modpagespeed.com/) as an HTTP proxy
-  * Constrains Privoxy and Apache with AppArmor and cgroups CPU and memory limitations
 * **DNS-based Adblocking**
   * Install the [dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html) local resolver with a blacklist for advertising domains
   * Constrains dnsmasq with AppArmor and cgroups CPU and memory limitations

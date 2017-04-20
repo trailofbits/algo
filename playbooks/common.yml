@@ -12,9 +12,4 @@
   include: freebsd.yml
   when: '"FreeBSD" in OS.stdout'
 
-- name: Ensure the algo ssh key exist on the server
-  authorized_key:
-    user: "{{ ansible_ssh_user }}"
-    state: present
-    key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
-  tags: [ 'cloud' ]
+- include: facts/main.yml
