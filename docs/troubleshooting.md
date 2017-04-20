@@ -112,6 +112,8 @@ You want to install Algo to a specific region in a cloud provider, but that regi
 
 ## Connection Problems
 
+Look here if you deployed an Algo server but now have a problem connecting to it with a client.
+
 ### I want to change the list of trusted Wifi networks on my Apple device
 
 This setting is enforced on your client device via the Apple profile you put on it. You can edit the profile with new settings, then load it on your device to change the settings. You can use the [Apple Configurator](https://itunes.apple.com/us/app/apple-configurator-2/id1037126344?mt=12) to edit and resave the profile. Advanced users can edit the file directly in a text editor. Use the [Configuration Profile Reference](https://developer.apple.com/library/content/featuredarticles/iPhoneConfigurationProfileRef/Introduction/Introduction.html) for information about the file format and other available options. If you're not comfortable editing the profile, you can also simply redeploy a new Algo server with different settings to receive a new auto-generated profile.
