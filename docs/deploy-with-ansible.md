@@ -103,6 +103,70 @@ Additional tags:
 
 - [encrypted](https://aws.amazon.com/blogs/aws/new-encrypted-ebs-boot-volumes/) (enabled by default)
 
+#### Minimum required IAM permissions for deployment:
+
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PreDeployment",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:DescribeImages",
+                "ec2:DescribeKeyPairs",
+                "ec2:ImportKeyPair"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "DeployCloudFormationStack",
+            "Effect": "Allow",
+            "Action": [
+                "cloudformation:CreateStack",
+                "cloudformation:DescribeStacks",
+                "cloudformation:CreateStacks",
+                "cloudformation:DescribeStackEvents",
+                "cloudformation:ListStackResources"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "CloudFormationEC2Access",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:CreateInternetGateway",
+                "ec2:DescribeVpcs",
+                "ec2:CreateVpc",
+                "ec2:DescribeInternetGateways",
+                "ec2:ModifyVpcAttribute",
+                "ec2:createTags",
+                "ec2:CreateSubnet",
+                "ec2:Associate*",
+                "ec2:CreateRouteTable",
+                "ec2:AttachInternetGateway",
+                "ec2:DescribeRouteTables",
+                "ec2:DescribeSubnets",
+                "ec2:ModifySubnetAttribute",
+                "ec2:CreateRoute",
+                "ec2:CreateSecurityGroup",
+                "ec2:DescribeSecurityGroups",
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:RunInstances",
+                "ec2:DescribeInstances"
+            ],
+            "Resource": [
+                "*"
+            ]
+        }
+    ]
+}
+```
+
 ### Google Compute Engine
 
 Required variables:
