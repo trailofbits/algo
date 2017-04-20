@@ -1,6 +1,6 @@
 # FreeBSD / HardenedBSD server setup
 
-It is only possible to install Algo on existing systems only. We support only 11 version for now.
+FreeBSD server support is a work in progress. For now, it is only possible to install Algo on existing FreeBSD 11 systems.
 
 ## System preparation
 
