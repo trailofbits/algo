@@ -46,7 +46,7 @@
     name: "{{ do_server_name }}"
     region_id: "{{ do_region }}"
     size_id: "{{ cloud_providers.digitalocean.size }}"
-    image_id: "ubuntu-16-04-x64"
+    image_id: "{{ cloud_providers.digitalocean.image }}"
     ssh_key_ids: "{{ do_ssh_key.ssh_key.id }}"
     unique_name: yes
     api_token: "{{ do_token }}"
