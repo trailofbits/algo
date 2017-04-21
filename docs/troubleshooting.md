@@ -1,5 +1,24 @@
 # Troubleshooting
 
+      * [Installation Problems](#installation-problems)
+         * [Error: "You have not agreed to the Xcode license agreements"](#error-you-have-not-agreed-to-the-xcode-license-agreements)
+         * [Error: checking whether the C compiler works... no](#error-checking-whether-the-c-compiler-works-no)
+         * [Error: "fatal error: 'openssl/opensslv.h' file not found"](#error-fatal-error-opensslopensslvh-file-not-found)
+         * [Error: "TypeError: must be str, not bytes"](#error-typeerror-must-be-str-not-bytes)
+         * [Error: "ansible-playbook: command not found"](#error-ansible-playbook-command-not-found)
+         * [Bad owner or permissions on .ssh](#bad-owner-or-permissions-on-ssh)
+         * [The region you want is not available](#the-region-you-want-is-not-available)
+      * [Connection Problems](#connection-problems)
+         * [I'm blocked or get CAPTCHAs when I access certain websites](#im-blocked-or-get-captchas-when-i-access-certain-websites)
+         * [I want to change the list of trusted Wifi networks on my Apple device](#i-want-to-change-the-list-of-trusted-wifi-networks-on-my-apple-device)
+         * [Error: "The VPN Service payload could not be installed."](#error-the-vpn-service-payload-could-not-be-installed)
+         * [Little Snitch is broken when connected to the VPN](#little-snitch-is-broken-when-connected-to-the-vpn)
+         * [I can't get my router to connect to the Algo server](#i-cant-get-my-router-to-connect-to-the-algo-server)
+         * [I can't get Network Manager to connect to the Algo server](#i-cant-get-network-manager-to-connect-to-the-algo-server)
+         * [Various websites appear to be offline through the VPN](#various-websites-appear-to-be-offline-through-the-vpn)
+         * ["Error 809" or IKE_AUTH requests that never make it to the server](#error-809-or-ike_auth-requests-that-never-make-it-to-the-server)
+      * [I have a problem not covered here](#i-have-a-problem-not-covered-here)
+
 ## Installation Problems
 
 Look here if you have a problem running the installer to set up a new Algo server.
