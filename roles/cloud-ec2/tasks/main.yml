@@ -3,12 +3,12 @@
     secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true) }}"
     stack_name: "{{ aws_server_name | replace('.', '-') }}"
 
-- name: Locate official Ubuntu 16.04 AMI for region
+- name: Locate official AMI for region
   ec2_ami_find:
     aws_access_key: "{{ access_key }}"
     aws_secret_key: "{{ secret_key }}"
-    name: "ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"
-    owner:  099720109477
+    name: "ubuntu/images/hvm-ssd/{{ cloud_providers.ec2.image.name }}-amd64-server-*"
+    owner: "{{ cloud_providers.ec2.image.owner }}"
     sort: creationDate
     sort_order: descending
     sort_end: 1

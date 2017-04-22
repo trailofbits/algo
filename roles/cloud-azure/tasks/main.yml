@@ -89,11 +89,7 @@
       Environment: Algo
     ssh_public_keys:
       - { path: "/home/ubuntu/.ssh/authorized_keys", key_data: "{{ lookup('file', '{{ SSH_keys.public }}') }}" }
-    image:
-      offer: UbuntuServer
-      publisher: Canonical
-      sku: '16.04-LTS'
-      version: latest
+    image: "{{ cloud_providers.azure.image }}"
   register: azure_rm_virtualmachine
 
   # To-do: Add error handling - if vm_size requested is not available, can we fall back to another, ideally with a prompt?
