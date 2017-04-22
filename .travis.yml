@@ -17,6 +17,7 @@ addons:
     - lxc-templates
     - expect-dev
     - debootstrap
+    - shellcheck
 
 cache:
   directories:
