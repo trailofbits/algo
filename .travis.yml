@@ -45,9 +45,9 @@ install:
 
 before_script:
   - gem install awesome_bot
-  - awesome_bot --allow-dupe --skip-save-results *.md docs/*.md --white-list paypal.com,do.co,microsoft.com,https://github.com/trailofbits/algo/archive/master.zip,https://github.com/trailofbits/algo/issues/new
 
 script:
+  - awesome_bot --allow-dupe --skip-save-results *.md docs/*.md --white-list paypal.com,do.co,microsoft.com,https://github.com/trailofbits/algo/archive/master.zip,https://github.com/trailofbits/algo/issues/new
   - ansible-playbook deploy.yml --syntax-check
   - ansible-playbook deploy.yml -t local,vpn,dns,ssh_tunneling,security,tests -e "server_ip=$LXC_IP server_user=root IP_subject_alt_name=$LXC_IP local_dns=Y"
 
