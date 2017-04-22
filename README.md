@@ -55,7 +55,7 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
           python-setuptools \
           python-virtualenv -y
       ```
-     - Linux (rpm-based): See the [Pre-Install Documentation for RedHat/CentOS 6.x](docs/server-redhat-centos6.md)
+     - Linux (rpm-based): See the [Pre-Install Documentation for RedHat/CentOS 6.x](docs/setup-redhat-centos6.md)
      - Windows: See the [Windows documentation](docs/client-windows.md)
 
 4. Install Algo's remaining dependencies for your operating system. Use the same terminal window as the previous step and run:
