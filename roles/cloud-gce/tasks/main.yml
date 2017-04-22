@@ -14,7 +14,7 @@
     instance_names: "{{ server_name }}"
     zone: "{{ zone }}"
     machine_type: "{{ cloud_providers.gce.size }}"
-    image: ubuntu-1604
+    image: "{{ cloud_providers.gce.image }}"
     service_account_email: "{{ service_account_email }}"
     credentials_file: "{{ credentials_file_path }}"
     project_id: "{{ project_id }}"

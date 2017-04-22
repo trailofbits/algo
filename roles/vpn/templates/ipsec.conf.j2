@@ -5,7 +5,11 @@ config setup
 conn %default
     fragmentation=yes
     rekey=no
+{% if strongswan_version.stdout is defined and strongswan_version.stdout > '550' %}
+    dpdaction=clear
+{% else %}
     dpdaction=none
+{% endif %}
     keyexchange=ikev2
     compress=yes
     dpddelay=35s

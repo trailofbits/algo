@@ -15,6 +15,11 @@
 - name: Install strongSwan
   package: name=strongswan state=present
 
+- name: Get StrongSwan versions
+  shell: >
+    ipsec --versioncode | grep -oE "^U([0-9]*|\.)*" | sed "s/^U\|\.//g"
+  register: strongswan_version
+
 - include: ipec_configuration.yml
 - include: openssl.yml
 - include: distribute_keys.yml
