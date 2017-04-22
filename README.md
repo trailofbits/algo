@@ -66,11 +66,11 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
 
 5. Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
 
-6. Start the deployment. Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [ansible-roles.md](docs/ansible-roles.md).
+6. Start the deployment. Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [deploy-with-ansible.md](docs/deploy-with-ansible.md).
 
 That's it! You will get the message below when the server deployment process completes. You now have an Algo server on the internet. Take note of the p12 (user certificate) password in case you need it later.
 
-You can now setup clients to connect it, e.g. your iPhone or laptop. Proceed to [Configure the VPN Clients](https://github.com/trailofbits/algo#configure-the-vpn-clients) below.
+You can now setup clients to connect it, e.g. your iPhone or laptop. Proceed to [Configure the VPN Clients](#configure-the-vpn-clients) below.
 
 ```
         "\"#----------------------------------------------------------------------#\"",
@@ -84,7 +84,7 @@ You can now setup clients to connect it, e.g. your iPhone or laptop. Proceed to 
         "\"#----------------------------------------------------------------------#\"",
 ```
 
-Advanced users who want to install Algo on top of a server they already own or want to script the deployment of Algo onto a network of servers, please see the [Advanced Usage](/docs/advanced-usage.md) documentation.
+Advanced users who want to install Algo on top of a server they already own or want to script the deployment of Algo onto a network of servers, please see the [Deploy to Ubuntu](/docs/deploy-to-ubuntu.md) documentation.
 
 ## Configure the VPN Clients
 
@@ -199,21 +199,21 @@ The Algo VPN server now contains only the users listed in the `config.cfg` file.
 ## Additional Documentation
 
 * Setup instructions
-  - Documentation for avaialble [Ansible roles](setup-roles.md)
-  - Deploy from [RedHat/CentOS 6.x](setup-redhat-centos6.md)
+  - Documentation for avaialble [Ansible roles](docs/deploy-with-ansible.md)
+  - Deploy from [RedHat/CentOS 6.x](docs/setup-redhat-centos6.md)
 * Client setup
-  - Setup [Windows](client-windows.md) clients
-  - Setup [Android](client-android.md) clients
-  - Setup [Generic/Linux](client-linux.md) clients with Ansible
+  - Setup [Windows](docs/client-windows.md) clients
+  - Setup [Android](docs/client-android.md) clients
+  - Setup [Generic/Linux](docs/client-linux.md) clients with Ansible
 * Cloud setup
-  - Configure [Azure](cloud-azure.md)
-  - Deploy to an [unsupported cloud provider](cloud-unsupported.md)
+  - Configure [Azure](docs/cloud-azure.md)
+  - Deploy to an [unsupported cloud provider](docs/cloud-unsupported.md)
 * Advanced Deployment
-  - Deploy to local [FreeBSD](deploy-to-freebsd.md) servers
-  - Deploy to local [Ubuntu 16.04](deploy-to-ubuntu.md) servers
-  - Deploy with [Ansible](deploy-with-ansible.md)
-* [FAQ](faq.md)
-* [Troubleshooting](troubleshooting.md)
+  - Deploy to local [FreeBSD](docs/deploy-to-freebsd.md) servers
+  - Deploy to local [Ubuntu 16.04](docs/deploy-to-ubuntu.md) servers
+  - Deploy with [Ansible](docs/deploy-with-ansible.md)
+* [FAQ](docs/faq.md)
+* [Troubleshooting](docs/troubleshooting.md)
 
 ## Endorsements
 
