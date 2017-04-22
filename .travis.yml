@@ -17,6 +17,7 @@ addons:
     - lxc-templates
     - expect-dev
     - debootstrap
+    - shellcheck
 
 cache:
   directories:
@@ -42,10 +43,20 @@ install:
   - sudo mkdir -vm 0700 $LXC_ROOTFS/root/.ssh/
   - sudo cp -v ~/.ssh/id_rsa.pub $LXC_ROOTFS/root/.ssh/authorized_keys
   - sudo apt-get install build-essential libssl-dev libffi-dev python-dev && sudo pip install -r requirements.txt
+  - pip install ansible-lint
+
+before_script:
+  - gem install awesome_bot
 
 script:
+  - awesome_bot --allow-dupe --skip-save-results *.md docs/*.md --white-list paypal.com,do.co,microsoft.com,https://github.com/trailofbits/algo/archive/master.zip,https://github.com/trailofbits/algo/issues/new
+#  - shellcheck algo
+#  - ansible-lint deploy.yml users.yml deploy_client.yml
   - ansible-playbook deploy.yml --syntax-check
   - ansible-playbook deploy.yml -t local,vpn,dns,ssh_tunneling,security,tests -e "server_ip=$LXC_IP server_user=root IP_subject_alt_name=$LXC_IP local_dns=Y"
 
 after_script:
   - ./tests/update-users.sh
+
+notifications:
+  email: false

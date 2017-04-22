@@ -36,8 +36,6 @@ You have not agreed to the Xcode license agreements, please run 'xcodebuild -lic
     No working compiler found, or bogus compiler options
     passed to the compiler from Python's distutils module.
     See the error messages above.
-    (If they are about -mno-fused-madd and you are on OS/X 10.8,
-    see http://stackoverflow.com/questions/22313407/ .)
 
 ----------------------------------------
 Cleaning up...
