@@ -35,8 +35,3 @@
 - name: Define the commonName
   set_fact:
     IP_subject_alt_name: "{{ IP_subject_alt_name }}"
-
-- name: Change the algorithm to RSA
-  set_fact:
-    algo_params: "rsa:2048"
-  when: Win10_Enabled is defined and Win10_Enabled == "Y"
