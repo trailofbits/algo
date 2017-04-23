@@ -127,7 +127,7 @@ Your VPN is now installed and ready to use.
 If you want to perform these steps by hand, you will need to import the user certificate to the Personal certificate store, add an IKEv2 connection in the network settings, then activate stronger ciphers on it via the following PowerShell script:
 
 ```powershell
-Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo" -AuthenticationTransformConstants SHA256128 -CipherTransformConstants AES256 -EncryptionMethod AES256 -IntegrityCheckMethod SHA256 -DHGroup Group14 -PfsGroup none
+Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo" -AuthenticationTransformConstants GCMAES128 -CipherTransformConstants GCMAES128 -EncryptionMethod AES128 -IntegrityCheckMethod SHA384 -DHGroup ECP256 -PfsGroup none
 ```
 
 ### Linux Network Manager Clients (e.g., Ubuntu, Debian, or Fedora Desktop)
@@ -203,19 +203,19 @@ The Algo VPN server now contains only the users listed in the `config.cfg` file.
 ## Additional Documentation
 
 * Setup instructions
-  - Documentation for available [Ansible roles](docs/deploy-with-ansible.md)
-  - Deploy from [RedHat/CentOS 6.x](docs/setup-redhat-centos6.md)
+  - Documentation for available [Ansible roles](docs/setup-roles.md)
+  - Deploy from [RedHat/CentOS 6.x](docs/deploy-from-redhat-centos6.md)
+  - Deploy from [Windows](docs/deploy-from-windows.md)
+  - Deploy from [Ansible](docs/deploy-from-ansible.md) directly
 * Client setup
-  - Setup [Windows](docs/client-windows.md) clients
   - Setup [Android](docs/client-android.md) clients
   - Setup [Generic/Linux](docs/client-linux.md) clients with Ansible
 * Cloud setup
   - Configure [Azure](docs/cloud-azure.md)
-  - Deploy to an [unsupported cloud provider](docs/cloud-unsupported.md)
 * Advanced Deployment
   - Deploy to your own [FreeBSD](docs/deploy-to-freebsd.md) server
   - Deploy to your own [Ubuntu 16.04](docs/deploy-to-ubuntu.md) server
-  - Deploy with [Ansible](docs/deploy-with-ansible.md) directly
+  - Deploy to an [unsupported cloud provider](docs/deploy-to-unsupported-cloud.md)
 * [FAQ](docs/faq.md)
 * [Troubleshooting](docs/troubleshooting.md)
 
