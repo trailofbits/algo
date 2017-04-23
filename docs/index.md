@@ -2,9 +2,9 @@
 
 * Setup instructions
   - Documentation for available [Ansible roles](setup-roles.md)
-  - Deploy from [RedHat/CentOS 6.x](setup-redhat-centos6.md)
-  - Deploy from [Windows](client-windows.md)
-  - Deploy from [Ansible](deploy-with-ansible.md) directly
+  - Deploy from [RedHat/CentOS 6.x](deploy-from-redhat-centos6.md)
+  - Deploy from [Windows](deploy-from-windows.md)
+  - Deploy from [Ansible](deploy-from-ansible.md) directly
 * Client setup
   - Setup [Android](client-android.md) clients
   - Setup [Generic/Linux](client-linux.md) clients with Ansible
