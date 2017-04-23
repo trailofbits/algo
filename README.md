@@ -94,6 +94,10 @@ Distribute the configuration files to your users, so they can connect to the VPN
 
 Find the corresponding mobileconfig (Apple Profile) for each user and send it to them over AirDrop or other secure means. Apple Configuration Profiles are all-in-one configuration files for iOS and macOS devices. On macOS, double-clicking a profile to install it will fully configure the VPN. On iOS, users are prompted to install the profile as soon as the AirDrop is accepted.
 
+On iOS, you can connect to the VPN by opening Settings and clicking the toggle next to "VPN" near the top of the list. On macOS, you can connect to the VPN by opening System Preferences -> Network, finding Algo VPN in the left column and clicking "Connect." On macOS, we recommend checking "Show VPN status in menu bar" too which lets you connect and disconnect from the menu bar.
+
+If you enabled "On Demand", the VPN will connect automatically whenever it is able. On iOS, you can turn off "On Demand" by clicking the (i) next to the entry for Algo VPN and toggling off "Connect On Demand." On macOS, you can turn off "On Demand" by opening the Network Preferences, finding Algo VPN in the left column, and unchecking the box for "Connect on demand."
+
 ### Android Devices
 
 You need to install the [strongSwan VPN Client for Android 4 and newer](https://play.google.com/store/apps/details?id=org.strongswan.android) because no version of Android supports IKEv2. Import the corresponding user.p12 certificate to your device. See the [Android setup instructions](/docs/client-android.md) for more detailed steps.
@@ -199,7 +203,7 @@ The Algo VPN server now contains only the users listed in the `config.cfg` file.
 ## Additional Documentation
 
 * Setup instructions
-  - Documentation for avaialble [Ansible roles](docs/deploy-with-ansible.md)
+  - Documentation for available [Ansible roles](docs/deploy-with-ansible.md)
   - Deploy from [RedHat/CentOS 6.x](docs/setup-redhat-centos6.md)
 * Client setup
   - Setup [Windows](docs/client-windows.md) clients
@@ -209,9 +213,9 @@ The Algo VPN server now contains only the users listed in the `config.cfg` file.
   - Configure [Azure](docs/cloud-azure.md)
   - Deploy to an [unsupported cloud provider](docs/cloud-unsupported.md)
 * Advanced Deployment
-  - Deploy to local [FreeBSD](docs/deploy-to-freebsd.md) servers
-  - Deploy to local [Ubuntu 16.04](docs/deploy-to-ubuntu.md) servers
-  - Deploy with [Ansible](docs/deploy-with-ansible.md)
+  - Deploy to your own [FreeBSD](docs/deploy-to-freebsd.md) server
+  - Deploy to your own [Ubuntu 16.04](docs/deploy-to-ubuntu.md) server
+  - Deploy with [Ansible](docs/deploy-with-ansible.md) directly
 * [FAQ](docs/faq.md)
 * [Troubleshooting](docs/troubleshooting.md)
 
