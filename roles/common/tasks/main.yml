@@ -1,28 +1,28 @@
 ---
+- block:
+    - include: ubuntu.yml
+      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
-- name: Gather Facts
-  setup:
-  tags:
-    - always
+    - include: freebsd.yml
+      when: ansible_distribution == 'FreeBSD'
 
-- include: ubuntu.yml
-  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+    - name: Install tools
+      package: name="{{ item }}" state=present
+      with_items:
+        - "{{ tools|default([]) }}"
+      tags:
+        - always
 
-- include: freebsd.yml
-  when: ansible_distribution == 'FreeBSD'
+    - name: Sysctl tuning
+      sysctl: name="{{ item.item }}" value="{{ item.value }}"
+      with_items:
+        - "{{ sysctl|default([]) }}"
+      tags:
+        - always
 
-- name: Install tools
-  package: name="{{ item }}" state=present
-  with_items:
-    - "{{ tools|default([]) }}"
-  tags:
-    - always
-
-- name: Sysctl tuning
-  sysctl: name="{{ item.item }}" value="{{ item.value }}"
-  with_items:
-    - "{{ sysctl|default([]) }}"
-  tags:
-    - always
-
-- meta: flush_handlers
+    - meta: flush_handlers
+  rescue:
+    - debug: var=fail_hint
+      tags: always
+    - fail:
+      tags: always

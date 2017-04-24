@@ -1,31 +1,36 @@
 ---
+- block:
+    - name: Ensure that the strongswan group exist
+      group: name=strongswan state=present
 
-- name: Ensure that the strongswan group exist
-  group: name=strongswan state=present
+    - name: Ensure that the strongswan user exist
+      user: name=strongswan group=strongswan state=present
 
-- name: Ensure that the strongswan user exist
-  user: name=strongswan group=strongswan state=present
+    - include: ubuntu.yml
+      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
-- include: ubuntu.yml
-  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+    - include: freebsd.yml
+      when: ansible_distribution == 'FreeBSD'
 
-- include: freebsd.yml
-  when: ansible_distribution == 'FreeBSD'
+    - name: Install strongSwan
+      package: name=strongswan state=present
 
-- name: Install strongSwan
-  package: name=strongswan state=present
+    - name: Get StrongSwan versions
+      shell: >
+        ipsec --versioncode | grep -oE "^U([0-9]*|\.)*" | sed "s/^U\|\.//g"
+      register: strongswan_version
 
-- name: Get StrongSwan versions
-  shell: >
-    ipsec --versioncode | grep -oE "^U([0-9]*|\.)*" | sed "s/^U\|\.//g"
-  register: strongswan_version
+    - include: ipec_configuration.yml
+    - include: openssl.yml
+    - include: distribute_keys.yml
+    - include: client_configs.yml
 
-- include: ipec_configuration.yml
-- include: openssl.yml
-- include: distribute_keys.yml
-- include: client_configs.yml
+    - meta: flush_handlers
 
-- meta: flush_handlers
-
-- name: strongSwan started
-  service: name=strongswan state=started
+    - name: strongSwan started
+      service: name=strongswan state=started
+  rescue:
+    - debug: var=fail_hint
+      tags: always
+    - fail:
+      tags: always
