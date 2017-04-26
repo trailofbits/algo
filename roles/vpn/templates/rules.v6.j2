@@ -24,7 +24,7 @@ COMMIT
 -A INPUT -p esp -j ACCEPT
 -A INPUT -m ah -j ACCEPT
 # rate limit ICMP traffic per source
--A INPUT -p icmpv6 --icmpv6-type echo-request -m hashlimit --hashlimit-upto 5/s --hashlimit-mode srcip --hashlimit-srcmask 32 --hashlimit-name icmp-echo-drop -j DROP
+-A INPUT -p icmpv6 --icmpv6-type echo-request -m hashlimit --hashlimit-upto 5/s --hashlimit-mode srcip --hashlimit-srcmask 32 --hashlimit-name icmp-echo-drop -j ACCEPT
 -A INPUT -p udp -m multiport --dports 500,4500 -j ACCEPT
 -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW -j ACCEPT
 -A INPUT -p icmpv6 --icmpv6-type router-advertisement -m hl --hl-eq 255 -j ACCEPT
@@ -57,4 +57,3 @@ COMMIT
 -A ICMPV6-CHECK-LOG -j LOG --log-prefix "ICMPV6-CHECK-LOG DROP "
 -A ICMPV6-CHECK-LOG -j DROP
 COMMIT
-
