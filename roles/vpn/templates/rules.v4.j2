@@ -22,7 +22,7 @@ COMMIT
 -A INPUT -p esp -j ACCEPT
 -A INPUT -p ah -j ACCEPT
 # rate limit ICMP traffic per source
--A INPUT -p icmp --icmp-type echo-request -m hashlimit --hashlimit-upto 5/s --hashlimit-mode srcip --hashlimit-srcmask 32 --hashlimit-name icmp-echo-drop -j DROP
+-A INPUT -p icmp --icmp-type echo-request -m hashlimit --hashlimit-upto 5/s --hashlimit-mode srcip --hashlimit-srcmask 32 --hashlimit-name icmp-echo-drop -j ACCEPT
 -A INPUT -p udp -m multiport --dports 500,4500 -j ACCEPT
 -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW -j ACCEPT
 -A INPUT -p ipencap -m policy --dir in --pol ipsec --proto esp -j ACCEPT
@@ -41,4 +41,3 @@ COMMIT
 -A FORWARD -p tcp -m multiport --ports 137,139 -j DROP
 -A FORWARD -m conntrack --ctstate NEW -s {{ vpn_network }} -m policy --pol ipsec --dir in -j ACCEPT
 COMMIT
-
