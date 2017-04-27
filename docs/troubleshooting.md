@@ -178,7 +178,7 @@ $ sudo ifconfig wlan0 mtu 1438
 
 On Windows, this issue may manifest with an error message that says "The network connection between your computer and the VPN server could not be established because the remote server is not responding... This is Error 809." On other operating systems, you may try to debug the issue by capturing packets with tcpdump and notice that, while IKE_SA_INIT request and responses are exchanged between the client and server, IKE_AUTH requests never make it to the server.
 
-It is possible that the IKE_AUTH payload is too big to fit in a single IP datagram, and so is fragmented. Many consumer routers and cable modems ship with 'Block Fragmented IP packets'. Many consumer routers and cable modems ship with a feature that blocks "fragmented IP packets." Try logging into your router and disabling any firewall settings related to blocking or dropping fragmented IP packets. For more information, see [Issue #305](https://github.com/trailofbits/algo/issues/305).
+It is possible that the IKE_AUTH payload is too big to fit in a single IP datagram, and so is fragmented. Many consumer routers and cable modems ship with a feature that blocks "fragmented IP packets." Try logging into your router and disabling any firewall settings related to blocking or dropping fragmented IP packets. For more information, see [Issue #305](https://github.com/trailofbits/algo/issues/305).
 
 ## I have a problem not covered here
 
