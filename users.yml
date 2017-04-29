@@ -6,27 +6,33 @@
     - config.cfg
 
   tasks:
-    - name: Add the server to the vpn-host group
-      add_host:
-        hostname: "{{ server_ip }}"
-        groupname: vpn-host
-        ansible_ssh_user: "{{ server_user }}"
-        ansible_python_interpreter: "/usr/bin/python2.7"
-        ssh_tunneling_enabled: "{{ ssh_tunneling_enabled }}"
-        easyrsa_CA_password: "{{ easyrsa_CA_password }}"
-        IP_subject: "{{ IP_subject }}"
-        ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
+    - block:
+        - name: Add the server to the vpn-host group
+          add_host:
+            hostname: "{{ server_ip }}"
+            groupname: vpn-host
+            ansible_ssh_user: "{{ server_user }}"
+            ansible_python_interpreter: "/usr/bin/python2.7"
+            ssh_tunneling_enabled: "{{ ssh_tunneling_enabled }}"
+            easyrsa_CA_password: "{{ easyrsa_CA_password }}"
+            IP_subject: "{{ IP_subject }}"
+            ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
 
-    - name: Wait until SSH becomes ready...
-      local_action:
-        module: wait_for
-        port: 22
-        host: "{{ server_ip }}"
-        search_regex: "OpenSSH"
-        delay: 10
-        timeout: 320
-        state: present
-      become: false
+        - name: Wait until SSH becomes ready...
+          local_action:
+            module: wait_for
+            port: 22
+            host: "{{ server_ip }}"
+            search_regex: "OpenSSH"
+            delay: 10
+            timeout: 320
+            state: present
+          become: false
+      rescue:
+        - debug: var=fail_hint
+          tags: always
+        - fail:
+          tags: always
 
 - name: User management
   hosts: vpn-host
@@ -37,171 +43,188 @@
     - roles/vpn/defaults/main.yml
 
   pre_tasks:
-    - name: Common pre-tasks
-      include: playbooks/common.yml
+    - block:
+        - name: Common pre-tasks
+          include: playbooks/common.yml
+      rescue:
+        - debug: var=fail_hint
+          tags: always
+        - fail:
+          tags: always
 
   roles:
     - { role: ssh_tunneling, tags: [ 'ssh_tunneling' ], when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y" }
 
   tasks:
+    - block:
+        - name: Gather Facts
+          setup:
 
-    - name: Gather Facts
-      setup:
+        - name: Checking the signature algorithm
+          local_action: >
+              shell openssl x509 -text -in certs/{{ IP_subject_alt_name }}.crt  | grep 'Signature Algorithm' | head -n1
+          become: no
+          register: sig_algo
+          args:
+            chdir: "configs/{{ IP_subject_alt_name }}/pki/"
 
-    - name: Checking the signature algorithm
-      local_action: >
-          shell openssl x509 -text -in certs/{{ IP_subject_alt_name }}.crt  | grep 'Signature Algorithm' | head -n1
-      become: no
-      register: sig_algo
-      args:
-        chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+        - name: Change the algorithm to RSA
+          set_fact:
+            algo_params: "rsa:2048"
+          when: '"ecdsa" not in sig_algo.stdout'
 
-    - name: Change the algorithm to RSA
-      set_fact:
-        algo_params: "rsa:2048"
-      when: '"ecdsa" not in sig_algo.stdout'
+        - name: Build the client's pair
+          local_action: >
+            shell openssl req -utf8 -new -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }} -config openssl.cnf -keyout private/{{ item }}.key -out reqs/{{ item }}.req -nodes -passin pass:"{{ easyrsa_CA_password }}" -subj "/CN={{ item }}" -batch &&
+              openssl ca -utf8 -in reqs/{{ item }}.req -out certs/{{ item }}.crt -config openssl.cnf -days 3650 -batch -passin pass:"{{ easyrsa_CA_password }}" -subj "/CN={{ item }}" &&
+              touch certs/{{ item }}_crt_generated
+          become: no
+          args:
+            chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+            creates: certs/{{ item }}_crt_generated
+          environment:
+            subjectAltName: "DNS:{{ item }}"
+          with_items: "{{ users }}"
 
-    - name: Build the client's pair
-      local_action: >
-        shell openssl req -utf8 -new -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }} -config openssl.cnf -keyout private/{{ item }}.key -out reqs/{{ item }}.req -nodes -passin pass:"{{ easyrsa_CA_password }}" -subj "/CN={{ item }}" -batch &&
-          openssl ca -utf8 -in reqs/{{ item }}.req -out certs/{{ item }}.crt -config openssl.cnf -days 3650 -batch -passin pass:"{{ easyrsa_CA_password }}" -subj "/CN={{ item }}" &&
-          touch certs/{{ item }}_crt_generated
-      become: no
-      args:
-        chdir: "configs/{{ IP_subject_alt_name }}/pki/"
-        creates: certs/{{ item }}_crt_generated
-      environment:
-        subjectAltName: "DNS:{{ item }}"
-      with_items: "{{ users }}"
+        - name: Build the client's p12
+          local_action: >
+            shell openssl pkcs12 -in certs/{{ item }}.crt -inkey private/{{ item }}.key -export -name {{ item }} -out private/{{ item }}.p12 -certfile cacert.pem -passout pass:"{{ easyrsa_p12_export_password }}"
+          become: no
+          args:
+            chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+          with_items: "{{ users }}"
 
-    - name: Build the client's p12
-      local_action: >
-        shell openssl pkcs12 -in certs/{{ item }}.crt -inkey private/{{ item }}.key -export -name {{ item }} -out private/{{ item }}.p12 -certfile cacert.pem -passout pass:"{{ easyrsa_p12_export_password }}"
-      become: no
-      args:
-        chdir: "configs/{{ IP_subject_alt_name }}/pki/"
-      with_items: "{{ users }}"
+        - name: Copy the p12 certificates
+          local_action:
+            module: copy
+            src: "configs/{{ IP_subject_alt_name }}/pki/private/{{ item }}.p12"
+            dest: "configs/{{ IP_subject_alt_name }}/{{ item }}.p12"
+            mode: 0600
+          become: no
+          with_items:
+            - "{{ users }}"
 
-    - name: Copy the p12 certificates
-      local_action:
-        module: copy
-        src: "configs/{{ IP_subject_alt_name }}/pki/private/{{ item }}.p12"
-        dest: "configs/{{ IP_subject_alt_name }}/{{ item }}.p12"
-        mode: 0600
-      become: no
-      with_items:
-        - "{{ users }}"
+        - name: Get active users
+          local_action: >
+            shell grep ^V index.txt | grep -v "{{ IP_subject_alt_name }}" | awk '{print $5}' | sed 's/\/CN=//g'
+          become: no
+          args:
+            chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+          register: valid_certs
 
-    - name: Get active users
-      local_action: >
-        shell grep ^V index.txt | grep -v "{{ IP_subject_alt_name }}" | awk '{print $5}' | sed 's/\/CN=//g'
-      become: no
-      args:
-        chdir: "configs/{{ IP_subject_alt_name }}/pki/"
-      register: valid_certs
+        - name: Revoke non-existing users
+          local_action: >
+            shell openssl ca -config openssl.cnf -passin pass:"{{ easyrsa_CA_password }}" -revoke certs/{{ item }}.crt &&
+              openssl ca -gencrl -config openssl.cnf -passin pass:"{{ easyrsa_CA_password }}" -revoke certs/{{ item }}.crt -out crl/{{ item }}.crt
+              touch crl/{{ item }}_revoked
+          become: no
+          args:
+            chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+            creates: crl/{{ item }}_revoked
+          environment:
+            subjectAltName: "DNS:{{ item }}"
+          when: item not in users
+          with_items: "{{ valid_certs.stdout_lines }}"
 
-    - name: Revoke non-existing users
-      local_action: >
-        shell openssl ca -config openssl.cnf -passin pass:"{{ easyrsa_CA_password }}" -revoke certs/{{ item }}.crt &&
-          openssl ca -gencrl -config openssl.cnf -passin pass:"{{ easyrsa_CA_password }}" -revoke certs/{{ item }}.crt -out crl/{{ item }}.crt
-          touch crl/{{ item }}_revoked
-      become: no
-      args:
-        chdir: "configs/{{ IP_subject_alt_name }}/pki/"
-        creates: crl/{{ item }}_revoked
-      environment:
-        subjectAltName: "DNS:{{ item }}"
-      when: item not in users
-      with_items: "{{ valid_certs.stdout_lines }}"
+        - name: Copy the revoked certificates to the vpn server
+          copy:
+            src: configs/{{ IP_subject_alt_name }}/pki/crl/{{ item }}.crt
+            dest: "{{ config_prefix|default('/') }}etc/ipsec.d/crls/{{ item }}.crt"
+          when: item not in users
+          with_items: "{{ valid_certs.stdout_lines }}"
+          notify:
+            - rereadcrls
 
-    - name: Copy the revoked certificates to the vpn server
-      copy:
-        src: configs/{{ IP_subject_alt_name }}/pki/crl/{{ item }}.crt
-        dest: "{{ config_prefix|default('/') }}etc/ipsec.d/crls/{{ item }}.crt"
-      when: item not in users
-      with_items: "{{ valid_certs.stdout_lines }}"
-      notify:
-        - rereadcrls
+        - name: Register p12 PayloadContent
+          local_action: >
+            shell cat private/{{ item }}.p12 | base64
+          register:  PayloadContent
+          become: no
+          args:
+            chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+          with_items: "{{ users }}"
 
-    - name: Register p12 PayloadContent
-      local_action: >
-        shell cat private/{{ item }}.p12 | base64
-      register:  PayloadContent
-      become: no
-      args:
-        chdir: "configs/{{ IP_subject_alt_name }}/pki/"
-      with_items: "{{ users }}"
+        - name: Set facts for mobileconfigs
+          set_fact:
+            proxy_enabled: false
+            PayloadContentCA: "{{ lookup('file' , 'configs/{{ IP_subject_alt_name }}/pki/cacert.pem')|b64encode }}"
 
-    - name: Set facts for mobileconfigs
-      set_fact:
-        proxy_enabled: false
-        PayloadContentCA: "{{ lookup('file' , 'configs/{{ IP_subject_alt_name }}/pki/cacert.pem')|b64encode }}"
+        - name: Build the mobileconfigs
+          local_action:
+            module: template
+            src: roles/vpn/templates/mobileconfig.j2
+            dest: configs/{{ IP_subject_alt_name }}/{{ item.0 }}.mobileconfig
+            mode: 0600
+          become: no
+          with_together:
+            - "{{ users }}"
+            - "{{ PayloadContent.results }}"
+          no_log: True
 
-    - name: Build the mobileconfigs
-      local_action:
-        module: template
-        src: roles/vpn/templates/mobileconfig.j2
-        dest: configs/{{ IP_subject_alt_name }}/{{ item.0 }}.mobileconfig
-        mode: 0600
-      become: no
-      with_together:
-        - "{{ users }}"
-        - "{{ PayloadContent.results }}"
-      no_log: True
+        - name: Build the client ipsec config file
+          local_action:
+            module: template
+            src: roles/vpn/templates/client_ipsec.conf.j2
+            dest: configs/{{ IP_subject_alt_name }}/ipsec_{{ item }}.conf
+            mode: 0600
+          become: no
+          with_items:
+            - "{{ users }}"
 
-    - name: Build the client ipsec config file
-      local_action:
-        module: template
-        src: roles/vpn/templates/client_ipsec.conf.j2
-        dest: configs/{{ IP_subject_alt_name }}/ipsec_{{ item }}.conf
-        mode: 0600
-      become: no
-      with_items:
-        - "{{ users }}"
+        - name: Build the client ipsec secret file
+          local_action:
+            module: template
+            src: roles/vpn/templates/client_ipsec.secrets.j2
+            dest: configs/{{ IP_subject_alt_name }}/ipsec_{{ item }}.secrets
+            mode: 0600
+          become: no
+          with_items:
+            - "{{ users }}"
 
-    - name: Build the client ipsec secret file
-      local_action:
-        module: template
-        src: roles/vpn/templates/client_ipsec.secrets.j2
-        dest: configs/{{ IP_subject_alt_name }}/ipsec_{{ item }}.secrets
-        mode: 0600
-      become: no
-      with_items:
-        - "{{ users }}"
+        - name: Build the windows client powershell script
+          local_action:
+            module: template
+            src: roles/vpn/templates/client_windows.ps1.j2
+            dest: configs/{{ IP_subject_alt_name }}/windows_{{ item }}.ps1
+            mode: 0600
+          become: no
+          when: Win10_Enabled is defined and Win10_Enabled == "Y"
+          with_items: "{{ users }}"
 
-    - name: Build the windows client powershell script
-      local_action:
-        module: template
-        src: roles/vpn/templates/client_windows.ps1.j2
-        dest: configs/{{ IP_subject_alt_name }}/windows_{{ item }}.ps1
-        mode: 0600
-      become: no
-      when: Win10_Enabled is defined and Win10_Enabled == "Y"
-      with_items: "{{ users }}"
+        # SSH
 
-    # SSH
+        - name: SSH | Get active system users
+          shell: >
+            getent group algo | cut -f4 -d: | sed "s/,/\n/g"
+          register: valid_users
+          when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
 
-    - name: SSH | Get active system users
-      shell: >
-        getent group algo | cut -f4 -d: | sed "s/,/\n/g"
-      register: valid_users
-      when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
-
-    - name: SSH | Delete non-existing users
-      user:
-        name: "{{ item }}"
-        state: absent
-        remove: yes
-        force: yes
-      when: item not in users and ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
-      with_items: "{{ valid_users.stdout_lines | default('null') }}"
+        - name: SSH | Delete non-existing users
+          user:
+            name: "{{ item }}"
+            state: absent
+            remove: yes
+            force: yes
+          when: item not in users and ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
+          with_items: "{{ valid_users.stdout_lines | default('null') }}"
+      rescue:
+        - debug: var=fail_hint
+          tags: always
+        - fail:
+          tags: always
 
   post_tasks:
-    - debug:
-        msg:
-          - "{{ congrats.common.split('\n') }}"
-          - "    {{ congrats.p12_pass }}"
-      tags: always
+    - block:
+        - debug:
+            msg:
+              - "{{ congrats.common.split('\n') }}"
+              - "    {{ congrats.p12_pass }}"
+          tags: always
+      rescue:
+        - debug: var=fail_hint
+          tags: always
+        - fail:
+          tags: always
 
   handlers:
     - name: rereadcrls

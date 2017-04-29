@@ -1,138 +1,143 @@
 ---
+- block:
+    - set_fact:
+        resource_group: "Algo_{{ region }}"
+        secret: "{{ azure_secret | default(lookup('env','AZURE_SECRET'), true) }}"
+        tenant: "{{ azure_tenant | default(lookup('env','AZURE_TENANT'), true) }}"
+        client_id: "{{ azure_client_id | default(lookup('env','AZURE_CLIENT_ID'), true) }}"
+        subscription_id: "{{ azure_subscription_id | default(lookup('env','AZURE_SUBSCRIPTION_ID'), true) }}"
 
-- set_fact:
-    resource_group: "Algo_{{ region }}"
-    secret: "{{ azure_secret | default(lookup('env','AZURE_SECRET'), true) }}"
-    tenant: "{{ azure_tenant | default(lookup('env','AZURE_TENANT'), true) }}"
-    client_id: "{{ azure_client_id | default(lookup('env','AZURE_CLIENT_ID'), true) }}"
-    subscription_id: "{{ azure_subscription_id | default(lookup('env','AZURE_SUBSCRIPTION_ID'), true) }}"
+    - name: Create a resource group
+      azure_rm_resourcegroup:
+        secret: "{{ secret }}"
+        tenant: "{{ tenant }}"
+        client_id: "{{ client_id }}"
+        subscription_id: "{{ subscription_id }}"
+        name: "{{ resource_group }}"
+        location: "{{ region }}"
+        tags:
+          Environment: Algo
 
-- name: Create a resource group
-  azure_rm_resourcegroup:
-    secret: "{{ secret }}"
-    tenant: "{{ tenant }}"
-    client_id: "{{ client_id }}"
-    subscription_id: "{{ subscription_id }}"
-    name: "{{ resource_group }}"
-    location: "{{ region }}"
-    tags:
-      Environment: Algo
+    - name: Create a virtual network
+      azure_rm_virtualnetwork:
+        secret: "{{ secret }}"
+        tenant: "{{ tenant }}"
+        client_id: "{{ client_id }}"
+        subscription_id: "{{ subscription_id }}"
+        resource_group: "{{ resource_group }}"
+        name: algo_net
+        address_prefixes: "10.10.0.0/16"
+        tags:
+          Environment: Algo
 
-- name: Create a virtual network
-  azure_rm_virtualnetwork:
-    secret: "{{ secret }}"
-    tenant: "{{ tenant }}"
-    client_id: "{{ client_id }}"
-    subscription_id: "{{ subscription_id }}"
-    resource_group: "{{ resource_group }}"
-    name: algo_net
-    address_prefixes: "10.10.0.0/16"
-    tags:
-      Environment: Algo
+    - name: Create a security group
+      azure_rm_securitygroup:
+        secret: "{{ secret }}"
+        tenant: "{{ tenant }}"
+        client_id: "{{ client_id }}"
+        subscription_id: "{{ subscription_id }}"
+        resource_group: "{{ resource_group }}"
+        name: AlgoSecGroup
+        purge_rules: yes
+        rules:
+          - name: AllowSSH
+            protocol: Tcp
+            destination_port_range: 22
+            access: Allow
+            priority: 100
+            direction: Inbound
+          - name: AllowIPSEC500
+            protocol: Udp
+            destination_port_range: 500
+            access: Allow
+            priority: 110
+            direction: Inbound
+          - name: AllowIPSEC4500
+            protocol: Udp
+            destination_port_range: 4500
+            access: Allow
+            priority: 120
+            direction: Inbound
 
-- name: Create a security group
-  azure_rm_securitygroup:
-    secret: "{{ secret }}"
-    tenant: "{{ tenant }}"
-    client_id: "{{ client_id }}"
-    subscription_id: "{{ subscription_id }}"
-    resource_group: "{{ resource_group }}"
-    name: AlgoSecGroup
-    purge_rules: yes
-    rules:
-      - name: AllowSSH
-        protocol: Tcp
-        destination_port_range: 22
-        access: Allow
-        priority: 100
-        direction: Inbound
-      - name: AllowIPSEC500
-        protocol: Udp
-        destination_port_range: 500
-        access: Allow
-        priority: 110
-        direction: Inbound
-      - name: AllowIPSEC4500
-        protocol: Udp
-        destination_port_range: 4500
-        access: Allow
-        priority: 120
-        direction: Inbound
+    - name: Create a subnet
+      azure_rm_subnet:
+        secret: "{{ secret }}"
+        tenant: "{{ tenant }}"
+        client_id: "{{ client_id }}"
+        subscription_id: "{{ subscription_id }}"
+        resource_group: "{{ resource_group }}"
+        name: algo_subnet
+        address_prefix: "10.10.0.0/24"
+        virtual_network: algo_net
+        security_group_name: AlgoSecGroup
+        tags:
+          Environment: Algo
 
-- name: Create a subnet
-  azure_rm_subnet:
-    secret: "{{ secret }}"
-    tenant: "{{ tenant }}"
-    client_id: "{{ client_id }}"
-    subscription_id: "{{ subscription_id }}"
-    resource_group: "{{ resource_group }}"
-    name: algo_subnet
-    address_prefix: "10.10.0.0/24"
-    virtual_network: algo_net
-    security_group_name: AlgoSecGroup
-    tags:
-      Environment: Algo
+    - name: Create an instance
+      azure_rm_virtualmachine:
+        secret: "{{ secret }}"
+        tenant: "{{ tenant }}"
+        client_id: "{{ client_id }}"
+        subscription_id: "{{ subscription_id }}"
+        resource_group: "{{ resource_group }}"
+        admin_username: ubuntu
+        virtual_network: algo_net
+        name: "{{ azure_server_name }}"
+        ssh_password_enabled: false
+        vm_size: "{{ cloud_providers.azure.size }}"
+        tags:
+          Environment: Algo
+        ssh_public_keys:
+          - { path: "/home/ubuntu/.ssh/authorized_keys", key_data: "{{ lookup('file', '{{ SSH_keys.public }}') }}" }
+        image: "{{ cloud_providers.azure.image }}"
+      register: azure_rm_virtualmachine
 
-- name: Create an instance
-  azure_rm_virtualmachine:
-    secret: "{{ secret }}"
-    tenant: "{{ tenant }}"
-    client_id: "{{ client_id }}"
-    subscription_id: "{{ subscription_id }}"
-    resource_group: "{{ resource_group }}"
-    admin_username: ubuntu
-    virtual_network: algo_net
-    name: "{{ azure_server_name }}"
-    ssh_password_enabled: false
-    vm_size: "{{ cloud_providers.azure.size }}"
-    tags:
-      Environment: Algo
-    ssh_public_keys:
-      - { path: "/home/ubuntu/.ssh/authorized_keys", key_data: "{{ lookup('file', '{{ SSH_keys.public }}') }}" }
-    image: "{{ cloud_providers.azure.image }}"
-  register: azure_rm_virtualmachine
+      # To-do: Add error handling - if vm_size requested is not available, can we fall back to another, ideally with a prompt?
 
-  # To-do: Add error handling - if vm_size requested is not available, can we fall back to another, ideally with a prompt?
+    - set_fact:
+        ip_address: "{{ azure_rm_virtualmachine.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
+        networkinterface_name: "{{ azure_rm_virtualmachine.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].name }}"
 
-- set_fact:
-    ip_address: "{{ azure_rm_virtualmachine.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
-    networkinterface_name: "{{ azure_rm_virtualmachine.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].name }}"
+    - name: Ensure the network interface includes all required parameters
+      azure_rm_networkinterface:
+        secret: "{{ secret }}"
+        tenant: "{{ tenant }}"
+        client_id: "{{ client_id }}"
+        subscription_id: "{{ subscription_id }}"
+        name: "{{ networkinterface_name }}"
+        resource_group: "{{ resource_group }}"
+        virtual_network_name: algo_net
+        subnet_name: algo_subnet
+        security_group_name: AlgoSecGroup
 
-- name: Ensure the network interface includes all required parameters
-  azure_rm_networkinterface:
-    secret: "{{ secret }}"
-    tenant: "{{ tenant }}"
-    client_id: "{{ client_id }}"
-    subscription_id: "{{ subscription_id }}"
-    name: "{{ networkinterface_name }}"
-    resource_group: "{{ resource_group }}"
-    virtual_network_name: algo_net
-    subnet_name: algo_subnet
-    security_group_name: AlgoSecGroup
+    - name: Add the instance to an inventory group
+      add_host:
+        name: "{{ ip_address }}"
+        groups: vpn-host
+        ansible_ssh_user: ubuntu
+        ansible_python_interpreter: "/usr/bin/python2.7"
+        ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
+        cloud_provider: azure
+        ipv6_support: no
 
-- name: Add the instance to an inventory group
-  add_host:
-    name: "{{ ip_address }}"
-    groups: vpn-host
-    ansible_ssh_user: ubuntu
-    ansible_python_interpreter: "/usr/bin/python2.7"
-    ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
-    cloud_provider: azure
-    ipv6_support: no
+    - set_fact:
+        cloud_instance_ip: "{{ ip_address }}"
 
-- set_fact:
-    cloud_instance_ip: "{{ ip_address }}"
+    - name: Ensure the group azure exists in the dynamic inventory file
+      lineinfile:
+        state: present
+        dest: configs/inventory.dynamic
+        line: '[azure]'
 
-- name: Ensure the group azure exists in the dynamic inventory file
-  lineinfile:
-    state: present
-    dest: configs/inventory.dynamic
-    line: '[azure]'
-
-- name: Populate the dynamic inventory
-  lineinfile:
-    state: present
-    dest: configs/inventory.dynamic
-    insertafter: '\[azure\]'
-    regexp: "^{{ cloud_instance_ip }}.*"
-    line: "{{ cloud_instance_ip }}"
+    - name: Populate the dynamic inventory
+      lineinfile:
+        state: present
+        dest: configs/inventory.dynamic
+        insertafter: '\[azure\]'
+        regexp: "^{{ cloud_instance_ip }}.*"
+        line: "{{ cloud_instance_ip }}"
+  rescue:
+    - debug: var=fail_hint
+      tags: always
+    - fail:
+      tags: always
