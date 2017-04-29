@@ -37,7 +37,9 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
 
 2. [Download Algo](https://github.com/trailofbits/algo/archive/master.zip) and unzip it in a convenient location on your local machine.
 
-3. Install Algo's core dependencies. Open the Terminal. The `python` interpreter you use to deploy Algo must be python2. If you don't know what this means, you're probably fine. `cd` into the `algo-master` directory where you unzipped Algo, then run:
+3. `cd` into the `algo-master` directory where you unzipped Algo
+
+4. Install Algo's core dependencies. Open the Terminal. The `python` interpreter you use to deploy Algo must be python2. If you don't know what this means, you're probably fine. Run:
 
     - macOS:
       ```bash
@@ -58,15 +60,15 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
      - Linux (rpm-based): See the [Pre-Install Documentation for RedHat/CentOS 6.x](docs/deploy-from-redhat-centos6.md)
      - Windows: See the [Windows documentation](docs/deploy-from-windows.md)
 
-4. Install Algo's remaining dependencies for your operating system. Use the same terminal window as the previous step and run:
+5. Install Algo's remaining dependencies for your operating system. Use the same terminal window as the previous step and run:
     ```bash
     $ python -m virtualenv env && source env/bin/activate && python -m pip install -U pip && python -m pip install -r requirements.txt
     ```
     On macOS, you may be prompted to install `cc`. You should press accept if so.
 
-5. Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
+6. Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
 
-6. Start the deployment. Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [deploy-from-ansible.md](docs/deploy-from-ansible.md).
+7. Start the deployment. Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [deploy-from-ansible.md](docs/deploy-from-ansible.md).
 
 That's it! You will get the message below when the server deployment process completes. You now have an Algo server on the internet. Take note of the p12 (user certificate) password in case you need it later.
 
