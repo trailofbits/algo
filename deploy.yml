@@ -5,15 +5,21 @@
     - config.cfg
 
   pre_tasks:
-    - name: Local pre-tasks
-      include: playbooks/local.yml
-      tags: [ 'always' ]
+    - block:
+        - name: Local pre-tasks
+          include: playbooks/local.yml
+          tags: [ 'always' ]
 
-    - name: Local pre-tasks
-      include: playbooks/local_ssh.yml
-      become: false
-      when: Deployed_By_Algo is defined and Deployed_By_Algo == "Y"
-      tags: [ 'local' ]
+        - name: Local pre-tasks
+          include: playbooks/local_ssh.yml
+          become: false
+          when: Deployed_By_Algo is defined and Deployed_By_Algo == "Y"
+          tags: [ 'local' ]
+      rescue:
+        - debug: var=fail_hint
+          tags: always
+        - fail:
+          tags: always
 
   roles:
     - { role: cloud-digitalocean, tags: ['digitalocean'] }
@@ -23,10 +29,16 @@
     - { role: local, tags: ['local'] }
 
   post_tasks:
-    - name: Local post-tasks
-      include: playbooks/post.yml
-      become: false
-      tags: [ 'cloud' ]
+    - block:
+      - name: Local post-tasks
+        include: playbooks/post.yml
+        become: false
+        tags: [ 'cloud' ]
+      rescue:
+        - debug: var=fail_hint
+          tags: always
+        - fail:
+          tags: always
 
 - name: Configure the server and install required software
   hosts: vpn-host
@@ -37,9 +49,15 @@
     - config.cfg
 
   pre_tasks:
-    - name: Common pre-tasks
-      include: playbooks/common.yml
-      tags: [ 'digitalocean', 'ec2', 'gce', 'azure', 'local', 'pre' ]
+    - block:
+      - name: Common pre-tasks
+        include: playbooks/common.yml
+        tags: [ 'digitalocean', 'ec2', 'gce', 'azure', 'local', 'pre' ]
+      rescue:
+        - debug: var=fail_hint
+          tags: always
+        - fail:
+          tags: always
 
   roles:
     - { role: security, tags: [ 'security' ] }
@@ -48,25 +66,31 @@
     - { role: vpn, tags: [ 'vpn' ] }
 
   post_tasks:
-    - debug:
-        msg:
-          - "{{ congrats.common.split('\n') }}"
-          - "    {{ congrats.p12_pass }}"
-          - "    {% if Store_CAKEY is defined and Store_CAKEY == 'N' %}{% else %}{{ congrats.ca_key_pass }}{% endif %}"
-          - "    {% if cloud_deployment is defined %}{{ congrats.ssh_access }}{% endif %}"
-      tags: always
+    - block:
+      - debug:
+          msg:
+            - "{{ congrats.common.split('\n') }}"
+            - "    {{ congrats.p12_pass }}"
+            - "    {% if Store_CAKEY is defined and Store_CAKEY == 'N' %}{% else %}{{ congrats.ca_key_pass }}{% endif %}"
+            - "    {% if cloud_deployment is defined %}{{ congrats.ssh_access }}{% endif %}"
+        tags: always
 
-    - name: Save the CA key password
-      local_action: >
-        shell echo "{{ easyrsa_CA_password }}" > /tmp/ca_password
-      become: no
-      tags: tests
+      - name: Save the CA key password
+        local_action: >
+          shell echo "{{ easyrsa_CA_password }}" > /tmp/ca_password
+        become: no
+        tags: tests
 
-    - name: Delete the CA key
-      local_action:
-        module: file
-        path: "configs/{{ IP_subject_alt_name }}/pki/private/cakey.pem"
-        state: absent
-      become: no
-      tags: always
-      when: Store_CAKEY is defined and Store_CAKEY == "N"
+      - name: Delete the CA key
+        local_action:
+          module: file
+          path: "configs/{{ IP_subject_alt_name }}/pki/private/cakey.pem"
+          state: absent
+        become: no
+        tags: always
+        when: Store_CAKEY is defined and Store_CAKEY == "N"
+      rescue:
+        - debug: var=fail_hint
+          tags: always
+        - fail:
+          tags: always

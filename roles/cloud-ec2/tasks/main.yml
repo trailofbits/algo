@@ -1,63 +1,69 @@
-- set_fact:
-    access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'), true) }}"
-    secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true) }}"
-    stack_name: "{{ aws_server_name | replace('.', '-') }}"
+- block:
+    - set_fact:
+        access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'), true) }}"
+        secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true) }}"
+        stack_name: "{{ aws_server_name | replace('.', '-') }}"
 
-- name: Locate official AMI for region
-  ec2_ami_find:
-    aws_access_key: "{{ access_key }}"
-    aws_secret_key: "{{ secret_key }}"
-    name: "ubuntu/images/hvm-ssd/{{ cloud_providers.ec2.image.name }}-amd64-server-*"
-    owner: "{{ cloud_providers.ec2.image.owner }}"
-    sort: creationDate
-    sort_order: descending
-    sort_end: 1
-    region: "{{ region }}"
-  register: ami_search
+    - name: Locate official AMI for region
+      ec2_ami_find:
+        aws_access_key: "{{ access_key }}"
+        aws_secret_key: "{{ secret_key }}"
+        name: "ubuntu/images/hvm-ssd/{{ cloud_providers.ec2.image.name }}-amd64-server-*"
+        owner: "{{ cloud_providers.ec2.image.owner }}"
+        sort: creationDate
+        sort_order: descending
+        sort_end: 1
+        region: "{{ region }}"
+      register: ami_search
 
-- set_fact:
-    ami_image: "{{ ami_search.results[0].ami_id }}"
+    - set_fact:
+        ami_image: "{{ ami_search.results[0].ami_id }}"
 
-- include: encrypt_image.yml
-  tags: [encrypted]
+    - include: encrypt_image.yml
+      tags: [encrypted]
 
-- include: cloudformation.yml
+    - include: cloudformation.yml
 
-- name: Add new instance to host group
-  add_host:
-    hostname: "{{ stack.stack_outputs.PublicIP }}"
-    groupname: vpn-host
-    ansible_ssh_user: ubuntu
-    ansible_python_interpreter: "/usr/bin/python2.7"
-    ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
-    cloud_provider: ec2
-    ipv6_support: yes
+    - name: Add new instance to host group
+      add_host:
+        hostname: "{{ stack.stack_outputs.PublicIP }}"
+        groupname: vpn-host
+        ansible_ssh_user: ubuntu
+        ansible_python_interpreter: "/usr/bin/python2.7"
+        ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
+        cloud_provider: ec2
+        ipv6_support: yes
 
-- set_fact:
-    cloud_instance_ip: "{{ stack.stack_outputs.PublicIP }}"
+    - set_fact:
+        cloud_instance_ip: "{{ stack.stack_outputs.PublicIP }}"
 
-- name: Get EC2 instances
-  ec2_remote_facts:
-    aws_access_key: "{{ access_key }}"
-    aws_secret_key: "{{ secret_key }}"
-    region: "{{ region }}"
-    filters:
-      instance-state-name: running
-      "tag:Environment": Algo
-  register: algo_instances
+    - name: Get EC2 instances
+      ec2_remote_facts:
+        aws_access_key: "{{ access_key }}"
+        aws_secret_key: "{{ secret_key }}"
+        region: "{{ region }}"
+        filters:
+          instance-state-name: running
+          "tag:Environment": Algo
+      register: algo_instances
 
-- name: Ensure the group ec2 exists in the dynamic inventory file
-  lineinfile:
-    state: present
-    dest: configs/inventory.dynamic
-    line: '[ec2]'
+    - name: Ensure the group ec2 exists in the dynamic inventory file
+      lineinfile:
+        state: present
+        dest: configs/inventory.dynamic
+        line: '[ec2]'
 
-- name: Populate the dynamic inventory
-  lineinfile:
-    state: present
-    dest: configs/inventory.dynamic
-    insertafter: '\[ec2\]'
-    regexp: "^{{ item.public_ip_address }}.*"
-    line: "{{ item.public_ip_address }}"
-  with_items:
-    - "{{ algo_instances.instances }}"
+    - name: Populate the dynamic inventory
+      lineinfile:
+        state: present
+        dest: configs/inventory.dynamic
+        insertafter: '\[ec2\]'
+        regexp: "^{{ item.public_ip_address }}.*"
+        line: "{{ item.public_ip_address }}"
+      with_items:
+        - "{{ algo_instances.instances }}"
+  rescue:
+    - debug: var=fail_hint
+      tags: always
+    - fail:
+      tags: always
