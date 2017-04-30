@@ -35,7 +35,7 @@ Alpine Linux is not supported out-of-the-box by any major cloud provider. We are
 
 ## I deployed an Algo server. Can you update it with new features?
 
-No. By design, the Algo development team has no access to any Algo server that our users haved deployed. We cannot modify the configuration, update the software, or sniff the traffic that goes through your personal Algo VPN server. This prevents scenarios where we are legally compelled or hacked to push down backdoored updates to surveil our users.
+No. By design, the Algo development team has no access to any Algo server that our users haved deployed. We cannot modify the configuration, update the software, or sniff the traffic that goes through your personal Algo VPN server. This prevents scenarios where we are legally compelled or hacked to push down backdoored updates that surveil our users.
 
 As a result, once your Algo server has been deployed, it is yours to maintain. If you want to take advantage of new features available in the current release of Algo, then you have two options. You can use the SSH administrative interface to login and make the changes you want on your own or you can shut down the server and build a new one (recommended).
 
