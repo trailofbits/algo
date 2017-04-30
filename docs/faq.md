@@ -6,7 +6,7 @@
 * [Why aren't you using a memory-safe or verified IKE daemon?](#why-arent-you-using-a-memory-safe-or-verified-ike-daemon)
 * [Why aren't you using OpenVPN?](#why-arent-you-using-openvpn)
 * [Why aren't you using Alpine Linux, OpenBSD, or HardenedBSD?](#why-arent-you-using-alpine-linux-openbsd-or-hardenedbsd)
-* [Why aren't you ]
+* [I deployed an Algo server. Can you update it with new features?](#i-deployed-an-algo-server-can-you-update-it-with-new-features)
 * [Where did the name "Algo" come from?](#where-did-the-name-algo-come-from)
 
 ## Has Algo been audited?
