@@ -35,9 +35,9 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
 
 1. **Setup an account on a cloud hosting provider.** Algo supports [DigitalOcean](https://m.do.co/c/4d7f4ff9cfe4) (most user friendly), [Amazon EC2](https://aws.amazon.com/), [Google Compute Engine](https://cloud.google.com/compute/), and [Microsoft Azure](https://azure.microsoft.com/).
 
-2. [Download Algo](https://github.com/trailofbits/algo/archive/master.zip) and unzip it in a convenient location on your local machine.
+2. **[Download Algo](https://github.com/trailofbits/algo/archive/master.zip).** Unzip it in a convenient location on your local machine.
 
-3. Install Algo's core dependencies. Open the Terminal. The `python` interpreter you use to deploy Algo must be python2. If you don't know what this means, you're probably fine. `cd` into the `algo-master` directory where you unzipped Algo, then run:
+3. **Install Algo's core dependencies.** Open the Terminal. The `python` interpreter you use to deploy Algo must be python2. If you don't know what this means, you're probably fine. `cd` into the `algo-master` directory where you unzipped Algo, then run:
 
     - macOS:
       ```bash
@@ -58,15 +58,15 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
      - Linux (rpm-based): See the [Pre-Install Documentation for RedHat/CentOS 6.x](docs/deploy-from-redhat-centos6.md)
      - Windows: See the [Windows documentation](docs/deploy-from-windows.md)
 
-4. Install Algo's remaining dependencies for your operating system. Use the same terminal window as the previous step and run:
+4. **Install Algo's remaining dependencies.** Use the same Terminal window as the previous step and run:
     ```bash
     $ python -m virtualenv env && source env/bin/activate && python -m pip install -U pip && python -m pip install -r requirements.txt
     ```
     On macOS, you may be prompted to install `cc`. You should press accept if so.
 
-5. Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
+5. **List the users to create.** Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
 
-6. Start the deployment. Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [deploy-from-ansible.md](docs/deploy-from-ansible.md).
+6. **Start the deployment.** Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [deploy-from-ansible.md](docs/deploy-from-ansible.md).
 
 That's it! You will get the message below when the server deployment process completes. You now have an Algo server on the internet. Take note of the p12 (user certificate) password in case you need it later.
 
@@ -84,19 +84,17 @@ You can now setup clients to connect it, e.g. your iPhone or laptop. Proceed to 
         "\"#----------------------------------------------------------------------#\"",
 ```
 
-Advanced users who want to install Algo on top of a server they already own or want to script the deployment of Algo onto a network of servers, please see the [Deploy to Ubuntu](/docs/deploy-to-ubuntu.md) documentation.
-
 ## Configure the VPN Clients
 
-Distribute the configuration files to your users, so they can connect to the VPN.  Certificates and configuration files that users will need are placed in the `configs` directory. Make sure to secure these files since many contain private keys. All files are saved under a subdirectory named with the IP address of your new Algo VPN server.
+Certificates and configuration files that users will need are placed in the `configs` directory. Make sure to secure these files since many contain private keys. All files are saved under a subdirectory named with the IP address of your new Algo VPN server.
 
 ### Apple Devices
 
-Find the corresponding mobileconfig (Apple Profile) for each user and send it to them over AirDrop or other secure means. Apple Configuration Profiles are all-in-one configuration files for iOS and macOS devices. On macOS, double-clicking a profile to install it will fully configure the VPN. On iOS, users are prompted to install the profile as soon as the AirDrop is accepted.
+**Send users their Apple Profile.** Find the corresponding mobileconfig (Apple Profile) for each user and send it to them over AirDrop or other secure means. Apple Configuration Profiles are all-in-one configuration files for iOS and macOS devices. On macOS, double-clicking a profile to install it will fully configure the VPN. On iOS, users are prompted to install the profile as soon as the AirDrop is accepted.
 
-On iOS, you can connect to the VPN by opening Settings and clicking the toggle next to "VPN" near the top of the list. On macOS, you can connect to the VPN by opening System Preferences -> Network, finding Algo VPN in the left column and clicking "Connect." On macOS, we recommend checking "Show VPN status in menu bar" too which lets you connect and disconnect from the menu bar.
+**Turn on the VPN.** On iOS, you can connect to the VPN by opening Settings and clicking the toggle next to "VPN" near the top of the list. On macOS, you can connect to the VPN by opening System Preferences -> Network, finding Algo VPN in the left column and clicking "Connect." On macOS, we recommend checking "Show VPN status in menu bar" too which lets you connect and disconnect from the menu bar.
 
-If you enabled "On Demand", the VPN will connect automatically whenever it is able. On iOS, you can turn off "On Demand" by clicking the (i) next to the entry for Algo VPN and toggling off "Connect On Demand." On macOS, you can turn off "On Demand" by opening the Network Preferences, finding Algo VPN in the left column, and unchecking the box for "Connect on demand."
+**Managing On-Demand VPNs.** If you enabled "On Demand", the VPN will connect automatically whenever it is able. On iOS, you can turn off "On Demand" by clicking the (i) next to the entry for Algo VPN and toggling off "Connect On Demand." On macOS, you can turn off "On Demand" by opening the Network Preferences, finding Algo VPN in the left column, and unchecking the box for "Connect on demand."
 
 ### Android Devices
 

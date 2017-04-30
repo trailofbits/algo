@@ -146,7 +146,7 @@ You previously deployed Algo to a hosting provider other than AWS, and Algo crea
 
 In order to fix this issue, delete the `algo.pem` and `algo.pem.pub` keys from your `configs` directory and run the deploy again. If AWS is selected, Algo will now generate new RSA ssh keys which are compatible with the AWS API.
 
-### AWS: Deploy the template fails with CREATE_FAILED
+### AWS: "Deploy the template fails" with CREATE_FAILED
 
 You tried to deploy to Algo to AWS and you received an error like this one:
 
