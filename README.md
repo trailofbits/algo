@@ -92,13 +92,13 @@ Certificates and configuration files that users will need are placed in the `con
 
 **Send users their Apple Profile.** Find the corresponding mobileconfig (Apple Profile) for each user and send it to them over AirDrop or other secure means. Apple Configuration Profiles are all-in-one configuration files for iOS and macOS devices. On macOS, double-clicking a profile to install it will fully configure the VPN. On iOS, users are prompted to install the profile as soon as the AirDrop is accepted.
 
-**Turn on the VPN.** On iOS, you can connect to the VPN by opening Settings and clicking the toggle next to "VPN" near the top of the list. On macOS, you can connect to the VPN by opening System Preferences -> Network, finding Algo VPN in the left column and clicking "Connect." On macOS, we recommend checking "Show VPN status in menu bar" too which lets you connect and disconnect from the menu bar.
+**Turn on the VPN.** On iOS, connect to the VPN by opening Settings and clicking the toggle next to "VPN" near the top of the list. On macOS, connect to the VPN by opening System Preferences -> Network, finding Algo VPN in the left column and clicking "Connect." On macOS, check "Show VPN status in menu bar" to easily connect and disconnect from the menu bar.
 
 **Managing On-Demand VPNs.** If you enabled "On Demand", the VPN will connect automatically whenever it is able. On iOS, you can turn off "On Demand" by clicking the (i) next to the entry for Algo VPN and toggling off "Connect On Demand." On macOS, you can turn off "On Demand" by opening the Network Preferences, finding Algo VPN in the left column, and unchecking the box for "Connect on demand."
 
 ### Android Devices
 
-You need to install the [strongSwan VPN Client for Android 4 and newer](https://play.google.com/store/apps/details?id=org.strongswan.android) because no version of Android supports IKEv2. Import the corresponding user.p12 certificate to your device. See the [Android setup instructions](/docs/client-android.md) for more detailed steps.
+No version of Android supports IKEv2. Install the [strongSwan VPN Client for Android 4 and newer](https://play.google.com/store/apps/details?id=org.strongswan.android). Import the corresponding user.p12 certificate to your device. See the [Android setup instructions](/docs/client-android.md) for more a more detailed walkthrough.
 
 ### Windows
 
@@ -130,7 +130,7 @@ Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo" -AuthenticationTransf
 
 ### Linux Network Manager Clients (e.g., Ubuntu, Debian, or Fedora Desktop)
 
-Network Manager does not support AES-GCM. In order to support Linux Desktop clients, please choose the "compatible" cryptography and use at least Network Manager 1.4.1. See [Issue #263](https://github.com/trailofbits/algo/issues/263) for more information.
+Network Manager does not support AES-GCM. In order to support Linux Desktop clients, choose the "compatible" cryptography during the deploy process and use at least Network Manager 1.4.1. See [Issue #263](https://github.com/trailofbits/algo/issues/263) for more information.
 
 ### Linux strongSwan Clients (e.g., OpenWRT, Ubuntu Server, etc.)
 
@@ -148,11 +148,11 @@ Install strongSwan, then copy the included ipsec_user.conf, ipsec_user.secrets, 
 8. `sudo ipsec up <conn-name>`: start the ipsec tunnel
 9. `sudo ipsec down <conn-name>`: shutdown the ipsec tunnel
 
-One common use case is to let your server access your local LAN without going through the VPN. Set up a passthrough connection by adding the following to `/etc/ipsec.conf`. Replace `192.168.1.1/24` with the subnet your LAN uses:
+One common use case is to let your server access your local LAN without going through the VPN. Set up a passthrough connection by adding the following to `/etc/ipsec.conf`:
 
     conn lan-passthrough
-    leftsubnet=192.168.1.1/24
-    rightsubnet=192.168.1.1/24
+    leftsubnet=192.168.1.1/24 # Replace with your LAN subnet
+    rightsubnet=192.168.1.1/24 # Replac with your LAND subnet
     authby=never # No authentication necessary
     type=pass # passthrough
     auto=route # no need to ipsec up lan-passthrough
@@ -171,7 +171,7 @@ Depending on the platform, you may need one or multiple of the following files.
 
 ## Setup an SSH Tunnel
 
-If you turned on the optional SSH tunneling role, then local user accounts will be created for each user in `config.cfg` and an SSH authorized_key files for them will be in the `configs` directory (user.ssh.pem). SSH user accounts do not have shell access, cannot authenticate with a password, and only have limited tunneling options (e.g., `ssh -N` is required). This is done to ensure that SSH users have the least access required to tunnel through the server and can perform no other actions.
+If you turned on the optional SSH tunneling role, then local user accounts will be created for each user in `config.cfg` and SSH authorized_key files for them will be in the `configs` directory (user.ssh.pem). SSH user accounts do not have shell access, cannot authenticate with a password, and only have limited tunneling options (e.g., `ssh -N` is required). This ensures that SSH users have the least access required to setup a tunnel and can perform no other actions on the Algo server.
 
 Use the example command below to start an SSH tunnel by replacing `user` and `ip` with your own. Once the tunnel is setup, you can configure a browser or other application to use 127.0.0.1:1080 as a SOCKS proxy to route traffic through the Algo server.
 
@@ -183,20 +183,20 @@ To SSH into the Algo server for administrative purposes you can use the example 
 
  `ssh ubuntu@ip -i ~/.ssh/algo.pem`
 
-If you find yourself regularly logging into Algo then it will be useful to load your Algo ssh key automatically.  Add the following snippet to the bottom of `~/.bash_profile` to add it to your shell environment permanently.
+If you find yourself regularly logging into Algo then it will be useful to load your Algo ssh key automatically. Add the following snippet to the bottom of `~/.bash_profile` to add it to your shell environment permanently.
 
  `ssh-add ~/.ssh/algo > /dev/null 2>&1`
 
 
 ## Adding or Removing Users
 
-Algo's own scripts can easily add and remove users from the VPN server.
+If you chose the save the CA certificate during the deploy process, then Algo's own scripts can easily add and remove users from the VPN server.
 
 1. Update the `users` list in your `config.cfg`
 2. Open a terminal, `cd` to the algo directory, and activate the virtual environment with `source env/bin/activate`
 3. Run the command: `./algo update-users`
 
-The Algo VPN server now contains only the users listed in the `config.cfg` file.
+After this process completes, the Algo VPN server will contains only the users listed in the `config.cfg` file.
 
 ## Additional Documentation
 
