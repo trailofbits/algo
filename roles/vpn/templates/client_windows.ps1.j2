@@ -1,3 +1,18 @@
-certutil -f -p {{ easyrsa_p12_export_password }} -importpfx .\{{ item }}.p12
-Add-VpnConnection -name "Algo VPN {{ IP_subject_alt_name }} IKEv2" -ServerAddress "{{ IP_subject_alt_name }}" -TunnelType IKEv2 -AuthenticationMethod MachineCertificate -EncryptionLevel Required
-Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo VPN {{ IP_subject_alt_name }} IKEv2" -AuthenticationTransformConstants GCMAES128 -CipherTransformConstants GCMAES128 -EncryptionMethod AES128 -IntegrityCheckMethod SHA384 -DHGroup ECP256 -PfsGroup ECP256
+
+function AddAlgoVPN {
+  certutil -f -p {{ easyrsa_p12_export_password }} -importpfx .\{{ item }}.p12
+  Add-VpnConnection -name "Algo VPN {{ IP_subject_alt_name }} IKEv2" -ServerAddress "{{ IP_subject_alt_name }}" -TunnelType IKEv2 -AuthenticationMethod MachineCertificate -EncryptionLevel Required
+  Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo VPN {{ IP_subject_alt_name }} IKEv2" -AuthenticationTransformConstants GCMAES128 -CipherTransformConstants GCMAES128 -EncryptionMethod AES128 -IntegrityCheckMethod SHA384 -DHGroup ECP256 -PfsGroup ECP256  -Force
+}
+
+function RemoveAlgoVPN {
+  Get-ChildItem cert:LocalMachine/Root | Where-Object { $_.Subject -match '^CN={{ IP_subject_alt_name }}$' -and $_.Issuer -match '^CN={{ IP_subject_alt_name }}$' } | Remove-Item
+  Get-ChildItem cert:LocalMachine/My | Where-Object { $_.Subject -match '^CN={{ item }}$' -and $_.Issuer -match '^CN={{ IP_subject_alt_name }}$' } | Remove-Item
+  Remove-VpnConnection -name "Algo VPN {{ IP_subject_alt_name }} IKEv2" -Force
+}
+
+switch ($args[0]) {
+  "Add" { AddAlgoVPN }
+  "Remove" { RemoveAlgoVPN }
+  default { Write-Host Usage: $MyInvocation.MyCommand.Name "(Add|Remove)" }
+}
