@@ -26,7 +26,7 @@
 
     - name: Add new instance to host group
       add_host:
-        hostname: "{{ stack.stack_outputs.PublicIP }}"
+        hostname: "{{ stack.stack_outputs.ElasticIP }}"
         groupname: vpn-host
         ansible_ssh_user: ubuntu
         ansible_python_interpreter: "/usr/bin/python2.7"
@@ -35,7 +35,7 @@
         ipv6_support: yes
 
     - set_fact:
-        cloud_instance_ip: "{{ stack.stack_outputs.PublicIP }}"
+        cloud_instance_ip: "{{ stack.stack_outputs.ElasticIP }}"
 
     - name: Get EC2 instances
       ec2_remote_facts:

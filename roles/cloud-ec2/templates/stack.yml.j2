@@ -36,7 +36,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       CidrBlock: {{ ec2_vpc_nets.subnet_cidr }}
-      MapPublicIpOnLaunch: true
+      MapPublicIpOnLaunch: false
       Tags:
         - Key: Environment
           Value: Algo
@@ -184,9 +184,13 @@ Resources:
         - Key: Environment
           Value: Algo
 
-Outputs:
-  PublicIP:
-    Value:
-      Fn::GetAtt:
+  ElasticIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      InstanceId: !Ref EC2Instance
+    DependsOn:
       - EC2Instance
-      - PublicIp
+
+Outputs:
+  ElasticIP:
+    Value: !Ref ElasticIP
