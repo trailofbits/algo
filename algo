@@ -440,7 +440,7 @@ Enter the password for the private CA key:
 $ADDITIONAL_PROMPT
 : " -rs easyrsa_CA_password
 
-ansible-playbook users.yml -e "server_ip=$server_ip server_user=$server_user ssh_tunneling_enabled=$ssh_tunneling_enabled IP_subject=$IP_subject easyrsa_CA_password=$easyrsa_CA_password"
+ansible-playbook users.yml -e "server_ip=$server_ip server_user=$server_user ssh_tunneling_enabled=$ssh_tunneling_enabled IP_subject=$IP_subject easyrsa_CA_password=$easyrsa_CA_password" -t update-users --skip-tags common
 }
 
 case "$1" in

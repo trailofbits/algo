@@ -22,8 +22,10 @@
 
     - include: ipec_configuration.yml
     - include: openssl.yml
+      tags: update-users
     - include: distribute_keys.yml
     - include: client_configs.yml
+      tags: update-users
 
     - meta: flush_handlers
 
