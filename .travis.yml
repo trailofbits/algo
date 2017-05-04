@@ -35,9 +35,10 @@ before_cache:
 env:
   - LXC_NAME=ubuntu1604 LXC_DISTRO=ubuntu LXC_RELEASE=xenial
   - LXC_NAME=ubuntu1710 LXC_DISTRO=ubuntu LXC_RELEASE=artful
+  - LXC_NAME=docker LXC_DISTRO=ubuntu LXC_RELEASE=artful
 
 before_install:
-  - docker build -t travis/algo .
+  - test "${LXC_NAME}" != "docker" || docker build -t travis/algo .
 
 install:
   - sudo tar xf $HOME/lxc/cache.tar -C / || echo "Didn't extract cache."
@@ -53,15 +54,13 @@ install:
   - sudo apt-get install build-essential libssl-dev libffi-dev python-dev && sudo pip install -r requirements.txt
   - pip install ansible-lint
   - gem install awesome_bot
-  - export DEPLOY_ARGS="server_ip=$LXC_IP server_user=root IP_subject_alt_name=$LXC_IP local_dns=Y"
 
 script:
   # - awesome_bot --allow-dupe --skip-save-results *.md docs/*.md --white-list paypal.com,do.co,microsoft.com,https://github.com/trailofbits/algo/archive/master.zip,https://github.com/trailofbits/algo/issues/new
 #  - shellcheck algo
 #  - ansible-lint deploy.yml users.yml deploy_client.yml
   - ansible-playbook deploy.yml --syntax-check
-  - ansible-playbook deploy.yml -t local,vpn,dns,ssh_tunneling,tests -e "${DEPLOY_ARGS}"
-  - docker run -it -v $(pwd)/config.cfg:/algo/config.cfg -v ~/.ssh:/root/.ssh -e "DEPLOY_ARGS=${DEPLOY_ARGS}" travis/algo /bin/sh -c "chown -R 0:0 /root/.ssh && ls -l /root/.ssh && source env/bin/activate && ansible-playbook deploy.yml -t local,vpn,dns,ssh_tunneling,security,tests -e \"${DEPLOY_ARGS}\""
+  - ./tests/local-deploy.sh
 
 after_script:
   - ./tests/update-users.sh
