@@ -157,7 +157,9 @@ Additional tags:
                 "ec2:DescribeSecurityGroups",
                 "ec2:AuthorizeSecurityGroupIngress",
                 "ec2:RunInstances",
-                "ec2:DescribeInstances"
+                "ec2:DescribeInstances",
+                "ec2:AllocateAddress",
+                "ec2:DescribeAddresses"
             ],
             "Resource": [
                 "*"
