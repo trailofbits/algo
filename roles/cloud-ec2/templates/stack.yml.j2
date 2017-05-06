@@ -187,9 +187,11 @@ Resources:
   ElasticIP:
     Type: AWS::EC2::EIP
     Properties:
+      Domain: vpc
       InstanceId: !Ref EC2Instance
     DependsOn:
       - EC2Instance
+      - VPCGatewayAttachment
 
 Outputs:
   ElasticIP:
