@@ -12,6 +12,6 @@
 
 - name: A short pause, in order to be sure the instance is ready
   pause:
-    seconds: 10
+    seconds: 20
 
 - include: local_ssh.yml
