@@ -62,10 +62,6 @@
         line: "{{ item.public_ip_address }}"
       with_items:
         - "{{ algo_instances.instances }}"
-
-    - name: Extra wait time for ec2 instance to be ready
-      pause:
-        seconds: 20
   rescue:
     - debug: var=fail_hint
       tags: always
