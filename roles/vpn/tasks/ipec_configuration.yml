@@ -32,7 +32,11 @@
   register: strongswan_plugins
 
 - name: Disable unneeded plugins
-  lineinfile: dest="{{ config_prefix|default('/') }}etc/strongswan.d/charon/{{ item }}.conf" regexp='.*load.*' line='load = no' state=present
+  lineinfile:
+    dest: "{{ config_prefix|default('/') }}etc/strongswan.d/charon/{{ item }}.conf"
+    regexp: '.*load.*'
+    line: 'load = no'
+    state: present
   notify:
     - restart strongswan
   when: item not in strongswan_enabled_plugins and item not in strongswan_additional_plugins
