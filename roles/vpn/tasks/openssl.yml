@@ -115,3 +115,34 @@
   become: no
   with_items:
     - "{{ users }}"
+
+- name: Get active users
+  local_action: >
+    shell grep ^V index.txt | grep -v "{{ IP_subject_alt_name }}" | awk '{print $5}' | sed 's/\/CN=//g'
+  become: no
+  args:
+    chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+  register: valid_certs
+
+- name: Revoke non-existing users
+  local_action: >
+    shell openssl ca -config openssl.cnf -passin pass:"{{ easyrsa_CA_password }}" -revoke certs/{{ item }}.crt &&
+      openssl ca -gencrl -config openssl.cnf -passin pass:"{{ easyrsa_CA_password }}" -revoke certs/{{ item }}.crt -out crl/{{ item }}.crt
+      touch crl/{{ item }}_revoked
+  become: no
+  args:
+    chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+    creates: crl/{{ item }}_revoked
+  environment:
+    subjectAltName: "DNS:{{ item }}"
+  when: item not in users
+  with_items: "{{ valid_certs.stdout_lines }}"
+
+- name: Copy the revoked certificates to the vpn server
+  copy:
+    src: configs/{{ IP_subject_alt_name }}/pki/crl/{{ item }}.crt
+    dest: "{{ config_prefix|default('/') }}etc/ipsec.d/crls/{{ item }}.crt"
+  when: item not in users
+  with_items: "{{ valid_certs.stdout_lines }}"
+  notify:
+    - rereadcrls
