@@ -40,7 +40,7 @@ read -p "
 Do you want to install a DNS resolver on this VPN server, to block ads while surfing?
 [y/N]: " -r dns_enabled
 dns_enabled=${dns_enabled:-n}
-if [[ "$dns_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" dns"; fi
+if [[ "$dns_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" dns"; EXTRA_VARS+=" local_dns=Y"; fi
 
 read -p "
 Do you want each user to have their own account for SSH tunneling?
