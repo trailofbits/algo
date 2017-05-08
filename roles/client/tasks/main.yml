@@ -4,19 +4,6 @@
 - name: Include system based facts and tasks
   include: systems/main.yml
 
-- name: Checking the signature algorithm
-  local_action: >
-      shell openssl x509 -text -in certs/{{ IP_subject_alt_name }}.crt  | grep 'Signature Algorithm' | head -n1
-  become: no
-  register: sig_algo
-  args:
-    chdir: "configs/{{ IP_subject_alt_name }}/pki/"
-
-- name: Change the algorithm to RSA
-  set_fact:
-    Win10_Enabled: "Y"
-  when: '"ecdsa" not in sig_algo.stdout'
-
 - name: Install prerequisites
   package: name="{{ item }}" state=present
   with_items:

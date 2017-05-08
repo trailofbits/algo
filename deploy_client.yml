@@ -18,6 +18,7 @@
   become: true
   vars_files:
     - config.cfg
+    - roles/vpn/defaults/main.yml
 
   pre_tasks:
     - name: Get the OS
