@@ -17,3 +17,6 @@ The playbook is `deploy_client.yml`
 ```shell
 ansible-playbook deploy_client.yml -e 'client_ip=client.com vpn_user=jack server_ip=vpn-server.com server_ssh_user=root'
 ```
+
+### Additional options:
+If the user requires sudo password use the following argument: `--ask-become-pass`
