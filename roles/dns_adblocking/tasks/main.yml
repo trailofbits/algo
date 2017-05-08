@@ -21,12 +21,19 @@
       when: ansible_distribution == 'FreeBSD'
 
     - name: Dnsmasq configured
-      template: src=dnsmasq.conf.j2 dest="{{ config_prefix|default('/') }}etc/dnsmasq.conf"
+      template:
+        src: dnsmasq.conf.j2
+        dest: "{{ config_prefix|default('/') }}etc/dnsmasq.conf"
       notify:
         - restart dnsmasq
 
     - name: Adblock script created
-      template: src=adblock.sh dest=/usr/local/sbin/adblock.sh owner=root group="{{ root_group|default('root') }}" mode=0755
+      template:
+        src: adblock.sh
+        dest: /usr/local/sbin/adblock.sh
+        owner: root
+        group: "{{ root_group|default('root') }}"
+        mode: 0755
 
     - name: Adblock script added to cron
       cron:
@@ -43,7 +50,10 @@
     - meta: flush_handlers
 
     - name: Dnsmasq enabled and started
-      service: name=dnsmasq state=started enabled=yes
+      service:
+        name: dnsmasq
+        state: started
+        enabled: yes
   rescue:
     - debug: var=fail_hint
       tags: always

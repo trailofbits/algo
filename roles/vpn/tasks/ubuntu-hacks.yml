@@ -1,10 +1,14 @@
 ---
 
 - name: Configure apt to use the Xenial release by default
-  template: src=01_xenial_aptconf.j2 dest=/etc/apt/apt.conf.d/01xenial
+  template:
+    src: 01_xenial_aptconf.j2
+    dest: /etc/apt/apt.conf.d/01xenial
 
 - name: Configure packages preferences
-  template: src=01_strongswan.pref.j2 dest=/etc/apt/preferences.d/01_strongswan.pref
+  template:
+    src: 01_strongswan.pref.j2
+    dest: /etc/apt/preferences.d/01_strongswan.pref
 
 - name: Configure the Ubuntu Zesty repository
   apt_repository:
