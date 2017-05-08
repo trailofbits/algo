@@ -15,8 +15,7 @@
     - "crypto"
 
 - name: FreeBSD / HardenedBSD | Make the kernel config
-  shell: >
-    sysctl -b kern.conftxt > /tmp/IPSEC
+  shell: sysctl -b kern.conftxt > /tmp/IPSEC
   when: rebuild_needed is defined and rebuild_needed == true
 
 - name: FreeBSD / HardenedBSD | Ensure the all options are enabled
@@ -100,8 +99,7 @@
         msg: "Something went wrong. Check the debug output above."
 
 - name: FreeBSD / HardenedBSD | Reboot
-  shell: >
-    sleep 2 && shutdown -r now
+  shell: sleep 2 && shutdown -r now
   args:
     executable: /usr/local/bin/bash
   when: rebuild_needed is defined and rebuild_needed == true
@@ -110,4 +108,7 @@
   ignore_errors: true
 
 - name: FreeBSD / HardenedBSD | Enable strongswan
-  lineinfile: dest=/etc/rc.conf regexp=^strongswan_enable= line='strongswan_enable="YES"'
+  lineinfile:
+    dest: /etc/rc.conf
+    regexp: ^strongswan_enable=
+    line: 'strongswan_enable="YES"'

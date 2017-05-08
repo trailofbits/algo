@@ -1,14 +1,24 @@
 ---
 
 - name: Iptables configured
-  template: src="{{ item.src }}" dest="{{ item.dest }}" owner=root group=root mode=0640
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0640
   with_items:
     - { src: rules.v4.j2, dest: /etc/iptables/rules.v4 }
   notify:
     - restart iptables
 
 - name: Iptables configured
-  template: src="{{ item.src }}" dest="{{ item.dest }}" owner=root group=root mode=0640
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0640
   when: ipv6_support is defined and ipv6_support == true
   with_items:
     - { src: rules.v6.j2, dest: /etc/iptables/rules.v6 }
