@@ -1,5 +1,10 @@
 ---
 - block:
+
+    - name: The DNS tag is defined
+      set_fact:
+        local_dns: Y
+
     - name: Dnsmasq installed
       package: name=dnsmasq
 
