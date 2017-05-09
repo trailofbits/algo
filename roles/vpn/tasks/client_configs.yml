@@ -1,8 +1,7 @@
 ---
 
 - name: Register p12 PayloadContent
-  local_action: >
-    shell cat private/{{ item }}.p12 | base64
+  shell: cat private/{{ item }}.p12 | base64
   register:  PayloadContent
   become: no
   args:
@@ -15,8 +14,7 @@
     PayloadContentCA: "{{ lookup('file' , 'configs/{{ IP_subject_alt_name }}/pki/cacert.pem')|b64encode }}"
 
 - name: Build the mobileconfigs
-  local_action:
-    module: template
+  template:
     src: mobileconfig.j2
     dest: configs/{{ IP_subject_alt_name }}/{{ item.0 }}.mobileconfig
     mode: 0600
@@ -27,8 +25,7 @@
   no_log: True
 
 - name: Build the strongswan app android config
-  local_action:
-    module: template
+  template:
     src: sswan.j2
     dest: configs/{{ IP_subject_alt_name }}/{{ item.0 }}.sswan
     mode: 0600
@@ -39,8 +36,7 @@
   no_log: True
 
 - name: Build the client ipsec config file
-  local_action:
-    module: template
+  template:
     src: client_ipsec.conf.j2
     dest: configs/{{ IP_subject_alt_name }}/ipsec_{{ item }}.conf
     mode: 0600
@@ -49,8 +45,7 @@
     - "{{ users }}"
 
 - name: Build the client ipsec secret file
-  local_action:
-    module: template
+  template:
     src: client_ipsec.secrets.j2
     dest: configs/{{ IP_subject_alt_name }}/ipsec_{{ item }}.secrets
     mode: 0600
@@ -59,8 +54,7 @@
     - "{{ users }}"
 
 - name: Build the windows client powershell script
-  local_action:
-    module: template
+  template:
     src: client_windows.ps1.j2
     dest: configs/{{ IP_subject_alt_name }}/windows_{{ item }}.ps1
     mode: 0600
@@ -69,8 +63,7 @@
   with_items: "{{ users }}"
 
 - name: Restrict permissions for the local private directories
-  local_action:
-    module: file
+  file:
     path: "{{ item }}"
     state: directory
     mode: 0700
