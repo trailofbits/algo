@@ -1,6 +1,6 @@
 ---
 
-- name: Ensure the pki directory is not exist
+- name: Ensure the pki directory does not exist
   local_action:
     module: file
     dest: configs/{{ IP_subject_alt_name }}/pki
@@ -8,7 +8,7 @@
   become: no
   when: easyrsa_reinit_existent == True
 
-- name: Ensure the pki directories are exist
+- name: Ensure the pki directories exist
   local_action:
     module: file
     dest: "configs/{{ IP_subject_alt_name }}/pki/{{ item }}"
@@ -23,7 +23,7 @@
     - private
     - reqs
 
-- name: Ensure the files are exist
+- name: Ensure the files exist
   local_action:
     module: file
     dest: "configs/{{ IP_subject_alt_name }}/pki/{{ item }}"
@@ -42,7 +42,6 @@
     src: openssl.cnf.j2
     dest: "configs/{{ IP_subject_alt_name }}/pki/openssl.cnf"
   become: no
-
 
 - name: Build the CA pair
   local_action: >
