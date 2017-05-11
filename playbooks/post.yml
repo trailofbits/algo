@@ -1,8 +1,7 @@
 ---
 
 - name: Wait until SSH becomes ready...
-  local_action:
-    module: wait_for
+  wait_for:
     port: 22
     host: "{{ cloud_instance_ip }}"
     search_regex: "OpenSSH"

@@ -1,14 +1,12 @@
 ---
 
 - name: Ensure the local ssh directory is exist
-  local_action:
-    module: file
-    path: "~/.ssh/"
+  file:
+    path: ~/.ssh/
     state: directory
 
 - name: Copy the algo ssh key to the local ssh directory
-  local_action:
-    module: copy
+  copy:
     src: "{{ SSH_keys.private }}"
     dest: ~/.ssh/algo.pem
     mode: '0600'
