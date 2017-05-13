@@ -29,7 +29,7 @@
 
     - name: Adblock script created
       template:
-        src: adblock.sh
+        src: adblock.sh.j2
         dest: /usr/local/sbin/adblock.sh
         owner: root
         group: "{{ root_group|default('root') }}"
