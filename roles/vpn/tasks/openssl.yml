@@ -122,7 +122,9 @@
       -passout pass:"{{ easyrsa_p12_export_password }}"
     args:
       chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+      creates: private/{{ item }}.p12
     with_items: "{{ users }}"
+    register: p12
 
   - name: Copy the p12 certificates
     copy:
