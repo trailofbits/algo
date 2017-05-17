@@ -24,6 +24,7 @@
       tags: update-users
     - include: distribute_keys.yml
     - include: client_configs.yml
+      delegate_to: localhost
       tags: update-users
 
     - meta: flush_handlers

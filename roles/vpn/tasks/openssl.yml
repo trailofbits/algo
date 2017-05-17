@@ -1,141 +1,169 @@
 ---
 
-- name: Ensure the pki directory does not exist
-  local_action:
-    module: file
-    dest: configs/{{ IP_subject_alt_name }}/pki
-    state: absent
-  become: no
-  when: easyrsa_reinit_existent == True
+- block:
+  - name: Ensure the pki directory does not exist
+    file:
+      dest: configs/{{ IP_subject_alt_name }}/pki
+      state: absent
+    when: easyrsa_reinit_existent == True
 
-- name: Ensure the pki directories exist
-  local_action:
-    module: file
-    dest: "configs/{{ IP_subject_alt_name }}/pki/{{ item }}"
-    state: directory
-    recurse: yes
-  become: no
-  with_items:
-    - ecparams
-    - certs
-    - crl
-    - newcerts
-    - private
-    - reqs
+  - name: Ensure the pki directories exist
+    file:
+      dest: "configs/{{ IP_subject_alt_name }}/pki/{{ item }}"
+      state: directory
+      recurse: yes
+    with_items:
+      - ecparams
+      - certs
+      - crl
+      - newcerts
+      - private
+      - reqs
 
-- name: Ensure the files exist
-  local_action:
-    module: file
-    dest: "configs/{{ IP_subject_alt_name }}/pki/{{ item }}"
-    state: touch
-  become: no
-  with_items:
-    - ".rnd"
-    - "private/.rnd"
-    - "index.txt"
-    - "index.txt.attr"
-    - "serial"
+  - name: Ensure the files exist
+    file:
+      dest: "configs/{{ IP_subject_alt_name }}/pki/{{ item }}"
+      state: touch
+    with_items:
+      - ".rnd"
+      - "private/.rnd"
+      - "index.txt"
+      - "index.txt.attr"
+      - "serial"
 
-- name: Generate the openssl server configs
-  local_action:
-    module: template
-    src: openssl.cnf.j2
-    dest: "configs/{{ IP_subject_alt_name }}/pki/openssl.cnf"
-  become: no
+  - name: Generate the openssl server configs
+    template:
+      src: openssl.cnf.j2
+      dest: "configs/{{ IP_subject_alt_name }}/pki/openssl.cnf"
 
-- name: Build the CA pair
-  local_action: >
-    shell openssl ecparam -name prime256v1 -out ecparams/prime256v1.pem &&
-      openssl req -utf8 -new -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }} -config openssl.cnf -keyout private/cakey.pem -out cacert.pem -x509 -days 3650 -batch -passout pass:"{{ easyrsa_CA_password }}" &&
+  - name: Build the CA pair
+    shell: >
+      openssl ecparam -name prime256v1 -out ecparams/prime256v1.pem &&
+      openssl req -utf8 -new
+      -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }}
+      -config openssl.cnf
+      -keyout private/cakey.pem
+      -out cacert.pem -x509 -days 3650
+      -batch
+      -passout pass:"{{ easyrsa_CA_password }}" &&
       touch {{ IP_subject_alt_name }}_ca_generated
-  become: no
-  args:
-    chdir: "configs/{{ IP_subject_alt_name }}/pki/"
-    creates: "{{ IP_subject_alt_name }}_ca_generated"
-  environment:
-    subjectAltName: "DNS:{{ IP_subject_alt_name }},IP:{{ IP_subject_alt_name }}"
+    args:
+      chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+      creates: "{{ IP_subject_alt_name }}_ca_generated"
+    environment:
+      subjectAltName: "DNS:{{ IP_subject_alt_name }},IP:{{ IP_subject_alt_name }}"
 
-- name: Copy the CA certificate
-  local_action:
-    module: copy
-    src: "configs/{{ IP_subject_alt_name }}/pki/cacert.pem"
-    dest: "configs/{{ IP_subject_alt_name }}/cacert.pem"
-    mode: 0600
-  become: no
+  - name: Copy the CA certificate
+    copy:
+      src: "configs/{{ IP_subject_alt_name }}/pki/cacert.pem"
+      dest: "configs/{{ IP_subject_alt_name }}/cacert.pem"
+      mode: 0600
 
-- name: Generate the serial number
-  local_action: >
-    shell echo 01 > serial &&
-      touch serial_generated
-  become: no
-  args:
-    chdir: "configs/{{ IP_subject_alt_name }}/pki/"
-    creates: serial_generated
+  - name: Generate the serial number
+    shell: echo 01 > serial && touch serial_generated
+    args:
+      chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+      creates: serial_generated
 
-- name: Build the server pair
-  local_action: >
-    shell openssl req -utf8 -new -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }} -config openssl.cnf -keyout private/{{ IP_subject_alt_name }}.key -out reqs/{{ IP_subject_alt_name }}.req -nodes -passin pass:"{{ easyrsa_CA_password }}" -subj "/CN={{ IP_subject_alt_name }}" -batch &&
-    openssl ca -utf8 -in reqs/{{ IP_subject_alt_name }}.req -out certs/{{ IP_subject_alt_name }}.crt -config openssl.cnf -days 3650 -batch -passin pass:"{{ easyrsa_CA_password }}" -subj "/CN={{ IP_subject_alt_name }}" &&
-    touch certs/{{ IP_subject_alt_name }}_crt_generated
-  become: no
-  args:
-    chdir: "configs/{{ IP_subject_alt_name }}/pki/"
-    creates: certs/{{ IP_subject_alt_name }}_crt_generated
-  environment:
-    subjectAltName: "DNS:{{ IP_subject_alt_name }},IP:{{ IP_subject_alt_name }}"
+  - name: Build the server pair
+    shell: >
+      openssl req -utf8 -new
+      -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }}
+      -config openssl.cnf
+      -keyout private/{{ IP_subject_alt_name }}.key
+      -out reqs/{{ IP_subject_alt_name }}.req -nodes
+      -passin pass:"{{ easyrsa_CA_password }}"
+      -subj "/CN={{ IP_subject_alt_name }}" -batch &&
+      openssl ca -utf8
+      -in reqs/{{ IP_subject_alt_name }}.req
+      -out certs/{{ IP_subject_alt_name }}.crt
+      -config openssl.cnf -days 3650 -batch
+      -passin pass:"{{ easyrsa_CA_password }}"
+      -subj "/CN={{ IP_subject_alt_name }}" &&
+      touch certs/{{ IP_subject_alt_name }}_crt_generated
+    args:
+      chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+      creates: certs/{{ IP_subject_alt_name }}_crt_generated
+    environment:
+      subjectAltName: "DNS:{{ IP_subject_alt_name }},IP:{{ IP_subject_alt_name }}"
 
-- name: Build the client's pair
-  local_action: >
-   shell openssl req -utf8 -new -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }} -config openssl.cnf -keyout private/{{ item }}.key -out reqs/{{ item }}.req -nodes -passin pass:"{{ easyrsa_CA_password }}" -subj "/CN={{ item }}" -batch &&
-      openssl ca -utf8 -in reqs/{{ item }}.req -out certs/{{ item }}.crt -config openssl.cnf -days 3650 -batch -passin pass:"{{ easyrsa_CA_password }}" -subj "/CN={{ item }}" &&
+  - name: Build the client's pair
+    shell: >
+      openssl req -utf8 -new
+      -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }}
+      -config openssl.cnf
+      -keyout private/{{ item }}.key
+      -out reqs/{{ item }}.req -nodes
+      -passin pass:"{{ easyrsa_CA_password }}"
+      -subj "/CN={{ item }}" -batch &&
+      openssl ca -utf8
+      -in reqs/{{ item }}.req
+      -out certs/{{ item }}.crt
+      -config openssl.cnf -days 3650 -batch
+      -passin pass:"{{ easyrsa_CA_password }}"
+      -subj "/CN={{ item }}" &&
       touch certs/{{ item }}_crt_generated
-  become: no
-  args:
-    chdir: "configs/{{ IP_subject_alt_name }}/pki/"
-    creates: certs/{{ item }}_crt_generated
-  environment:
-    subjectAltName: "DNS:{{ item }}"
-  with_items: "{{ users }}"
+    args:
+      chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+      creates: certs/{{ item }}_crt_generated
+    environment:
+      subjectAltName: "DNS:{{ item }}"
+    with_items: "{{ users }}"
 
-- name: Build the client's p12
-  local_action: >
-    shell openssl pkcs12 -in certs/{{ item }}.crt -inkey private/{{ item }}.key -export -name {{ item }} -out private/{{ item }}.p12 -certfile cacert.pem -passout pass:"{{ easyrsa_p12_export_password }}"
-  become: no
-  args:
-    chdir: "configs/{{ IP_subject_alt_name }}/pki/"
-  with_items: "{{ users }}"
+  - name: Build the client's p12
+    shell: >
+      openssl pkcs12
+      -in certs/{{ item }}.crt
+      -inkey private/{{ item }}.key
+      -export
+      -name {{ item }}
+      -out private/{{ item }}.p12
+      -certfile cacert.pem
+      -passout pass:"{{ easyrsa_p12_export_password }}"
+    args:
+      chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+    with_items: "{{ users }}"
 
-- name: Copy the p12 certificates
-  local_action:
-    module: copy
-    src: "configs/{{ IP_subject_alt_name }}/pki/private/{{ item }}.p12"
-    dest: "configs/{{ IP_subject_alt_name }}/{{ item }}.p12"
-    mode: 0600
-  become: no
-  with_items:
-    - "{{ users }}"
+  - name: Copy the p12 certificates
+    copy:
+      src: "configs/{{ IP_subject_alt_name }}/pki/private/{{ item }}.p12"
+      dest: "configs/{{ IP_subject_alt_name }}/{{ item }}.p12"
+      mode: 0600
+    with_items:
+      - "{{ users }}"
 
-- name: Get active users
-  local_action: >
-    shell grep ^V index.txt | grep -v "{{ IP_subject_alt_name }}" | awk '{print $5}' | sed 's/\/CN=//g'
-  become: no
-  args:
-    chdir: "configs/{{ IP_subject_alt_name }}/pki/"
-  register: valid_certs
+  - name: Get active users
+    shell: >
+      grep ^V index.txt |
+      grep -v "{{ IP_subject_alt_name }}" |
+      awk '{print $5}' |
+      sed 's/\/CN=//g'
+    args:
+      chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+    register: valid_certs
 
-- name: Revoke non-existing users
-  local_action: >
-    shell openssl ca -config openssl.cnf -passin pass:"{{ easyrsa_CA_password }}" -revoke certs/{{ item }}.crt &&
-      openssl ca -gencrl -config openssl.cnf -passin pass:"{{ easyrsa_CA_password }}" -revoke certs/{{ item }}.crt -out crl/{{ item }}.crt
+  - name: Revoke non-existing users
+    shell: >
+      openssl ca
+      -config openssl.cnf
+      -passin pass:"{{ easyrsa_CA_password }}"
+      -revoke certs/{{ item }}.crt &&
+      openssl ca -gencrl
+      -config openssl.cnf
+      -passin pass:"{{ easyrsa_CA_password }}"
+      -revoke certs/{{ item }}.crt
+      -out crl/{{ item }}.crt
       touch crl/{{ item }}_revoked
+    args:
+      chdir: configs/{{ IP_subject_alt_name }}/pki/
+      creates: crl/{{ item }}_revoked
+    environment:
+      subjectAltName: "DNS:{{ item }}"
+    when: item not in users
+    with_items: "{{ valid_certs.stdout_lines }}"
+
+  delegate_to: localhost
   become: no
-  args:
-    chdir: "configs/{{ IP_subject_alt_name }}/pki/"
-    creates: crl/{{ item }}_revoked
-  environment:
-    subjectAltName: "DNS:{{ item }}"
-  when: item not in users
-  with_items: "{{ valid_certs.stdout_lines }}"
 
 - name: Copy the revoked certificates to the vpn server
   copy:
