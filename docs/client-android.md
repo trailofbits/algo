@@ -1,5 +1,14 @@
 # Android client setup
 
+## Installation via profiles
+
+1. [Install the strongSwan VPN Client](https://play.google.com/store/apps/details?id=org.strongswan.android).
+2. Copy `android_{username}.sswan` and `android_{username}_helper.html` to your phone's internal storage.
+3. Open the helper file in a browser (e.g., Google Chrome).
+4. Click on the link. It opens the StrongSwan app and configures the VPN with your profile.
+
+## Manual installation
+
 **NOTE:** If you are a Project Fi user, you must disable WiFi Assistant before continuing. See the [strongSwan documentation](https://wiki.strongswan.org/projects/strongswan/wiki/AndroidVPNClient) for details.
 
 | Instruction | Screenshot(s) |
