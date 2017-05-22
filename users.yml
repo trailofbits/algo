@@ -62,7 +62,7 @@
         - debug:
             msg:
               - "{{ congrats.common.split('\n') }}"
-              - "    {{ congrats.p12_pass }}"
+              - "    {% if p12.changed %}{{ congrats.p12_pass }}{% endif %}"
           tags: always
       rescue:
         - debug: var=fail_hint

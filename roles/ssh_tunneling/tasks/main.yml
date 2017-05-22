@@ -37,6 +37,7 @@
         ssh_key_bits: 256
         ssh_key_comment: '{{ item }}@{{ IP_subject_alt_name }}'
         ssh_key_passphrase: "{{ easyrsa_p12_export_password }}"
+        update_password: on_create
         state: present
         append: yes
       with_items: "{{ users }}"
@@ -82,7 +83,7 @@
       become: no
       with_items:
         - "{{ users }}"
-        
+
     - name: SSH | Get active system users
       shell: >
         getent group algo | cut -f4 -d: | sed "s/,/\n/g"
