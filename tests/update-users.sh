@@ -20,7 +20,7 @@ fi
 
 if openssl x509 -inform pem -noout -text -in certs/jack_test.crt | grep CN=jack_test
   then
-    echo "The new user exist"
+    echo "The new user exists"
   else
     echo "The new user does not exist"
     exit 1
