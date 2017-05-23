@@ -102,16 +102,12 @@ No version of Android supports IKEv2. Install the [strongSwan VPN Client for And
 
 ### Windows
 
-#### Scripted installation
-
-Copy your powershell script `windows_{username}.ps1` and p12 certificate `{username}.p12` to the Windows machine and run the following command as Administrator to configure the VPN connection.
+Copy your PowerShell script `windows_{username}.ps1` and p12 certificate `{username}.p12` to the Windows client and run the following command as Administrator to configure the VPN connection.
 ```
 powershell -ExecutionPolicy ByPass -File windows_{username}.ps1 Add
 ```
 
-#### Manual installation
-
-See the [Windows setup instructions](/docs/client-windows.md) for more a more detailed walkthrough.
+For a manual installation, see the [Windows setup instructions](/docs/client-windows.md).
 
 ### Linux Network Manager Clients (e.g., Ubuntu, Debian, or Fedora Desktop)
 
