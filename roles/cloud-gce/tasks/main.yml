@@ -10,6 +10,18 @@
         service_account_email: "{{ credentials_file_lookup.client_email | default(lookup('env','GCE_EMAIL')) }}"
         project_id: "{{ credentials_file_lookup.project_id | default(lookup('env','GCE_PROJECT')) }}"
 
+    - name: Network configured
+      gce_net:
+        name: "algo-{{ server_name }}"
+        fwname: "algo-{{ server_name }}-fw"
+        allowed: "udp:500,4500;tcp:22;icmp"
+        state: "present"
+        mode: auto
+        src_range: 0.0.0.0/0
+        service_account_email: "{{ credentials_file_lookup.client_email }}"
+        credentials_file: "{{ credentials_file  }}"
+        project_id: "{{ credentials_file_lookup.project_id }}"
+
     - name: "Creating a new instance..."
       gce:
         instance_names: "{{ server_name }}"
@@ -20,7 +32,7 @@
         credentials_file: "{{ credentials_file_path }}"
         project_id: "{{ project_id }}"
         metadata: '{"ssh-keys":"ubuntu:{{ ssh_public_key_lookup }}"}'
-        # ip_forward: true
+        network: "algo-{{ server_name }}"
         tags:
           - "environment-algo"
       register: google_vm
@@ -34,18 +46,6 @@
         ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
         cloud_provider: gce
         ipv6_support: no
-
-    - name: Firewall configured
-      local_action:
-        module: gce_net
-        name: "{{ google_vm.instance_data[0].network }}"
-        fwname: "algo-ikev2"
-        allowed: "udp:500,4500;tcp:22"
-        state: "present"
-        src_range: 0.0.0.0/0
-        service_account_email: "{{ credentials_file_lookup.client_email }}"
-        credentials_file: "{{ credentials_file  }}"
-        project_id: "{{ credentials_file_lookup.project_id }}"
 
     - set_fact:
         cloud_instance_ip: "{{ google_vm.instance_data[0].public_ip }}"
