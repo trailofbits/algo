@@ -181,7 +181,7 @@ Use the example command below to start an SSH tunnel by replacing `user` and `ip
 
 To SSH into the Algo server for administrative purposes you can use the example command below by replacing `ip` with your own:
 
- `ssh ubuntu@ip -i ~/.ssh/algo.pem`
+ `ssh root@ip -i ~/.ssh/algo.pem`
 
 If you find yourself regularly logging into Algo then it will be useful to load your Algo ssh key automatically. Add the following snippet to the bottom of `~/.bash_profile` to add it to your shell environment permanently.
 
