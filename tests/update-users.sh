@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -ex
 
 CAPW=`cat /tmp/ca_password`
 
