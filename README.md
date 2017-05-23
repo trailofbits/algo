@@ -100,7 +100,7 @@ Certificates and configuration files that users will need are placed in the `con
 
 No version of Android supports IKEv2. Install the [strongSwan VPN Client for Android 4 and newer](https://play.google.com/store/apps/details?id=org.strongswan.android). Import the corresponding user.p12 certificate to your device. See the [Android setup instructions](/docs/client-android.md) for more a more detailed walkthrough.
 
-### Windows
+### Windows 10
 
 Copy your PowerShell script `windows_{username}.ps1` and p12 certificate `{username}.p12` to the Windows client and run the following command as Administrator to configure the VPN connection.
 ```
@@ -167,7 +167,6 @@ To SSH into the Algo server for administrative purposes you can use the example 
 If you find yourself regularly logging into Algo then it will be useful to load your Algo ssh key automatically. Add the following snippet to the bottom of `~/.bash_profile` to add it to your shell environment permanently.
 
  `ssh-add ~/.ssh/algo > /dev/null 2>&1`
-
 
 ## Adding or Removing Users
 
