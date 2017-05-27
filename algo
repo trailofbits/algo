@@ -310,15 +310,23 @@ Name the vpn server:
     4. Central US       (Iowa B)
     5. Central US       (Iowa C)
     6. Central US       (Iowa F)
-    7. Eastern US       (South Carolina B)
-    8. Eastern US       (South Carolina C)
-    9. Eastern US       (South Carolina D)
-    10. Western Europe  (Belgium B)
-    11. Western Europe  (Belgium C)
-    12. Western Europe  (Belgium D)
-    13. East Asia       (Taiwan A)
-    14. East Asia       (Taiwan B)
-    15. East Asia       (Taiwan C)
+    7. Eastern US       (Northern Virginia A)
+    8. Eastern US       (Northern Virginia B)
+    9. Eastern US       (Northern Virginia C)
+    10. Eastern US      (South Carolina B)
+    11. Eastern US      (South Carolina C)
+    12. Eastern US      (South Carolina D)
+    13. Western Europe  (Belgium B)
+    14. Western Europe  (Belgium C)
+    15. Western Europe  (Belgium D)
+    16. Southeast Asia  (Singapore A)
+    17. Southeast Asia  (Singapore B)
+    18. East Asia       (Taiwan A)
+    19. East Asia       (Taiwan B)
+    20. East Asia       (Taiwan C)
+    21. Northeast Asia  (Tokyo A)
+    22. Northeast Asia  (Tokyo B)
+    23. Northeast Asia  (Tokyo C)
 Please choose the number of your zone. Press enter for default (#8) zone.
 [8]: " -r region
   region=${region:-8}
@@ -330,15 +338,23 @@ Please choose the number of your zone. Press enter for default (#8) zone.
     4) zone="us-central1-b" ;;
     5) zone="us-central1-c" ;;
     6) zone="us-central1-f" ;;
-    7) zone="us-east1-b" ;;
-    8) zone="us-east1-c" ;;
-    9) zone="us-east1-d" ;;
-    10) zone="europe-west1-b" ;;
-    11) zone="europe-west1-c" ;;
-    12) zone="europe-west1-d" ;;
-    13) zone="asia-east1-a" ;;
-    14) zone="asia-east1-b" ;;
-    15) zone="asia-east1-c" ;;
+    7) zone="us-east4-a" ;;
+    8) zone="us-east4-b" ;;
+    9) zone="us-east4-c" ;;
+    10) zone="us-east1-b" ;;
+    11) zone="us-east1-c" ;;
+    12) zone="us-east1-d" ;;
+    13) zone="europe-west1-b" ;;
+    14) zone="europe-west1-c" ;;
+    15) zone="europe-west1-d" ;;
+    16) zone="asia-southeast1-a" ;;
+    17) zone="asia-southeast1-b" ;;
+    18) zone="asia-east1-a" ;;
+    19) zone="asia-east1-b" ;;
+    20) zone="asia-east1-c" ;;
+    21) zone="asia-northeast1-a" ;;
+    22) zone="asia-northeast1-b" ;;
+    23) zone="asia-northeast1-c" ;;
   esac
 
   ROLES="gce vpn cloud"
