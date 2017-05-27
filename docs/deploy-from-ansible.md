@@ -180,16 +180,26 @@ Required variables:
 
 Possible options for `zone`:
 
+- us-west1-a
+- us-west1-b
 - us-central1-a
 - us-central1-b
 - us-central1-c
 - us-central1-f
+- us-east4-a
+- us-east4-b
+- us-east4-c
 - us-east1-b
 - us-east1-c
 - us-east1-d
 - europe-west1-b
 - europe-west1-c
 - europe-west1-d
+- asia-southeast1-a
+- asia-southeast1-b
 - asia-east1-a
 - asia-east1-b
 - asia-east1-c
+- asia-northeast1-a
+- asia-northeast1-b
+- asia-northeast1-c
