@@ -3,7 +3,7 @@
 - name: Generate the SSH private key
   shell: >
     echo -e  'n' |
-    ssh-keygen -b 2048 -C {{ SSH_keys.comment }}
+    ssh-keygen -b 4096 -C {{ SSH_keys.comment }}
     -t rsa -f {{ SSH_keys.private }} -q -N ""
   args:
     creates: "{{ SSH_keys.private }}"
