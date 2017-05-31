@@ -168,6 +168,8 @@ If you find yourself regularly logging into Algo then it will be useful to load 
 
  `ssh-add ~/.ssh/algo > /dev/null 2>&1`
 
+Note the admin username is `ubuntu` instead of `root` on providers other than Digital Ocean.
+
 ## Adding or Removing Users
 
 If you chose the save the CA certificate during the deploy process, then Algo's own scripts can easily add and remove users from the VPN server.
