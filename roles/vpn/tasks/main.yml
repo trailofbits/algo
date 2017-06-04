@@ -25,6 +25,7 @@
     - include: distribute_keys.yml
     - include: client_configs.yml
       delegate_to: localhost
+      become: no
       tags: update-users
 
     - meta: flush_handlers
