@@ -154,7 +154,7 @@
       -config openssl.cnf
       -passin pass:"{{ easyrsa_CA_password }}"
       -revoke certs/{{ item }}.crt
-      -out crl/{{ item }}.crt
+      -out crl/{{ item }}.crt &&
       touch crl/{{ item }}_revoked
     args:
       chdir: configs/{{ IP_subject_alt_name }}/pki/
