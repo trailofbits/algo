@@ -3,7 +3,6 @@
 - name: Register p12 PayloadContent
   shell: cat private/{{ item }}.p12 | base64
   register:  PayloadContent
-  become: no
   args:
     chdir: "configs/{{ IP_subject_alt_name }}/pki/"
   with_items: "{{ users }}"
@@ -18,7 +17,6 @@
     src: mobileconfig.j2
     dest: configs/{{ IP_subject_alt_name }}/{{ item.0 }}.mobileconfig
     mode: 0600
-  become: no
   with_together:
     - "{{ users }}"
     - "{{ PayloadContent.results }}"
@@ -29,7 +27,6 @@
     src: sswan.j2
     dest: configs/{{ IP_subject_alt_name }}/android_{{ item.0 }}.sswan
     mode: 0600
-  become: no
   with_together:
     - "{{ users }}"
     - "{{ PayloadContent.results }}"
@@ -40,7 +37,6 @@
     src: android_html_helper.j2
     dest: configs/{{ IP_subject_alt_name }}/android_{{ item.0 }}_helper.html
     mode: 0600
-  become: no
   with_together:
     - "{{ users }}"
   no_log: True
@@ -50,7 +46,6 @@
     src: client_ipsec.conf.j2
     dest: configs/{{ IP_subject_alt_name }}/ipsec_{{ item }}.conf
     mode: 0600
-  become: no
   with_items:
     - "{{ users }}"
 
@@ -59,17 +54,26 @@
     src: client_ipsec.secrets.j2
     dest: configs/{{ IP_subject_alt_name }}/ipsec_{{ item }}.secrets
     mode: 0600
-  become: no
   with_items:
     - "{{ users }}"
+
+- name: Create the windows check file
+  file:
+    state: touch
+    path: configs/{{ IP_subject_alt_name }}/.supports_windows
+  when: Win10_Enabled is defined and Win10_Enabled == "Y"
+
+- name: Check if the windows check file exists
+  stat:
+    path: configs/{{ IP_subject_alt_name }}/.supports_windows
+  register: supports_windows
 
 - name: Build the windows client powershell script
   template:
     src: client_windows.ps1.j2
     dest: configs/{{ IP_subject_alt_name }}/windows_{{ item }}.ps1
     mode: 0600
-  become: no
-  when: Win10_Enabled is defined and Win10_Enabled == "Y"
+  when: Win10_Enabled is defined and Win10_Enabled == "Y" or supports_windows.stat.exists == true
   with_items: "{{ users }}"
 
 - name: Restrict permissions for the local private directories
@@ -77,6 +81,5 @@
     path: "{{ item }}"
     state: directory
     mode: 0700
-  become: no
   with_items:
     - configs/{{ IP_subject_alt_name }}
