@@ -133,7 +133,6 @@ Additional tags:
             "Action": [
                 "cloudformation:CreateStack",
                 "cloudformation:DescribeStacks",
-                "cloudformation:CreateStacks",
                 "cloudformation:DescribeStackEvents",
                 "cloudformation:ListStackResources"
             ],
