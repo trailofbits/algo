@@ -187,6 +187,7 @@ Possible options for `zone`:
 
 - us-west1-a
 - us-west1-b
+- us-west1-c
 - us-central1-a
 - us-central1-b
 - us-central1-c
