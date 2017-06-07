@@ -306,55 +306,57 @@ Name the vpn server:
   What zone should the server be located in?
     1. Western US       (Oregon A)
     2. Western US       (Oregon B)
-    3. Central US       (Iowa A)
-    4. Central US       (Iowa B)
-    5. Central US       (Iowa C)
-    6. Central US       (Iowa F)
-    7. Eastern US       (Northern Virginia A)
-    8. Eastern US       (Northern Virginia B)
-    9. Eastern US       (Northern Virginia C)
-    10. Eastern US      (South Carolina B)
-    11. Eastern US      (South Carolina C)
-    12. Eastern US      (South Carolina D)
-    13. Western Europe  (Belgium B)
-    14. Western Europe  (Belgium C)
-    15. Western Europe  (Belgium D)
-    16. Southeast Asia  (Singapore A)
-    17. Southeast Asia  (Singapore B)
-    18. East Asia       (Taiwan A)
-    19. East Asia       (Taiwan B)
-    20. East Asia       (Taiwan C)
-    21. Northeast Asia  (Tokyo A)
-    22. Northeast Asia  (Tokyo B)
-    23. Northeast Asia  (Tokyo C)
-Please choose the number of your zone. Press enter for default (#8) zone.
-[8]: " -r region
+    3. Western US       (Oregon C)
+    4. Central US       (Iowa A)
+    5. Central US       (Iowa B)
+    6. Central US       (Iowa C)
+    7. Central US       (Iowa F)
+    8. Eastern US       (Northern Virginia A)
+    9. Eastern US       (Northern Virginia B)
+    10. Eastern US      (Northern Virginia C)
+    11. Eastern US      (South Carolina B)
+    12. Eastern US      (South Carolina C)
+    13. Eastern US      (South Carolina D)
+    14. Western Europe  (Belgium B)
+    15. Western Europe  (Belgium C)
+    16. Western Europe  (Belgium D)
+    17. Southeast Asia  (Singapore A)
+    18. Southeast Asia  (Singapore B)
+    19. East Asia       (Taiwan A)
+    20. East Asia       (Taiwan B)
+    21. East Asia       (Taiwan C)
+    22. Northeast Asia  (Tokyo A)
+    23. Northeast Asia  (Tokyo B)
+    24. Northeast Asia  (Tokyo C)
+Please choose the number of your zone. Press enter for default (#14) zone.
+[14]: " -r region
   region=${region:-8}
 
   case "$region" in
     1) zone="us-west1-a" ;;
     2) zone="us-west1-b" ;;
-    3) zone="us-central1-a" ;;
-    4) zone="us-central1-b" ;;
-    5) zone="us-central1-c" ;;
-    6) zone="us-central1-f" ;;
-    7) zone="us-east4-a" ;;
-    8) zone="us-east4-b" ;;
-    9) zone="us-east4-c" ;;
-    10) zone="us-east1-b" ;;
-    11) zone="us-east1-c" ;;
-    12) zone="us-east1-d" ;;
-    13) zone="europe-west1-b" ;;
-    14) zone="europe-west1-c" ;;
-    15) zone="europe-west1-d" ;;
-    16) zone="asia-southeast1-a" ;;
-    17) zone="asia-southeast1-b" ;;
-    18) zone="asia-east1-a" ;;
-    19) zone="asia-east1-b" ;;
-    20) zone="asia-east1-c" ;;
-    21) zone="asia-northeast1-a" ;;
-    22) zone="asia-northeast1-b" ;;
-    23) zone="asia-northeast1-c" ;;
+    3) zone="us-west1-c" ;;
+    4) zone="us-central1-a" ;;
+    5) zone="us-central1-b" ;;
+    6) zone="us-central1-c" ;;
+    7) zone="us-central1-f" ;;
+    8) zone="us-east4-a" ;;
+    9) zone="us-east4-b" ;;
+    10) zone="us-east4-c" ;;
+    11) zone="us-east1-b" ;;
+    12) zone="us-east1-c" ;;
+    13) zone="us-east1-d" ;;
+    14) zone="europe-west1-b" ;;
+    15) zone="europe-west1-c" ;;
+    16) zone="europe-west1-d" ;;
+    17) zone="asia-southeast1-a" ;;
+    18) zone="asia-southeast1-b" ;;
+    19) zone="asia-east1-a" ;;
+    20) zone="asia-east1-b" ;;
+    21) zone="asia-east1-c" ;;
+    22) zone="asia-northeast1-a" ;;
+    23) zone="asia-northeast1-b" ;;
+    24) zone="asia-northeast1-c" ;;
   esac
 
   ROLES="gce vpn cloud"
