@@ -27,7 +27,7 @@ Algo VPN is a set of Ansible scripts that simplify the setup of a personal IPSEC
 * Does not depend on the security of [TLS](https://tools.ietf.org/html/rfc7457)
 * Does not require client software on most platforms
 * Does not claim to provide anonymity or censorship avoidance
-* Does not claim to protect you from the [FSB](https://en.wikipedia.org/wiki/Federal_Security_Service), [MSS](https://en.wikipedia.org/wiki/Ministry_of_State_Security_(China)), [DGSE](https://en.wikipedia.org/wiki/Directorate-General_for_External_Security), or [FSM](https://en.wikipedia.org/wiki/Flying_Spaghetti_Monster)
+* Does not claim to protect you from the [FSB](https://en.wikipedia.org/wiki/Federal_Security_Service), [MSS](https://en.wikipedia.org/wiki/Ministry_of_State_Security_(China)), [DGSE](https://en.wikipedia.org/wiki/Directorate-General_for_External_Security),[Mossad](https://en.wikipedia.org/wiki/Mossad), or [FSM](https://en.wikipedia.org/wiki/Flying_Spaghetti_Monster)
 
 ## Deploy the Algo Server
 
