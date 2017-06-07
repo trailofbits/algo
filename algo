@@ -448,10 +448,22 @@ Do you want each user to have their own account for SSH tunneling?
 [y/N]: " -r ssh_tunneling_enabled
 ssh_tunneling_enabled=${ssh_tunneling_enabled:-n}
 
-  read -p "
+if [ "x${server_ip}" = "xlocalhost" ]; then
+	myip=""
+else
+	myip=${server_ip}
+fi
+
+read -p "
+
 Enter the public IP address of your server: (IMPORTANT! This IP is used to verify the certificate)
-[$server_ip]: " -r IP_subject
-  IP_subject=${IP_subject:-$server_ip}
+[$myip]: " -r IP_subject
+IP_subject=${IP_subject:-$myip}
+
+if [ "x${IP_subject}" = "x" ]; then
+echo "no server IP given. exiting."
+exit 1
+fi
 
   read -p "
 Enter the password for the private CA key:
