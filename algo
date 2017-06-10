@@ -330,7 +330,7 @@ Name the vpn server:
     24. Northeast Asia  (Tokyo C)
 Please choose the number of your zone. Press enter for default (#14) zone.
 [14]: " -r region
-  region=${region:-8}
+  region=${region:-14}
 
   case "$region" in
     1) zone="us-west1-a" ;;
