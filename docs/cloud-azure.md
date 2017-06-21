@@ -45,14 +45,14 @@ or just pass those values to the Algo script
 [step11-screen]: http://i.imgur.com/NUJ6k7i.jpg
 [step12-screen]: http://i.imgur.com/VZv5qwb.jpg
 
-[step2-thumb]: http://i.imgur.com/ENvSupEm.png
-[step3-thumb]: http://i.imgur.com/sPLQaQem.jpg
-[step4-thumb]: http://i.imgur.com/di3xFCMm.jpg
-[step5-thumb]: http://i.imgur.com/SipQyRAm.jpg
-[step6-thumb]: http://i.imgur.com/RRTqV7Cm.jpg
-[step7-thumb]: http://i.imgur.com/ZnqJeVvm.jpg
-[step8-thumb]: http://i.imgur.com/WAS8Ovlm.png
-[step9-thumb]: http://i.imgur.com/IvTN7o1m.jpg
-[step10-thumb]: http://i.imgur.com/j6dgo75m.png
-[step11-thumb]: http://i.imgur.com/NUJ6k7im.jpg
-[step12-thumb]: http://i.imgur.com/VZv5qwbm.jpg
+[step2-thumb]: https://i.imgur.com/ENvSupEm.png
+[step3-thumb]: https://i.imgur.com/sPLQaQem.jpg
+[step4-thumb]: https://i.imgur.com/di3xFCMm.jpg
+[step5-thumb]: https://i.imgur.com/SipQyRAm.jpg
+[step6-thumb]: https://i.imgur.com/RRTqV7Cm.jpg
+[step7-thumb]: https://i.imgur.com/ZnqJeVvm.jpg
+[step8-thumb]: https://i.imgur.com/WAS8Ovlm.png
+[step9-thumb]: https://i.imgur.com/IvTN7o1m.jpg
+[step10-thumb]: https://i.imgur.com/j6dgo75m.png
+[step11-thumb]: https://i.imgur.com/NUJ6k7im.jpg
+[step12-thumb]: https://i.imgur.com/VZv5qwbm.jpg
