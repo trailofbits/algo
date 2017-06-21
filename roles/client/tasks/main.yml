@@ -39,9 +39,9 @@
     create: yes
   with_items:
     - dest: "{{ configs_prefix }}/ipsec.conf"
-      line: "include ipsec.*.conf"
+      line: "include ipsec.{{ IP_subject_alt_name }}.conf"
     - dest: "{{ configs_prefix }}/ipsec.secrets"
-      line: "include ipsec.*.secrets"
+      line: "include ipsec.{{ IP_subject_alt_name }}.secrets"
   notify:
     - restart strongswan
 
@@ -51,10 +51,10 @@
     dest: "{{ item.dest }}"
   with_items:
     - src: "configs/{{ IP_subject_alt_name }}/pki/certs/{{ vpn_user }}.crt"
-      dest: "{{ configs_prefix }}/ipsec.d/certs/{{ IP_subject_alt_name }}_{{ vpn_user }}.crt"
+      dest: "{{ configs_prefix }}/ipsec.d/certs/{{ vpn_user }}.crt"
     - src: "configs/{{ IP_subject_alt_name }}/pki/cacert.pem"
       dest: "{{ configs_prefix }}/ipsec.d/cacerts/{{ IP_subject_alt_name }}.pem"
     - src: "configs/{{ IP_subject_alt_name }}/pki/private/{{ vpn_user }}.key"
-      dest: "{{ configs_prefix }}/ipsec.d/private/{{ IP_subject_alt_name }}_{{ vpn_user }}.key"
+      dest: "{{ configs_prefix }}/ipsec.d/private/{{ vpn_user }}.key"
   notify:
     - restart strongswan
