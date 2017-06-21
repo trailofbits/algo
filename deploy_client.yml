@@ -8,7 +8,7 @@
       add_host:
         name: "{{ client_ip }}"
         groups: client-host
-        ansible_ssh_user: "{{ server_ssh_user }}"
+        ansible_ssh_user: "{{ ssh_user }}"
         vpn_user: "{{ vpn_user }}"
         server_ip: "{{ server_ip }}"
 
@@ -35,7 +35,7 @@
         sudo apt-get update -qq && sudo apt-get install -qq -y python2.7 &&
         sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
       changed_when: false
-      when: "'ubuntu' in distribution.stdout"
+      when: "'ubuntu' in distribution.stdout|lower"
 
     - name: Fedora 25 | Install prerequisites
       raw: >
@@ -44,7 +44,7 @@
         sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1 &&
         rpm -ql python2-dnf || dnf install python2-dnf -y
       changed_when: false
-      when: "'fedora' in distribution.stdout"
+      when: "'fedora' in distribution.stdout|lower"
 
   roles:
     - { role: client, tags: ['client'] }
