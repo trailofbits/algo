@@ -3,9 +3,6 @@
 - set_fact:
     strongswan_additional_plugins: []
 
-- include: ubuntu-hacks.yml
-  when: ansible_distribution_version == "16.04"
-
 - name: Ubuntu | Install strongSwan
   apt:
     name: strongswan
