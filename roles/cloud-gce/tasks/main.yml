@@ -1,12 +1,15 @@
 - block:
-    - set_fact:
+    - name: Extract credentials
+      set_fact:
         credentials_file_path: "{{ credentials_file | default(lookup('env','GCE_CREDENTIALS_FILE_PATH'), true) }}"
         ssh_public_key_lookup: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
 
-    - set_fact:
+    - name: Extract credentials
+      set_fact:
         credentials_file_lookup: "{{ lookup('file', '{{ credentials_file_path }}') }}"
 
-    - set_fact:
+    - name: Extract credentials
+      set_fact:
         service_account_email: "{{ credentials_file_lookup.client_email | default(lookup('env','GCE_EMAIL')) }}"
         project_id: "{{ credentials_file_lookup.project_id | default(lookup('env','GCE_PROJECT')) }}"
 
@@ -47,7 +50,8 @@
         cloud_provider: gce
         ipv6_support: no
 
-    - set_fact:
+    - name: Set the instance IP
+      set_fact:
         cloud_instance_ip: "{{ google_vm.instance_data[0].public_ip }}"
 
     - name: Ensure the group gce exists in the dynamic inventory file
@@ -67,4 +71,4 @@
     - debug: var=fail_hint
       tags: always
     - fail:
-      tags: always
+      tags: [ 'always', 'skip_ansible_lint' ]

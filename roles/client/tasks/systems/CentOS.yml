@@ -1,6 +1,7 @@
 ---
 
-- set_fact:
+- name: Set system-based facts
+  set_fact:
     prerequisites:
       - epel-release
     configs_prefix: /etc/strongswan/

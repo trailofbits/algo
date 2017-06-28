@@ -33,7 +33,7 @@
         - debug: var=fail_hint
           tags: always
         - fail:
-          tags: always
+          tags: [ 'always', 'skip_ansible_lint' ]
 
 - name: User management
   hosts: vpn-host
@@ -51,7 +51,7 @@
         - debug: var=fail_hint
           tags: always
         - fail:
-          tags: always
+          tags: [ 'always', 'skip_ansible_lint' ]
 
   roles:
     - { role: ssh_tunneling, tags: always, when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y" }
@@ -68,4 +68,4 @@
         - debug: var=fail_hint
           tags: always
         - fail:
-          tags: always
+          tags: [ 'always', 'skip_ansible_lint' ]

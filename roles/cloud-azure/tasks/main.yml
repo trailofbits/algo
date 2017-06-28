@@ -1,6 +1,7 @@
 ---
 - block:
-    - set_fact:
+    - name: Extract credentials
+      set_fact:
         resource_group: "Algo_{{ region }}"
         secret: "{{ azure_secret | default(lookup('env','AZURE_SECRET'), true) }}"
         tenant: "{{ azure_tenant | default(lookup('env','AZURE_TENANT'), true) }}"
@@ -94,7 +95,8 @@
 
       # To-do: Add error handling - if vm_size requested is not available, can we fall back to another, ideally with a prompt?
 
-    - set_fact:
+    - name: Set network facts
+      set_fact:
         ip_address: "{{ azure_rm_virtualmachine.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
         networkinterface_name: "{{ azure_rm_virtualmachine.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].name }}"
 
@@ -120,7 +122,8 @@
         cloud_provider: azure
         ipv6_support: no
 
-    - set_fact:
+    - name: Set the instance IP
+      set_fact:
         cloud_instance_ip: "{{ ip_address }}"
 
     - name: Ensure the group azure exists in the dynamic inventory file
@@ -140,4 +143,4 @@
     - debug: var=fail_hint
       tags: always
     - fail:
-      tags: always
+      tags: [ 'always', 'skip_ansible_lint' ]

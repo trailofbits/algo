@@ -1,6 +1,7 @@
 ---
 
-- set_fact:
+- name: Set system-based facts
+  set_fact:
     strongswan_additional_plugins: []
 
 - name: Ubuntu | Install strongSwan
@@ -9,9 +10,10 @@
     state: latest
     update_cache: yes
     install_recommends: yes
+  tags: skip_ansible_lint
 
 - name: Ubuntu | Enforcing ipsec with apparmor
-  shell: aa-enforce "{{ item }}"
+  command: aa-enforce "{{ item }}"
   when: apparmor_enabled is defined and apparmor_enabled == true
   with_items:
     - /usr/lib/ipsec/charon
@@ -41,7 +43,6 @@
     src: 100-CustomLimitations.conf.j2
     dest: /etc/systemd/system/strongswan.service.d/100-CustomLimitations.conf
   notify:
-    - daemon-reload
     - restart strongswan
 
 - include: iptables.yml

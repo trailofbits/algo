@@ -30,6 +30,7 @@
   shell: >
     find {{ config_prefix|default('/') }}etc/strongswan.d/charon/ -type f -name '*.conf' -exec basename {} \; | cut -f1 -d.
   register: strongswan_plugins
+  changed_when: false
 
 - name: Disable unneeded plugins
   lineinfile:

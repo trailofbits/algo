@@ -1,6 +1,7 @@
 ---
 
-- set_fact:
+- name: Set system-based facts
+  set_fact:
     tools:
       - git
       - subversion
@@ -48,5 +49,6 @@
   shell: >
     kldstat -n ipfw.ko || kldload ipfw ; sysctl net.inet.ip.fw.enable=0 &&
     bash /etc/rc.firewall && sysctl net.inet.ip.fw.enable=1
+  changed_when: false
 
 - meta: flush_handlers

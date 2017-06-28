@@ -4,6 +4,7 @@
       apt: name="{{ item }}" state=latest
       with_items:
         - unattended-upgrades
+      tags: skip_ansible_lint
 
     - name: Configure unattended-upgrades
       template:
@@ -165,4 +166,4 @@
     - debug: var=fail_hint
       tags: always
     - fail:
-      tags: always
+      tags: [ 'always', 'skip_ansible_lint' ]

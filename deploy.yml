@@ -19,7 +19,7 @@
         - debug: var=fail_hint
           tags: always
         - fail:
-          tags: always
+          tags: [ 'always', 'skip_ansible_lint' ]
 
   roles:
     - { role: cloud-digitalocean, tags: ['digitalocean'] }
@@ -38,7 +38,7 @@
         - debug: var=fail_hint
           tags: always
         - fail:
-          tags: always
+          tags: [ 'always', 'skip_ansible_lint' ]
 
 - name: Configure the server and install required software
   hosts: vpn-host
@@ -57,7 +57,7 @@
         - debug: var=fail_hint
           tags: always
         - fail:
-          tags: always
+          tags: [ 'always', 'skip_ansible_lint' ]
 
   roles:
     - { role: security, tags: [ 'security' ] }
@@ -93,4 +93,4 @@
         - debug: var=fail_hint
           tags: always
         - fail:
-          tags: always
+          tags: [ 'always', 'skip_ansible_lint' ]

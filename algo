@@ -5,7 +5,8 @@ set -e
 ACTIVATE_SCRIPT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/env/bin/activate"
 if [ -f "$ACTIVATE_SCRIPT" ]
 then
-	source $ACTIVATE_SCRIPT
+	# shellcheck disable=SC1090
+	source "$ACTIVATE_SCRIPT"
 else
 	echo "$ACTIVATE_SCRIPT not found.  Did you follow documentation to install dependencies?"
 	exit 1
@@ -176,7 +177,7 @@ Enter the number of your desired region:
   esac
 
   ROLES="azure vpn cloud"
-  EXTRA_VARS="azure_secret=$azure_secret azure_tenant=$azure_tenant azure_client_id=$azure_client_id azure_subscription_id=$azure_subscription_id azure_server_name=$azure_server_name ssh_public_key=$ssh_public_key region=$region"
+  EXTRA_VARS="azure_secret=$azure_secret azure_tenant=$azure_tenant azure_client_id=$azure_client_id azure_subscription_id=$azure_subscription_id azure_server_name=$azure_server_name region=$region"
 }
 
 digitalocean () {
@@ -287,7 +288,7 @@ Enter the number of your desired region:
   esac
 
   ROLES="ec2 vpn cloud"
-  EXTRA_VARS="aws_access_key=$aws_access_key aws_secret_key=$aws_secret_key aws_server_name=$aws_server_name ssh_public_key=$ssh_public_key region=$region"
+  EXTRA_VARS="aws_access_key=$aws_access_key aws_secret_key=$aws_secret_key aws_server_name=$aws_server_name region=$region"
 }
 
 gce () {
@@ -360,7 +361,7 @@ Please choose the number of your zone. Press enter for default (#14) zone.
   esac
 
   ROLES="gce vpn cloud"
-  EXTRA_VARS="credentials_file=$credentials_file server_name=$server_name ssh_public_key=$ssh_public_key zone=$zone max_mss=1316"
+  EXTRA_VARS="credentials_file=$credentials_file server_name=$server_name zone=$zone max_mss=1316"
 }
 
 non_cloud () {

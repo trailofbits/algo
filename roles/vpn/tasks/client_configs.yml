@@ -3,6 +3,7 @@
 - name: Register p12 PayloadContent
   shell: cat private/{{ item }}.p12 | base64
   register:  PayloadContent
+  changed_when: false
   args:
     chdir: "configs/{{ IP_subject_alt_name }}/pki/"
   with_items: "{{ users }}"

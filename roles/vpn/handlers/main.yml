@@ -1,17 +1,17 @@
-- name: restart strongswan
-  service: name=strongswan state=restarted
+---
 
-- name: daemon-reload
-  shell: systemctl daemon-reload
+- name: restart strongswan
+  systemd: name=strongswan state=restarted daemon_reload=yes
 
 - name: restart apparmor
   service: name=apparmor state=restarted
 
 - name: save iptables
-  shell: service netfilter-persistent save
+  command: service netfilter-persistent save
+  tags: skip_ansible_lint
 
 - name: restart iptables
   service: name=netfilter-persistent state=restarted
 
 - name: rereadcrls
-  shell: ipsec rereadcrls
+  command: ipsec rereadcrls

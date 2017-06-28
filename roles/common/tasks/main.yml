@@ -25,4 +25,4 @@
     - debug: var=fail_hint
       tags: always
     - fail:
-      tags: always
+      tags: [ 'always', 'skip_ansible_lint' ]
