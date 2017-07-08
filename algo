@@ -423,7 +423,7 @@ algo_provisioning () {
     1. DigitalOcean
     2. Amazon EC2
     3. Microsoft Azure
-    4. Google Compute Engine (only for testing, see issue #369)
+    4. Google Compute Engine
     5. Install to existing Ubuntu 16.04 server
 
 Enter the number of your desired provider
