@@ -320,14 +320,20 @@ Name the vpn server:
     14. Western Europe  (Belgium B)
     15. Western Europe  (Belgium C)
     16. Western Europe  (Belgium D)
-    17. Southeast Asia  (Singapore A)
-    18. Southeast Asia  (Singapore B)
-    19. East Asia       (Taiwan A)
-    20. East Asia       (Taiwan B)
-    21. East Asia       (Taiwan C)
-    22. Northeast Asia  (Tokyo A)
-    23. Northeast Asia  (Tokyo B)
-    24. Northeast Asia  (Tokyo C)
+    17. Western Europe  (London A)
+    18. Western Europe  (London B)
+    19. Western Europe  (London C)
+    20. Southeast Asia  (Singapore A)
+    21. Southeast Asia  (Singapore B)
+    22. East Asia       (Taiwan A)
+    23. East Asia       (Taiwan B)
+    24. East Asia       (Taiwan C)
+    25. Northeast Asia  (Tokyo A)
+    26. Northeast Asia  (Tokyo B)
+    27. Northeast Asia  (Tokyo C)
+    28. Australia	(Sydney A)
+    29. Australia	(Sydney B)
+    30. Australia	(Sydney C)
 Please choose the number of your zone. Press enter for default (#14) zone.
 [14]: " -r region
   region=${region:-14}
@@ -349,14 +355,20 @@ Please choose the number of your zone. Press enter for default (#14) zone.
     14) zone="europe-west1-b" ;;
     15) zone="europe-west1-c" ;;
     16) zone="europe-west1-d" ;;
-    17) zone="asia-southeast1-a" ;;
-    18) zone="asia-southeast1-b" ;;
-    19) zone="asia-east1-a" ;;
-    20) zone="asia-east1-b" ;;
-    21) zone="asia-east1-c" ;;
-    22) zone="asia-northeast1-a" ;;
-    23) zone="asia-northeast1-b" ;;
-    24) zone="asia-northeast1-c" ;;
+    17) zone="europe-west2-a" ;;
+    18) zone="europe-west2-b" ;;
+    19) zone="europe-west2-c" ;;
+    20) zone="asia-southeast1-a" ;;
+    21) zone="asia-southeast1-b" ;;
+    22) zone="asia-east1-a" ;;
+    23) zone="asia-east1-b" ;;
+    24) zone="asia-east1-c" ;;
+    25) zone="asia-northeast1-a" ;;
+    26) zone="asia-northeast1-b" ;;
+    27) zone="asia-northeast1-c" ;;
+    28) zone="australia-southeast1-a" ;;
+    29) zone="australia-southeast1-b" ;;
+    30) zone="australia-southeast1-c" ;;
   esac
 
   ROLES="gce vpn cloud"
@@ -411,7 +423,7 @@ algo_provisioning () {
     1. DigitalOcean
     2. Amazon EC2
     3. Microsoft Azure
-    4. Google Compute Engine (only for testing, see issue #369)
+    4. Google Compute Engine
     5. Install to existing Ubuntu 16.04 server
 
 Enter the number of your desired provider
