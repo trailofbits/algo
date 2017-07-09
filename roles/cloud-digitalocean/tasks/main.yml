@@ -66,7 +66,8 @@
         cloud_provider: digitalocean
         ipv6_support: true
 
-    - set_fact:
+    - name: Set the instance IP
+      set_fact:
         cloud_instance_ip: "{{ do.droplet.ip_address }}"
 
     - name: Tag the droplet
@@ -105,4 +106,4 @@
     - debug: var=fail_hint
       tags: always
     - fail:
-      tags: always
+      tags: [ 'always', 'skip_ansible_lint' ]

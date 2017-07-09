@@ -24,6 +24,7 @@
     - name: Get the OS
       raw: uname -a
       register: distribution
+      changed_when: false
 
     - name: Modify the server name fact
       set_fact:

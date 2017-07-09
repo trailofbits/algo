@@ -70,6 +70,7 @@
 
     - fail:
         msg: "Something went wrong. Check the debug output above."
+      tags: skip_ansible_lint
 
 - block:
     - name: FreeBSD / HardenedBSD | The kernel is being built...
@@ -97,6 +98,7 @@
 
     - fail:
         msg: "Something went wrong. Check the debug output above."
+      tags: skip_ansible_lint
 
 - name: FreeBSD / HardenedBSD | Reboot
   shell: sleep 2 && shutdown -r now

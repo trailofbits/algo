@@ -12,7 +12,9 @@
     - restart dnsmasq
 
 - name: Ubuntu | Enforce the dnsmasq AppArmor policy
-  shell: aa-enforce usr.sbin.dnsmasq
+  command: aa-enforce usr.sbin.dnsmasq
+  register: output
+  changed_when: false
   when: apparmor_enabled is defined and apparmor_enabled == true
   tags: ['apparmor']
 
@@ -29,5 +31,4 @@
     src: 100-CustomLimitations.conf.j2
     dest: /etc/systemd/system/dnsmasq.service.d/100-CustomLimitations.conf
   notify:
-    - daemon-reload
     - restart dnsmasq

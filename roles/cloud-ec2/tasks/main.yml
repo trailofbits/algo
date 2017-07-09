@@ -1,5 +1,6 @@
 - block:
-    - set_fact:
+    - name: Extract credentials
+      set_fact:
         access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'), true) }}"
         secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true) }}"
         stack_name: "{{ aws_server_name | replace('.', '-') }}"
@@ -16,7 +17,8 @@
         region: "{{ region }}"
       register: ami_search
 
-    - set_fact:
+    - name: Set the Image ID
+      set_fact:
         ami_image: "{{ ami_search.results[0].ami_id }}"
 
     - include: encrypt_image.yml
@@ -34,7 +36,8 @@
         cloud_provider: ec2
         ipv6_support: yes
 
-    - set_fact:
+    - name: Set the instance IP
+      set_fact:
         cloud_instance_ip: "{{ stack.stack_outputs.ElasticIP }}"
 
     - name: Get EC2 instances
@@ -66,4 +69,4 @@
     - debug: var=fail_hint
       tags: always
     - fail:
-      tags: always
+      tags: [ 'always', 'skip_ansible_lint' ]

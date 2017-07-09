@@ -52,6 +52,7 @@
       creates: "{{ IP_subject_alt_name }}_ca_generated"
     environment:
       subjectAltName: "DNS:{{ IP_subject_alt_name }},IP:{{ IP_subject_alt_name }}"
+    tags: skip_ansible_lint
 
   - name: Copy the CA certificate
     copy:
@@ -64,6 +65,7 @@
     args:
       chdir: "configs/{{ IP_subject_alt_name }}/pki/"
       creates: serial_generated
+    tags: skip_ansible_lint
 
   - name: Build the server pair
     shell: >
@@ -86,6 +88,7 @@
       creates: certs/{{ IP_subject_alt_name }}_crt_generated
     environment:
       subjectAltName: "DNS:{{ IP_subject_alt_name }},IP:{{ IP_subject_alt_name }}"
+    tags: skip_ansible_lint
 
   - name: Build the client's pair
     shell: >
@@ -109,6 +112,7 @@
     environment:
       subjectAltName: "DNS:{{ item }}"
     with_items: "{{ users }}"
+    tags: skip_ansible_lint
 
   - name: Build the client's p12
     shell: >
@@ -124,6 +128,7 @@
       chdir: "configs/{{ IP_subject_alt_name }}/pki/"
     with_items: "{{ users }}"
     register: p12
+    tags: skip_ansible_lint
 
   - name: Copy the p12 certificates
     copy:
@@ -142,6 +147,7 @@
     args:
       chdir: "configs/{{ IP_subject_alt_name }}/pki/"
     register: valid_certs
+    tags: skip_ansible_lint
 
   - name: Revoke non-existing users
     shell: >
@@ -157,6 +163,7 @@
       subjectAltName: "DNS:{{ item }}"
     when: item not in users
     with_items: "{{ valid_certs.stdout_lines }}"
+    tags: skip_ansible_lint
 
   delegate_to: localhost
   become: no

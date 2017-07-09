@@ -1,5 +1,7 @@
+---
+
 - name: restart dnsmasq
-  service: name=dnsmasq state=restarted
+  service: name=dnsmasq state=restarted daemon_reload=yes
 
 - name: restart apparmor
-  service: name=apparmor state=restarted
+  service: name=apparmor state=restarted daemon_reload=yes

@@ -11,6 +11,7 @@
   args:
     executable: /bin/bash
   register: reboot_required
+  changed_when: "'required' in reboot_required.stdout"
   tags:
     - cloud
 
@@ -63,15 +64,18 @@
     - always
 
 - name: Check apparmor support
-  shell: apparmor_status
+  command: apparmor_status
   ignore_errors: yes
+  changed_when: false
   register: apparmor_status
 
-- set_fact:
+- name: Seth the apparmor fact
+  set_fact:
     apparmor_enabled: true
-  when: '"profiles are in enforce mode" in apparmor_status.stdout'
+  when: apparmor_status|succeeded
 
-- set_fact:
+- name: Set system-based facts
+  set_fact:
     tools:
       - git
       - screen

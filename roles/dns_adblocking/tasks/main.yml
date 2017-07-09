@@ -1,6 +1,5 @@
 ---
 - block:
-
     - name: The DNS tag is defined
       set_fact:
         local_dns: Y
@@ -44,8 +43,9 @@
         user: dnsmasq
 
     - name: Update adblock hosts
-      shell: >
-        sudo -u dnsmasq "/usr/local/sbin/adblock.sh"
+      command: /usr/local/sbin/adblock.sh
+      become: true
+      become_user: dnsmasq
 
     - meta: flush_handlers
 
@@ -58,4 +58,4 @@
     - debug: var=fail_hint
       tags: always
     - fail:
-      tags: always
+      tags: [ 'always', 'skip_ansible_lint' ]
