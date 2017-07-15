@@ -34,5 +34,9 @@ conn %default
     rightdns={% for host in dns_servers.ipv4 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% if ipv6_support is defined and ipv6_support == "yes" %},{% for host in dns_servers.ipv6 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}
 {% endif %}
 
+{% if edgemax_support is defined and edgemax_lan_subnet is defined and edgemax_support == True %}
+	rightsubnet=0.0.0.0/0,::/0
+{% endif %}
+
 conn ikev2-pubkey
     auto=add

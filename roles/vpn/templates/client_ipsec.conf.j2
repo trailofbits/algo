@@ -24,5 +24,18 @@ conn ikev2-{{ IP_subject_alt_name }}
     leftcert={{ item }}.crt
     leftfirewall=yes
     left=%defaultroute
-
+{% if edgemax_support is defined and edgemax_lan_subnet is defined and edgemax_support == True %}
+    leftsubnet={{ edgemax_lan_subnet }}
+    auto=route
+{% else %}
     auto=add
+{% endif %}
+	
+	
+{% if edgemax_support is defined and edgemax_lan_subnet is defined and edgemax_support == True %}
+conn lanbypass
+    leftsubnet={{ edgemax_lan_subnet }}
+    rightsubnet={{ edgemax_lan_subnet }}
+    type=passthrough
+    auto=route
+{% endif %}
