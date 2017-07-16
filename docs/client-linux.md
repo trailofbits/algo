@@ -1,9 +1,6 @@
 # Linux client setup
 
-It's possible to deploy an ipsec connection on Linux clients.
-Supported distributives are: Debian, Ubuntu, CentOS, Fedora
-
-The playbook is `deploy_client.yml`
+After you deploy a server, you can use an included Ansible script to provision Linux clients too! Debian, Ubuntu, CentOS, and Fedora are supported. The playbook is `deploy_client.yml`.
 
 ### Required variables:
 
