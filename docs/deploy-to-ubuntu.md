@@ -12,7 +12,7 @@ sudo apt-get update && sudo apt-get install ansible python-pip
 pip install virtualenv
 pip install --upgrade pip
 git clone https://github.com/trailofbits/algo
-cd aldo
+cd algo
 python -m virtualenv env && source env/bin/activate && python -m pip install -U pip && python -m pip install -r requirements.txt
 ./algo
 ```
