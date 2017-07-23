@@ -41,11 +41,10 @@
         minute: 10
         hour: 2
         job: /usr/local/sbin/adblock.sh
-        user: dnsmasq
+        user: root
 
     - name: Update adblock hosts
-      shell: >
-        sudo -u dnsmasq "/usr/local/sbin/adblock.sh"
+      command: /usr/local/sbin/adblock.sh
 
     - meta: flush_handlers
 
