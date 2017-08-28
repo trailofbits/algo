@@ -323,17 +323,20 @@ Name the vpn server:
     17. Western Europe  (London A)
     18. Western Europe  (London B)
     19. Western Europe  (London C)
-    20. Southeast Asia  (Singapore A)
-    21. Southeast Asia  (Singapore B)
-    22. East Asia       (Taiwan A)
-    23. East Asia       (Taiwan B)
-    24. East Asia       (Taiwan C)
-    25. Northeast Asia  (Tokyo A)
-    26. Northeast Asia  (Tokyo B)
-    27. Northeast Asia  (Tokyo C)
-    28. Australia	(Sydney A)
-    29. Australia	(Sydney B)
-    30. Australia	(Sydney C)
+    20. Western Europe  (Frankfurt A)
+    21. Western Europe  (Frankfurt B)
+    22. Western Europe  (Frankfurt C)
+    23. Southeast Asia  (Singapore A)
+    24. Southeast Asia  (Singapore B)
+    25. East Asia       (Taiwan A)
+    26. East Asia       (Taiwan B)
+    27. East Asia       (Taiwan C)
+    28. Northeast Asia  (Tokyo A)
+    29. Northeast Asia  (Tokyo B)
+    30. Northeast Asia  (Tokyo C)
+    31. Australia	(Sydney A)
+    32. Australia	(Sydney B)
+    33. Australia	(Sydney C)
 Please choose the number of your zone. Press enter for default (#14) zone.
 [14]: " -r region
   region=${region:-14}
@@ -358,17 +361,20 @@ Please choose the number of your zone. Press enter for default (#14) zone.
     17) zone="europe-west2-a" ;;
     18) zone="europe-west2-b" ;;
     19) zone="europe-west2-c" ;;
-    20) zone="asia-southeast1-a" ;;
-    21) zone="asia-southeast1-b" ;;
-    22) zone="asia-east1-a" ;;
-    23) zone="asia-east1-b" ;;
-    24) zone="asia-east1-c" ;;
-    25) zone="asia-northeast1-a" ;;
-    26) zone="asia-northeast1-b" ;;
-    27) zone="asia-northeast1-c" ;;
-    28) zone="australia-southeast1-a" ;;
-    29) zone="australia-southeast1-b" ;;
-    30) zone="australia-southeast1-c" ;;
+    20) zone="europe-west3-a" ;;
+    21) zone="europe-west3-b" ;;
+    22) zone="europe-west3-c" ;;
+    23) zone="asia-southeast1-a" ;;
+    24) zone="asia-southeast1-b" ;;
+    25) zone="asia-east1-a" ;;
+    26) zone="asia-east1-b" ;;
+    27) zone="asia-east1-c" ;;
+    28) zone="asia-northeast1-a" ;;
+    29) zone="asia-northeast1-b" ;;
+    30) zone="asia-northeast1-c" ;;
+    31) zone="australia-southeast1-a" ;;
+    32) zone="australia-southeast1-b" ;;
+    33) zone="australia-southeast1-c" ;;
   esac
 
   ROLES="gce vpn cloud"
