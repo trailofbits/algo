@@ -202,6 +202,12 @@ Possible options for `zone`:
 - europe-west1-b
 - europe-west1-c
 - europe-west1-d
+- europe-west2-a
+- europe-west2-b
+- europe-west2-c
+- europe-west3-a
+- europe-west3-b
+- europe-west3-c
 - asia-southeast1-a
 - asia-southeast1-b
 - asia-east1-a
@@ -210,3 +216,6 @@ Possible options for `zone`:
 - asia-northeast1-a
 - asia-northeast1-b
 - asia-northeast1-c
+- australia-southeast1-a
+- australia-southeast1-b
+- australia-southeast1-c
