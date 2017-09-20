@@ -127,7 +127,7 @@ Name the vpn server:
     14. UK West
     15. West US
     16. Brazil South
-    17. Canada Central
+    17. Canada East
     18. Central India
     19. East Asia
     20. Germany Central
@@ -161,7 +161,7 @@ Enter the number of your desired region:
     14) region="ukwest" ;;
     15) region="westus" ;;
     16) region="brazilsouth" ;;
-    17) region="canadacentral" ;;
+    17) region="canadaeast" ;;
     18) region="centralindia" ;;
     19) region="eastasia" ;;
     20) region="germanycentral" ;;
