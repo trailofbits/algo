@@ -337,6 +337,9 @@ Name the vpn server:
     31. Australia	(Sydney A)
     32. Australia	(Sydney B)
     33. Australia	(Sydney C)
+    34. South America   (São Paulo A)
+    35. South America   (São Paulo B)
+    36. South America   (São Paulo C)
 Please choose the number of your zone. Press enter for default (#14) zone.
 [14]: " -r region
   region=${region:-14}
@@ -375,6 +378,9 @@ Please choose the number of your zone. Press enter for default (#14) zone.
     31) zone="australia-southeast1-a" ;;
     32) zone="australia-southeast1-b" ;;
     33) zone="australia-southeast1-c" ;;
+    34) zone="southamerica-east1-a" ;;
+    35) zone="southamerica-east1-b" ;;
+    36) zone="southamerica-east1-c" ;;
   esac
 
   ROLES="gce vpn cloud"
