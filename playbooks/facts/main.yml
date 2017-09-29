@@ -30,7 +30,7 @@
 - name: Generate p12 export password
   local_action:
     module: shell
-      openssl rand -hex 4
+      openssl rand 8 | python -c 'import sys,string; chars=string.ascii_letters + string.digits + "_@"; print "".join([chars[ord(c) % 64] for c in list(sys.stdin.read())])'
   become: no
   register: p12_export_password_generated
   when: p12_export_password is not defined
