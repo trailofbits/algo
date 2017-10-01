@@ -38,10 +38,10 @@
 
   - name: Build the CA pair
     shell: >
-      openssl ecparam -name prime256v1 -out ecparams/prime256v1.pem &&
-      openssl req -utf8 -new
+      {{ openssl_bin }} ecparam -name prime256v1 -out ecparams/prime256v1.pem &&
+      {{ openssl_bin }} req -utf8 -new
       -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }}
-      -config openssl.cnf
+      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ IP_subject_alt_name }},IP:{{ IP_subject_alt_name }}"))
       -keyout private/cakey.pem
       -out cacert.pem -x509 -days 3650
       -batch
@@ -50,8 +50,7 @@
     args:
       chdir: "configs/{{ IP_subject_alt_name }}/pki/"
       creates: "{{ IP_subject_alt_name }}_ca_generated"
-    environment:
-      subjectAltName: "DNS:{{ IP_subject_alt_name }},IP:{{ IP_subject_alt_name }}"
+      executable: bash
 
   - name: Copy the CA certificate
     copy:
@@ -67,52 +66,52 @@
 
   - name: Build the server pair
     shell: >
-      openssl req -utf8 -new
+      {{ openssl_bin }} req -utf8 -new
       -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }}
-      -config openssl.cnf
+      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ IP_subject_alt_name }},IP:{{ IP_subject_alt_name }}"))
       -keyout private/{{ IP_subject_alt_name }}.key
       -out reqs/{{ IP_subject_alt_name }}.req -nodes
       -passin pass:"{{ easyrsa_CA_password }}"
       -subj "/CN={{ IP_subject_alt_name }}" -batch &&
-      openssl ca -utf8
+      {{ openssl_bin }} ca -utf8
       -in reqs/{{ IP_subject_alt_name }}.req
       -out certs/{{ IP_subject_alt_name }}.crt
-      -config openssl.cnf -days 3650 -batch
+      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ IP_subject_alt_name }},IP:{{ IP_subject_alt_name }}"))
+      -days 3650 -batch
       -passin pass:"{{ easyrsa_CA_password }}"
       -subj "/CN={{ IP_subject_alt_name }}" &&
       touch certs/{{ IP_subject_alt_name }}_crt_generated
     args:
       chdir: "configs/{{ IP_subject_alt_name }}/pki/"
       creates: certs/{{ IP_subject_alt_name }}_crt_generated
-    environment:
-      subjectAltName: "DNS:{{ IP_subject_alt_name }},IP:{{ IP_subject_alt_name }}"
+      executable: bash
 
   - name: Build the client's pair
     shell: >
-      openssl req -utf8 -new
+      {{ openssl_bin }} req -utf8 -new
       -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }}
-      -config openssl.cnf
+      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ item }}"))
       -keyout private/{{ item }}.key
       -out reqs/{{ item }}.req -nodes
       -passin pass:"{{ easyrsa_CA_password }}"
       -subj "/CN={{ item }}" -batch &&
-      openssl ca -utf8
+      {{ openssl_bin }} ca -utf8
       -in reqs/{{ item }}.req
       -out certs/{{ item }}.crt
-      -config openssl.cnf -days 3650 -batch
+      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ item }}"))
+      -days 3650 -batch
       -passin pass:"{{ easyrsa_CA_password }}"
       -subj "/CN={{ item }}" &&
       touch certs/{{ item }}_crt_generated
     args:
       chdir: "configs/{{ IP_subject_alt_name }}/pki/"
       creates: certs/{{ item }}_crt_generated
-    environment:
-      subjectAltName: "DNS:{{ item }}"
+      executable: bash
     with_items: "{{ users }}"
 
   - name: Build the client's p12
     shell: >
-      openssl pkcs12
+      {{ openssl_bin }} pkcs12
       -in certs/{{ item }}.crt
       -inkey private/{{ item }}.key
       -export
@@ -122,6 +121,7 @@
       -passout pass:"{{ easyrsa_p12_export_password }}"
     args:
       chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+      executable: bash
     with_items: "{{ users }}"
     register: p12
 
@@ -145,16 +145,15 @@
 
   - name: Revoke non-existing users
     shell: >
-      openssl ca -gencrl
-      -config openssl.cnf
+      {{ openssl_bin }} ca -gencrl
+      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ item }}"))
       -passin pass:"{{ easyrsa_CA_password }}"
       -revoke certs/{{ item }}.crt
       -out crl/{{ item }}.crt
     args:
       chdir: configs/{{ IP_subject_alt_name }}/pki/
       creates: crl/{{ item }}.crt
-    environment:
-      subjectAltName: "DNS:{{ item }}"
+      executable: bash
     when: item not in users
     with_items: "{{ valid_certs.stdout_lines }}"
 
