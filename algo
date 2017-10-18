@@ -384,7 +384,7 @@ Please choose the number of your zone. Press enter for default (#14) zone.
   esac
 
   ROLES="gce vpn cloud"
-  EXTRA_VARS="credentials_file=$credentials_file server_name=$server_name ssh_public_key=$ssh_public_key zone=$zone max_mss=1316"
+  EXTRA_VARS="credentials_file=$credentials_file gce_server_name=$server_name ssh_public_key=$ssh_public_key zone=$zone max_mss=1316"
 }
 
 non_cloud () {
