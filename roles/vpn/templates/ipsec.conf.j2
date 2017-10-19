@@ -1,6 +1,6 @@
 config setup
     uniqueids=never # allow multiple connections per user
-    charondebug="ike 2, knl 2, cfg 2, net 2, esp 2, dmn 2,  mgr 2"
+    charondebug="ike {{ strongswan_log_level }}, knl {{ strongswan_log_level }}, cfg {{ strongswan_log_level }}, net {{ strongswan_log_level }}, esp {{ strongswan_log_level }}, dmn {{ strongswan_log_level }},  mgr {{ strongswan_log_level }}"
 
 conn %default
     fragmentation=yes
