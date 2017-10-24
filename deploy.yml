@@ -6,15 +6,15 @@
 
   pre_tasks:
     - block:
-        - name: Local pre-tasks
-          include: playbooks/local.yml
-          tags: [ 'always' ]
+      - name: Local pre-tasks
+        include: playbooks/local.yml
+        tags: [ 'always' ]
 
-        - name: Local pre-tasks
-          include: playbooks/local_ssh.yml
-          become: false
-          when: Deployed_By_Algo is defined and Deployed_By_Algo == "Y"
-          tags: [ 'local' ]
+      - name: Local pre-tasks
+        include: playbooks/local_ssh.yml
+        become: false
+        when: Deployed_By_Algo is defined and Deployed_By_Algo == "Y"
+        tags: [ 'local' ]
       rescue:
         - debug: var=fail_hint
           tags: always
