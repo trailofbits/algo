@@ -112,7 +112,7 @@ We can now deploy our server by running:
 Ensure to allow Windows / Linux clients when going through the config options.
 Note the IP and password of the newly created Alfo VPN server and store it safely.
 
-If you want to setup client config on your Fedora Workstation, refer to [the Linux Client docs](https://github.com/trailofbits/algo/blob/master/docs/client-linux.md).
+If you want to setup client config on your Fedora Workstation, refer to [the Linux Client docs](client-linux.md).
 
 ## Notes on SELinux
 
