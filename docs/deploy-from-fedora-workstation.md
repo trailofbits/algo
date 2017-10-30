@@ -66,7 +66,7 @@ Some steps are needed before we can deploy our Algo VPN server.
 
 ### Check `pip`
 
-Run `pip -v` and check the pythong version it is using:
+Run `pip -v` and check the python version it is using:
  
 ````
 $ pip -V
