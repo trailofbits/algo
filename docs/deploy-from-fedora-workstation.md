@@ -25,7 +25,7 @@ First, let's make sure our system is up-to-date:
 
 ````
 dnf upgrade
-```	
+````
 
 Next, install the required packages:
 
