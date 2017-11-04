@@ -3,4 +3,4 @@
 - set_fact:
     prerequisites:
       - libselinux-python
-    configs_prefix: /etc/strongswan/
+    configs_prefix: /etc/strongswan
