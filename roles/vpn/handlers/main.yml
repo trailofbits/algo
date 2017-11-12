@@ -14,4 +14,4 @@
   service: name=netfilter-persistent state=restarted
 
 - name: rereadcrls
-  shell: ipsec rereadcrls
+  shell: ipsec rereadcrls; ipsec purgecrls
