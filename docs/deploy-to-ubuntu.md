@@ -8,9 +8,13 @@ tl;dr:
 
 ```shell
 sudo apt-get install software-properties-common && sudo apt-add-repository ppa:ansible/ansible
-sudo apt-get update && sudo apt-get install ansible
+sudo apt-get update && sudo apt-get install ansible python-pip
+pip install virtualenv
+pip install --upgrade pip
 git clone https://github.com/trailofbits/algo
-cd algo && ./algo
+cd algo
+python -m virtualenv env && source env/bin/activate && python -m pip install -U pip && python -m pip install -r requirements.txt
+./algo
 ```
 
 **Warning**: If you run Algo on your existing server, the iptables rules will be overwritten. If you don't want to overwrite the rules, you must deploy via `ansible-playbook` and skip the `iptables` tag as described in [deploy-from-ansible.md](deploy-from-ansible.md).
