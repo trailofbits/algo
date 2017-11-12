@@ -180,6 +180,7 @@ After this process completes, the Algo VPN server will contains only the users l
 
 * Setup instructions
   - Documentation for available [Ansible roles](docs/setup-roles.md)
+  - Deploy from [Fedora Workstation (26)](docs/deploy-from-fedora-workstation.md)
   - Deploy from [RedHat/CentOS 6.x](docs/deploy-from-redhat-centos6.md)
   - Deploy from [Windows](docs/deploy-from-windows.md)
   - Deploy from [Ansible](docs/deploy-from-ansible.md) directly
