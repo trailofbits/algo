@@ -150,6 +150,7 @@
       -passin pass:"{{ easyrsa_CA_password }}"
       -revoke certs/{{ item }}.crt
       -out crl/{{ item }}.crt
+    register: gencrl
     args:
       chdir: configs/{{ IP_subject_alt_name }}/pki/
       creates: crl/{{ item }}.crt
@@ -157,14 +158,27 @@
     when: item not in users
     with_items: "{{ valid_certs.stdout_lines }}"
 
+  - name: Genereate new CRL file
+    shell: >
+      {{ openssl_bin }} ca -gencrl
+      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ IP_subject_alt_name }}"))
+      -passin pass:"{{ easyrsa_CA_password }}"
+      -out crl/algo.root.pem
+    when:
+      - gencrl is defined
+      - gencrl.changed
+    args:
+      chdir: configs/{{ IP_subject_alt_name }}/pki/
+      executable: bash
   delegate_to: localhost
   become: no
 
-- name: Copy the revoked certificates to the vpn server
+- name: Copy the CRL to the vpn server
   copy:
-    src: configs/{{ IP_subject_alt_name }}/pki/crl/{{ item }}.crt
-    dest: "{{ config_prefix|default('/') }}etc/ipsec.d/crls/{{ item }}.crt"
-  when: item not in users
-  with_items: "{{ valid_certs.stdout_lines }}"
+    src: configs/{{ IP_subject_alt_name }}/pki/crl/algo.root.pem
+    dest: "{{ config_prefix|default('/') }}etc/ipsec.d/crls/algo.root.pem"
+  when:
+    - gencrl is defined
+    - gencrl.changed
   notify:
     - rereadcrls
