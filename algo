@@ -242,6 +242,13 @@ Enter your aws_secret_key (http://docs.aws.amazon.com/general/latest/gr/managing
 $ADDITIONAL_PROMPT
 [ABCD...]: " -rs aws_secret_key
 
+#for AWS's temporary credentials, aws_session_token (aka aws_security_token) is also required
+  read -p "
+
+If you are using AWS Temporary Security Credentials (http://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp.html), enter your aws_session_token (aka aws_security_token); otherwise just press ENTER
+$ADDITIONAL_PROMPT
+[ABCD...]: " -rs aws_session_token
+
 read -p "
 
 Name the vpn server:
@@ -287,7 +294,8 @@ Enter the number of your desired region:
   esac
 
   ROLES="ec2 vpn cloud"
-  EXTRA_VARS="aws_access_key=$aws_access_key aws_secret_key=$aws_secret_key aws_server_name=$aws_server_name ssh_public_key=$ssh_public_key region=$region"
+  #for AWS's temporary credentials, aws_session_token (aka aws_security_token) is also required
+  EXTRA_VARS="aws_access_key=$aws_access_key aws_secret_key=$aws_secret_key aws_session_token=$aws_session_token aws_server_name=$aws_server_name ssh_public_key=$ssh_public_key region=$region"
 }
 
 gce () {

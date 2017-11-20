@@ -9,6 +9,8 @@
   cloudformation:
     aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'), true)}}"
     aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true)}}"
+    #for AWS's temporary credentials, aws_session_token (aka aws_security_token) is also required
+    security_token: "{{ aws_session_token | default(lookup('env','AWS_SESSION_TOKEN'), true) }}"
     stack_name: "{{ stack_name }}"
     state: "present"
     region: "{{ region }}"
