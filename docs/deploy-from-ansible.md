@@ -180,7 +180,7 @@ Additional tags:
 Required variables:
 
 - credentials_file
-- server_name
+- gce_server_name
 - ssh_public_key
 - zone
 
