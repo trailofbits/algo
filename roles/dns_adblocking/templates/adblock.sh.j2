@@ -1,8 +1,8 @@
 #!/bin/sh
 # Block ads, malware, etc..
 
-TEMP=`mktemp`
-TEMP_SORTED=`mktemp`
+TEMP="$(mktemp)"
+TEMP_SORTED="$(mktemp)"
 DNSMASQ_WHITELIST="/var/lib/dnsmasq/white.list"
 DNSMASQ_BLACKLIST="/var/lib/dnsmasq/black.list"
 DNSMASQ_BLOCKHOSTS="{{ config_prefix|default('/') }}etc/dnsmasq.d/block.hosts.conf"
@@ -33,11 +33,13 @@ then
     #Filter the blacklist, suppressing whitelist matches
     #  This is relatively slow =-(
     echo 'Filtering white list...'
-    egrep -v "^[[:space:]]*$" $DNSMASQ_WHITELIST | awk '/^[^#]/ {sub(/\r$/,"");print $1}' | grep -vf - "$TEMP_SORTED" > $DNSMASQ_BLOCKHOSTS
+    grep -v -E "^[[:space:]]*$" $DNSMASQ_WHITELIST | awk '/^[^#]/ {sub(/\r$/,"");print $1}' | grep -vf - "$TEMP_SORTED" > $DNSMASQ_BLOCKHOSTS
 else
     cat "$TEMP_SORTED" > $DNSMASQ_BLOCKHOSTS
 fi
 
-service dnsmasq restart
+echo 'Restarting dnsmasq service...'
+#Restart the dnsmasq service
+systemctl restart dnsmasq.service
 
 exit 0
