@@ -33,7 +33,7 @@ then
     #Filter the blacklist, suppressing whitelist matches
     #  This is relatively slow =-(
     echo 'Filtering white list...'
-    egrep -v "^[[:space:]]*$" $DNSMASQ_WHITELIST | awk '/^[^#]/ {sub(/\r$/,"");print $1}' | grep -vf - "$TEMP_SORTED" > $DNSMASQ_BLOCKHOSTS
+    grep -v -E "^[[:space:]]*$" $DNSMASQ_WHITELIST | awk '/^[^#]/ {sub(/\r$/,"");print $1}' | grep -vf - "$TEMP_SORTED" > $DNSMASQ_BLOCKHOSTS
 else
     cat "$TEMP_SORTED" > $DNSMASQ_BLOCKHOSTS
 fi
