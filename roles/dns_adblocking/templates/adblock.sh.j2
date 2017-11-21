@@ -38,6 +38,8 @@ else
     cat "$TEMP_SORTED" > $DNSMASQ_BLOCKHOSTS
 fi
 
-service dnsmasq restart
+echo 'Restarting dnsmasq service...'
+#Restart the dnsmasq service
+systemctl restart dnsmasq.service
 
 exit 0
