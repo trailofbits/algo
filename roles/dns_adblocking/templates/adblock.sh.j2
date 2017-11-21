@@ -1,8 +1,8 @@
 #!/bin/sh
 # Block ads, malware, etc..
 
-TEMP=`mktemp`
-TEMP_SORTED=`mktemp`
+TEMP="$(mktemp)"
+TEMP_SORTED="$(mktemp)"
 DNSMASQ_WHITELIST="/var/lib/dnsmasq/white.list"
 DNSMASQ_BLACKLIST="/var/lib/dnsmasq/black.list"
 DNSMASQ_BLOCKHOSTS="{{ config_prefix|default('/') }}etc/dnsmasq.d/block.hosts.conf"
