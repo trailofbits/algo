@@ -78,7 +78,6 @@
       - apparmor-utils
       - uuid-runtime
       - coreutils
-      - sendmail
       - iptables-persistent
       - cgroup-tools
       - openssl
