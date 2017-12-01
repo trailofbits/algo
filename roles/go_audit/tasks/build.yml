@@ -1,0 +1,58 @@
+---
+- name: Ensure that the build dependencies are installed
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - git
+    - make
+
+- name: Ensure that the required build directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ go_audit_build_dir }}"
+    - "{{ go_audit_go_env.GOROOT }}"
+    - "{{ go_audit_go_env.GOPATH }}/src/github.com/slackhq/go-audit"
+
+- name: "Download the Go distribution (version: {{ go_audit_go_version }})"
+  get_url:
+    url: "{{ go_audit_go_download_url }}"
+    dest: "{{ go_audit_build_dir }}/{{ go_audit_go_filename }}"
+    checksum: "sha256:{{ go_audit_go_checksum }}"
+
+- name: "Download go-audit (commit: {{ go_audit_commit }})"
+  get_url:
+    url: "{{ go_audit_download_url }}"
+    dest: "{{ go_audit_build_dir }}/{{ go_audit_filename }}"
+    checksum: "sha256:{{ go_audit_checksum }}"
+
+- name: Extract the Go distribution
+  unarchive:
+    src: "{{ go_audit_build_dir }}/{{ go_audit_go_filename }}"
+    dest: "{{ go_audit_go_env.GOROOT }}"
+    extra_opts: "--strip-components=1"
+    remote_src: true
+    creates: "{{ go_audit_go_env.GOROOT }}/LICENSE"
+
+- name: Extract go-audit
+  unarchive:
+    src: "{{ go_audit_build_dir }}/{{ go_audit_filename }}"
+    dest: "{{ go_audit_go_env.GOPATH }}/src/github.com/slackhq/go-audit"
+    extra_opts: "--strip-components=1"
+    remote_src: true
+    creates: "{{ go_audit_go_env.GOPATH }}/src/github.com/slackhq/go-audit/LICENSE"
+
+- name: Install govendor
+  command: go get -u github.com/kardianos/govendor
+  args:
+    creates: "{{ go_audit_go_env.GOPATH }}/bin/govendor"
+  environment: "{{ go_audit_go_env }}"
+
+- name: Build go-audit
+  command: make
+  args:
+    chdir: "{{ go_audit_go_env.GOPATH }}/src/github.com/slackhq/go-audit"
+    creates: "go-audit"
+  environment: "{{ go_audit_go_env }}"

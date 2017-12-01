@@ -1,0 +1,121 @@
+# go-audit configuration file
+#
+# For general documentation and specifications related to the Linux Audit
+# project see https://github.com/linux-audit/audit-documentation/wiki
+# The wiki contains definitions of all audit fields, messages, and ranges.
+
+output:
+  syslog:
+    enabled: true
+    tag: "go-audit"
+
+    # Configure the type of socket this should be, default is unixgram
+    # This maps to `network` in golangs net.Dial: https://golang.org/pkg/net/#Dial
+    network: unixgram
+
+    # Set the remote address to connect to, this can be a path or an ip address
+    # This maps to `address` in golangs net.Dial: https://golang.org/pkg/net/#Dial
+    address: /dev/log
+
+    # Sets the facility and severity for all events. See the table below for help
+    # The default is 132 which maps to local0 | warn
+    priority: 129 # local0 | emerg
+
+# Based on CIS_Ubuntu_Linux_18.04_LTS_Benchmark_v1.0.0.pdf
+# https://www.cisecurity.org/benchmark/ubuntu_linux/
+rules:
+  # Ensure events that modify date and time information are collected
+  - -a always,exit -F arch=b64 -S adjtimex -S settimeofday -k time-change
+  - -a always,exit -F arch=b32 -S adjtimex -S settimeofday -S stime -k time-change
+  - -a always,exit -F arch=b64 -S clock_settime -k time-change
+  - -a always,exit -F arch=b32 -S clock_settime -k time-change
+  - -w /etc/localtime -p wa -k time-change
+
+  # Ensure events that modify user/group information are collected
+  - -w /etc/group -p wa -k identity
+  - -w /etc/passwd -p wa -k identity
+  - -w /etc/gshadow -p wa -k identity
+  - -w /etc/shadow -p wa -k identity
+  - -w /etc/security/opasswd -p wa -k identity
+
+  # Ensure events that modify the system's network environment are collected
+  - -a always,exit -F arch=b64 -S sethostname -S setdomainname -k system-locale
+  - -a always,exit -F arch=b32 -S sethostname -S setdomainname -k system-locale
+  - -w /etc/issue -p wa -k system-locale
+  - -w /etc/issue.net -p wa -k system-locale
+  - -w /etc/hosts -p wa -k system-locale
+  - -w /etc/network -p wa -k system-locale
+
+  # Ensure events that modify the system's Mandatory Access Controls are collected
+  - -w /etc/apparmor/ -p wa -k MAC-policy
+  - -w /etc/apparmor.d/ -p wa -k MAC-policy
+
+  # Ensure login and logout events are collected
+  - -w /var/log/faillog -p wa -k logins
+  - -w /var/log/lastlog -p wa -k logins
+  - -w /var/log/tallylog -p wa -k logins
+
+  # Ensure session initiation information is collected
+  - -w /var/run/utmp -p wa -k session
+  - -w /var/log/wtmp -p wa -k logins
+  - -w /var/log/btmp -p wa -k logins
+
+  # Ensure discretionary access control permission modification events are collected
+  - -a always,exit -F arch=b64 -S chmod -S fchmod -S fchmodat -F auid>=1000 -F auid!=4294967295 -k perm_mod
+  - -a always,exit -F arch=b32 -S chmod -S fchmod -S fchmodat -F auid>=1000 -F auid!=4294967295 -k perm_mod
+  - -a always,exit -F arch=b64 -S chown -S fchown -S fchownat -S lchown -F auid>=1000 -F auid!=4294967295 -k perm_mod
+  - -a always,exit -F arch=b32 -S chown -S fchown -S fchownat -S lchown -F auid>=1000 -F auid!=4294967295 -k perm_mod
+  - -a always,exit -F arch=b64 -S setxattr -S lsetxattr -S fsetxattr -S removexattr -S lremovexattr -S fremovexattr -F auid>=1000 -F auid!=4294967295 -k perm_mod
+  - -a always,exit -F arch=b32 -S setxattr -S lsetxattr -S fsetxattr -S removexattr -S lremovexattr -S fremovexattr -F auid>=1000 -F auid!=4294967295 -k perm_mod
+
+  # Ensure unsuccessful unauthorized file access attempts are collected
+  - -a always,exit -F arch=b64 -S creat -S open -S openat -S truncate -S ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k access
+  - -a always,exit -F arch=b32 -S creat -S open -S openat -S truncate -S ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=4294967295 -k access
+  - -a always,exit -F arch=b64 -S creat -S open -S openat -S truncate -S ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k access
+  - -a always,exit -F arch=b32 -S creat -S open -S openat -S truncate -S ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=4294967295 -k access
+
+  # Ensure use of privileged commands is collected
+  # XXX Incomplete list. Chose some potentially relevant commands. Thoughts?
+  #     For a full list run `find <partition> -xdev \( -perm -4000 -o -perm -2000 \) -type f`
+  - -a always,exit -F path=/usr/bin/gpasswd -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+  - -a always,exit -F path=/usr/bin/newgidmap -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+  - -a always,exit -F path=/usr/bin/crontab -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+  - -a always,exit -F path=/usr/bin/chage -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+  - -a always,exit -F path=/usr/bin/newuidmap -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+  - -a always,exit -F path=/usr/bin/chsh -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+  - -a always,exit -F path=/usr/bin/sudo -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+  - -a always,exit -F path=/usr/bin/passwd -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+  - -a always,exit -F path=/usr/bin/newgrp -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+  - -a always,exit -F path=/usr/bin/chfn -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+  - -a always,exit -F path=/usr/bin/at -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+  - -a always,exit -F path=/usr/bin/pkexec -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+  - -a always,exit -F path=/usr/bin/expiry -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+  - -a always,exit -F path=/usr/bin/ssh-agent -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+  - -a always,exit -F path=/bin/mount -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+  - -a always,exit -F path=/bin/fusermount -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+  - -a always,exit -F path=/bin/umount -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+  - -a always,exit -F path=/bin/su -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+
+  # Ensure successful file system mounts are collected
+  - -a always,exit -F arch=b64 -S mount -F auid>=1000 -F auid!=4294967295 -k mounts
+  - -a always,exit -F arch=b32 -S mount -F auid>=1000 -F auid!=4294967295 -k mounts
+
+  # Ensure file deletion events by users are collected
+  - -a always,exit -F arch=b64 -S unlink -S unlinkat -S rename -S renameat -F auid>=1000 -F auid!=4294967295 -k delete
+  - -a always,exit -F arch=b32 -S unlink -S unlinkat -S rename -S renameat -F auid>=1000 -F auid!=4294967295 -k delete
+
+  # Ensure changes to system administration scope (sudoers) is collected
+  - -w /etc/sudoers -p wa -k scope
+  - -w /etc/sudoers.d/ -p wa -k scope
+
+  # Ensure system administrator actions (sudolog) are collected
+  - -w /var/log/sudo.log -p wa -k actions
+
+  # Ensure kernel module loading and unloading is collected
+  - -w /sbin/insmod -p x -k modules
+  - -w /sbin/rmmod -p x -k modules
+  - -w /sbin/modprobe -p x -k modules
+  - -a always,exit -F arch=b64 -S init_module -S delete_module -k modules
+
+  # Ensure the audit configuration is immutable
+  - -e 2

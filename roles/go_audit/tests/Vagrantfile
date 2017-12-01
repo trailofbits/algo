@@ -1,0 +1,17 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  config.vm.define "ubuntu18.04-amd64", primary: true do |ubuntu|
+    ubuntu.vm.box = "ubuntu/bionic64"
+    ubuntu.vm.network "private_network", ip: "192.168.144.64"
+    ubuntu.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y --no-install-recommends python
+    SHELL
+  end
+
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+end

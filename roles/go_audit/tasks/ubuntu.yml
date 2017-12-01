@@ -1,0 +1,42 @@
+---
+# Adding a grub command-line argument via Ansible in a generic, idempotent
+# manner is non-trivial. The regex below assumes that a line of the format
+# GRUB_CMDLINE_LINUX=".*" exists and inserts audit=1 right before the closing
+# quote. The regex fails if no GRUB_CMDLINE_LINUX key exists, the value is not
+# enclosed in double quotes, or the value contains escaped double quotes.
+- name: Ubuntu | Enable auditing for processes that start prior to go-audit
+  lineinfile:
+    dest: /etc/default/grub
+    regexp: '^(GRUB_CMDLINE_LINUX=(?!.*audit=1)".*)(".*)'
+    line: '\1 audit=1\2'
+    backrefs: true
+    state: present
+  notify:
+    - Update grub2 configuration
+    - audit configuration changed
+
+- name: Ubuntu | Generate the systemd unit configuration file
+  template:
+    src: systemd.go-audit.service.j2
+    dest: /etc/systemd/system/go-audit.service
+    owner: root
+    group: "{{ root_group|default('root') }}"
+    mode: 0644
+
+- name: Ubuntu | Stop and disable the auditd service
+  systemd:
+    name: auditd.service
+    state: stopped
+    enabled: false
+
+- name: Ubuntu | Start and enable the go-audit service
+  systemd:
+    name: go-audit.service
+    state: started
+    enabled: yes
+
+- name: Ubuntu | Prevent duplicate audit entries in syslog
+  systemd:
+    name: systemd-journald-audit.socket
+    state: stopped
+    masked: true

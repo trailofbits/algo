@@ -1,0 +1,11 @@
+---
+- name: audit configuration changed
+  debug:
+    msg: >
+      The audit configuration changed.
+      For the settings to be applied a system reboot may be required.
+
+- name: Update grub2 configuration
+  command: update-grub
+  register: go_audit_update_grub_result
+  failed_when: "'error' in go_audit_update_grub_result.stderr"

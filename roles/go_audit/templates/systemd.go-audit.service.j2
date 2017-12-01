@@ -1,0 +1,11 @@
+[Unit]
+Description = go-audit
+After=network.target auditd.service
+Conflicts = auditd.service
+
+[Service]
+Type = simple
+ExecStart = {{ go_audit_bindir }}/go-audit -config {{ config_prefix|default('/') }}etc/go-audit.yaml
+
+[Install]
+WantedBy = multi-user.target

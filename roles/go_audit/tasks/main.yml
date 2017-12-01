@@ -1,0 +1,27 @@
+---
+- name: Check distribution and version
+  fail:
+    msg: >
+      {{ ansible_distribution }} version {{ ansible_distribution_version }}
+      ({{ ansible_machine }}) is not supported.
+  when:
+    - ansible_system != "Linux" or
+      ansible_machine not in ['amd64', 'x86_64'] or
+      ansible_distribution != "Ubuntu"
+
+- block:
+    - name: Build go-audit
+      include_tasks: build.yml
+      when: go_audit_build|bool
+
+    - import_tasks: install.yml
+
+    - name: Include tasks for Ubuntu
+      include_tasks: ubuntu.yml
+      when: ansible_distribution == 'Ubuntu'
+  rescue:
+    - debug: var=fail_hint
+      tags: always
+    - name: Fail
+      fail:
+      tags: always

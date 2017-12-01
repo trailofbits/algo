@@ -1,0 +1,20 @@
+---
+# Directory in which to store the go-audit binary.
+go_audit_bindir: /usr/local/bin
+
+# true:  Build go-audit from source on the target host.
+# false: Use the pre-built binaries located in the role's files/ directory.
+go_audit_build: false
+
+# Directory to use when building go-audit. All source code and other temporary
+# files will be stored here. The directory is *not* explicitly removed.
+go_audit_build_dir: /tmp/go-audit-build
+
+# Golang environment used for building go-audit from source.
+go_audit_go_env:
+  GOROOT: "{{ go_audit_build_dir }}/go"
+  GOPATH: "{{ go_audit_build_dir }}/go-work"
+  PATH:
+    "{{ go_audit_build_dir }}/go/bin:\
+     {{ go_audit_build_dir }}/go-work/bin:\
+     {{ ansible_env.PATH }}"

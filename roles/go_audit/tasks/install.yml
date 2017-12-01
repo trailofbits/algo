@@ -1,0 +1,54 @@
+---
+- name: Install the auditd package (provides auditctl)
+  package:
+    name: auditd
+    state: present
+
+- name: "Ensure that the {{ go_audit_bindir }} directory exists"
+  file:
+    path: "{{ go_audit_bindir }}"
+    state: directory
+
+- name: Install the go-audit binary
+  copy:
+    src: "{{ go_audit_go_env.GOPATH }}/src/github.com/slackhq/go-audit/go-audit"
+    dest: "{{ go_audit_bindir }}/go-audit"
+    owner: root
+    group: "{{ root_group|default('root') }}"
+    mode: 0755
+    remote_src: true
+  when:
+    - go_audit_build|bool
+
+- name: Install the pre-built go-audit binary
+  copy:
+    src: "go-audit"
+    dest: "{{ go_audit_bindir }}/go-audit"
+    owner: root
+    group: "{{ root_group|default('root') }}"
+    mode: 0755
+    remote_src: false
+  when:
+    - not go_audit_build|bool
+
+- name: Calculate the checksum of the go-audit binary
+  stat:
+    path: "{{ go_audit_bindir }}/go-audit"
+    checksum_algorithm: sha256
+  register: go_audit_binary_st
+
+- name: Verify the checksum of the go-audit binary
+  assert:
+    that:
+      - go_audit_binary_st.stat.checksum is defined
+      - go_audit_binary_st.stat.checksum == go_audit_binary_checksum
+
+- name: Generate the go-audit configuration file
+  template:
+    src: go-audit.yaml.j2
+    dest: "{{ config_prefix|default('/') }}etc/go-audit.yaml"
+    owner: root
+    group: "{{ root_group|default('root') }}"
+    mode: 0644
+  notify:
+    - audit configuration changed

@@ -1,0 +1,18 @@
+---
+go_audit_go_version: 1.11.5
+go_audit_go_filename: "go{{ go_audit_go_version }}.linux-amd64.tar.gz"
+go_audit_go_download_url: "https://storage.googleapis.com/golang/{{ go_audit_go_filename }}"
+# SHA256 checksums copied from https://golang.org/dl/
+go_audit_go_checksum: ff54aafedff961eb94792487e827515da683d61a5f9482f668008832631e5d25
+
+# go-audit is not versioned, therefore a commit hash is used instead.
+go_audit_commit: daf7385d7bea16bb1b51fbceeba07e7f3ad78f24
+go_audit_filename: "{{ go_audit_commit }}.tar.gz"
+go_audit_download_url: "https://github.com/slackhq/go-audit/archive/{{ go_audit_filename }}"
+# SHA256 checksum manually computed from
+# https://github.com/slackhq/go-audit/archive/{{ go_audit_commit }}.tar.gz
+go_audit_checksum: 7327796309fbd08086e28f69b4091b7d2f977c4d1384becfe3bc256ccc6c053b
+
+# SHA256 checksums manually computed from the binaries located in this role's
+# files/ directory. The binaries were build via this role (go_audit_build: yes).
+go_audit_binary_checksum: 223c904f06dcb2f7205ec8b4e5509d88bd9987bc1d64adb7e59ea7fc7232bbae
