@@ -31,7 +31,7 @@ before_cache:
 
 env:
   - LXC_NAME=ubuntu1604 LXC_DISTRO=ubuntu LXC_RELEASE=xenial
-  - LXC_NAME=ubuntu1704 LXC_DISTRO=ubuntu LXC_RELEASE=zesty
+  # - LXC_NAME=ubuntu1710 LXC_DISTRO=ubuntu LXC_RELEASE=artful
 
 install:
   - sudo tar xf $HOME/lxc/cache.tar -C / || echo "Didn't extract cache."
