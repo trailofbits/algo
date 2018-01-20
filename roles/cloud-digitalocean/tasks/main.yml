@@ -101,6 +101,33 @@
         line: "{{ item.networks.v4[0].ip_address }}"
       with_items:
         - "{{ do_droplets.json.droplets }}"
+
+    - block:
+        - name: "Delete the new Algo SSH key"
+          digital_ocean:
+            state: absent
+            command: ssh
+            api_token: "{{ do_token }}"
+            name: "{{ SSH_keys.comment }}"
+          register: ssh_keys
+          until: ssh_keys.changed != true
+          retries: 10
+          delay: 1
+
+      rescue:
+        - name: Collect the fail error
+          digital_ocean:
+            state: absent
+            command: ssh
+            api_token: "{{ do_token }}"
+            name: "{{ SSH_keys.comment }}"
+          register: ssh_keys
+          ignore_errors: yes
+
+        - debug: var=ssh_keys
+
+        - fail:
+            msg: "Please, ensure that your API token is not read-only."
   rescue:
     - debug: var=fail_hint
       tags: always
