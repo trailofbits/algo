@@ -1,5 +1,5 @@
 config setup
-    uniqueids=never # allow multiple connections per user
+    uniqueids=replace  # if the same user connects twice, replace the old connection with the new one
     charondebug="ike {{ strongswan_log_level }}, knl {{ strongswan_log_level }}, cfg {{ strongswan_log_level }}, net {{ strongswan_log_level }}, esp {{ strongswan_log_level }}, dmn {{ strongswan_log_level }},  mgr {{ strongswan_log_level }}"
 
 conn %default
@@ -25,14 +25,36 @@ conn %default
     leftsendcert=always
     leftsubnet=0.0.0.0/0,::/0
 
+# Client configs
+# example: https://www.strongswan.org/testing/testresults/ikev2/config-payload/, especially moon.ipsec.conf
+# NOTE: we specify each client config twice, identically except for the rightid parameter
+#       because some clients (e.g. strongswan) send the rightid as "/CN=$user"
+#       while others (e.g. macOS) send the rightid as "$user"
+
+{% for user in users %}
+
+conn AlgoUser-{{ user }}
     right=%any
+    rightid={{ user }}
     rightauth=pubkey
-    rightsourceip={{ vpn_network }},{{ vpn_network_ipv6 }}
+    rightsourceip={{ vpn_network | ipaddr(loop.index) | ipaddr('address') }}
 {% if local_dns is defined and local_dns == "Y" %}
     rightdns={{ local_service_ip }}
 {% else %}
     rightdns={% for host in dns_servers.ipv4 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% if ipv6_support is defined and ipv6_support == "yes" %},{% for host in dns_servers.ipv6 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}
 {% endif %}
-
-conn ikev2-pubkey
     auto=add
+
+conn AlgoUser-CN{{ user }}
+    right=%any
+    rightid="/CN={{ user }}"
+    rightauth=pubkey
+    rightsourceip={{ vpn_network | ipaddr(loop.index) | ipaddr('address') }}
+{% if local_dns is defined and local_dns == "Y" %}
+    rightdns={{ local_service_ip }}
+{% else %}
+    rightdns={% for host in dns_servers.ipv4 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% if ipv6_support is defined and ipv6_support == "yes" %},{% for host in dns_servers.ipv6 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}
+{% endif %}
+    auto=add
+
+{% endfor %}
