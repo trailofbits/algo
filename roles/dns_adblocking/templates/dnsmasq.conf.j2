@@ -88,8 +88,9 @@
 # You can control how dnsmasq talks to a server: this forces
 # queries to 10.1.2.3 to be routed via eth1
 # server=10.1.2.3@eth1
-server=8.8.8.8
-server=8.8.4.4
+{% for host in dns_servers.ipv4 %}
+server={{ host }}
+{% endfor %}
 
 # and this sets the source (ie local) address used to talk to
 # 10.1.2.3 to 192.168.1.1 port 55 (there must be a interface with that
