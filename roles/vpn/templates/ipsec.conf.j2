@@ -25,36 +25,19 @@ conn %default
     leftsendcert=always
     leftsubnet=0.0.0.0/0,::/0
 
-# Client configs
-# example: https://www.strongswan.org/testing/testresults/ikev2/config-payload/, especially moon.ipsec.conf
-# NOTE: we specify each client config twice, identically except for the rightid parameter
-#       because some clients (e.g. strongswan) send the rightid as "/CN=$user"
-#       while others (e.g. macOS) send the rightid as "$user"
+    right=%any
+    rightauth=pubkey
+{% if local_dns is defined and local_dns == "Y" %}
+    rightdns={{ local_service_ip }}
+{% else %}
+    rightdns={% for host in dns_servers.ipv4 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% if ipv6_support is defined and ipv6_support == "yes" %},{% for host in dns_servers.ipv6 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}
+{% endif %}
 
 {% for user in users %}
 
 conn AlgoUser-{{ user }}
-    right=%any
     rightid={{ user }}
-    rightauth=pubkey
     rightsourceip={{ vpn_network | ipaddr(loop.index) | ipaddr('address') }}
-{% if local_dns is defined and local_dns == "Y" %}
-    rightdns={{ local_service_ip }}
-{% else %}
-    rightdns={% for host in dns_servers.ipv4 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% if ipv6_support is defined and ipv6_support == "yes" %},{% for host in dns_servers.ipv6 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}
-{% endif %}
-    auto=add
-
-conn AlgoUser-CN{{ user }}
-    right=%any
-    rightid="/CN={{ user }}"
-    rightauth=pubkey
-    rightsourceip={{ vpn_network | ipaddr(loop.index) | ipaddr('address') }}
-{% if local_dns is defined and local_dns == "Y" %}
-    rightdns={{ local_service_ip }}
-{% else %}
-    rightdns={% for host in dns_servers.ipv4 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% if ipv6_support is defined and ipv6_support == "yes" %},{% for host in dns_servers.ipv6 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}
-{% endif %}
     auto=add
 
 {% endfor %}
