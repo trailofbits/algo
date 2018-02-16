@@ -26,6 +26,7 @@
     - { role: cloud-ec2, tags: ['ec2'] }
     - { role: cloud-gce, tags: ['gce'] }
     - { role: cloud-azure, tags: ['azure'] }
+    - { role: cloud-lightsail, tags: ['lightsail'] }
     - { role: local, tags: ['local'] }
 
   post_tasks:
@@ -52,7 +53,7 @@
     - block:
       - name: Common pre-tasks
         include_tasks: playbooks/common.yml
-        tags: [ 'digitalocean', 'ec2', 'gce', 'azure', 'local', 'pre' ]
+        tags: [ 'digitalocean', 'ec2', 'gce', 'azure', 'lightsail', 'local', 'pre' ]
       rescue:
         - debug: var=fail_hint
           tags: always
