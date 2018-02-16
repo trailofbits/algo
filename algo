@@ -287,7 +287,7 @@ Enter the number of your desired region:
   esac
 
   ROLES="ec2 vpn cloud"
-  EXTRA_VARS="aws_access_key=$aws_access_key aws_secret_key=$aws_secret_key aws_server_name=$aws_server_name ssh_public_key=$ssh_public_key algo_region=$region"
+  EXTRA_VARS="aws_access_key=$aws_access_key aws_secret_key=$aws_secret_key aws_server_name=$aws_server_name ssh_public_key=$ssh_public_key region=$region"
 }
 
 lightsail () {
