@@ -6,4 +6,4 @@
 - name: FreeBSD / HardenedBSD | Configure defaults
   raw: sudo ln -sf /usr/local/bin/python2.7 /usr/bin/python2.7
 
-- include: facts/FreeBSD.yml
+- include_tasks: facts/FreeBSD.yml

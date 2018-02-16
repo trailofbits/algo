@@ -7,11 +7,11 @@
   pre_tasks:
     - block:
       - name: Local pre-tasks
-        include: playbooks/local.yml
+        include_tasks: playbooks/local.yml
         tags: [ 'always' ]
 
       - name: Local pre-tasks
-        include: playbooks/local_ssh.yml
+        include_tasks: playbooks/local_ssh.yml
         become: false
         when: Deployed_By_Algo is defined and Deployed_By_Algo == "Y"
         tags: [ 'local' ]
@@ -31,7 +31,7 @@
   post_tasks:
     - block:
       - name: Local post-tasks
-        include: playbooks/post.yml
+        include_tasks: playbooks/post.yml
         become: false
         tags: [ 'cloud' ]
       rescue:
@@ -51,7 +51,7 @@
   pre_tasks:
     - block:
       - name: Common pre-tasks
-        include: playbooks/common.yml
+        include_tasks: playbooks/common.yml
         tags: [ 'digitalocean', 'ec2', 'gce', 'azure', 'local', 'pre' ]
       rescue:
         - debug: var=fail_hint
