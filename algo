@@ -347,6 +347,42 @@ algo_region=${algo_region:-1}
 	EXTRA_VARS="aws_access_key=$aws_access_key aws_secret_key=$aws_secret_key algo_server_name=$algo_server_name region=$region"
 }
 
+scaleway () {
+read -p "
+Enter your auth token (https://www.scaleway.com/docs/generate-an-api-token/)
+$ADDITIONAL_PROMPT
+[...]: " -rs scaleway_auth_token
+
+read -p "
+
+Enter your organization name (https://cloud.scaleway.com/#/billing)
+$ADDITIONAL_PROMPT
+[...]: " -rs scaleway_organization
+
+read -p "
+
+Name the vpn server:
+[algo.local]: " -r algo_server_name
+  algo_server_name=${algo_server_name:-algo.local}
+
+  read -p "
+
+  What region should the server be located in?
+    1.   par1           Paris
+    2.   ams1           Amsterdam
+Enter the number of your desired region:
+[1]: " -r algo_region
+algo_region=${algo_region:-1}
+
+  case "$algo_region" in
+    1) region="par1" ;;
+    2) region="ams1" ;;
+  esac
+
+  ROLES="scaleway vpn cloud"
+  EXTRA_VARS="scaleway_auth_token=$scaleway_auth_token scaleway_organization=\"$scaleway_organization\" algo_server_name=$algo_server_name algo_region=$region"
+}
+
 gce () {
   read -p "
 Enter the local path to your credentials JSON file (https://support.google.com/cloud/answer/6158849?hl=en&ref_topic=6262490#serviceaccounts):
@@ -494,7 +530,8 @@ algo_provisioning () {
     3. Amazon EC2
     4. Microsoft Azure
     5. Google Compute Engine
-    6. Install to existing Ubuntu 16.04 server
+    6. Scaleway
+    7. Install to existing Ubuntu 16.04 server
 
 Enter the number of your desired provider
 : "
@@ -503,11 +540,12 @@ Enter the number of your desired provider
 
   case "$N" in
     1) digitalocean; ;;
-		2) lightsail; ;;
+    2) lightsail; ;;
     3) ec2; ;;
     4) azure; ;;
     5) gce; ;;
-    6) non_cloud; ;;
+    6) scaleway; ;;
+    7) non_cloud; ;;
     *) exit 1 ;;
   esac
 
