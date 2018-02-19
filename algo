@@ -49,12 +49,6 @@ ssh_tunneling_enabled=${ssh_tunneling_enabled:-n}
 if [[ "$ssh_tunneling_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" ssh_tunneling"; fi
 
 read -p "
-Do you want to apply operating system security enhancements on the server? (warning: replaces your sshd_config)
-[y/N]: " -r security_enabled
-security_enabled=${security_enabled:-n}
-if [[ "$security_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" security"; fi
-
-read -p "
 Do you want the VPN to support Windows 10 or Linux Desktop clients? (enables compatible ciphers and key exchange, less secure)
 [y/N]: " -r Win10_Enabled
 Win10_Enabled=${Win10_Enabled:-n}

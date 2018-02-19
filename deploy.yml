@@ -63,7 +63,6 @@
           tags: always
 
   roles:
-    - { role: security, tags: [ 'security' ] }
     - { role: dns_adblocking, tags: ['dns', 'adblock' ] }
     - { role: ssh_tunneling, tags: [ 'ssh_tunneling' ] }
     - { role: vpn, tags: [ 'vpn' ] }

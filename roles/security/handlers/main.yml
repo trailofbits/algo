@@ -1,5 +1,0 @@
-- name: restart ssh
-  service: name="{{ ssh_service_name|default('ssh') }}" state=restarted
-
-- name: flush routing cache
-  shell: echo 1 > /proc/sys/net/ipv4/route/flush
