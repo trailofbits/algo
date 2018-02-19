@@ -10,3 +10,4 @@ apache-libcloud
 six
 pyopenssl
 jinja2==2.8
+shade

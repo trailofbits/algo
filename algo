@@ -383,6 +383,22 @@ algo_region=${algo_region:-1}
   EXTRA_VARS="scaleway_auth_token=$scaleway_auth_token scaleway_organization=\"$scaleway_organization\" algo_server_name=$algo_server_name algo_region=$region"
 }
 
+openstack () {
+read -p "
+Enter the local path to your credentials OpenStack RC file (Can be donloaded from the OpenStack dashboard->Compute->API Access)
+[...]: " -r os_rc
+
+read -p "
+
+Name the vpn server:
+[algo.local]: " -r algo_server_name
+  algo_server_name=${algo_server_name:-algo.local}
+
+  ROLES="openstack vpn cloud"
+  EXTRA_VARS="algo_server_name=$algo_server_name"
+  source $os_rc
+}
+
 gce () {
   read -p "
 Enter the local path to your credentials JSON file (https://support.google.com/cloud/answer/6158849?hl=en&ref_topic=6262490#serviceaccounts):
@@ -531,7 +547,8 @@ algo_provisioning () {
     4. Microsoft Azure
     5. Google Compute Engine
     6. Scaleway
-    7. Install to existing Ubuntu 16.04 server
+    7. OpenStack (DreamCompute optimised)
+    8. Install to existing Ubuntu 16.04 server
 
 Enter the number of your desired provider
 : "
@@ -545,7 +562,8 @@ Enter the number of your desired provider
     4) azure; ;;
     5) gce; ;;
     6) scaleway; ;;
-    7) non_cloud; ;;
+    7) openstack; ;;
+    8) non_cloud; ;;
     *) exit 1 ;;
   esac
 
