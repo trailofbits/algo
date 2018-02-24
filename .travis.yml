@@ -45,6 +45,7 @@ install:
   - sudo cp -v ~/.ssh/id_rsa.pub $LXC_ROOTFS/root/.ssh/authorized_keys
   - sudo apt-get install build-essential libssl-dev libffi-dev python-dev && sudo pip install -r requirements.txt
   - pip install ansible-lint
+  - pip install netaddr
   - gem install awesome_bot
 
 script:

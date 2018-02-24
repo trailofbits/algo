@@ -27,6 +27,13 @@
       notify:
         - restart dnsmasq
 
+    - name: VPN hosts file configured
+      template:
+        src: etc.hosts.ipsecclients.j2
+        dest: "{{ config_prefix|default('/') }}etc/hosts.ipsecclients"
+      notify:
+        - restart dnsmasq
+
     - name: Adblock script created
       template:
         src: adblock.sh.j2
