@@ -44,6 +44,23 @@
   tags:
     - cloud
 
+- name: Install system specific tools
+  package: name="{{ item }}" state=present
+  with_items:
+    - ifupdown
+  tags:
+    - always
+
+- name: Ensure the interfaces directory exists
+  file:
+    path: /etc/network/interfaces.d/
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
+  tags:
+    - always
+
 - name: Loopback for services configured
   template: src=10-loopback-services.cfg.j2 dest=/etc/network/interfaces.d/10-loopback-services.cfg
   notify:
