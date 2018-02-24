@@ -1,10 +1,4 @@
 ---
-
-- name: Make a cloudformation template
-  template:
-    src: stack.yml.j2
-    dest: "configs/{{ aws_server_name }}.yml"
-
 - name: Deploy the template
   cloudformation:
     aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'), true)}}"
@@ -12,7 +6,11 @@
     stack_name: "{{ stack_name }}"
     state: "present"
     region: "{{ region }}"
-    template: "configs/{{ aws_server_name }}.yml"
+    template: roles/cloud-ec2/files/stack.yml
+    template_parameters:
+      InstanceTypeParameter: "{{ cloud_providers.ec2.size }}"
+      PublicSSHKeyParameter: "{{ lookup('file', SSH_keys.public) }}"
+      ImageIdParameter: "{{ ami_image }}"
     tags:
       Environment: Algo
   register: stack
