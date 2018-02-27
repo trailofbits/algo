@@ -62,6 +62,10 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
 
 5. **List the users to create.** Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
 
+> ## :warning: Warning
+>
+> Algo is intended for use on a standalone server. If you are deploying on a server you already use as a web, mail or other server, Algo's firewall rules will prevent those services from working.
+
 6. **Start the deployment.** Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [deploy-from-ansible.md](docs/deploy-from-ansible.md).
 
 That's it! You will get the message below when the server deployment process completes. You now have an Algo server on the internet. Take note of the p12 (user certificate) password in case you need it later.
