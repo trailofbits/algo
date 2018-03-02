@@ -7,11 +7,11 @@
   pre_tasks:
     - block:
       - name: Local pre-tasks
-        include: playbooks/local.yml
+        include_tasks: playbooks/local.yml
         tags: [ 'always' ]
 
       - name: Local pre-tasks
-        include: playbooks/local_ssh.yml
+        include_tasks: playbooks/local_ssh.yml
         become: false
         when: Deployed_By_Algo is defined and Deployed_By_Algo == "Y"
         tags: [ 'local' ]
@@ -26,12 +26,15 @@
     - { role: cloud-ec2, tags: ['ec2'] }
     - { role: cloud-gce, tags: ['gce'] }
     - { role: cloud-azure, tags: ['azure'] }
+    - { role: cloud-lightsail, tags: ['lightsail'] }
+    - { role: cloud-scaleway, tags: ['scaleway'] }
+    - { role: cloud-openstack, tags: ['openstack'] }
     - { role: local, tags: ['local'] }
 
   post_tasks:
     - block:
       - name: Local post-tasks
-        include: playbooks/post.yml
+        include_tasks: playbooks/post.yml
         become: false
         tags: [ 'cloud' ]
       rescue:
@@ -51,8 +54,8 @@
   pre_tasks:
     - block:
       - name: Common pre-tasks
-        include: playbooks/common.yml
-        tags: [ 'digitalocean', 'ec2', 'gce', 'azure', 'local', 'pre' ]
+        include_tasks: playbooks/common.yml
+        tags: [ 'digitalocean', 'ec2', 'gce', 'azure', 'lightsail', 'scaleway', 'openstack', 'local', 'pre' ]
       rescue:
         - debug: var=fail_hint
           tags: always
@@ -60,7 +63,6 @@
           tags: always
 
   roles:
-    - { role: security, tags: [ 'security' ] }
     - { role: dns_adblocking, tags: ['dns', 'adblock' ] }
     - { role: ssh_tunneling, tags: [ 'ssh_tunneling' ] }
     - { role: vpn, tags: [ 'vpn' ] }

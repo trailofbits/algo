@@ -6,20 +6,20 @@
     - name: Ensure that the strongswan user exist
       user: name=strongswan group=strongswan state=present
 
-    - include: ubuntu.yml
+    - include_tasks: ubuntu.yml
       when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
-    - include: freebsd.yml
+    - include_tasks: freebsd.yml
       when: ansible_distribution == 'FreeBSD'
 
     - name: Install strongSwan
       package: name=strongswan state=present
 
-    - include: ipec_configuration.yml
-    - include: openssl.yml
+    - include_tasks: ipec_configuration.yml
+    - include_tasks: openssl.yml
       tags: update-users
-    - include: distribute_keys.yml
-    - include: client_configs.yml
+    - include_tasks: distribute_keys.yml
+    - include_tasks: client_configs.yml
       delegate_to: localhost
       become: no
       tags: update-users

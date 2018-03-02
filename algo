@@ -49,12 +49,6 @@ ssh_tunneling_enabled=${ssh_tunneling_enabled:-n}
 if [[ "$ssh_tunneling_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" ssh_tunneling"; fi
 
 read -p "
-Do you want to apply operating system security enhancements on the server? (warning: replaces your sshd_config)
-[y/N]: " -r security_enabled
-security_enabled=${security_enabled:-n}
-if [[ "$security_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" security"; fi
-
-read -p "
 Do you want the VPN to support Windows 10 or Linux Desktop clients? (enables compatible ciphers and key exchange, less secure)
 [y/N]: " -r Win10_Enabled
 Win10_Enabled=${Win10_Enabled:-n}
@@ -290,6 +284,115 @@ Enter the number of your desired region:
   EXTRA_VARS="aws_access_key=$aws_access_key aws_secret_key=$aws_secret_key aws_server_name=$aws_server_name ssh_public_key=$ssh_public_key region=$region"
 }
 
+lightsail () {
+read -p "
+Enter your aws_access_key (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
+Note: Make sure to use an IAM user with an acceptable policy attached (see https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md).
+$ADDITIONAL_PROMPT
+[AKIA...]: " -rs aws_access_key
+
+read -p "
+
+Enter your aws_secret_key (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
+$ADDITIONAL_PROMPT
+[ABCD...]: " -rs aws_secret_key
+
+read -p "
+
+Name the vpn server:
+[algo.local]: " -r algo_server_name
+  algo_server_name=${algo_server_name:-algo.local}
+
+  read -p "
+
+  What region should the server be located in?
+    1.   us-east-1           US East (N. Virginia)
+    2.   us-east-2           US East (Ohio)
+    3.   us-west-1           US West (N. California)
+    4.   us-west-2           US West (Oregon)
+    5.   ap-south-1          Asia Pacific (Mumbai)
+    6.   ap-northeast-2      Asia Pacific (Seoul)
+    7.   ap-southeast-1      Asia Pacific (Singapore)
+    8.   ap-southeast-2      Asia Pacific (Sydney)
+    9.   ap-northeast-1      Asia Pacific (Tokyo)
+    10.  eu-central-1        EU (Frankfurt)
+    11.  eu-west-1           EU (Ireland)
+    12.  eu-west-2           EU (London)
+Enter the number of your desired region:
+[1]: " -r algo_region
+algo_region=${algo_region:-1}
+
+  case "$algo_region" in
+    1) region="us-east-1" ;;
+    2) region="us-east-2" ;;
+    3) region="us-west-1" ;;
+    4) region="us-west-2" ;;
+    5) region="ap-south-1" ;;
+    6) region="ap-northeast-2" ;;
+    7) region="ap-southeast-1" ;;
+    8) region="ap-southeast-2" ;;
+    9) region="ap-northeast-1" ;;
+    10) region="eu-central-1" ;;
+    11) region="eu-west-1" ;;
+    12) region="eu-west-2";;
+  esac
+
+  ROLES="lightsail vpn cloud"
+	EXTRA_VARS="aws_access_key=$aws_access_key aws_secret_key=$aws_secret_key algo_server_name=$algo_server_name region=$region"
+}
+
+scaleway () {
+read -p "
+Enter your auth token (https://www.scaleway.com/docs/generate-an-api-token/)
+$ADDITIONAL_PROMPT
+[...]: " -rs scaleway_auth_token
+
+read -p "
+
+Enter your organization name (https://cloud.scaleway.com/#/billing)
+$ADDITIONAL_PROMPT
+[...]: " -rs scaleway_organization
+
+read -p "
+
+Name the vpn server:
+[algo.local]: " -r algo_server_name
+  algo_server_name=${algo_server_name:-algo.local}
+
+  read -p "
+
+  What region should the server be located in?
+    1.   par1           Paris
+    2.   ams1           Amsterdam
+Enter the number of your desired region:
+[1]: " -r algo_region
+algo_region=${algo_region:-1}
+
+  case "$algo_region" in
+    1) region="par1" ;;
+    2) region="ams1" ;;
+  esac
+
+  ROLES="scaleway vpn cloud"
+  EXTRA_VARS="scaleway_auth_token=$scaleway_auth_token scaleway_organization=\"$scaleway_organization\" algo_server_name=$algo_server_name algo_region=$region"
+}
+
+openstack () {
+read -p "
+Enter the local path to your credentials OpenStack RC file (Can be donloaded from the OpenStack dashboard->Compute->API Access)
+[...]: " -r os_rc
+
+read -p "
+
+Name the vpn server:
+[algo.local]: " -r algo_server_name
+  algo_server_name=${algo_server_name:-algo.local}
+
+  ROLES="openstack vpn cloud"
+  EXTRA_VARS="algo_server_name=$algo_server_name"
+  source $os_rc
+}
+
 gce () {
   read -p "
 Enter the local path to your credentials JSON file (https://support.google.com/cloud/answer/6158849?hl=en&ref_topic=6262490#serviceaccounts):
@@ -433,10 +536,13 @@ algo_provisioning () {
   echo -n "
   What provider would you like to use?
     1. DigitalOcean
-    2. Amazon EC2
-    3. Microsoft Azure
-    4. Google Compute Engine
-    5. Install to existing Ubuntu 16.04 server
+    2. Amazon Lightsail
+    3. Amazon EC2
+    4. Microsoft Azure
+    5. Google Compute Engine
+    6. Scaleway
+    7. OpenStack (DreamCompute optimised)
+    8. Install to existing Ubuntu 16.04 server
 
 Enter the number of your desired provider
 : "
@@ -445,10 +551,13 @@ Enter the number of your desired provider
 
   case "$N" in
     1) digitalocean; ;;
-    2) ec2; ;;
-    3) azure; ;;
-    4) gce; ;;
-    5) non_cloud; ;;
+    2) lightsail; ;;
+    3) ec2; ;;
+    4) azure; ;;
+    5) gce; ;;
+    6) scaleway; ;;
+    7) openstack; ;;
+    8) non_cloud; ;;
     *) exit 1 ;;
   esac
 

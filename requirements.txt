@@ -1,12 +1,11 @@
-msrestazure
 setuptools>=11.3
-ansible>=2.1,<2.2.1
+ansible[azure]==2.4.3
 dopy==0.3.5
 boto>=2.5
 boto3
-azure==2.0.0rc5
-msrest==0.4.1
 apache-libcloud
 six
 pyopenssl
 jinja2==2.8
+shade
+pycrypto

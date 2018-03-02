@@ -45,7 +45,7 @@
   pre_tasks:
     - block:
         - name: Common pre-tasks
-          include: playbooks/common.yml
+          include_tasks: playbooks/common.yml
           tags: always
       rescue:
         - debug: var=fail_hint
