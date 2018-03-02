@@ -1,13 +1,19 @@
 ---
-
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Algo VPN stack'
+Parameters:
+  InstanceTypeParameter:
+    Type: String
+    Default: t2.micro
+  PublicSSHKeyParameter:
+    Type: String
+  ImageIdParameter:
+    Type: String
 Resources:
-
   VPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: {{ ec2_vpc_nets.cidr_block }}
+      CidrBlock: 172.16.0.0/16
       EnableDnsSupport: true
       EnableDnsHostnames: true
       InstanceTenancy: default
@@ -35,7 +41,7 @@ Resources:
   Subnet:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: {{ ec2_vpc_nets.subnet_cidr }}
+      CidrBlock: 172.16.254.0/23
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Environment
@@ -148,16 +154,19 @@ Resources:
               homeDir: "/home/ubuntu/"
           files:
             /home/ubuntu/.ssh/authorized_keys:
-              content: {{ lookup('file', SSH_keys.public) }}
+              content:
+                Ref: PublicSSHKeyParameter
               mode: "000644"
               owner: "ubuntu"
               group: "ubuntu"
     Properties:
-      InstanceType: {{ cloud_providers.ec2.size }}
+      InstanceType:
+        Ref: InstanceTypeParameter
       InstanceInitiatedShutdownBehavior: terminate
       SecurityGroupIds:
         - Ref: InstanceSecurityGroup
-      ImageId: {{ ami_image }}
+      ImageId:
+        Ref: ImageIdParameter
       SubnetId: !Ref Subnet
       Ipv6AddressCount: 1
       UserData:
@@ -176,8 +185,8 @@ Resources:
             apt-get update
             apt-get -y install python-setuptools
             easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
-            cfn-init -v --stack {{ stack_name }} --resource EC2Instance --region {{ region }}
-            cfn-signal -e $? --stack {{ stack_name }} --resource EC2Instance --region {{ region }}
+            cfn-init -v --stack ${AWS::StackName} --resource EC2Instance --region ${AWS::Region}
+            cfn-signal -e $? --stack ${AWS::StackName} --resource EC2Instance --region ${AWS::Region}
       Tags:
         - Key: Name
           Value: Algo
