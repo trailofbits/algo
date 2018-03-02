@@ -44,5 +44,5 @@
     - daemon-reload
     - restart strongswan
 
-- include: iptables.yml
+- include_tasks: iptables.yml
   tags: iptables

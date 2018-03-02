@@ -14,10 +14,10 @@
     - name: The dnsmasq directory created
       file: dest=/var/lib/dnsmasq state=directory mode=0755 owner=dnsmasq group=nogroup
 
-    - include: ubuntu.yml
+    - include_tasks: ubuntu.yml
       when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
-    - include: freebsd.yml
+    - include_tasks: freebsd.yml
       when: ansible_distribution == 'FreeBSD'
 
     - name: Dnsmasq configured

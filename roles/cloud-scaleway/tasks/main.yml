@@ -1,0 +1,128 @@
+- block:
+  - name: Check if server exists
+    uri:
+      url: "https://cp-{{ algo_region }}.scaleway.com/servers"
+      method: GET
+      headers:
+        Content-Type: 'application/json'
+        X-Auth-Token: "{{ scaleway_auth_token }}"
+      status_code: 200
+    register: scaleway_servers
+
+  - name: Set server id as a fact
+    set_fact:
+      server_id: "{{ item.id }}"
+    no_log: true
+    when: algo_server_name == item.name
+    with_items: "{{ scaleway_servers.json.servers }}"
+
+  - name: Create a server if it doesn't exist
+    block:
+    - name: Get the organization id
+      uri:
+        url: https://account.cloud.online.net/organizations
+        method: GET
+        headers:
+          Content-Type: 'application/json'
+          X-Auth-Token: "{{ scaleway_auth_token }}"
+        status_code: 200
+      register: scaleway_organizations
+
+    - name: Set organization id as a fact
+      set_fact:
+        organization_id: "{{ item.id }}"
+      no_log: true
+      when: scaleway_organization == item.name
+      with_items: "{{ scaleway_organizations.json.organizations }}"
+
+    - name: Get images
+      uri:
+        url: "https://cp-{{ algo_region }}.scaleway.com/images"
+        method: GET
+        headers:
+          Content-Type: 'application/json'
+          X-Auth-Token: "{{ scaleway_auth_token }}"
+        status_code: 200
+      register: scaleway_images
+
+    - name: Set image id as a fact
+      set_fact:
+        image_id: "{{ item.id }}"
+      no_log: true
+      when:
+        - cloud_providers.scaleway.image in item.name
+        - cloud_providers.scaleway.arch == item.arch
+      with_items: "{{ scaleway_images.json.images }}"
+
+    - name: Create a server
+      uri:
+        url: "https://cp-{{ algo_region }}.scaleway.com/servers/"
+        method: POST
+        headers:
+          Content-Type: 'application/json'
+          X-Auth-Token: "{{ scaleway_auth_token }}"
+        body:
+          organization: "{{ organization_id }}"
+          name: "{{ algo_server_name }}"
+          image: "{{ image_id }}"
+          commercial_type: "{{cloud_providers.scaleway.size }}"
+          tags:
+            - Environment:Algo
+            - AUTHORIZED_KEY={{ lookup('file', SSH_keys.public)|regex_replace(' ', '_') }}
+          enable_ipv6: true
+        status_code: 201
+        body_format: json
+      register: algo_instance
+
+    - name: Set server id as a fact
+      set_fact:
+        server_id: "{{ algo_instance.json.server.id }}"
+    when: server_id is not defined
+
+  - name: Power on the server
+    uri:
+      url: https://cp-{{ algo_region }}.scaleway.com/servers/{{ server_id }}/action
+      method: POST
+      headers:
+        Content-Type: application/json
+        X-Auth-Token: "{{ scaleway_auth_token }}"
+      body:
+        action: poweron
+      status_code: 202
+      body_format: json
+    ignore_errors: true
+    no_log: true
+
+  - name: Wait for the server to become running
+    uri:
+      url: "https://cp-{{ algo_region }}.scaleway.com/servers/{{ server_id }}"
+      method: GET
+      headers:
+        Content-Type: 'application/json'
+        X-Auth-Token: "{{ scaleway_auth_token }}"
+      status_code: 200
+    until:
+      - algo_instance.json.server.state is defined
+      - algo_instance.json.server.state == "running"
+    retries: 20
+    delay: 30
+    register: algo_instance
+
+  - set_fact:
+      cloud_instance_ip: "{{ algo_instance['json']['server']['public_ip']['address'] }}"
+
+  - name: Add new instance to host group
+    add_host:
+      hostname: "{{ cloud_instance_ip }}"
+      groupname: vpn-host
+      ansible_ssh_user: root
+      ansible_python_interpreter: "/usr/bin/python2.7"
+      ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
+      cloud_provider: scaleway
+      ipv6_support: yes
+
+  rescue:
+  - debug: var=fail_hint
+    tags: always
+  - fail:
+    tags: always

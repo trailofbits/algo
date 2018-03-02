@@ -1,13 +1,13 @@
 ---
 
-- include: Debian.yml
+- include_tasks: Debian.yml
   when: ansible_distribution == 'Debian'
 
-- include: Ubuntu.yml
+- include_tasks: Ubuntu.yml
   when: ansible_distribution == 'Ubuntu'
 
-- include: CentOS.yml
+- include_tasks: CentOS.yml
   when: ansible_distribution == 'CentOS'
 
-- include: Fedora.yml
+- include_tasks: Fedora.yml
   when: ansible_distribution == 'Fedora'

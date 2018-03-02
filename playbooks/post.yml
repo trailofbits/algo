@@ -13,4 +13,4 @@
   pause:
     seconds: 20
 
-- include: local_ssh.yml
+- include_tasks: local_ssh.yml

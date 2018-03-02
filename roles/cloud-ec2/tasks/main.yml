@@ -19,10 +19,10 @@
     - set_fact:
         ami_image: "{{ ami_search.results[0].ami_id }}"
 
-    - include: encrypt_image.yml
+    - include_tasks: encrypt_image.yml
       tags: [encrypted]
 
-    - include: cloudformation.yml
+    - include_tasks: cloudformation.yml
 
     - name: Add new instance to host group
       add_host:
@@ -38,7 +38,7 @@
         cloud_instance_ip: "{{ stack.stack_outputs.ElasticIP }}"
 
     - name: Get EC2 instances
-      ec2_remote_facts:
+      ec2_instance_facts:
         aws_access_key: "{{ access_key }}"
         aws_secret_key: "{{ secret_key }}"
         region: "{{ region }}"

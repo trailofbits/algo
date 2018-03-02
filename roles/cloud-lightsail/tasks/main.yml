@@ -1,0 +1,52 @@
+- block:
+  - set_fact:
+      access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'), true) }}"
+      secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true) }}"
+      region: "{{ algo_region | default(lookup('env','AWS_DEFAULT_REGION'), true) }}"
+
+  - name: Create an instance
+    lightsail:
+      aws_access_key: "{{ access_key }}"
+      aws_secret_key: "{{ secret_key }}"
+      name: "{{ algo_server_name }}"
+      state: present
+      region: "{{ region }}"
+      zone: "{{ region }}a"
+      blueprint_id: "{{ cloud_providers.lightsail.image }}"
+      bundle_id: "{{ cloud_providers.lightsail.size }}"
+      wait_timeout: 300
+      open_ports:
+        - from_port: 4500
+          to_port: 4500
+          protocol: udp
+        - from_port: 500
+          to_port: 500
+          protocol: udp
+      user_data: |
+        #!/bin/bash
+        mkdir -p /home/ubuntu/.ssh/
+        echo "{{ lookup('file', '{{ SSH_keys.public }}') }}" >> /home/ubuntu/.ssh/authorized_keys
+        chown -R ubuntu: /home/ubuntu/.ssh/
+        chmod 0700 /home/ubuntu/.ssh/
+        chmod 0600 /home/ubuntu/.ssh/*
+        test
+    register: algo_instance
+
+  - set_fact:
+      cloud_instance_ip: "{{ algo_instance['instance']['public_ip_address'] }}"
+
+  - name: Add new instance to host group
+    add_host:
+      hostname: "{{ cloud_instance_ip }}"
+      groupname: vpn-host
+      ansible_ssh_user: ubuntu
+      ansible_python_interpreter: "/usr/bin/python2.7"
+      ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
+      cloud_provider: lightsail
+      ipv6_support: no
+
+  rescue:
+  - debug: var=fail_hint
+    tags: always
+  - fail:
+    tags: always
