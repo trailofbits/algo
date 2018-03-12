@@ -25,6 +25,33 @@
 
 Look here if you have a problem running the installer to set up a new Algo server.
 
+### Error: name 'basestring' is not defined
+
+```
+TASK [cloud-digitalocean : Creating a droplet...] *******************************************
+An exception occurred during task execution. To see the full traceback, use -vvv. The error was: NameError: name 'basestring' is not defined
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "name 'basestring' is not defined"}
+```
+
+If you get something like the above it's likely you're not using a python2 virtualenv.
+
+Ensure running `python2.7` drops you into a python 2 shell (it looks something like this)
+
+```
+user@homebook ~ $ python2.7
+Python 2.7.10 (default, Feb  7 2017, 00:08:15)
+[GCC 4.2.1 Compatible Apple LLVM 8.0.0 (clang-800.0.34)] on darwin
+Type "help", "copyright", "credits" or "license" for more information.
+>>>
+```
+
+Then rerun the dependency installation explicitly using python 2.7
+
+```
+python2.7 -m virtualenv --python=`which python2.7` env && source env/bin/activate && python2.7 -m pip install -U pip && python2.7 -m pip install -r
+requirements.txt
+```
+
 ### Error: "You have not agreed to the Xcode license agreements"
 
 On macOS, you tried to install the dependencies with pip and encountered the following error:
@@ -63,7 +90,7 @@ checking for gcc... gcc
 checking whether the C compiler works... no
 configure: error: in '/private/var/folders/3f/q33hl6_x6_nfyjg29fcl9qdr0000gp/T/pip-build-DB5VZp/pycrypto': configure: error: C compiler cannot create executables See config.log for more details
 Traceback (most recent call last):
-File "", line 1, in 
+File "", line 1, in
 ...
 cmd_obj.run()
 File "/private/var/folders/3f/q33hl6_x6_nfyjg29fcl9qdr0000gp/T/pip-build-DB5VZp/pycrypto/setup.py", line 278, in run
@@ -94,7 +121,7 @@ Command /usr/bin/python -c "import setuptools, tokenize;__file__='/private/tmp/p
 Storing debug log for failure in /Users/algore/Library/Logs/pip.log
 ```
 
-You are running an old version of `pip` that cannot build the `pycrypto` dependency. Upgrade to a new version of `pip` by running `sudo pip install -U pip`. 
+You are running an old version of `pip` that cannot build the `pycrypto` dependency. Upgrade to a new version of `pip` by running `sudo pip install -U pip`.
 
 ### Error: "TypeError: must be str, not bytes"
 
