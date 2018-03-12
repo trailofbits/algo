@@ -25,32 +25,6 @@
 
 Look here if you have a problem running the installer to set up a new Algo server.
 
-### Error: name 'basestring' is not defined
-
-```
-TASK [cloud-digitalocean : Creating a droplet...] *******************************************
-An exception occurred during task execution. To see the full traceback, use -vvv. The error was: NameError: name 'basestring' is not defined
-fatal: [localhost]: FAILED! => {"changed": false, "msg": "name 'basestring' is not defined"}
-```
-
-If you get something like the above it's likely you're not using a python2 virtualenv.
-
-Ensure running `python2.7` drops you into a python 2 shell (it looks something like this)
-
-```
-user@homebook ~ $ python2.7
-Python 2.7.10 (default, Feb  7 2017, 00:08:15)
-[GCC 4.2.1 Compatible Apple LLVM 8.0.0 (clang-800.0.34)] on darwin
-Type "help", "copyright", "credits" or "license" for more information.
->>>
-```
-
-Then rerun the dependency installation explicitly using python 2.7
-
-```
-python2.7 -m virtualenv --python=`which python2.7` env && source env/bin/activate && python2.7 -m pip install -U pip && python2.7 -m pip install -r requirements.txt
-```
-
 ### Error: "You have not agreed to the Xcode license agreements"
 
 On macOS, you tried to install the dependencies with pip and encountered the following error:
@@ -240,6 +214,32 @@ $ sudo ifconfig wlan0 mtu 1438
 On Windows, this issue may manifest with an error message that says "The network connection between your computer and the VPN server could not be established because the remote server is not responding... This is Error 809." On other operating systems, you may try to debug the issue by capturing packets with tcpdump and notice that, while IKE_SA_INIT request and responses are exchanged between the client and server, IKE_AUTH requests never make it to the server.
 
 It is possible that the IKE_AUTH payload is too big to fit in a single IP datagram, and so is fragmented. Many consumer routers and cable modems ship with a feature that blocks "fragmented IP packets." Try logging into your router and disabling any firewall settings related to blocking or dropping fragmented IP packets. For more information, see [Issue #305](https://github.com/trailofbits/algo/issues/305).
+
+### Error: name 'basestring' is not defined
+
+```
+TASK [cloud-digitalocean : Creating a droplet...] *******************************************
+An exception occurred during task execution. To see the full traceback, use -vvv. The error was: NameError: name 'basestring' is not defined
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "name 'basestring' is not defined"}
+```
+
+If you get something like the above it's likely you're not using a python2 virtualenv.
+
+Ensure running `python2.7` drops you into a python 2 shell (it looks something like this)
+
+```
+user@homebook ~ $ python2.7
+Python 2.7.10 (default, Feb  7 2017, 00:08:15)
+[GCC 4.2.1 Compatible Apple LLVM 8.0.0 (clang-800.0.34)] on darwin
+Type "help", "copyright", "credits" or "license" for more information.
+>>>
+```
+
+Then rerun the dependency installation explicitly using python 2.7
+
+```
+python2.7 -m virtualenv --python=`which python2.7` env && source env/bin/activate && python2.7 -m pip install -U pip && python2.7 -m pip install -r requirements.txt
+```
 
 ## I have a problem not covered here
 
