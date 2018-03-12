@@ -48,8 +48,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 Then rerun the dependency installation explicitly using python 2.7
 
 ```
-python2.7 -m virtualenv --python=`which python2.7` env && source env/bin/activate && python2.7 -m pip install -U pip && python2.7 -m pip install -r
-requirements.txt
+python2.7 -m virtualenv --python=`which python2.7` env && source env/bin/activate && python2.7 -m pip install -U pip && python2.7 -m pip install -r requirements.txt
 ```
 
 ### Error: "You have not agreed to the Xcode license agreements"
