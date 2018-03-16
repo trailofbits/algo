@@ -3,10 +3,16 @@
 set -ex
 
 CAPW=`cat /tmp/ca_password`
+USER_ARGS="server_ip=$LXC_IP server_user=root ssh_tunneling_enabled=y IP_subject=$LXC_IP easyrsa_CA_password=$CAPW"
 
 sed -i 's/- jack$/- jack_test/' config.cfg
 
-ansible-playbook users.yml -e "server_ip=$LXC_IP server_user=root ssh_tunneling_enabled=y IP_subject=$LXC_IP easyrsa_CA_password=$CAPW"
+if [ "${LXC_NAME}" == "docker" ]
+then
+  docker run -it -v $(pwd)/config.cfg:/algo/config.cfg -v ~/.ssh:/root/.ssh -e "USER_ARGS=${USER_ARGS}" travis/algo /bin/sh -c "chown -R 0:0 /root/.ssh && source env/bin/activate && ansible-playbook users.yml -e \"${USER_ARGS}\""
+else
+  ansible-playbook users.yml -e "${USER_ARGS}"
+fi
 
 cd configs/$LXC_IP/pki/
 

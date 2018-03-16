@@ -4,6 +4,9 @@ python: "2.7"
 sudo: required
 dist: trusty
 
+services:
+  - docker
+
 matrix:
   fast_finish: true
 
@@ -32,6 +35,10 @@ before_cache:
 env:
   - LXC_NAME=ubuntu1604 LXC_DISTRO=ubuntu LXC_RELEASE=xenial
   - LXC_NAME=ubuntu1710 LXC_DISTRO=ubuntu LXC_RELEASE=artful
+  - LXC_NAME=docker LXC_DISTRO=ubuntu LXC_RELEASE=artful
+
+before_install:
+  - test "${LXC_NAME}" != "docker" || docker build -t travis/algo .
 
 install:
   - sudo tar xf $HOME/lxc/cache.tar -C / || echo "Didn't extract cache."
@@ -41,6 +48,7 @@ install:
   - export LXC_IP="$(sudo lxc-info -Hin $LXC_NAME)"
   - sudo /bin/bash -c "printf '\n$LXC_IP test.lxc\n' >> /etc/hosts"
   - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
+  - chmod 0644 ~/.ssh/config
   - sudo mkdir -vm 0700 $LXC_ROOTFS/root/.ssh/
   - sudo cp -v ~/.ssh/id_rsa.pub $LXC_ROOTFS/root/.ssh/authorized_keys
   - sudo apt-get install build-essential libssl-dev libffi-dev python-dev && sudo pip install -r requirements.txt
@@ -52,7 +60,7 @@ script:
 #  - shellcheck algo
 #  - ansible-lint deploy.yml users.yml deploy_client.yml
   - ansible-playbook deploy.yml --syntax-check
-  - ansible-playbook deploy.yml -t local,vpn,dns,ssh_tunneling,tests -e "server_ip=$LXC_IP server_user=root IP_subject_alt_name=$LXC_IP local_dns=Y"
+  - ./tests/local-deploy.sh
 
 after_script:
   - ./tests/update-users.sh
