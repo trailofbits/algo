@@ -10,6 +10,7 @@ PUT THE OUTPUT HERE
 ### Cloud Provider (where do you deploy Algo to)
 <!--- 
 If you deploy to a cloud provider specify the provider here.
+--->
 
 ```
 PUT THE OUTPUT HERE
@@ -17,6 +18,7 @@ PUT THE OUTPUT HERE
 
 ### Summary of the problem
 <!--- Describe the problem -->
+
 
 
 ### Steps to reproduce the behavior
