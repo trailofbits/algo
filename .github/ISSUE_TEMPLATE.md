@@ -7,15 +7,13 @@ Run the command `uname -a` and put the output here
 PUT THE OUTPUT HERE
 ```
 
-### Cloud Provider or OS / Environment (where do you deploy Algo to)
+### Cloud Provider (where do you deploy Algo to)
 <!--- 
 If you deploy to a cloud provider specify the provider here.
-If you deploy to the existing server, run the command `uname -a` and put the output here -->
 
 ```
 PUT THE OUTPUT HERE
 ```
- 
 
 ### Summary of the problem
 <!--- Describe the problem -->
