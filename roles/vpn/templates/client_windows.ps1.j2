@@ -1,6 +1,7 @@
 
 function AddAlgoVPN {
   certutil -f -importpfx .\{{ item }}.p12
+  certutil -addstore root .\cacert.pem
   Add-VpnConnection -name "Algo VPN {{ IP_subject_alt_name }} IKEv2" -ServerAddress "{{ IP_subject_alt_name }}" -TunnelType IKEv2 -AuthenticationMethod MachineCertificate -EncryptionLevel Required
   Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo VPN {{ IP_subject_alt_name }} IKEv2" -AuthenticationTransformConstants GCMAES128 -CipherTransformConstants GCMAES128 -EncryptionMethod AES128 -IntegrityCheckMethod SHA384 -DHGroup ECP256 -PfsGroup ECP256  -Force
 }
