@@ -4,8 +4,8 @@
 
 1. [Install the strongSwan VPN Client](https://play.google.com/store/apps/details?id=org.strongswan.android).
 2. Copy `android_{username}.sswan` and `android_{username}_helper.html` to your phone's internal storage.
-3. Open the helper file in a browser (e.g., Google Chrome).
-4. Click on the link. It opens the StrongSwan app and configures the VPN with your profile.
+3. Open the StrongSwan app and go to the 'Import VPN profile' function.
+4. Select the `android_{username}.sswan` file to configure the VPN with your profile, using the p12 file to authenticate to the server.
 
 ## Manual installation
 
