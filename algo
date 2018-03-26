@@ -525,6 +525,17 @@ fi
 
   read -p "
 
+Enter the public DNS name of your server: (IMPORTANT! This name is used to verify the certificate)
+[$mydns]: " -r DNS_subject
+  DNS_subject=${DNS_subject:-$mydns}
+
+if [ "x${DNS_subject}" = "x" ]; then
+  echo "no public DNS name given. exiting."
+  exit 1
+fi
+
+  read -p "
+
 Was this server deployed by Algo previously?
 [y/N]: " -r Deployed_By_Algo
 Deployed_By_Algo=${Deployed_By_Algo:-n}
@@ -603,7 +614,7 @@ Enter the password for the private CA key:
 $ADDITIONAL_PROMPT
 : " -rs easyrsa_CA_password
 
-ansible-playbook users.yml -e "server_ip=$server_ip server_user=$server_user ssh_tunneling_enabled=$ssh_tunneling_enabled IP_subject_alt_name=$IP_subject easyrsa_CA_password=$easyrsa_CA_password" -t update-users --skip-tags common
+ansible-playbook users.yml -e "server_ip=$server_ip server_user=$server_user ssh_tunneling_enabled=$ssh_tunneling_enabled DNS_subject_alt_name=$DNS_subject IP_subject_alt_name=$IP_subject easyrsa_CA_password=$easyrsa_CA_password" -t update-users --skip-tags common
 }
 
 case "$1" in
