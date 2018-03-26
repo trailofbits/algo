@@ -68,7 +68,7 @@
     shell: >
       {{ openssl_bin }} req -utf8 -new
       -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }}
-      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ DNS_subject_alt_name }},IP:{{ DNS_subject_alt_name }}"))
+      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ DNS_subject_alt_name }},IP:{{ IP_subject_alt_name }}"))
       -keyout private/{{ DNS_subject_alt_name }}.key
       -out reqs/{{ DNS_subject_alt_name }}.req -nodes
       -passin pass:"{{ easyrsa_CA_password }}"
@@ -76,7 +76,7 @@
       {{ openssl_bin }} ca -utf8
       -in reqs/{{ DNS_subject_alt_name }}.req
       -out certs/{{ DNS_subject_alt_name }}.crt
-      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ DNS_subject_alt_name }},IP:{{ DNS_subject_alt_name }}"))
+      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ DNS_subject_alt_name }},IP:{{ IP_subject_alt_name }}"))
       -days 3650 -batch
       -passin pass:"{{ easyrsa_CA_password }}"
       -subj "/CN={{ DNS_subject_alt_name }}" &&
