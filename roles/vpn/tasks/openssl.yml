@@ -3,13 +3,13 @@
 - block:
   - name: Ensure the pki directory does not exist
     file:
-      dest: configs/{{ IP_subject_alt_name }}/pki
+      dest: configs/{{ DNS_subject_alt_name }}/pki
       state: absent
     when: easyrsa_reinit_existent == True
 
   - name: Ensure the pki directories exist
     file:
-      dest: "configs/{{ IP_subject_alt_name }}/pki/{{ item }}"
+      dest: "configs/{{ DNS_subject_alt_name }}/pki/{{ item }}"
       state: directory
       recurse: yes
     with_items:
@@ -22,7 +22,7 @@
 
   - name: Ensure the files exist
     file:
-      dest: "configs/{{ IP_subject_alt_name }}/pki/{{ item }}"
+      dest: "configs/{{ DNS_subject_alt_name }}/pki/{{ item }}"
       state: touch
     with_items:
       - ".rnd"
@@ -34,56 +34,56 @@
   - name: Generate the openssl server configs
     template:
       src: openssl.cnf.j2
-      dest: "configs/{{ IP_subject_alt_name }}/pki/openssl.cnf"
+      dest: "configs/{{ DNS_subject_alt_name }}/pki/openssl.cnf"
 
   - name: Build the CA pair
     shell: >
       {{ openssl_bin }} ecparam -name prime256v1 -out ecparams/prime256v1.pem &&
       {{ openssl_bin }} req -utf8 -new
       -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }}
-      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ IP_subject_alt_name }},IP:{{ IP_subject_alt_name }}"))
+      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ DNS_subject_alt_name }},IP:{{ IP_subject_alt_name }}"))
       -keyout private/cakey.pem
       -out cacert.pem -x509 -days 3650
       -batch
       -passout pass:"{{ easyrsa_CA_password }}" &&
-      touch {{ IP_subject_alt_name }}_ca_generated
+      touch {{ DNS_subject_alt_name }}_ca_generated
     args:
-      chdir: "configs/{{ IP_subject_alt_name }}/pki/"
-      creates: "{{ IP_subject_alt_name }}_ca_generated"
+      chdir: "configs/{{ DNS_subject_alt_name }}/pki/"
+      creates: "{{ DNS_subject_alt_name }}_ca_generated"
       executable: bash
 
   - name: Copy the CA certificate
     copy:
-      src: "configs/{{ IP_subject_alt_name }}/pki/cacert.pem"
-      dest: "configs/{{ IP_subject_alt_name }}/cacert.pem"
+      src: "configs/{{ DNS_subject_alt_name }}/pki/cacert.pem"
+      dest: "configs/{{ DNS_subject_alt_name }}/cacert.pem"
       mode: 0600
 
   - name: Generate the serial number
     shell: echo 01 > serial && touch serial_generated
     args:
-      chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+      chdir: "configs/{{ DNS_subject_alt_name }}/pki/"
       creates: serial_generated
 
   - name: Build the server pair
     shell: >
       {{ openssl_bin }} req -utf8 -new
       -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }}
-      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ IP_subject_alt_name }},IP:{{ IP_subject_alt_name }}"))
-      -keyout private/{{ IP_subject_alt_name }}.key
-      -out reqs/{{ IP_subject_alt_name }}.req -nodes
+      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ DNS_subject_alt_name }},IP:{{ IP_subject_alt_name }}"))
+      -keyout private/{{ DNS_subject_alt_name }}.key
+      -out reqs/{{ DNS_subject_alt_name }}.req -nodes
       -passin pass:"{{ easyrsa_CA_password }}"
-      -subj "/CN={{ IP_subject_alt_name }}" -batch &&
+      -subj "/CN={{ DNS_subject_alt_name }}" -batch &&
       {{ openssl_bin }} ca -utf8
-      -in reqs/{{ IP_subject_alt_name }}.req
-      -out certs/{{ IP_subject_alt_name }}.crt
-      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ IP_subject_alt_name }},IP:{{ IP_subject_alt_name }}"))
+      -in reqs/{{ DNS_subject_alt_name }}.req
+      -out certs/{{ DNS_subject_alt_name }}.crt
+      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ DNS_subject_alt_name }},IP:{{ IP_subject_alt_name }}"))
       -days 3650 -batch
       -passin pass:"{{ easyrsa_CA_password }}"
-      -subj "/CN={{ IP_subject_alt_name }}" &&
-      touch certs/{{ IP_subject_alt_name }}_crt_generated
+      -subj "/CN={{ DNS_subject_alt_name }}" &&
+      touch certs/{{ DNS_subject_alt_name }}_crt_generated
     args:
-      chdir: "configs/{{ IP_subject_alt_name }}/pki/"
-      creates: certs/{{ IP_subject_alt_name }}_crt_generated
+      chdir: "configs/{{ DNS_subject_alt_name }}/pki/"
+      creates: certs/{{ DNS_subject_alt_name }}_crt_generated
       executable: bash
 
   - name: Build the client's pair
@@ -104,7 +104,7 @@
       -subj "/CN={{ item }}" &&
       touch certs/{{ item }}_crt_generated
     args:
-      chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+      chdir: "configs/{{ DNS_subject_alt_name }}/pki/"
       creates: certs/{{ item }}_crt_generated
       executable: bash
     with_items: "{{ users }}"
@@ -119,15 +119,15 @@
       -out private/{{ item }}.p12
       -passout pass:"{{ easyrsa_p12_export_password }}"
     args:
-      chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+      chdir: "configs/{{ DNS_subject_alt_name }}/pki/"
       executable: bash
     with_items: "{{ users }}"
     register: p12
 
   - name: Copy the p12 certificates
     copy:
-      src: "configs/{{ IP_subject_alt_name }}/pki/private/{{ item }}.p12"
-      dest: "configs/{{ IP_subject_alt_name }}/{{ item }}.p12"
+      src: "configs/{{ DNS_subject_alt_name }}/pki/private/{{ item }}.p12"
+      dest: "configs/{{ DNS_subject_alt_name }}/{{ item }}.p12"
       mode: 0600
     with_items:
       - "{{ users }}"
@@ -135,11 +135,11 @@
   - name: Get active users
     shell: >
       grep ^V index.txt |
-      grep -v "{{ IP_subject_alt_name }}" |
+      grep -v "{{ DNS_subject_alt_name }}" |
       awk '{print $5}' |
       sed 's/\/CN=//g'
     args:
-      chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+      chdir: "configs/{{ DNS_subject_alt_name }}/pki/"
     register: valid_certs
 
   - name: Revoke non-existing users
@@ -151,7 +151,7 @@
       -out crl/{{ item }}.crt
     register: gencrl
     args:
-      chdir: configs/{{ IP_subject_alt_name }}/pki/
+      chdir: configs/{{ DNS_subject_alt_name }}/pki/
       creates: crl/{{ item }}.crt
       executable: bash
     when: item not in users
@@ -160,21 +160,21 @@
   - name: Genereate new CRL file
     shell: >
       {{ openssl_bin }} ca -gencrl
-      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ IP_subject_alt_name }}"))
+      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ DNS_subject_alt_name }}"))
       -passin pass:"{{ easyrsa_CA_password }}"
       -out crl/algo.root.pem
     when:
       - gencrl is defined
       - gencrl.changed
     args:
-      chdir: configs/{{ IP_subject_alt_name }}/pki/
+      chdir: configs/{{ DNS_subject_alt_name }}/pki/
       executable: bash
   delegate_to: localhost
   become: no
 
 - name: Copy the CRL to the vpn server
   copy:
-    src: configs/{{ IP_subject_alt_name }}/pki/crl/algo.root.pem
+    src: configs/{{ DNS_subject_alt_name }}/pki/crl/algo.root.pem
     dest: "{{ config_prefix|default('/') }}etc/ipsec.d/crls/algo.root.pem"
   when:
     - gencrl is defined
