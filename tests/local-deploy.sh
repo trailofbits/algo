@@ -2,7 +2,7 @@
 
 set -e
 
-DEPLOY_ARGS="server_ip=$LXC_IP server_user=root IP_subject_alt_name=$LXC_IP local_dns=Y"
+DEPLOY_ARGS="server_ip=$LXC_IP server_user=root DNS_subject_alt_name=example.com IP_subject_alt_name=$LXC_IP local_dns=Y"
 
 if [ "${LXC_NAME}" == "docker" ]
 then
