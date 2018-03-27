@@ -52,7 +52,8 @@ install:
   - chmod 0644 ~/.ssh/config
   - sudo mkdir -vm 0700 $LXC_ROOTFS/root/.ssh/
   - sudo cp -v ~/.ssh/id_rsa.pub $LXC_ROOTFS/root/.ssh/authorized_keys
-  - sudo apt-get install build-essential libssl-dev libffi-dev python-dev && sudo pip install -r requirements.txt
+  - sudo apt-get install build-essential libssl-dev libffi-dev python-dev
+  - pip install -r requirements.txt
   - pip install ansible-lint
   - gem install awesome_bot
   - ansible-playbook --version
