@@ -88,7 +88,7 @@ no-resolv
 # You can control how dnsmasq talks to a server: this forces
 # queries to 10.1.2.3 to be routed via eth1
 # server=10.1.2.3@eth1
-{% for host in dns_servers.ipv4 %}
+{% for host in ansible_dns['nameservers']|default(dns_servers['ipv4']) %}
 server={{ host }}
 {% endfor %}
 
