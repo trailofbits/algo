@@ -23,7 +23,7 @@
   blockinfile:
     dest: configs/inventory.dynamic
     marker: "# {mark} ALGO MANAGED BLOCK"
-    create: yes
+    create: true
     block: |
       [algo:children]
       {% for group in cloud_providers.keys() %}
