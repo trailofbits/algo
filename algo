@@ -542,7 +542,7 @@ algo_provisioning () {
     5. Google Compute Engine
     6. Scaleway
     7. OpenStack (DreamCompute optimised)
-    8. Install to existing Ubuntu 16.04 server
+    8. Install to existing Ubuntu 16.04 server (Advanced)
 
 Enter the number of your desired provider
 : "
