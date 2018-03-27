@@ -21,6 +21,7 @@ addons:
     - expect-dev
     - debootstrap
     - shellcheck
+    - tree
 
 cache:
   directories:
@@ -54,6 +55,8 @@ install:
   - sudo apt-get install build-essential libssl-dev libffi-dev python-dev && sudo pip install -r requirements.txt
   - pip install ansible-lint
   - gem install awesome_bot
+  - ansible-playbook --version
+  - tree . -L 2
 
 script:
   # - awesome_bot --allow-dupe --skip-save-results *.md docs/*.md --white-list paypal.com,do.co,microsoft.com,https://github.com/trailofbits/algo/archive/master.zip,https://github.com/trailofbits/algo/issues/new
