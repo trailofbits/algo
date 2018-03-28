@@ -9,7 +9,6 @@
 
 - name: Set facts for mobileconfigs
   set_fact:
-    proxy_enabled: false
     PayloadContentCA: "{{ lookup('file' , 'configs/{{ IP_subject_alt_name }}/pki/cacert.pem')|b64encode }}"
 
 - name: Build the mobileconfigs
