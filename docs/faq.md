@@ -48,4 +48,4 @@ Algo is short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhe
 
 ## Can DNS filtering be disabled?
 
-There is no official way to disable DNS filtering, but there is a workaround [described here](https://github.com/trailofbits/algo/issues/838). SSH to your Algo server (using the 'shell access' command printed upon a successful deployment), edit `/etc/ipsec.conf`, and change `rightdns=172.16.0.1` to `rightdns=8.8.8.8`. Then run `ipsec restart`.
+There is no official way to disable DNS filtering, but there is a workaround: SSH to your Algo server (using the 'shell access' command printed upon a successful deployment), edit `/etc/ipsec.conf`, and change `rightdns=172.16.0.1` to `rightdns=8.8.8.8`. Then run `ipsec restart`. If all else fails, we recommend deploying a new Algo server without the adblocking feature enabled.
