@@ -8,6 +8,7 @@
 * [Why aren't you using Alpine Linux, OpenBSD, or HardenedBSD?](#why-arent-you-using-alpine-linux-openbsd-or-hardenedbsd)
 * [I deployed an Algo server. Can you update it with new features?](#i-deployed-an-algo-server-can-you-update-it-with-new-features)
 * [Where did the name "Algo" come from?](#where-did-the-name-algo-come-from)
+* [Can DNS filtering be disabled?](#can-dns-filtering-be-disabled)
 * [Wasn't IPSEC backdoored by the US government?](#wasnt-ipsec-backdoored-by-the-us-government)
 
 ## Has Algo been audited?
@@ -45,6 +46,10 @@ In the future, we will make it easier for users who want to update their own ser
 ## Where did the name "Algo" come from?
 
 Algo is short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhere for [inventing the Internet](https://www.youtube.com/watch?v=BnFJ8cHAlco).
+
+## Can DNS filtering be disabled?
+
+There is no official way to disable DNS filtering, but there is a workaround: SSH to your Algo server (using the 'shell access' command printed upon a successful deployment), edit `/etc/ipsec.conf`, and change `rightdns=172.16.0.1` to `rightdns=8.8.8.8`. Then run `ipsec restart`. If all else fails, we recommend deploying a new Algo server without the adblocking feature enabled.
 
 ## Wasn't IPSEC backdoored by the US government?
 
