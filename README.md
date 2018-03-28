@@ -56,7 +56,10 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
 
 4. **Install Algo's remaining dependencies.** Use the same Terminal window as the previous step and run:
     ```bash
-    $ python -m virtualenv --python=`which python2` env && source env/bin/activate && python -m pip install -U pip && python -m pip install -r requirements.txt
+    $ python -m virtualenv --python=`which python2` env &&
+        source env/bin/activate &&
+        python -m pip install -U pip &&
+        python -m pip install -r requirements.txt
     ```
     On macOS, you may be prompted to install `cc`. You should press accept if so.
 
@@ -98,9 +101,9 @@ No version of Android supports IKEv2. Install the [strongSwan VPN Client for And
 
 ### Windows 10
 
-Copy your PowerShell script `windows_{username}.ps1` and p12 certificate `{username}.p12` to the Windows client and run the following command as Administrator to configure the VPN connection.
+Copy your PowerShell script `windows_{username}.ps1` to the Windows client and run the following command as Administrator to configure the VPN connection.
 ```
-powershell -ExecutionPolicy ByPass -File windows_{username}.ps1 Add
+powershell -ExecutionPolicy ByPass -File windows_{username}.ps1 -Add
 ```
 
 For a manual installation, see the [Windows setup instructions](/docs/client-windows.md).

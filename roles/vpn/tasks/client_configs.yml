@@ -9,7 +9,6 @@
 
 - name: Set facts for mobileconfigs
   set_fact:
-    proxy_enabled: false
     PayloadContentCA: "{{ lookup('file' , 'configs/{{ IP_subject_alt_name }}/pki/cacert.pem')|b64encode }}"
 
 - name: Build the mobileconfigs
@@ -71,10 +70,12 @@
 - name: Build the windows client powershell script
   template:
     src: client_windows.ps1.j2
-    dest: configs/{{ IP_subject_alt_name }}/windows_{{ item }}.ps1
+    dest: configs/{{ IP_subject_alt_name }}/windows_{{ item.0 }}.ps1
     mode: 0600
   when: Win10_Enabled is defined and Win10_Enabled == "Y" or supports_windows.stat.exists == true
-  with_items: "{{ users }}"
+  with_together:
+    - "{{ users }}"
+    - "{{ PayloadContent.results }}"
 
 - name: Restrict permissions for the local private directories
   file:
