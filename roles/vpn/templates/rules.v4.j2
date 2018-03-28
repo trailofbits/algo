@@ -31,7 +31,6 @@ COMMIT
 # DUMMY interfaces are the proper way to install IPs without assigning them any
 # particular virtual (tun,tap,...) or physical (ethernet) interface.
 -A INPUT -d {{ local_service_ip }} -p udp --dport 53 -j ACCEPT
--A INPUT -d {{ local_service_ip }} -p tcp -m multiport --dport 8080,8118 -j ACCEPT
 {% if BetweenClients_DROP is defined and BetweenClients_DROP == "Y" %}
 -A FORWARD -s {{ vpn_network }} -d {{ vpn_network }} -j DROP
 {% endif %}
