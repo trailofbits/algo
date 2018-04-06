@@ -192,6 +192,7 @@ After this process completes, the Algo VPN server will contains only the users l
   - Setup [Generic/Linux](docs/client-linux.md) clients with Ansible
 * Cloud setup
   - Configure [Azure](docs/cloud-azure.md)
+  - Configure [DigitalOcean](cloud-do.md)
 * Advanced Deployment
   - Deploy to your own [FreeBSD](docs/deploy-to-freebsd.md) server
   - Deploy to your own [Ubuntu 16.04](docs/deploy-to-ubuntu.md) server
