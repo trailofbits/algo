@@ -2,7 +2,15 @@
 - name: Cloud only tasks
   block:
   - name: Install software updates
-    apt: update_cache=yes upgrade=dist
+    apt:
+      update_cache: true
+      install_recommends: true
+      upgrade: dist
+
+  - name: Upgrade the ca certificates
+    apt:
+      name: ca-certificates
+      state: latest
 
   - name: Check if reboot is required
     shell: >
