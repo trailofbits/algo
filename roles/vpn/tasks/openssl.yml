@@ -76,7 +76,7 @@
       {{ openssl_bin }} ca -utf8
       -in reqs/{{ IP_subject_alt_name }}.req
       -out certs/{{ IP_subject_alt_name }}.crt
-      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ IP_subject_alt_name }},IP:{{ IP_subject_alt_name }}"))
+      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ IP_subject_alt_name }}"))
       -days 3650 -batch
       -passin pass:"{{ easyrsa_CA_password }}"
       -subj "/CN={{ IP_subject_alt_name }}" &&
