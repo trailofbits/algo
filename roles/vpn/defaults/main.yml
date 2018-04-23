@@ -1,4 +1,7 @@
 ---
+ipv6_support: false
+domain: false
+subjectAltName_IP: "IP:{{ IP_subject_alt_name }}"
 openssl_bin: openssl
 strongswan_enabled_plugins:
   - aes
