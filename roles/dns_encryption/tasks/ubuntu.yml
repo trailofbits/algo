@@ -35,14 +35,14 @@
     owner: root
     group: root
 
-- name: Ubuntu | Setup the cgroup limitations for dnscrypt-proxy
-  copy:
-    dest: /etc/systemd/system/dnscrypt-proxy.service.d/100-CustomLimitations.conf
-    content: |
-      [Service]
-      MemoryLimit=16777216
-      CPUAccounting=true
-      CPUQuota=5%
-  notify:
-    - daemon-reload
-    - restart dnscrypt-proxy
+#- name: Ubuntu | Setup the cgroup limitations for dnscrypt-proxy
+#  copy:
+#    dest: /etc/systemd/system/dnscrypt-proxy.service.d/100-CustomLimitations.conf
+#    content: |
+#      [Service]
+#      MemoryLimit=16777216
+#      CPUAccounting=true
+#      CPUQuota=5%
+#  notify:
+#    - daemon-reload
+#    - restart dnscrypt-proxy
