@@ -1,0 +1,48 @@
+---
+- name: Add the repository
+  apt_repository:
+    state: present
+    codename: artful
+    repo: ppa:shevchuk/dnscrypt-proxy
+
+- name: Install dnscrypt-proxy
+  apt:
+    name: dnscrypt-proxy
+    state: latest
+    update_cache: true
+
+- block:
+  - name: Ubuntu | Unbound profile for apparmor configured
+    copy:
+      src: apparmor.profile.dnscrypt-proxy
+      dest: /etc/apparmor.d/usr.sbin.dnscrypt-proxy
+      owner: root
+      group: root
+      mode: 0600
+    notify: restart dnscrypt-proxy
+
+  - name: Ubuntu | Enforce the dnscrypt-proxy AppArmor policy
+    command: aa-enforce usr.sbin.dnscrypt-proxy
+    changed_when: false
+  tags: apparmor
+  when: apparmor_enabled|default(false)|bool == true
+
+- name: Ubuntu | Ensure that the dnscrypt-proxy service directory exist
+  file:
+    path: /etc/systemd/system/dnscrypt-proxy.service.d/
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
+
+- name: Ubuntu | Setup the cgroup limitations for dnscrypt-proxy
+  copy:
+    dest: /etc/systemd/system/dnscrypt-proxy.service.d/100-CustomLimitations.conf
+    content: |
+      [Service]
+      MemoryLimit=16777216
+      CPUAccounting=true
+      CPUQuota=5%
+  notify:
+    - daemon-reload
+    - restart dnscrypt-proxy

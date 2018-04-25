@@ -24,7 +24,7 @@
     line: "{{ item }}"
     insertbefore: BOF
   with_items:
-    - "options	IPSEC"
+    - "options IPSEC"
     - "options IPSEC_NAT_T"
     - "device	crypto"
   when: rebuild_needed is defined and rebuild_needed == true

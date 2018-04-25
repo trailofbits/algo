@@ -3,7 +3,7 @@
 
     - name: The DNS tag is defined
       set_fact:
-        local_dns: Y
+        local_dns: true
 
     - name: Dnsmasq installed
       package: name=dnsmasq

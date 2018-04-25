@@ -88,9 +88,13 @@ no-resolv
 # You can control how dnsmasq talks to a server: this forces
 # queries to 10.1.2.3 to be routed via eth1
 # server=10.1.2.3@eth1
+{% if dns_encryption|default(false)|bool == true %}
+server={{ local_service_ip }}#5353
+{% else %}
 {% for host in dns_servers.ipv4 %}
 server={{ host }}
 {% endfor %}
+{% endif %}
 
 # and this sets the source (ie local) address used to talk to
 # 10.1.2.3 to 192.168.1.1 port 55 (there must be a interface with that
@@ -660,7 +664,7 @@ bind-interfaces
 
 # Include another lot of configuration options.
 #conf-file=/etc/dnsmasq.more.conf
-conf-dir=/etc/dnsmasq.d
+conf-dir={{ config_prefix|default('/') }}etc/dnsmasq.d/,*.conf
 
 # Include all the files in a directory except those ending in .bak
 #conf-dir=/etc/dnsmasq.d,.bak
