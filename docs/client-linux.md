@@ -64,7 +64,7 @@ In this example we'll assume the IP of our Algo VPN server is `1.2.3.4` and the 
     * Certificate: `cacert.pem` found at `/path/to/algo/configs/1.2.3.4/cacert.pem`
   * Client:
     * Authentication: *Certificate/Private key*
-    * Certificate: `user-name.crt` found at `/path/to/algo/configs/1.2.3.4/pki/certs/user-name.crt` 
+    * Certificate: `user-name.crt` found at `/path/to/algo/configs/1.2.3.4/pki/certs/user-name.crt`
     * Private key: `user-name.key` found at `/path/to/algo/configs/1.2.3.4/pki/private/user-name.key`
   * Options:
     * Check *Request an inner IP address*, connection will fail without this option
