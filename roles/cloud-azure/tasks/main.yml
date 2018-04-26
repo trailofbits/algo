@@ -58,6 +58,12 @@
             access: Allow
             priority: 120
             direction: Inbound
+          - name: AllowWireGuard
+            protocol: Udp
+            destination_port_range: "{{ wireguard_port }}"
+            access: Allow
+            priority: 120
+            direction: Inbound
 
     - name: Create a subnet
       azure_rm_subnet:

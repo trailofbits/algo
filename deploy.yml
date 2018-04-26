@@ -65,6 +65,7 @@
   roles:
     - { role: dns_adblocking, tags: [ 'dns', 'adblock' ] }
     - { role: ssh_tunneling, tags: [ 'ssh_tunneling' ] }
+    - { role: wireguard, tags: [ 'vpn', 'wireguard' ], when: wireguard_enabled }
     - { role: vpn, tags: [ 'vpn' ] }
 
   post_tasks:

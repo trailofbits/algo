@@ -1,3 +1,13 @@
+## 30 Apr 2018
+### Added
+- WireGuard support
+
+### Removed
+- Android StrongSwan profiles
+
+### Release notes
+- StrongSwan profiles for Android are deprecated now. Use WireGuard
+
 ## 25 Apr 2018
 ### Added
 - DNScrypt-proxy added

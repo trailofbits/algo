@@ -102,6 +102,7 @@
       - iptables-persistent
       - cgroup-tools
       - openssl
+      - resolvconf
     sysctl:
       - item: net.ipv4.ip_forward
         value: 1

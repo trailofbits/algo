@@ -1,0 +1,18 @@
+[Interface]
+Address = {{ wireguard_network_ipv4['subnet'] }}/{{ wireguard_network_ipv4['prefix'] }}{% if ipv6_support %},{{ wireguard_network_ipv6['gateway'] }}/{{ wireguard_network_ipv6['prefix'] }}
+{% endif %}
+
+DNS = {{ local_service_ip }}
+ListenPort = {{ wireguard_port }}
+PrivateKey = {{ lookup('file', wireguard_config_path + '/private/' + IP_subject_alt_name) }}
+SaveConfig = false
+Table = off
+
+{% for u in users %}
+
+[Peer]
+# {{ u }}
+PublicKey = {{ lookup('file', wireguard_config_path + '/public/' + u) }}
+AllowedIPs = {{ wireguard_network_ipv4['clients_range'] }}.{{ wireguard_network_ipv4['clients_start'] + loop.index }}/32{% if ipv6_support %},{{ wireguard_network_ipv6['clients_range'] }}{{ wireguard_network_ipv6['clients_start'] + loop.index }}/128
+{% endif %}
+{% endfor %}

@@ -97,7 +97,7 @@ Certificates and configuration files that users will need are placed in the `con
 
 ### Android Devices
 
-No version of Android supports IKEv2. Install the [strongSwan VPN Client for Android 4 and newer](https://play.google.com/store/apps/details?id=org.strongswan.android). Import the corresponding user.p12 certificate to your device. See the [Android setup instructions](/docs/client-android.md) for more a more detailed walkthrough.
+No version of Android supports IKEv2. Install the [WireGuard VPN Client for Android 4 and newer](https://play.google.com/store/apps/details?id=com.wireguard.android). Import the corresponding user.conf config to your device. See the [Android setup instructions](/docs/client-android.md) for more detailed walkthrough.
 
 ### Windows 10
 

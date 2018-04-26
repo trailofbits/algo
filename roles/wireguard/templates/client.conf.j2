@@ -1,0 +1,10 @@
+[Interface]
+PrivateKey = {{ lookup('file', wireguard_config_path + '/private/' + item.1) }}
+Address = {{ wireguard_network_ipv4['clients_range'] }}.{{ wireguard_network_ipv4['clients_start'] + item.0 + 1 }}/32{% if ipv6_support %},{{ wireguard_network_ipv6['clients_range'] }}{{ wireguard_network_ipv6['clients_start'] + item.0 + 1 }}/{{ wireguard_network_ipv6['prefix'] }}
+{% endif %}
+DNS = {{ local_service_ip }}
+
+[Peer]
+PublicKey = {{ lookup('file', wireguard_config_path + '/public/' + IP_subject_alt_name) }}
+AllowedIPs = 0.0.0.0/0, ::/0
+Endpoint = {{ IP_subject_alt_name }}:{{ wireguard_port }}

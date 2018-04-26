@@ -1,0 +1,53 @@
+---
+- name: WireGuard repository configured
+  apt_repository:
+    repo: ppa:wireguard/wireguard
+    state: present
+
+- name: WireGuard installed
+  apt:
+    name: wireguard
+    state: present
+    update_cache: true
+
+- block:
+  - name: Ensure the required directories exist
+    file:
+      dest: "{{ wireguard_config_path }}/{{ item }}"
+      state: directory
+      recurse: true
+    with_items:
+      - private
+      - public
+  delegate_to: localhost
+  become: no
+
+- name: Generate keys
+  import_tasks: keys.yml
+  tags: update-users
+
+- name: WireGuard configured
+  template:
+    src: server.conf.j2
+    dest: "/etc/wireguard/{{ wireguard_interface }}.conf"
+    mode: "0600"
+  notify: restart wireguard
+  tags: update-users
+
+- name: WireGuard users config generated
+  template:
+    src: client.conf.j2
+    dest: "{{ wireguard_config_path }}/{{ item.1 }}.conf"
+    mode: "0600"
+  with_indexed_items: "{{ users }}"
+  tags: update-users
+  delegate_to: localhost
+  become: false
+
+- name: WireGuard enabled and started
+  service:
+    name: "wg-quick@{{ wireguard_interface }}"
+    state: started
+    enabled: true
+
+- meta: flush_handlers
