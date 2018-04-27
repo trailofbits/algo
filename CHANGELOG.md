@@ -1,3 +1,8 @@
+## 25 Apr 2018
+### Added
+- DNScrypt-proxy added
+- Switched to CloudFlare DNS-over-HTTPS by default
+
 ## 19 Apr 2018
 ### Added
 - IPv6 in subjectAltName of the certificates. This allows connecting to the Algo instance via the main IPv6 address
