@@ -34,7 +34,7 @@
     force: true
   with_items: "{{ dnscrypt_proxy_latest['json']['assets'] }}"
   no_log: true
-  when: '"freebsd_amd64" in item.name'
+  when: '"freebsd_amd64" in item.name and not item.name.endswith("minisig")'
   notify: restart dnscrypt-proxy
 
 - name: FreeBSD | Extract the latest archive
