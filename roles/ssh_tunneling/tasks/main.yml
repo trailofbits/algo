@@ -88,7 +88,7 @@
       shell: >
         getent group algo | cut -f4 -d: | sed "s/,/\n/g"
       register: valid_users
-      when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
+      when: ssh_tunneling
 
     - name: SSH | Delete non-existing users
       user:
@@ -96,7 +96,7 @@
         state: absent
         remove: yes
         force: yes
-      when: item not in users and ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
+      when: item not in users and ssh_tunneling
       with_items: "{{ valid_users.stdout_lines | default('null') }}"
   rescue:
     - debug: var=fail_hint

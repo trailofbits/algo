@@ -1,7 +1,9 @@
 ---
-listen_port: "{% if local_dns|d(false)|bool == true %}5353{% else %}53{% endif %}"
+local_dns: false
+listen_port: "{% if local_dns %}5353{% else %}53{% endif %}"
 # the version used if the latest unavailable (in case of Github API rate limited)
 dnscrypt_proxy_version: 2.0.10
 apparmor_enabled: true
 dns_encryption: true
 dns_encryption_provider: "*"
+ipv6_support: false

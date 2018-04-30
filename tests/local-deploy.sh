@@ -2,7 +2,7 @@
 
 set -ex
 
-DEPLOY_ARGS="server_ip=$LXC_IP server_user=ubuntu IP_subject_alt_name=$LXC_IP local_dns=true dns_over_https=true apparmor_enabled=false"
+DEPLOY_ARGS="{server_ip: $LXC_IP, server_user: ubuntu, IP_subject_alt_name: $LXC_IP, local_dns: true, dns_over_https: true, apparmor_enabled: false, ssh_tunneling: true}"
 
 if [ "${LXC_NAME}" == "docker" ]
 then

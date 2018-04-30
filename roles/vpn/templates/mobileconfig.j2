@@ -7,12 +7,12 @@
         <dict>
             <key>IKEv2</key>
             <dict>
-{% if (OnDemandEnabled_WIFI is defined and OnDemandEnabled_WIFI == 'Y') or (OnDemandEnabled_Cellular is defined and OnDemandEnabled_Cellular == 'Y') %}
+{% if OnDemandEnabled_WIFI or OnDemandEnabled_Cellular %}
               <key>OnDemandEnabled</key>
                 <integer>1</integer>
               <key>OnDemandRules</key>
               <array>
-{% if OnDemandEnabled_WIFI_EXCLUDE is defined and OnDemandEnabled_WIFI_EXCLUDE != '_null' %}
+{% if OnDemandEnabled_WIFI_EXCLUDE != '_null' %}
 {% set WIFI_EXCLUDE_LIST = OnDemandEnabled_WIFI_EXCLUDE.split(',') %}
                   <dict>
                       <key>Action</key>
@@ -30,7 +30,7 @@
 {% endif %}
                   <dict>
                     <key>Action</key>
-{% if OnDemandEnabled_WIFI is defined and OnDemandEnabled_WIFI == 'Y' %}
+{% if OnDemandEnabled_WIFI %}
                       <string>Connect</string>
   {% else %}
                       <string>Disconnect</string>
@@ -42,7 +42,7 @@
                   </dict>
                   <dict>
                     <key>Action</key>
-{% if OnDemandEnabled_Cellular is defined and OnDemandEnabled_Cellular == 'Y' %}
+{% if OnDemandEnabled_Cellular %}
                       <string>Connect</string>
   {% else %}
                       <string>Disconnect</string>

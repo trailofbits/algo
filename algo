@@ -22,53 +22,51 @@ additional_roles () {
 read -p "
 Do you want macOS/iOS clients to enable \"VPN On Demand\" when connected to cellular networks?
 [y/N]: " -r OnDemandEnabled_Cellular
-OnDemandEnabled_Cellular=${OnDemandEnabled_Cellular:-n}
-if [[ "$OnDemandEnabled_Cellular" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" OnDemandEnabled_Cellular=Y"; fi
+OnDemandEnabled_Cellular=${OnDemandEnabled_Cellular:-false}
+if [[ "$OnDemandEnabled_Cellular" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=", OnDemandEnabled_Cellular: true"; fi
 
 read -p "
 Do you want macOS/iOS clients to enable \"VPN On Demand\" when connected to Wi-Fi?
 [y/N]: " -r OnDemandEnabled_WIFI
-OnDemandEnabled_WIFI=${OnDemandEnabled_WIFI:-n}
-if [[ "$OnDemandEnabled_WIFI" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" OnDemandEnabled_WIFI=Y"; fi
+OnDemandEnabled_WIFI=${OnDemandEnabled_WIFI:-false}
+if [[ "$OnDemandEnabled_WIFI" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=", OnDemandEnabled_WIFI: true"; fi
 
 if [[ "$OnDemandEnabled_WIFI" =~ ^(y|Y)$ ]]; then
   read -p "
 List the names of trusted Wi-Fi networks (if any) that macOS/iOS clients exclude from using the VPN (e.g., your home network. Comma-separated value, e.g., HomeNet,OfficeWifi,AlgoWiFi)
 : " -r OnDemandEnabled_WIFI_EXCLUDE
   OnDemandEnabled_WIFI_EXCLUDE=${OnDemandEnabled_WIFI_EXCLUDE:-_null}
-  EXTRA_VARS+=" OnDemandEnabled_WIFI_EXCLUDE=\"$OnDemandEnabled_WIFI_EXCLUDE\""
+  EXTRA_VARS+=", OnDemandEnabled_WIFI_EXCLUDE: \"$OnDemandEnabled_WIFI_EXCLUDE\""
 fi
 
 read -p "
 Do you want to install a DNS resolver on this VPN server, to block ads while surfing?
 [y/N]: " -r dns_enabled
 dns_enabled=${dns_enabled:-n}
-if [[ "$dns_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" dns"; EXTRA_VARS+=" local_dns=true"; fi
+if [[ "$dns_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" dns"; EXTRA_VARS+=", local_dns: true"; fi
 
 read -p "
 Do you want each user to have their own account for SSH tunneling?
-[y/N]: " -r ssh_tunneling_enabled
-ssh_tunneling_enabled=${ssh_tunneling_enabled:-n}
-if [[ "$ssh_tunneling_enabled" =~ ^(y|Y)$ ]]; then ROLES+=" ssh_tunneling"; fi
+[y/N]: " -r ssh_tunneling
+ssh_tunneling=${ssh_tunneling:-false}
+if [[ "$ssh_tunneling" =~ ^(y|Y)$ ]]; then ROLES+=" ssh_tunneling"; EXTRA_VARS+=", ssh_tunneling: true"; fi
 
 read -p "
 Do you want the VPN to support Windows 10 or Linux Desktop clients? (enables compatible ciphers and key exchange, less secure)
 [y/N]: " -r Win10_Enabled
-Win10_Enabled=${Win10_Enabled:-n}
-if [[ "$Win10_Enabled" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" Win10_Enabled=Y"; fi
+Win10_Enabled=${Win10_Enabled:-false}
+if [[ "$Win10_Enabled" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=", Win10_Enabled: true"; fi
 
 read -p "
 Do you want to retain the CA key? (required to add users in the future, but less secure)
 [y/N]: " -r Store_CAKEY
-Store_CAKEY=${Store_CAKEY:-N}
-if [[ "$Store_CAKEY" =~ ^(n|N)$ ]]; then EXTRA_VARS+=" Store_CAKEY=N"; fi
+Store_CAKEY=${Store_CAKEY:-false}
+if [[ "$Store_CAKEY" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=", Store_CAKEY: true"; fi
 
 }
 
 deploy () {
-
-  ansible-playbook deploy.yml -t "${ROLES// /,}" -e "${EXTRA_VARS}" --skip-tags "${SKIP_TAGS// /,}"
-
+  ansible-playbook deploy.yml -t "${ROLES// /,}" -e "{${EXTRA_VARS}}" --skip-tags "${SKIP_TAGS// /,}"
 }
 
 azure () {
@@ -181,7 +179,7 @@ Enter the number of your desired region:
   esac
 
   ROLES="azure vpn cloud"
-  EXTRA_VARS="azure_secret=$azure_secret azure_tenant=$azure_tenant azure_client_id=$azure_client_id azure_subscription_id=$azure_subscription_id azure_server_name=$azure_server_name ssh_public_key=$ssh_public_key region=$region"
+  EXTRA_VARS="azure_secret: $azure_secret, azure_tenant: $azure_tenant, azure_client_id: $azure_client_id, azure_subscription_id: $azure_subscription_id, azure_server_name: $azure_server_name ssh_public_key: $ssh_public_key, region: $region"
 }
 
 digitalocean () {
@@ -232,7 +230,7 @@ Enter the number of your desired region:
   esac
 
 ROLES="digitalocean vpn cloud"
-EXTRA_VARS="do_access_token=$do_access_token do_server_name=$do_server_name do_region=$do_region"
+EXTRA_VARS="do_access_token: $do_access_token, do_server_name: $do_server_name, do_region: $do_region"
 }
 
 ec2 () {
@@ -298,7 +296,7 @@ Enter the number of your desired region:
   esac
 
   ROLES="ec2 vpn cloud"
-  EXTRA_VARS="aws_access_key=$aws_access_key aws_secret_key=$aws_secret_key aws_server_name=$aws_server_name region=$region"
+  EXTRA_VARS="aws_access_key: $aws_access_key, aws_secret_key: $aws_secret_key, aws_server_name: $aws_server_name, region: $region"
 }
 
 lightsail () {
@@ -356,7 +354,7 @@ algo_region=${algo_region:-1}
   esac
 
   ROLES="lightsail vpn cloud"
-	EXTRA_VARS="aws_access_key=$aws_access_key aws_secret_key=$aws_secret_key algo_server_name=$algo_server_name region=$region"
+	EXTRA_VARS="aws_access_key: $aws_access_key, aws_secret_key: $aws_secret_key, algo_server_name: $algo_server_name, region: $region"
 }
 
 scaleway () {
@@ -392,7 +390,7 @@ algo_region=${algo_region:-1}
   esac
 
   ROLES="scaleway vpn cloud"
-  EXTRA_VARS="scaleway_auth_token=$scaleway_auth_token scaleway_organization=\"$scaleway_organization\" algo_server_name=$algo_server_name algo_region=$region"
+  EXTRA_VARS="scaleway_auth_token: $scaleway_auth_token, scaleway_organization: \"$scaleway_organization\", algo_server_name: $algo_server_name, algo_region: $region"
 }
 
 openstack () {
@@ -407,7 +405,7 @@ Name the vpn server:
   algo_server_name=${algo_server_name:-algo.local}
 
   ROLES="openstack vpn cloud"
-  EXTRA_VARS="algo_server_name=$algo_server_name"
+  EXTRA_VARS="algo_server_name: $algo_server_name"
   source $os_rc
 }
 
@@ -506,7 +504,7 @@ Please choose the number of your zone. Press enter for default (#14) zone.
   esac
 
   ROLES="gce vpn cloud"
-  EXTRA_VARS="credentials_file=$credentials_file gce_server_name=$server_name ssh_public_key=$ssh_public_key zone=$zone max_mss=1316"
+  EXTRA_VARS="credentials_file: $credentials_file, gce_server_name: $server_name, ssh_public_key: $ssh_public_key, zone: $zone, max_mss: 1316"
 }
 
 non_cloud () {
@@ -539,16 +537,8 @@ if [ "x${IP_subject}" = "x" ]; then
 fi
 
   ROLES="local vpn"
-  EXTRA_VARS="server_ip=$server_ip server_user=$server_user IP_subject_alt_name=$IP_subject"
+  EXTRA_VARS="server_ip: $server_ip, server_user: $server_user, IP_subject_alt_name: $IP_subject"
   SKIP_TAGS+=" cloud update-alternatives"
-
-  read -p "
-
-Was this server deployed by Algo previously?
-[y/N]: " -r Deployed_By_Algo
-Deployed_By_Algo=${Deployed_By_Algo:-n}
-if [[ "$Deployed_By_Algo" =~ ^(y|Y)$ ]]; then EXTRA_VARS+=" Deployed_By_Algo=Y"; fi
-
 }
 
 algo_provisioning () {
@@ -585,44 +575,16 @@ Enter the number of your desired provider
 }
 
 user_management () {
-
   read -p "
 Enter the IP address of your server: (or use localhost for local installation)
 : " -r server_ip
-
-  read -p "
-What user should we use to login on the server? (note: passwordless login required, or ignore if you're deploying to localhost)
-[root]: " -r server_user
-  server_user=${server_user:-root}
-
-read -p "
-Do you want each user to have their own account for SSH tunneling?
-[y/N]: " -r ssh_tunneling_enabled
-ssh_tunneling_enabled=${ssh_tunneling_enabled:-n}
-
-if [ "x${server_ip}" = "xlocalhost" ]; then
-	myip=""
-else
-	myip=${server_ip}
-fi
-
-read -p "
-
-Enter the public IP address of your server: (IMPORTANT! This IP is used to verify the certificate)
-[$myip]: " -r IP_subject
-IP_subject=${IP_subject:-$myip}
-
-if [ "x${IP_subject}" = "x" ]; then
-echo "no server IP given. exiting."
-exit 1
-fi
 
   read -p "
 Enter the password for the private CA key:
 $ADDITIONAL_PROMPT
 : " -rs easyrsa_CA_password
 
-ansible-playbook users.yml -e "server_ip=$server_ip server_user=$server_user ssh_tunneling_enabled=$ssh_tunneling_enabled IP_subject_alt_name=$IP_subject easyrsa_CA_password=$easyrsa_CA_password" -t update-users --skip-tags common
+ansible-playbook users.yml -e "server_ip=$server_ip easyrsa_CA_password=$easyrsa_CA_password" -t update-users --skip-tags common
 }
 
 case "$1" in
