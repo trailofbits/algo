@@ -1,4 +1,5 @@
 setuptools>=11.3
+SecretStorage < 3
 ansible[azure]==2.4.3
 dopy==0.3.5
 boto>=2.5
