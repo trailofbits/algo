@@ -1,4 +1,26 @@
 ---
+- block:
+  - name: Ubuntu | Install prerequisites
+    apt:
+      name: "{{ item }}"
+      update_cache: true
+    with_items:
+      - python2.7
+      - sudo
+
+  - name: Ubuntu | Configure defaults
+    alternatives:
+      name: python
+      link: /usr/bin/python
+      path: /usr/bin/python2.7
+      priority: 1
+    tags:
+      - update-alternatives
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+- setup:
+
 - name: Cloud only tasks
   block:
   - name: Install software updates
@@ -38,7 +60,7 @@
     become: false
 
   - name: Include unatteded upgrades configuration
-    include_tasks: unattended-upgrades.yml
+    import_tasks: unattended-upgrades.yml
 
   - name: Disable MOTD on login and SSHD
     replace: dest="{{ item.file }}" regexp="{{ item.regexp }}" replace="{{ item.line }}"
@@ -99,5 +121,12 @@
         value: 1
       - item: net.ipv6.conf.all.forwarding
         value: 1
+  tags:
+    - always
+
+- name: Install tools
+  package: name="{{ item }}" state=present
+  with_items:
+    - "{{ tools|default([]) }}"
   tags:
     - always

@@ -1,0 +1,45 @@
+---
+- name: Set subjectAltName as afact
+  set_fact:
+    IP_subject_alt_name: "{% if algo_provider == 'local' %}{{ IP_subject_alt_name }}{% else %}{{ cloud_instance_ip }}{% endif %}"
+
+- name: Add the droplet to an inventory group
+  add_host:
+    name: "{% if cloud_instance_ip == 'localhost' %}localhost{% else %}{{ cloud_instance_ip }}{% endif %}"
+    groups: vpn-host
+    ansible_connection: "{% if cloud_instance_ip == 'localhost' %}local{% else %}ssh{% endif %}"
+    ansible_ssh_user: "{{ ansible_ssh_user }}"
+    ansible_python_interpreter: "/usr/bin/python2.7"
+    algo_provider: "{{ algo_provider }}"
+    algo_server_name: "{{ algo_server_name }}"
+    algo_ondemand_cellular: "{{ algo_ondemand_cellular }}"
+    algo_ondemand_wifi: "{{ algo_ondemand_wifi }}"
+    algo_ondemand_wifi_exclude: "{{ algo_ondemand_wifi_exclude }}"
+    algo_local_dns: "{{ algo_local_dns }}"
+    algo_ssh_tunneling: "{{ algo_ssh_tunneling }}"
+    algo_windows: "{{ algo_windows }}"
+    algo_store_cakey: "{{ algo_store_cakey }}"
+    IP_subject_alt_name: "{{ IP_subject_alt_name }}"
+
+- name: Additional variables for the droplet
+  add_host:
+    name: "{% if cloud_instance_ip == 'localhost' %}localhost{% else %}{{ cloud_instance_ip }}{% endif %}"
+    ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
+  when: algo_provider != 'local'
+
+- name: Wait until SSH becomes ready...
+  wait_for:
+    port: 22
+    host: "{{ cloud_instance_ip }}"
+    search_regex: "OpenSSH"
+    delay: 10
+    timeout: 320
+    state: present
+  when: cloud_instance_ip != "localhost"
+
+- debug:
+    var: IP_subject_alt_name
+    
+- name: A short pause, in order to be sure the instance is ready
+  pause:
+    seconds: 20

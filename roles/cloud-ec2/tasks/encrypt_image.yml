@@ -1,20 +1,14 @@
+---
 - name: Check if the encrypted image already exist
-  ec2_ami_find:
+  ec2_ami_facts:
     aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'), true)}}"
     aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true)}}"
-    owner: self
-    sort: creationDate
-    sort_order: descending
-    sort_end: 1
-    state: available
-    ami_tags:
-      Algo: "encrypted"
-    region: "{{ region }}"
+    owners: self
+    region: "{{ algo_region }}"
+    filters:
+      state: available
+      "tag:Algo": encrypted
   register: search_crypt
-
-- set_fact:
-    ami_image: "{{ search_crypt.results[0].ami_id }}"
-  when: search_crypt.results
 
 - name: Copy to an encrypted image
   ec2_ami_copy:
@@ -23,15 +17,11 @@
     encrypted: yes
     name: algo
     kms_key_id: "{{ kms_key_id | default(omit) }}"
-    region: "{{ region }}"
-    source_image_id: "{{ ami_image }}"
-    source_region: "{{ region }}"
+    region: "{{ algo_region }}"
+    source_image_id: "{{ (ami_search.images | sort(attribute='creation_date') | last)['image_id'] }}"
+    source_region: "{{ algo_region }}"
+    wait: true
     tags:
       Algo: "encrypted"
-    wait: true
-  register: enc_image
-  when: not search_crypt.results
-
-- set_fact:
-    ami_image: "{{ enc_image.image_id }}"
-  when: not search_crypt.results
+  register: ami_search_encrypted
+  when: search_crypt.images|length|int == 0

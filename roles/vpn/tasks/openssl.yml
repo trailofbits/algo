@@ -49,7 +49,7 @@
       -keyout private/cakey.pem
       -out cacert.pem -x509 -days 3650
       -batch
-      -passout pass:"{{ easyrsa_CA_password }}" &&
+      -passout pass:"{{ CA_password }}" &&
       touch {{ IP_subject_alt_name }}_ca_generated
     args:
       chdir: "configs/{{ IP_subject_alt_name }}/pki/"
@@ -75,14 +75,14 @@
       -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName }}"))
       -keyout private/{{ IP_subject_alt_name }}.key
       -out reqs/{{ IP_subject_alt_name }}.req -nodes
-      -passin pass:"{{ easyrsa_CA_password }}"
+      -passin pass:"{{ CA_password }}"
       -subj "/CN={{ IP_subject_alt_name }}" -batch &&
       {{ openssl_bin }} ca -utf8
       -in reqs/{{ IP_subject_alt_name }}.req
       -out certs/{{ IP_subject_alt_name }}.crt
       -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName }}"))
       -days 3650 -batch
-      -passin pass:"{{ easyrsa_CA_password }}"
+      -passin pass:"{{ CA_password }}"
       -subj "/CN={{ IP_subject_alt_name }}" &&
       touch certs/{{ IP_subject_alt_name }}_crt_generated
     args:
@@ -97,14 +97,14 @@
       -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ item }}"))
       -keyout private/{{ item }}.key
       -out reqs/{{ item }}.req -nodes
-      -passin pass:"{{ easyrsa_CA_password }}"
+      -passin pass:"{{ CA_password }}"
       -subj "/CN={{ item }}" -batch &&
       {{ openssl_bin }} ca -utf8
       -in reqs/{{ item }}.req
       -out certs/{{ item }}.crt
       -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ item }}"))
       -days 3650 -batch
-      -passin pass:"{{ easyrsa_CA_password }}"
+      -passin pass:"{{ CA_password }}"
       -subj "/CN={{ item }}" &&
       touch certs/{{ item }}_crt_generated
     args:
@@ -121,7 +121,7 @@
       -export
       -name {{ item }}
       -out private/{{ item }}.p12
-      -passout pass:"{{ easyrsa_p12_export_password }}"
+      -passout pass:"{{ p12_export_password }}"
     args:
       chdir: "configs/{{ IP_subject_alt_name }}/pki/"
       executable: bash
@@ -150,7 +150,7 @@
     shell: >
       {{ openssl_bin }} ca -gencrl
       -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ item }}"))
-      -passin pass:"{{ easyrsa_CA_password }}"
+      -passin pass:"{{ CA_password }}"
       -revoke certs/{{ item }}.crt
       -out crl/{{ item }}.crt
     register: gencrl
@@ -165,7 +165,7 @@
     shell: >
       {{ openssl_bin }} ca -gencrl
       -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ IP_subject_alt_name }}"))
-      -passin pass:"{{ easyrsa_CA_password }}"
+      -passin pass:"{{ CA_password }}"
       -out crl/algo.root.pem
     when:
       - gencrl is defined

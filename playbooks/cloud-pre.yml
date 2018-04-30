@@ -1,0 +1,13 @@
+---
+- name: Generate the SSH private key
+  openssl_privatekey:
+    path: "{{ SSH_keys.private }}"
+    size: 2048
+    mode: "0600"
+    type: RSA
+
+- name: Generate the SSH public key
+  openssl_publickey:
+    path: "{{ SSH_keys.public }}"
+    privatekey_path: "{{ SSH_keys.private }}"
+    format: OpenSSH

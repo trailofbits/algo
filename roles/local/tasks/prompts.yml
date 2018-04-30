@@ -1,0 +1,35 @@
+---
+- pause:
+    prompt: |
+      Enter the IP address of your server: (or use localhost for local installation):
+  register: _algo_server
+  when: server is undefined
+
+- pause:
+    prompt: |
+      What user should we use to login on the server? (note: passwordless login required, or ignore if you're deploying to localhost)
+      [root]
+  register: _algo_ssh_user
+  when: ssh_user is undefined
+
+- name: Set the facts
+  set_fact:
+    cloud_instance_ip: "{{ server | default(_algo_server.user_input) }}"
+    ansible_ssh_user: >-
+      {% if ssh_user is defined %}{{ ssh_user }}
+      {%- elif _algo_ssh_user.user_input is defined and _algo_ssh_user.user_input != "" %}{{ _algo_ssh_user.user_input }}
+      {%- else %}root{% endif %}
+
+- pause:
+    prompt: |
+      Enter the public IP address of your server: (IMPORTANT! This IP is used to verify the certificate)
+      [{{ cloud_instance_ip }}]
+  register: _endpoint
+  when: endpoint is undefined
+
+- name: Set the facts
+  set_fact:
+    IP_subject_alt_name: >-
+      {% if endpoint is defined %}{{ endpoint }}
+      {%- elif _endpoint.user_input is defined and _endpoint.user_input != "" %}{{ _endpoint.user_input }}
+      {%- else %}{{ cloud_instance_ip }}{% endif %}

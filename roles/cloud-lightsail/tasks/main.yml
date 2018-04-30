@@ -1,8 +1,6 @@
 - block:
-  - set_fact:
-      access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'), true) }}"
-      secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true) }}"
-      region: "{{ algo_region | default(lookup('env','AWS_DEFAULT_REGION'), true) }}"
+  - name: Include prompts
+    import_tasks: prompts.yml
 
   - name: Create an instance
     lightsail:
@@ -10,8 +8,8 @@
       aws_secret_key: "{{ secret_key }}"
       name: "{{ algo_server_name }}"
       state: present
-      region: "{{ region }}"
-      zone: "{{ region }}a"
+      region: "{{ algo_region }}"
+      zone: "{{ algo_region }}a"
       blueprint_id: "{{ cloud_providers.lightsail.image }}"
       bundle_id: "{{ cloud_providers.lightsail.size }}"
       wait_timeout: 300
@@ -37,15 +35,7 @@
 
   - set_fact:
       cloud_instance_ip: "{{ algo_instance['instance']['public_ip_address'] }}"
-
-  - name: Add new instance to host group
-    add_host:
-      hostname: "{{ cloud_instance_ip }}"
-      groupname: vpn-host
       ansible_ssh_user: ubuntu
-      ansible_python_interpreter: "/usr/bin/python2.7"
-      ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
-      cloud_provider: lightsail
 
   rescue:
   - debug: var=fail_hint

@@ -2,12 +2,11 @@
 
 set -ex
 
-DEPLOY_ARGS="server_ip=$LXC_IP server_user=ubuntu IP_subject_alt_name=$LXC_IP local_dns=true dns_over_https=true apparmor_enabled=false install_headers=false"
-touch /tmp/ca_password
+DEPLOY_ARGS="provider=local server=$LXC_IP ssh_user=ubuntu endpoint=$LXC_IP apparmor_enabled=false ondemand_cellular=true ondemand_wifi=true ondemand_wifi_exclude=test local_dns=true ssh_tunneling=true windows=true store_cakey=true install_headers=false tests=true"
 
 if [ "${LXC_NAME}" == "docker" ]
 then
-  docker run -it -v /tmp/ca_password:/tmp/ca_password -v $(pwd)/config.cfg:/algo/config.cfg -v ~/.ssh:/root/.ssh -v $(pwd)/configs:/algo/configs -e "DEPLOY_ARGS=${DEPLOY_ARGS}" travis/algo /bin/sh -c "chown -R 0:0 /root/.ssh && source env/bin/activate && ansible-playbook deploy.yml -t cloud,local,vpn,dns,ssh_tunneling,security,tests,dns_over_https -e \"${DEPLOY_ARGS}\" --skip-tags apparmor"
+  docker run -it -v $(pwd)/config.cfg:/algo/config.cfg -v ~/.ssh:/root/.ssh -v $(pwd)/configs:/algo/configs -e "DEPLOY_ARGS=${DEPLOY_ARGS}" travis/algo /bin/sh -c "chown -R 0:0 /root/.ssh && source env/bin/activate && ansible-playbook main.yml -e \"${DEPLOY_ARGS}\" --skip-tags apparmor"
 else
-  ansible-playbook deploy.yml -t cloud,local,vpn,dns,dns_over_https,ssh_tunneling,tests -e "${DEPLOY_ARGS}" --skip-tags apparmor
+  ansible-playbook main.yml -e "${DEPLOY_ARGS}" --skip-tags apparmor
 fi

@@ -1,7 +1,13 @@
 - block:
+    - name: Include prompts
+      import_tasks: prompts.yml
+
     - name: Set the DigitalOcean Access Token fact
       set_fact:
-        do_token: "{{ do_access_token | default(lookup('env','DO_API_TOKEN'), true) }}"
+        algo_do_region: >-
+          {% if region is defined %}{{ region }}
+          {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ do_regions[_algo_region.user_input | int -1 ]['slug'] }}
+          {%- else %}{{ do_regions[default_region | int - 1]['slug'] }}{% endif %}
         public_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
 
     - block:
@@ -9,7 +15,7 @@
           digital_ocean:
             state: absent
             command: ssh
-            api_token: "{{ do_token }}"
+            api_token: "{{ algo_do_token }}"
             name: "{{ SSH_keys.comment }}"
           register: ssh_keys
           until: ssh_keys.changed != true
@@ -21,7 +27,7 @@
           digital_ocean:
             state: absent
             command: ssh
-            api_token: "{{ do_token }}"
+            api_token: "{{ algo_do_token }}"
             name: "{{ SSH_keys.comment }}"
           register: ssh_keys
           ignore_errors: yes
@@ -36,7 +42,7 @@
         state: present
         command: ssh
         ssh_pub_key: "{{ public_key }}"
-        api_token: "{{ do_token }}"
+        api_token: "{{ algo_do_token }}"
         name: "{{ SSH_keys.comment }}"
       register: do_ssh_key
 
@@ -44,69 +50,33 @@
       digital_ocean:
         state: present
         command: droplet
-        name: "{{ do_server_name }}"
-        region_id: "{{ do_region }}"
+        name: "{{ algo_server_name }}"
+        region_id: "{{ algo_do_region }}"
         size_id: "{{ cloud_providers.digitalocean.size }}"
         image_id: "{{ cloud_providers.digitalocean.image }}"
         ssh_key_ids: "{{ do_ssh_key.ssh_key.id }}"
         unique_name: yes
-        api_token: "{{ do_token }}"
+        api_token: "{{ algo_do_token }}"
         ipv6: yes
       register: do
 
-    - name: Add the droplet to an inventory group
-      add_host:
-        name: "{{ do.droplet.ip_address }}"
-        groups: vpn-host
-        ansible_ssh_user: root
-        ansible_python_interpreter: "/usr/bin/python2.7"
-        ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
-        do_access_token: "{{ do_token }}"
-        do_droplet_id: "{{ do.droplet.id }}"
-        cloud_provider: digitalocean
-
     - set_fact:
         cloud_instance_ip: "{{ do.droplet.ip_address }}"
+        ansible_ssh_user: root
 
     - name: Tag the droplet
       digital_ocean_tag:
         name: "Environment:Algo"
         resource_id: "{{ do.droplet.id }}"
-        api_token: "{{ do_token }}"
+        api_token: "{{ algo_do_token }}"
         state: present
-
-    - name: Get droplets
-      uri:
-        url: "https://api.digitalocean.com/v2/droplets?tag_name=Environment:Algo"
-        method: GET
-        status_code: 200
-        headers:
-          Content-Type: "application/json"
-          Authorization: "Bearer {{ do_token }}"
-      register: do_droplets
-
-    - name: Ensure the group digitalocean exists in the dynamic inventory file
-      lineinfile:
-        state: present
-        dest: configs/inventory.dynamic
-        line: '[digitalocean]'
-
-    - name: Populate the dynamic inventory
-      lineinfile:
-        state: present
-        dest: configs/inventory.dynamic
-        insertafter: '\[digitalocean\]'
-        regexp: "^{{ item.networks.v4[0].ip_address }}.*"
-        line: "{{ item.networks.v4[0].ip_address }}"
-      with_items:
-        - "{{ do_droplets.json.droplets }}"
 
     - block:
         - name: "Delete the new Algo SSH key"
           digital_ocean:
             state: absent
             command: ssh
-            api_token: "{{ do_token }}"
+            api_token: "{{ algo_do_token }}"
             name: "{{ SSH_keys.comment }}"
           register: ssh_keys
           until: ssh_keys.changed != true
@@ -118,7 +88,7 @@
           digital_ocean:
             state: absent
             command: ssh
-            api_token: "{{ do_token }}"
+            api_token: "{{ algo_do_token }}"
             name: "{{ SSH_keys.comment }}"
           register: ssh_keys
           ignore_errors: yes

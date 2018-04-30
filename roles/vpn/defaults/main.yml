@@ -1,5 +1,37 @@
 ---
+BetweenClients_DROP: true
+wireguard_config_path: "configs/{{ IP_subject_alt_name }}/wireguard/"
+wireguard_interface: wg0
+wireguard_network_ipv4:
+  subnet: 10.19.49.0
+  prefix: 24
+  gateway: 10.19.49.1
+  clients_range: 10.19.49
+  clients_start: 100
+wireguard_network_ipv6:
+  subnet: 'fd9d:bc11:4021::'
+  prefix: 48
+  gateway: 'fd9d:bc11:4021::1'
+  clients_range: 'fd9d:bc11:4021::'
+  clients_start: 100
+wireguard_vpn_network: "{{ wireguard_network_ipv4['subnet'] }}/{{ wireguard_network_ipv4['prefix'] }}"
+wireguard_vpn_network_ipv6: "{{ wireguard_network_ipv6['subnet'] }}/{{ wireguard_network_ipv6['prefix'] }}"
+easyrsa_reinit_existent: false
+wireguard_dns_servers: >-
+  {% if local_dns|default(false)|bool or dns_encryption|default(false)|bool == true %}
+  {{ local_service_ip }}
+  {% else %}
+  {% for host in dns_servers.ipv4 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% if ipv6_support %},{% for host in dns_servers.ipv6 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}
+  {% endif %}
+
+algo_ondemand_cellular: false
+algo_ondemand_wifi: false
+algo_ondemand_wifi_exclude: '_null'
+algo_windows: false
+algo_store_cakey: false
+algo_local_dns: false
 ipv6_support: false
+dns_encryption: true
 domain: false
 subjectAltName_IP: "IP:{{ IP_subject_alt_name }}"
 openssl_bin: openssl

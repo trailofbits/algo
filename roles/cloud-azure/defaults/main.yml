@@ -1,0 +1,214 @@
+---
+azure_regions: >
+  [
+    {
+      "displayName": "East Asia",
+      "latitude": "22.267",
+      "longitude": "114.188",
+      "name": "eastasia",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "Southeast Asia",
+      "latitude": "1.283",
+      "longitude": "103.833",
+      "name": "southeastasia",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "Central US",
+      "latitude": "41.5908",
+      "longitude": "-93.6208",
+      "name": "centralus",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "East US",
+      "latitude": "37.3719",
+      "longitude": "-79.8164",
+      "name": "eastus",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "East US 2",
+      "latitude": "36.6681",
+      "longitude": "-78.3889",
+      "name": "eastus2",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "West US",
+      "latitude": "37.783",
+      "longitude": "-122.417",
+      "name": "westus",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "North Central US",
+      "latitude": "41.8819",
+      "longitude": "-87.6278",
+      "name": "northcentralus",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "South Central US",
+      "latitude": "29.4167",
+      "longitude": "-98.5",
+      "name": "southcentralus",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "North Europe",
+      "latitude": "53.3478",
+      "longitude": "-6.2597",
+      "name": "northeurope",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "West Europe",
+      "latitude": "52.3667",
+      "longitude": "4.9",
+      "name": "westeurope",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "Japan West",
+      "latitude": "34.6939",
+      "longitude": "135.5022",
+      "name": "japanwest",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "Japan East",
+      "latitude": "35.68",
+      "longitude": "139.77",
+      "name": "japaneast",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "Brazil South",
+      "latitude": "-23.55",
+      "longitude": "-46.633",
+      "name": "brazilsouth",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "Australia East",
+      "latitude": "-33.86",
+      "longitude": "151.2094",
+      "name": "australiaeast",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "Australia Southeast",
+      "latitude": "-37.8136",
+      "longitude": "144.9631",
+      "name": "australiasoutheast",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "South India",
+      "latitude": "12.9822",
+      "longitude": "80.1636",
+      "name": "southindia",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "Central India",
+      "latitude": "18.5822",
+      "longitude": "73.9197",
+      "name": "centralindia",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "West India",
+      "latitude": "19.088",
+      "longitude": "72.868",
+      "name": "westindia",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "Canada Central",
+      "latitude": "43.653",
+      "longitude": "-79.383",
+      "name": "canadacentral",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "Canada East",
+      "latitude": "46.817",
+      "longitude": "-71.217",
+      "name": "canadaeast",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "UK South",
+      "latitude": "50.941",
+      "longitude": "-0.799",
+      "name": "uksouth",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "UK West",
+      "latitude": "53.427",
+      "longitude": "-3.084",
+      "name": "ukwest",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "West Central US",
+      "latitude": "40.890",
+      "longitude": "-110.234",
+      "name": "westcentralus",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "West US 2",
+      "latitude": "47.233",
+      "longitude": "-119.852",
+      "name": "westus2",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "Korea Central",
+      "latitude": "37.5665",
+      "longitude": "126.9780",
+      "name": "koreacentral",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "Korea South",
+      "latitude": "35.1796",
+      "longitude": "129.0756",
+      "name": "koreasouth",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "France Central",
+      "latitude": "46.3772",
+      "longitude": "2.3730",
+      "name": "francecentral",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "France South",
+      "latitude": "43.8345",
+      "longitude": "2.1972",
+      "name": "francesouth",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "Australia Central",
+      "latitude": "-35.3075",
+      "longitude": "149.1244",
+      "name": "australiacentral",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "Australia Central 2",
+      "latitude": "-35.3075",
+      "longitude": "149.1244",
+      "name": "australiacentral2",
+      "subscriptionId": null
+    }
+  ]

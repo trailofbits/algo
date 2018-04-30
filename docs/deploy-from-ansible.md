@@ -11,74 +11,82 @@ You can deploy Algo non-interactively by running the Ansible playbooks directly 
 Here is a full example for DigitalOcean:
 
 ```shell
-ansible-playbook deploy.yml -t digitalocean,vpn,cloud -e 'do_access_token=my_secret_token do_server_name=algo.local do_region=ams2'
+ansible-playbook main.yml -e "provider=digitalocean
+                                server_name=algo
+                                ondemand_cellular=false
+                                ondemand_wifi=false
+                                local_dns=true
+                                ssh_tunneling=true
+                                windows=false
+                                store_cakey=true
+                                region=ams3
+                                do_token=token"
 ```
+
+See below for more information about providers and extra variables
+
+### Variables
+
+- `provider` - The provider to use. See possible values below
+- `server_name` - Server name (Default: algo)
+- `ondemand_cellular` - VPN On Demand when connected to cellular networks. Boolean (Default: false)
+- `ondemand_wifi` - VPN On Demand when connected to WiFi networks. Boolean (Default: false)
+- `ondemand_wifi_exclude` - WiFi networks to exclude from using the VPN. Comma-separated values
+- `local_dns` - Enable a DNS resolver. Boolean (Default: false)
+- `ssh_tunneling` - Enable SSH tunneling for each user. Boolean (Default: false)
+- `windows` - Enables compatible ciphers and key exchange to support Windows clietns, less secure. Boolean (Default: false)
+- `store_cakey` - Whether or not keep the CA key (required to add users in the future, but less secure). Boolean (Default: false)
+
+If any of those unspecified ansible will ask the user to input
 
 ### Ansible roles
 
-Required tags:
-
-- cloud
+Roles can be activated by specifying an extra variable `provider`
 
 Cloud roles:
 
-- role: cloud-digitalocean, tags: digitalocean
-- role: cloud-ec2, tags: ec2
-- role: cloud-gce, tags: gce
+- role: cloud-digitalocean, provider: digitalocean
+- role: cloud-ec2,          provider: ec2
+- role: cloud-vultr,        provider: vultr
+- role: cloud-gce,          provider: gce
+- role: cloud-azure,        provider: azure
+- role: cloud-lightsail,    provider: lightsail
+- role: cloud-scaleway,     provider: scaleway
+- role: cloud-openstack,    provider: openstack
 
 Server roles:
 
-- role: vpn, tags: vpn
-- role: dns_adblocking, tags: dns, adblock
-- role: security, tags: security
-- role: ssh_tunneling, tags: ssh_tunneling
+- role: vpn
+- role: dns_adblocking
+- role: dns_encryption
+- role: ssh_tunneling
+- role: wireguard
 
 Note: The `vpn` role generates Apple profiles with On-Demand Wifi and Cellular if you pass the following variables:
 
-- OnDemandEnabled_WIFI=Y
-- OnDemandEnabled_WIFI_EXCLUDE=HomeNet
-- OnDemandEnabled_Cellular=Y
+- ondemand_wifi: true
+- ondemand_wifi_exclude: HomeNet,OfficeWifi
+- ondemand_cellular: true
 
 ### Local Installation
 
-Required tags:
-
-- local
+- role: local, provider: local
 
 Required variables:
 
-- server_ip
-- server_user
-- IP_subject_alt_name
+- server - IP address of your server
+- ca_password - Password for the private CA key
 
-Note that by default, the iptables rules on your existing server will be overwritten. If you don't want to overwrite the iptables rules, you can use the `--skip-tags iptables` flag, for example:
-
-```shell
-ansible-playbook deploy.yml -t local,vpn --skip-tags iptables -e 'server_ip=172.217.2.238 server_user=algo IP_subject_alt_name=172.217.2.238'
-```
+Note that by default, the iptables rules on your existing server will be overwritten. If you don't want to overwrite the iptables rules, you can use the `--skip-tags iptables` flag.
 
 ### Digital Ocean
 
 Required variables:
 
-- do_access_token
-- do_server_name
-- do_region
+- do_token
+- region
 
-Possible options for `do_region`:
-
-- ams2
-- ams3
-- fra1
-- lon1
-- nyc1
-- nyc2
-- nyc3
-- sfo1
-- sfo2
-- sgp1
-- tor1
-- blr1
+Possible options can be gathered calling to https://api.digitalocean.com/v2/regions
 
 ### Amazon EC2
 
@@ -86,27 +94,13 @@ Required variables:
 
 - aws_access_key
 - aws_secret_key
-- aws_server_name
 - region
 
-Possible options for `region`:
+Possible options can be gathered via cli `aws ec2 describe-regions`
 
-- us-east-1
-- us-east-2
-- us-west-1
-- us-west-2
-- ap-south-1
-- ap-northeast-2
-- ap-southeast-1
-- ap-southeast-2
-- ap-northeast-1
-- eu-central-1
-- eu-west-1
-- eu-west-2
+Additional variables:
 
-Additional tags:
-
-- [encrypted](https://aws.amazon.com/blogs/aws/new-encrypted-ebs-boot-volumes/) (enabled by default)
+- [encrypted](https://aws.amazon.com/blogs/aws/new-encrypted-ebs-boot-volumes/) - Encrypted EBS boot volume. Boolean (Default: false)
 
 #### Minimum required IAM permissions for deployment:
 
@@ -178,46 +172,58 @@ Additional tags:
 
 Required variables:
 
-- credentials_file
-- gce_server_name
-- ssh_public_key
-- zone
+- gce_credentials_file
+- [region](https://cloud.google.com/compute/docs/regions-zones/)
 
-Possible options for `zone`:
+### Vultr
 
-- us-west1-a
-- us-west1-b
-- us-west1-c
-- us-central1-a
-- us-central1-b
-- us-central1-c
-- us-central1-f
-- us-east4-a
-- us-east4-b
-- us-east4-c
-- us-east1-b
-- us-east1-c
-- us-east1-d
-- europe-north1-a
-- europe-north1-b
-- europe-north1-c
-- europe-west1-b
-- europe-west1-c
-- europe-west1-d
-- europe-west2-a
-- europe-west2-b
-- europe-west2-c
-- europe-west3-a
-- europe-west3-b
-- europe-west3-c
-- asia-southeast1-a
-- asia-southeast1-b
-- asia-east1-a
-- asia-east1-b
-- asia-east1-c
-- asia-northeast1-a
-- asia-northeast1-b
-- asia-northeast1-c
-- australia-southeast1-a
-- australia-southeast1-b
-- australia-southeast1-c
+Required variables:
+
+- [vultr_config](https://github.com/trailofbits/algo/docs/cloud-vultr.md)
+- [region](https://api.vultr.com/v1/regions/list)
+
+### Azure
+
+Required variables:
+
+- azure_secret
+- azure_tenant
+- azure_client_id
+- azure_subscription_id
+- [region](https://azure.microsoft.com/en-us/global-infrastructure/regions/)
+
+### Lightsail
+
+Required variables:
+
+- aws_access_key
+- aws_secret_key
+- region
+
+Possible options can be gathered via cli `aws lightsail get-regions`
+
+### Scaleway
+
+Required variables:
+
+- [scaleway_token](https://www.scaleway.com/docs/generate-an-api-token/)
+- [scaleway_org](https://cloud.scaleway.com/#/billing)
+- region
+
+Possible regions:
+
+- ams1
+- par1
+
+### OpenStack
+
+You need to source the rc file prior to run Algo. Download it from the OpenStack dashboard->Compute->API Access and source it in the shell (eg: source /tmp/dhc-openrc.sh)
+
+
+### Local
+
+Required variables:
+
+- server - IP or hostname to access the server via SSH
+- endpoint - Public IP address of your server
+- ssh_user

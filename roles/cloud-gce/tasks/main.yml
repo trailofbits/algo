@@ -1,15 +1,6 @@
 - block:
-    - set_fact:
-        credentials_file_path: "{{ credentials_file | default(lookup('env','GCE_CREDENTIALS_FILE_PATH'), true) }}"
-        ssh_public_key_lookup: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
-
-    - set_fact:
-        credentials_file_lookup: "{{ lookup('file', '{{ credentials_file_path }}') }}"
-
-    - set_fact:
-        service_account_email: "{{ credentials_file_lookup.client_email | default(lookup('env','GCE_EMAIL')) }}"
-        project_id: "{{ credentials_file_lookup.project_id | default(lookup('env','GCE_PROJECT')) }}"
-        server_name: "{{ gce_server_name | replace('_', '-') }}"
+    - name: Include prompts
+      import_tasks: prompts.yml
 
     - name: Network configured
       gce_net:
@@ -19,14 +10,14 @@
         state: "present"
         mode: auto
         src_range: 0.0.0.0/0
-        service_account_email: "{{ credentials_file_lookup.client_email }}"
-        credentials_file: "{{ credentials_file  }}"
-        project_id: "{{ credentials_file_lookup.project_id }}"
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file_path  }}"
+        project_id: "{{ project_id }}"
 
     - name: "Creating a new instance..."
       gce:
         instance_names: "{{ server_name }}"
-        zone: "{{ zone }}"
+        zone: "{{ algo_region }}"
         machine_type: "{{ cloud_providers.gce.size }}"
         image: "{{ cloud_providers.gce.image }}"
         service_account_email: "{{ service_account_email }}"
@@ -38,31 +29,9 @@
           - "environment-algo"
       register: google_vm
 
-    - name: Add the instance to an inventory group
-      add_host:
-        name: "{{ google_vm.instance_data[0].public_ip }}"
-        groups: vpn-host
-        ansible_ssh_user: ubuntu
-        ansible_python_interpreter: "/usr/bin/python2.7"
-        ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
-        cloud_provider: gce
-
     - set_fact:
         cloud_instance_ip: "{{ google_vm.instance_data[0].public_ip }}"
-
-    - name: Ensure the group gce exists in the dynamic inventory file
-      lineinfile:
-        state: present
-        dest: configs/inventory.dynamic
-        line: '[gce]'
-
-    - name: Populate the dynamic inventory
-      lineinfile:
-        state: present
-        dest: configs/inventory.dynamic
-        insertafter: '\[gce\]'
-        regexp: "^{{ google_vm.instance_data[0].public_ip }}.*"
-        line: "{{ google_vm.instance_data[0].public_ip }}"
+        ansible_ssh_user: ubuntu
   rescue:
     - debug: var=fail_hint
       tags: always

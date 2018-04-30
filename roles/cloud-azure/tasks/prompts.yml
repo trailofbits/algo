@@ -1,0 +1,62 @@
+---
+- pause:
+    prompt: |
+      Enter your azure secret id (https://github.com/trailofbits/algo/blob/master/docs/cloud-azure.md)
+      You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
+    echo: false
+  register: _azure_secret
+  when: azure_secret is undefined
+
+- pause:
+    prompt: |
+      Enter your azure tenant id (https://github.com/trailofbits/algo/blob/master/docs/cloud-azure.md)
+      You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
+    echo: false
+  register: _azure_tenant
+  when: azure_tenant is undefined
+
+- pause:
+    prompt: |
+      Enter your azure client id (application id) (https://github.com/trailofbits/algo/blob/master/docs/cloud-azure.md)
+      You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
+    echo: false
+  register: _azure_client_id
+  when: azure_client_id is undefined
+
+- pause:
+    prompt: |
+      Enter your azure subscription id (https://github.com/trailofbits/algo/blob/master/docs/cloud-azure.md)
+      You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
+    echo: false
+  register: _azure_subscription_id
+  when: azure_subscription_id is undefined
+
+- set_fact:
+    secret: "{{ azure_secret | default(_azure_secret.user_input|default(omit)) }}"
+    tenant: "{{ azure_tenant | default(_azure_tenant.user_input|default(omit)) }}"
+    client_id: "{{ azure_client_id | default(_aazure_client_id.user_input|default(omit)) }}"
+    subscription_id: "{{ azure_subscription_id | default(_azure_subscription_id.user_input|default(omit)) }}"
+
+- block:
+  - name: Set facts about the regions
+    set_fact:
+      aws_regions: "{{ azure_regions | sort(attribute='region_name') }}"
+
+  - name: Set the default region
+    set_fact:
+      default_region: >-
+        {% for r in aws_regions %}
+        {%- if r['region_name'] == "us-east-1" %}{{ loop.index }}{% endif %}
+        {%- endfor %}
+
+  - pause:
+      prompt: |
+        What region should the server be located in?
+          {% for r in aws_regions %}
+          {{ loop.index }}. {{ r['region_name'] }}
+          {% endfor %}
+
+        Enter the number of your desired region
+        [{{ default_region }}]
+    register: _algo_region
+  when: region is undefined

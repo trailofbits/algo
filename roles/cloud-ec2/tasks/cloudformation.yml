@@ -5,7 +5,7 @@
     aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true)}}"
     stack_name: "{{ stack_name }}"
     state: "present"
-    region: "{{ region }}"
+    region: "{{ algo_region }}"
     template: roles/cloud-ec2/files/stack.yml
     template_parameters:
       InstanceTypeParameter: "{{ cloud_providers.ec2.size }}"

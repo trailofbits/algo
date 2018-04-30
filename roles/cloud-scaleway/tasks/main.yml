@@ -1,11 +1,14 @@
 - block:
+  - name: Include prompts
+    import_tasks: prompts.yml
+
   - name: Check if server exists
     uri:
       url: "https://cp-{{ algo_region }}.scaleway.com/servers"
       method: GET
       headers:
         Content-Type: 'application/json'
-        X-Auth-Token: "{{ scaleway_auth_token }}"
+        X-Auth-Token: "{{ algo_scaleway_token }}"
       status_code: 200
     register: scaleway_servers
 
@@ -24,7 +27,7 @@
         method: GET
         headers:
           Content-Type: 'application/json'
-          X-Auth-Token: "{{ scaleway_auth_token }}"
+          X-Auth-Token: "{{ algo_scaleway_token }}"
         status_code: 200
       register: scaleway_organizations
 
@@ -32,7 +35,7 @@
       set_fact:
         organization_id: "{{ item.id }}"
       no_log: true
-      when: scaleway_organization == item.name
+      when: algo_scaleway_org == item.name
       with_items: "{{ scaleway_organizations.json.organizations }}"
 
     - name: Get total count of images
@@ -41,7 +44,7 @@
         method: GET
         headers:
           Content-Type: 'application/json'
-          X-Auth-Token: "{{ scaleway_auth_token }}"
+          X-Auth-Token: "{{ algo_scaleway_token }}"
         status_code: 200
       register: scaleway_pages
 
@@ -68,7 +71,7 @@
         method: POST
         headers:
           Content-Type: 'application/json'
-          X-Auth-Token: "{{ scaleway_auth_token }}"
+          X-Auth-Token: "{{ algo_scaleway_token }}"
         body:
           organization: "{{ organization_id }}"
           name: "{{ algo_server_name }}"
@@ -94,7 +97,7 @@
       method: POST
       headers:
         Content-Type: application/json
-        X-Auth-Token: "{{ scaleway_auth_token }}"
+        X-Auth-Token: "{{ algo_scaleway_token }}"
       body:
         action: poweron
       status_code: 202
@@ -108,7 +111,7 @@
       method: GET
       headers:
         Content-Type: 'application/json'
-        X-Auth-Token: "{{ scaleway_auth_token }}"
+        X-Auth-Token: "{{ algo_scaleway_token }}"
       status_code: 200
     until:
       - algo_instance.json.server.state is defined
@@ -119,15 +122,7 @@
 
   - set_fact:
       cloud_instance_ip: "{{ algo_instance['json']['server']['public_ip']['address'] }}"
-
-  - name: Add new instance to host group
-    add_host:
-      hostname: "{{ cloud_instance_ip }}"
-      groupname: vpn-host
       ansible_ssh_user: root
-      ansible_python_interpreter: "/usr/bin/python2.7"
-      ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
-      cloud_provider: scaleway
 
   rescue:
   - debug: var=fail_hint

@@ -1,0 +1,44 @@
+---
+- pause:
+    prompt: |
+      Enter your API token. The token must have read and write permissions (https://cloud.digitalocean.com/settings/api/tokens):
+    echo: false
+  register: _do_token
+  when: do_token is undefined
+
+- name: Set the token as a fact
+  set_fact:
+    algo_do_token: "{{ do_token | default(_do_token.user_input) | default(lookup('env','DO_API_TOKEN'), true) }}"
+
+- name: Get regions
+  uri:
+    url: https://api.digitalocean.com/v2/regions
+    method: GET
+    status_code: 200
+    headers:
+      Content-Type: "application/json"
+      Authorization: "Bearer {{ algo_do_token }}"
+  register: _do_regions
+
+- name: Set facts about thre regions
+  set_fact:
+    do_regions: "{{ _do_regions.json.regions | sort(attribute='slug') }}"
+
+- name: Set default region
+  set_fact:
+    default_region: >-
+      {% for r in do_regions %}
+      {%- if r['slug'] == "nyc3" %}{{ loop.index }}{% endif %}
+      {%- endfor %}
+
+- pause:
+    prompt: |
+      What region should the server be located in?
+        {% for r in do_regions %}
+        {{ loop.index }}. {{ r['slug'] }}     {{ r['name'] }}
+        {% endfor %}
+
+      Enter the number of your desired region
+      [{{ default_region }}]
+  register: _algo_region
+  when: region is undefined

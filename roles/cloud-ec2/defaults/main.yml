@@ -1,5 +1,6 @@
 ---
-
+ami_search_encrypted: omit
+encrypted: false
 ec2_vpc_nets:
   cidr_block: 172.16.0.0/16
   subnet_cidr: 172.16.254.0/23

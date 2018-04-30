@@ -1,0 +1,66 @@
+---
+- pause:
+    prompt: |
+      Enter the local path to your credentials JSON file
+      (https://support.google.com/cloud/answer/6158849?hl=en&ref_topic=6262490#serviceaccounts)
+  register: _gce_credentials_file
+  when: gce_credentials_file is undefined
+
+- set_fact:
+    credentials_file_path: "{{ gce_credentials_file | default(_gce_credentials_file.user_input|default(omit)) | default(lookup('env','GCE_CREDENTIALS_FILE_PATH'), true) }}"
+    ssh_public_key_lookup: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
+
+- set_fact:
+    credentials_file_lookup: "{{ lookup('file', '{{ credentials_file_path }}') }}"
+
+- set_fact:
+    service_account_email: "{{ credentials_file_lookup.client_email | default(lookup('env','GCE_EMAIL')) }}"
+    project_id: "{{ credentials_file_lookup.project_id | default(lookup('env','GCE_PROJECT')) }}"
+    algo_server_name: "{{ server_name | replace('_', '-') }}"
+
+- block:
+  - name: Get regions
+    gce_region_facts:
+      service_account_email: "{{ credentials_file_lookup.client_email }}"
+      credentials_file: "{{ credentials_file_path  }}"
+      project_id: "{{ credentials_file_lookup.project_id }}"
+    register: _gce_regions
+
+  - name: Set facts about the regions
+    set_fact:
+      gce_regions: >-
+        [{%- for region in _gce_regions.results.regions | sort(attribute='name') -%}
+          {% if region.status == "UP" %}
+            {% for zone in region.zones | sort(attribute='name') %}
+              {% if zone.status == "UP" %}
+                '{{ zone.name }}'
+              {% endif %}{% if not loop.last %},{% endif %}
+            {% endfor %}
+          {% endif %}{% if not loop.last %},{% endif %}
+        {%- endfor -%}]
+
+  - name: Set facts about the default region
+    set_fact:
+      default_region: >-
+        {% for region in gce_regions %}
+          {%- if region == "us-east1-b" %}{{ loop.index }}{% endif %}
+        {%- endfor %}
+
+  - pause:
+      prompt: |
+        What region should the server be located in?
+        (https://cloud.google.com/compute/docs/regions-zones/)
+          {% for r in gce_regions %}
+          {{ loop.index }}. {{ r }}
+          {% endfor %}
+
+        Enter the number of your desired region
+        [{{ default_region }}]
+    register: _gce_region
+  when: region is undefined
+
+- set_fact:
+    algo_region: >-
+      {% if region is defined %}{{ region }}
+      {%- elif _gce_region.user_input is defined and _gce_region.user_input != "" %}{{ gce_regions[_gce_region.user_input | int -1 ] }}
+      {%- else %}{{ gce_regions[default_region | int - 1] }}{% endif %}
