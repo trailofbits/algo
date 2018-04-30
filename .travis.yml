@@ -35,13 +35,12 @@ cache:
 
 before_cache:
   - mkdir $HOME/lxc
-  - sudo tar cf $HOME/lxc/cache.tar /var/cache/lxc/
+  - sudo tar cf $HOME/lxc/cache.tar /var/lib/lxd/images/
   - sudo chown $USER. $HOME/lxc/cache.tar
 
 env:
-  - LXC_NAME=ubuntu1604 LXC_DISTRO=ubuntu LXC_RELEASE=xenial
-  - LXC_NAME=ubuntu1710 LXC_DISTRO=ubuntu LXC_RELEASE=artful
-  - LXC_NAME=docker LXC_DISTRO=ubuntu LXC_RELEASE=artful
+  - LXC_NAME=ubuntu1804 LXC_DISTRO=ubuntu LXC_RELEASE=18.04
+  - LXC_NAME=docker LXC_DISTRO=ubuntu LXC_RELEASE=18.04
 
 before_install:
   - test "${LXC_NAME}" != "docker" || docker build -t travis/algo .

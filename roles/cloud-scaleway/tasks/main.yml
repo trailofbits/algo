@@ -35,7 +35,7 @@
       when: scaleway_organization == item.name
       with_items: "{{ scaleway_organizations.json.organizations }}"
 
-    - name: Get images
+    - name: Get total count of images
       uri:
         url: "https://cp-{{ algo_region }}.scaleway.com/images"
         method: GET
@@ -43,16 +43,24 @@
           Content-Type: 'application/json'
           X-Auth-Token: "{{ scaleway_auth_token }}"
         status_code: 200
+      register: scaleway_pages
+
+    - name: Get images
+      uri:
+        url: "https://cp-{{ algo_region }}.scaleway.com/images?per_page=100&page={{ item }}"
+        method: GET
+        headers:
+          Content-Type: 'application/json'
+          X-Auth-Token: "{{ scaleway_auth_token }}"
+        status_code: 200
       register: scaleway_images
+      with_sequence: start=1 end={{ ((scaleway_pages.x_total_count|int / 100)| round )|int }}
 
     - name: Set image id as a fact
-      set_fact:
-        image_id: "{{ item.id }}"
-      no_log: true
-      when:
-        - cloud_providers.scaleway.image in item.name
-        - cloud_providers.scaleway.arch == item.arch
-      with_items: "{{ scaleway_images.json.images }}"
+      include_tasks: image_facts.yml
+      with_items: "{{ scaleway_images['results'] }}"
+      loop_control:
+        loop_var: outer_item
 
     - name: Create a server
       uri:
