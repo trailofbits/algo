@@ -382,7 +382,7 @@ algo_region=${algo_region:-1}
 
 openstack () {
 read -p "
-Enter the local path to your credentials OpenStack RC file (Can be donloaded from the OpenStack dashboard->Compute->API Access)
+Enter the local path to your credentials OpenStack RC file (Can be downloaded from the OpenStack dashboard->Compute->API Access)
 [...]: " -r os_rc
 
 read -p "
