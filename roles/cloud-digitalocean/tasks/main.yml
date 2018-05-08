@@ -64,7 +64,6 @@
         do_access_token: "{{ do_token }}"
         do_droplet_id: "{{ do.droplet.id }}"
         cloud_provider: digitalocean
-        ipv6_support: true
 
     - set_fact:
         cloud_instance_ip: "{{ do.droplet.ip_address }}"
