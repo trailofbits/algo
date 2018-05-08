@@ -252,16 +252,18 @@ Name the vpn server:
     2.   us-east-2           US East (Ohio)
     3.   us-west-1           US West (N. California)
     4.   us-west-2           US West (Oregon)
-    5.   ap-south-1          Asia Pacific (Mumbai)
-    6.   ap-northeast-2      Asia Pacific (Seoul)
-    7.   ap-southeast-1      Asia Pacific (Singapore)
-    8.   ap-southeast-2      Asia Pacific (Sydney)
-    9.   ap-northeast-1      Asia Pacific (Tokyo)
-    10.  eu-central-1        EU (Frankfurt)
-    11.  eu-west-1           EU (Ireland)
-    12.  eu-west-2           EU (London)
-    13.  ca-central-1        Canada (Central)
-    14.  sa-east-1           São Paulo
+    5.   ca-central-1        Canada (Central)
+    6.   eu-central-1        EU (Frankfurt)
+    7.   eu-west-1           EU (Ireland)
+    8.   eu-west-2           EU (London)
+    9.   eu-west-3           EU (Paris)
+    10.  ap-northeast-1      Asia Pacific (Tokyo)
+    11.  ap-northeast-2      Asia Pacific (Seoul)
+    12.  ap-northeast-3      Asia Pacific (Osaka-Local)
+    13.  ap-southeast-1      Asia Pacific (Singapore)
+    14.  ap-southeast-2      Asia Pacific (Sydney)
+    15.  ap-south-1          Asia Pacific (Mumbai)
+    16.  sa-east-1           South America (São Paulo)
 Enter the number of your desired region:
 [1]: " -r aws_region
   aws_region=${aws_region:-1}
@@ -271,16 +273,18 @@ Enter the number of your desired region:
     2) region="us-east-2" ;;
     3) region="us-west-1" ;;
     4) region="us-west-2" ;;
-    5) region="ap-south-1" ;;
-    6) region="ap-northeast-2" ;;
-    7) region="ap-southeast-1" ;;
-    8) region="ap-southeast-2" ;;
-    9) region="ap-northeast-1" ;;
-    10) region="eu-central-1" ;;
-    11) region="eu-west-1" ;;
-    12) region="eu-west-2";;
-    13) region="ca-central-1" ;;
-    14) region="sa-east-1" ;;
+    5) region="ca-central-1" ;;
+    6) region="eu-central-1" ;;
+    7) region="eu-west-1" ;;
+    8) region="eu-west-2" ;;
+    9) region="eu-west-3" ;;
+    10) region="ap-northeast-1" ;;
+    11) region="ap-northeast-2" ;;
+    12) region="ap-northeast-3";;
+    13) region="ap-southeast-1" ;;
+    14) region="ap-southeast-2" ;;
+    15) region="ap-south-1" ;;
+    16) region="sa-east-1"  ;;
   esac
 
   ROLES="ec2 vpn cloud"
