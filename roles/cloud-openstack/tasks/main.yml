@@ -78,7 +78,6 @@
       ansible_python_interpreter: "/usr/bin/python2.7"
       ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
       cloud_provider: openstack
-      ipv6_support: omit
 
   rescue:
   - debug: var=fail_hint

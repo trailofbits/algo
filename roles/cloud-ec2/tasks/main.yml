@@ -32,7 +32,6 @@
         ansible_python_interpreter: "/usr/bin/python2.7"
         ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
         cloud_provider: ec2
-        ipv6_support: yes
 
     - set_fact:
         cloud_instance_ip: "{{ stack.stack_outputs.ElasticIP }}"

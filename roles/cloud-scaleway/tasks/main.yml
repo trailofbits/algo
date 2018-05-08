@@ -119,7 +119,6 @@
       ansible_python_interpreter: "/usr/bin/python2.7"
       ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
       cloud_provider: scaleway
-      ipv6_support: yes
 
   rescue:
   - debug: var=fail_hint

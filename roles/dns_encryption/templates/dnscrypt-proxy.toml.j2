@@ -27,7 +27,7 @@
 ## The proxy will automatically pick the fastest, working servers from the list.
 ## Remove the leading # first to enable this; lines starting with # are ignored.
 
-server_names      = ['{{ dns_encryption_provider }}'{% if ipv6_support|d(false)|bool == true and dns_encryption_provider == "cloudflare" %}, '{{ dns_encryption_provider }}-ipv6' {% endif %} ]
+server_names      = ['{{ dns_encryption_provider }}'{% if ipv6_support and dns_encryption_provider == "cloudflare" %}, '{{ dns_encryption_provider }}-ipv6' {% endif %} ]
 
 
 ## List of local addresses and ports to listen to. Can be IPv4 and/or IPv6.
@@ -47,7 +47,7 @@ max_clients = 250
 ipv4_servers = true
 
 # Use servers reachable over IPv6 -- Do not enable if you don't have IPv6 connectivity
-ipv6_servers = {{ ipv6_support|default(false) | bool | lower }}
+ipv6_servers = {{ ipv6_support | bool | lower }}
 
 # Use servers implementing the DNSCrypt protocol
 dnscrypt_servers = true
