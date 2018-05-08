@@ -10,10 +10,9 @@
     key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
   tags: [ 'cloud' ]
 
-- name: Enable IPv6
+- name: Check if IPv6 configured
   set_fact:
-    ipv6_support: true
-  when: ansible_default_ipv6.gateway is defined
+    ipv6_support: "{% if ansible_default_ipv6['gateway'] is defined %}true{% else %}false{% endif %}"
 
 - name: Set facts if the deployment in a cloud
   set_fact:

@@ -19,7 +19,7 @@
     owner: root
     group: root
     mode: 0640
-  when: ipv6_support is defined and ipv6_support == true
+  when: ipv6_support
   with_items:
     - { src: rules.v6.j2, dest: /etc/iptables/rules.v6 }
   notify:

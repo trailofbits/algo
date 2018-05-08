@@ -2,7 +2,7 @@
 - block:
   - name: Set subjectAltName as a fact
     set_fact:
-      subjectAltName: "{{ subjectAltName_IP }}{% if ipv6_support and ansible_default_ipv6 %},IP:{{ ansible_default_ipv6['address'] }}{% endif %}{% if domain and subjectAltName_DNS %},DNS:{{ subjectAltName_DNS }}{% endif %}"
+      subjectAltName: "{{ subjectAltName_IP }}{% if ipv6_support %},IP:{{ ansible_default_ipv6['address'] }}{% endif %}{% if domain and subjectAltName_DNS %},DNS:{{ subjectAltName_DNS }}{% endif %}"
     tags: always
 
   - name: Ensure the pki directory does not exist
