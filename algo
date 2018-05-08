@@ -108,68 +108,76 @@ Name the vpn server:
   read -p "
 
   What region should the server be located in? (https://azure.microsoft.com/en-us/regions/)
-    1.  South Central US
-    2.  Central US
-    3.  North Europe
-    4.  West Europe
-    5.  Southeast Asia
-    6.  Japan West
-    7.  Japan East
-    8.  Australia Southeast
-    9.  Australia East
-    10. Canada Central
-    11. West US 2
-    12. West Central US
-    13. UK South
-    14. UK West
-    15. West US
-    16. Brazil South
-    17. Canada East
-    18. Central India
-    19. East Asia
-    20. Germany Central
-    21. Germany Northeast
-    22. Korea Central
-    23. Korea South
-    24. North Central US
-    25. South India
-    26. West India
-    27. East US
-    28. East US 2
+    1.  East US              (Virginia)
+    2.  East US 2            (Virginia)
+    3.  Central US           (Iowa)
+    4.  North Central US     (Illinois)
+    5.  South Central US     (Texas)
+    6.  West Central US      (Wyoming)
+    7.  West US              (California)
+    8.  West US 2            (Washington)
+    9.  Canada East          (Quebec City)
+    10. Canada Central       (Toronto)
+    11. Brazil South         (Sao Paulo State)
+    12. North Europe         (Ireland)
+    13. West Europe          (Netherlands)
+    14. France Central       (Paris)
+    15. France South         (Marseille)
+    16. UK West              (Cardiff)
+    17. UK South             (London)
+    18. Germany Central      (Frankfurt)
+    19. Germany Northeast    (Magdeburg)
+    20. Southeast Asia       (Singapore)
+    21. East Asia            (Hong Kong)
+    22. Australia East       (New South Wales)
+    23. Australia Southeast  (Victoria)
+    24. Australia Central    (Canberra)
+    25. Australia Central 2  (Canberra)
+    26. Central India        (Pune)
+    27. West India           (Mumbai)
+    28. South India          (Chennai)
+    29. Japan East           (Tokyo, Saitama)
+    30. Japan West           (Osaka)
+    31. Korea Central        (Seoul)
+    32. Korea South          (Busan)
 
 Enter the number of your desired region:
 [1]: " -r azure_region
   azure_region=${azure_region:-1}
 
   case "$azure_region" in
-    1) region="southcentralus" ;;
-    2) region="centralus" ;;
-    3) region="northeurope" ;;
-    4) region="westeurope" ;;
-    5) region="southeastasia" ;;
-    6) region="japanwest" ;;
-    7) region="japaneast" ;;
-    8) region="australiasoutheast" ;;
-    9) region="australiaeast" ;;
+    1) region="eastus" ;;
+    2) region="eastus2" ;;
+    3) region="centralus" ;;
+    4) region="northcentralus" ;;
+    5) region="southcentralus" ;;
+    6) region="westcentralus" ;;
+    7) region="westus" ;;
+    8) region="westus2" ;;
+    9) region="canadaeast" ;;
     10) region="canadacentral" ;;
-    11) region="westus2" ;;
-    12) region="westcentralus" ;;
-    13) region="uksouth" ;;
-    14) region="ukwest" ;;
-    15) region="westus" ;;
-    16) region="brazilsouth" ;;
-    17) region="canadaeast" ;;
-    18) region="centralindia" ;;
-    19) region="eastasia" ;;
-    20) region="germanycentral" ;;
-    21) region="germanynortheast" ;;
-    22) region="koreacentral" ;;
-    23) region="koreasouth" ;;
-    24) region="northcentralus" ;;
-    25) region="southindia" ;;
-    26) region="westindia" ;;
-    27) region="eastus" ;;
-    28) region="eastus2" ;;
+    11) region="brazilsouth" ;;
+    12) region="northeurope" ;;
+    13) region="westeurope"  ;;
+    14) region="francecentral"  ;;
+    15) region="francesouth"  ;;
+    16) region="ukwest"  ;;
+    17) region="uksouth" ;;
+    18) region="germanycentral"  ;;
+    19) region="germanynortheast"  ;;
+    20) region="southeastasia"  ;;
+    21) region="eastasia"  ;;
+    22) region="australiaeast"  ;;
+    23) region="australiasoutheast"  ;;
+    24) region="australiacentral"  ;;
+    25) region="australiacentral2"  ;;
+    26) region="centralindia"  ;;
+    27) region="westindia"  ;;
+    28) region="southindia"  ;;
+    29) region="japaneast"  ;;
+    30) region="japanwest"  ;;
+    31) region="koreacentral"  ;;
+    32) region="koreasouth"  ;;
   esac
 
   ROLES="azure vpn cloud"
