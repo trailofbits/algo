@@ -3,7 +3,7 @@
 set -ex
 
 CAPW=`cat /tmp/ca_password`
-USER_ARGS="server_ip=$LXC_IP server_user=root ssh_tunneling_enabled=y IP_subject=$LXC_IP easyrsa_CA_password=$CAPW"
+USER_ARGS="server_ip=$LXC_IP server_user=ubuntu ssh_tunneling_enabled=y IP_subject=$LXC_IP easyrsa_CA_password=$CAPW"
 
 sed -i 's/- jack$/- jack_test/' config.cfg
 
