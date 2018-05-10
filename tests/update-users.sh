@@ -3,9 +3,8 @@
 set -ex
 
 CAPW=`cat /tmp/ca_password`
-USER_ARGS="server_ip=$LXC_IP server_user=ubuntu ssh_tunneling_enabled=y IP_subject=$LXC_IP easyrsa_CA_password=$CAPW"
-
-sed -i 's/- jack$/- jack_test/' config.cfg
+USER_ARGS="server_ip=$LXC_IP easyrsa_CA_password=$CAPW users=['user1', 'user2']"
+USERS=""
 
 if [ "${LXC_NAME}" == "docker" ]
 then
@@ -24,7 +23,7 @@ if openssl crl -inform pem -noout -text -in crl/jack.crt | grep CRL
     exit 1
 fi
 
-if openssl x509 -inform pem -noout -text -in certs/jack_test.crt | grep CN=jack_test
+if openssl x509 -inform pem -noout -text -in certs/user1.crt | grep CN=user1
   then
     echo "The new user exists"
   else

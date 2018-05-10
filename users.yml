@@ -5,6 +5,7 @@
   tags: always
   vars_files:
     - config.cfg
+    - "configs/{{ server_ip }}/config.yml"
 
   tasks:
     - block:
@@ -12,12 +13,10 @@
           add_host:
             hostname: "{{ server_ip }}"
             groupname: vpn-host
-            ansible_ssh_user: "{{ server_user }}"
+            ansible_ssh_user: "{{ server_user|default(root) }}"
             ansible_python_interpreter: "/usr/bin/python2.7"
-            ssh_tunneling_enabled: "{{ ssh_tunneling_enabled }}"
             easyrsa_CA_password: "{{ easyrsa_CA_password }}"
-            IP_subject: "{{ IP_subject_alt_name }}"
-            ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
+            ansible_ssh_private_key_file: "{{ ansible_ssh_private_key_file }}"
 
         - name: Wait until SSH becomes ready...
           local_action:
@@ -41,6 +40,7 @@
   become: true
   vars_files:
     - config.cfg
+    - "configs/{{ server_ip }}/config.yml"
 
   pre_tasks:
     - block:
@@ -54,7 +54,7 @@
           tags: always
 
   roles:
-    - { role: ssh_tunneling, tags: always, when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y" }
+    - { role: ssh_tunneling, tags: always, when: ssh_tunneling }
     - { role: vpn }
 
   post_tasks:

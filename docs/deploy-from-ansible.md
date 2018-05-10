@@ -35,9 +35,9 @@ Server roles:
 
 Note: The `vpn` role generates Apple profiles with On-Demand Wifi and Cellular if you pass the following variables:
 
-- OnDemandEnabled_WIFI=Y
-- OnDemandEnabled_WIFI_EXCLUDE=HomeNet
-- OnDemandEnabled_Cellular=Y
+- OnDemandEnabled_WIFI: true
+- OnDemandEnabled_WIFI_EXCLUDE: HomeNet,OfficeWifi
+- OnDemandEnabled_Cellular: true
 
 ### Local Installation
 

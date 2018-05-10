@@ -1,5 +1,12 @@
 ---
+OnDemandEnabled_Cellular: false
+OnDemandEnabled_WIFI: false
+OnDemandEnabled_WIFI_EXCLUDE: '_null'
+Win10_Enabled: false
+Store_CAKEY: false
+local_dns: false
 ipv6_support: false
+dns_encryption: true
 domain: false
 subjectAltName_IP: "IP:{{ IP_subject_alt_name }}"
 openssl_bin: openssl

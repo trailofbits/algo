@@ -10,7 +10,7 @@ conn %default
     compress=yes
     dpddelay=35s
 
-{% if Win10_Enabled is defined and Win10_Enabled == "Y" %}
+{% if Win10_Enabled %}
     ike={{ ciphers.compat.ike }}
     esp={{ ciphers.compat.esp }}
 {% else %}
@@ -28,7 +28,7 @@ conn %default
     right=%any
     rightauth=pubkey
     rightsourceip={{ vpn_network }},{{ vpn_network_ipv6 }}
-{% if local_dns|d(false)|bool == true or dns_encryption|d(false)|bool == true %}
+{% if local_dns or dns_encryption %}
     rightdns={{ local_service_ip }}
 {% else %}
     rightdns={% for host in dns_servers.ipv4 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% if ipv6_support %},{% for host in dns_servers.ipv6 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}
