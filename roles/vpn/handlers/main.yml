@@ -13,5 +13,8 @@
 - name: restart iptables
   service: name=netfilter-persistent state=restarted
 
+- name: restart iptables arch
+  service: name=iptables state=restarted
+
 - name: rereadcrls
   shell: ipsec rereadcrls; ipsec purgecrls

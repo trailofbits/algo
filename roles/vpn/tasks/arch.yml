@@ -1,0 +1,21 @@
+---
+- set_fact:
+    strongswan_additional_plugins: []
+    iptables_rules_v4: /etc/iptables/iptables.rules
+    iptables_rules_v6: /etc/iptables/ip6tables.rules
+    restart_iptables: restart iptables arch
+    ipencap: ipv4
+
+- name: Archlinux | Install strongSwan
+  pacman:
+    name: strongswan
+    state: latest
+
+- name: Archlinux | Enable services
+  service: name={{ item }} enabled=yes
+  with_items:
+    - strongswan
+    - iptables
+
+- include_tasks: iptables.yml
+  tags: iptables

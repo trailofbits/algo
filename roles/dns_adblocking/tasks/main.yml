@@ -1,24 +1,29 @@
 ---
 - block:
-
     - name: The DNS tag is defined
       set_fact:
         local_dns: true
+
+    - include_tasks: arch_set_nogroup.yml
+      when: ansible_distribution == 'Archlinux'
 
     - name: Dnsmasq installed
       package: name=dnsmasq
 
     - name: Ensure that the dnsmasq user exist
-      user: name=dnsmasq groups=nogroup append=yes state=present
+      user: "name=dnsmasq groups={{ nogroup|default('nogroup') }} append=yes state=present"
 
     - name: The dnsmasq directory created
-      file: dest=/var/lib/dnsmasq state=directory mode=0755 owner=dnsmasq group=nogroup
+      file: "dest=/var/lib/dnsmasq state=directory mode=0755 owner=dnsmasq group={{ nogroup|default('nogroup') }}"
 
     - include_tasks: ubuntu.yml
       when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
     - include_tasks: freebsd.yml
       when: ansible_distribution == 'FreeBSD'
+
+    - include_tasks: arch.yml
+      when: ansible_distribution == 'Archlinux'
 
     - name: Dnsmasq configured
       template:

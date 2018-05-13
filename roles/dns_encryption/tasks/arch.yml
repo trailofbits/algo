@@ -1,0 +1,13 @@
+---
+
+- name: Arch Linux | Install dnscrypt-proxy
+  pacman:
+    name: dnscrypt-proxy
+    state: latest
+
+- name: Arch Linux | Patch dnscrypt-proxy.service
+  template:
+    src: dnscrypt-proxy.service.j2
+    dest: "{{ config_prefix|default('/') }}etc/systemd/system/dnscrypt-proxy.service"
+  notify:
+    - daemon reload

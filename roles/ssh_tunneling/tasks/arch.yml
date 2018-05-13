@@ -1,0 +1,5 @@
+---
+
+- name: Arch Linux | Set sshd daemon name
+  set_fact:
+    ssh_service_name: sshd

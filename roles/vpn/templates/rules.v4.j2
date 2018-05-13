@@ -66,7 +66,7 @@ COMMIT
 # Allow new traffic to port 22 (SSH)
 -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW -j ACCEPT
 # Allow any traffic from the VPN
--A INPUT -p ipencap -m policy --dir in --pol ipsec --proto esp -j ACCEPT
+-A INPUT -p {{ ipencap|default('ipencap') }} -m policy --dir in --pol ipsec --proto esp -j ACCEPT
 
 # TODO:
 # The IP of the resolver should be bound to a DUMMY interface.

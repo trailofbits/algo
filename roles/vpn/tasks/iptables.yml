@@ -8,9 +8,9 @@
     group: root
     mode: 0640
   with_items:
-    - { src: rules.v4.j2, dest: /etc/iptables/rules.v4 }
+    - { src: rules.v4.j2, dest: "{{ iptables_rules_v4|default('/etc/iptables/rules.v4') }}" }
   notify:
-    - restart iptables
+    - "{{ restart_iptables|default('restart iptables') }}"
 
 - name: Iptables configured
   template:
@@ -21,6 +21,6 @@
     mode: 0640
   when: ipv6_support
   with_items:
-    - { src: rules.v6.j2, dest: /etc/iptables/rules.v6 }
+    - { src: rules.v6.j2, dest: "{{ iptables_rules_v6|default('/etc/iptables/rules.v6') }}" }
   notify:
-    - restart iptables
+    - "{{ restart_iptables|default('restart iptables') }}"

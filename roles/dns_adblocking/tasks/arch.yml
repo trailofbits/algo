@@ -1,0 +1,25 @@
+---
+
+- name: Arch Linux | Install cronie
+  pacman:
+    name: cronie
+
+- name: Arch Linux | Enable and start cronie
+  service:
+    name: cronie
+    state: started
+    enabled: yes
+
+- name: Arch Linux | Enable systemd-networkd-wait-online
+  service:
+    name: systemd-networkd-wait-online
+    enabled: yes
+
+
+- name: Arch Linux | The dnsmasq additional directories created
+  file:
+    dest: "{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - "{{ config_prefix|default('/') }}etc/dnsmasq.d"
