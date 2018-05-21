@@ -7,6 +7,11 @@
         <dict>
             <key>IKEv2</key>
             <dict>
+{% set vpn_user_defined_name = algo_server_name %}
+{% if (algo_server_name == 'algo') or (algo_server_name == 'algo.local') %}
+    {% set vpn_user_defined_name = IP_subject_alt_name %}
+{% else %}
+{% endif %}
 {% if (OnDemandEnabled_WIFI is defined and OnDemandEnabled_WIFI == 'Y') or (OnDemandEnabled_Cellular is defined and OnDemandEnabled_Cellular == 'Y') %}
               <key>OnDemandEnabled</key>
                 <integer>1</integer>
@@ -129,7 +134,7 @@
                 <integer>0</integer>
             </dict>
             <key>UserDefinedName</key>
-            <string>Algo VPN {{ IP_subject_alt_name }} IKEv2</string>
+            <string>{{ vpn_user_defined_name }}</string>
             <key>VPNType</key>
             <string>IKEv2</string>
         </dict>
@@ -175,7 +180,7 @@
         </dict>
     </array>
     <key>PayloadDisplayName</key>
-    <string>{{ IP_subject_alt_name }} IKEv2</string>
+    <string>{{ vpn_user_defined_name }}</string>
     <key>PayloadIdentifier</key>
     <string>donut.local.{{ 500000 | random | to_uuid | upper }}</string>
     <key>PayloadRemovalDisallowed</key>

@@ -44,7 +44,7 @@
       digital_ocean:
         state: present
         command: droplet
-        name: "{{ do_server_name }}"
+        name: "{{ algo_server_name }}"
         region_id: "{{ do_region }}"
         size_id: "{{ cloud_providers.digitalocean.size }}"
         image_id: "{{ cloud_providers.digitalocean.image }}"

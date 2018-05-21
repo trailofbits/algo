@@ -79,7 +79,12 @@ Save the embedded CA cert and encrypted user PKCS12 file.
 $ErrorActionPreference = "Stop"
 
 $VpnServerAddress = "{{ IP_subject_alt_name }}"
-$VpnName = "Algo VPN {{ IP_subject_alt_name }} IKEv2"
+{% set vpn_server_name = algo_server_name %}
+{% if (algo_server_name == 'algo') or (algo_server_name == 'algo.local') %}
+    {% set vpn_server_name = 'Algo VPN '+IP_subject_alt_name+' IKEv2' %}
+{% else %}
+{% endif %}
+$VpnName = "{{ vpn_server_name }}"
 $VpnUser = "{{ item.0 }}"
 $CaCertificateBase64 = "{{ PayloadContentCA }}"
 $UserPkcs12Base64 = "{{ item.1.stdout }}"
