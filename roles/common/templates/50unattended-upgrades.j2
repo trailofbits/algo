@@ -2,6 +2,9 @@
 Unattended-Upgrade::Allowed-Origins {
     "${distro_id}:${distro_codename}-security";
     "${distro_id}:${distro_codename}-updates";
+{% if wireguard_enabled %}
+    "LP-PPA-wireguard-wireguard:${distro_codename}";
+{% endif %}
 //  "${distro_id}:${distro_codename}-proposed";
 //  "${distro_id}:${distro_codename}-backports";
 };
