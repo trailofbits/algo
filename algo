@@ -472,9 +472,9 @@ Name the vpn server:
     45. Australia              (Sydney B)
     46. Australia              (Sydney C)
     
-Please choose the number of your zone. Press enter for default (#14) zone.
-[14]: " -r region
-  region=${region:-14}
+Please choose the number of your zone. Press enter for default (#20) zone.
+[20]: " -r region
+  region=${region:-20}
 
   case "$region" in
     1)  zone="northamerica-northeast1-a" ;;
