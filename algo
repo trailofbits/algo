@@ -425,84 +425,104 @@ Name the vpn server:
   read -p "
 
   What zone should the server be located in?
-    1. Western US       (Oregon A)
-    2. Western US       (Oregon B)
-    3. Western US       (Oregon C)
-    4. Central US       (Iowa A)
-    5. Central US       (Iowa B)
-    6. Central US       (Iowa C)
-    7. Central US       (Iowa F)
-    8. Eastern US       (Northern Virginia A)
-    9. Eastern US       (Northern Virginia B)
-    10. Eastern US      (Northern Virginia C)
-    11. Eastern US      (South Carolina B)
-    12. Eastern US      (South Carolina C)
-    13. Eastern US      (South Carolina D)
-    14. Western Europe  (Belgium B)
-    15. Western Europe  (Belgium C)
-    16. Western Europe  (Belgium D)
-    17. Western Europe  (London A)
-    18. Western Europe  (London B)
-    19. Western Europe  (London C)
-    20. Western Europe  (Frankfurt A)
-    21. Western Europe  (Frankfurt B)
-    22. Western Europe  (Frankfurt C)
-    23. Southeast Asia  (Singapore A)
-    24. Southeast Asia  (Singapore B)
-    25. East Asia       (Taiwan A)
-    26. East Asia       (Taiwan B)
-    27. East Asia       (Taiwan C)
-    28. Northeast Asia  (Tokyo A)
-    29. Northeast Asia  (Tokyo B)
-    30. Northeast Asia  (Tokyo C)
-    31. Australia	(Sydney A)
-    32. Australia	(Sydney B)
-    33. Australia	(Sydney C)
-    34. South America   (São Paulo A)
-    35. South America   (São Paulo B)
-    36. South America   (São Paulo C)
+    1. Eastern Canada          (Montreal A)
+    2. Eastern Canada          (Montreal B)
+    3. Eastern Canada          (Montreal C)
+    4. Central US              (Iowa A)
+    5. Central US              (Iowa B)
+    6. Central US              (Iowa C)
+    7. Central US              (Iowa F)
+    8. Western US              (Oregon A)
+    9. Western US              (Oregon B)
+    10. Western US             (Oregon C)
+    11. Eastern US             (Northern Virginia A)
+    12. Eastern US             (Northern Virginia B)
+    13. Eastern US             (Northern Virginia C)
+    14. Eastern US             (South Carolina B)
+    15. Eastern US             (South Carolina C)
+    16. Eastern US             (South Carolina D)
+    17. South America East     (São Paulo A)
+    18. South America East     (São Paulo B)
+    19. South America East     (São Paulo C)
+    20. Western Europe         (Belgium B)
+    21. Western Europe         (Belgium C)
+    22. Western Europe         (Belgium D)
+    23. Western Europe         (London A)
+    24. Western Europe         (London B)
+    25. Western Europe         (London C)
+    26. Western Europe         (Frankfurt A)
+    27. Western Europe         (Frankfurt B)
+    28. Western Europe         (Frankfurt C)
+    29. Western Europe         (Netherlands A)
+    30. Western Europe         (Netherlands B)
+    31. Western Europe         (Netherlands C)
+    32. South Asia             (Mumbai A)
+    33. South Asia             (Mumbai B)
+    34. South Asia             (Mumbai C)
+    35. Southeast Asia         (Singapore A)
+    36. Southeast Asia         (Singapore B)
+    37. Southeast Asia         (Singapore C)
+    38. East Asia              (Taiwan A)
+    39. East Asia              (Taiwan B)
+    40. East Asia              (Taiwan C)
+    41. Northeast Asia         (Tokyo A)
+    42. Northeast Asia         (Tokyo B)
+    43. Northeast Asia         (Tokyo C)
+    44. Australia	             (Sydney A)
+    45. Australia	             (Sydney B)
+    46. Australia	             (Sydney C)
     
 Please choose the number of your zone. Press enter for default (#14) zone.
 [14]: " -r region
   region=${region:-14}
 
   case "$region" in
-    1) zone="us-west1-a" ;;
-    2) zone="us-west1-b" ;;
-    3) zone="us-west1-c" ;;
-    4) zone="us-central1-a" ;;
-    5) zone="us-central1-b" ;;
-    6) zone="us-central1-c" ;;
-    7) zone="us-central1-f" ;;
-    8) zone="us-east4-a" ;;
-    9) zone="us-east4-b" ;;
-    10) zone="us-east4-c" ;;
-    11) zone="us-east1-b" ;;
-    12) zone="us-east1-c" ;;
-    13) zone="us-east1-d" ;;
-    14) zone="europe-west1-b" ;;
-    15) zone="europe-west1-c" ;;
-    16) zone="europe-west1-d" ;;
-    17) zone="europe-west2-a" ;;
-    18) zone="europe-west2-b" ;;
-    19) zone="europe-west2-c" ;;
-    20) zone="europe-west3-a" ;;
-    21) zone="europe-west3-b" ;;
-    22) zone="europe-west3-c" ;;
-    23) zone="asia-southeast1-a" ;;
-    24) zone="asia-southeast1-b" ;;
-    25) zone="asia-east1-a" ;;
-    26) zone="asia-east1-b" ;;
-    27) zone="asia-east1-c" ;;
-    28) zone="asia-northeast1-a" ;;
-    29) zone="asia-northeast1-b" ;;
-    30) zone="asia-northeast1-c" ;;
-    31) zone="australia-southeast1-a" ;;
-    32) zone="australia-southeast1-b" ;;
-    33) zone="australia-southeast1-c" ;;
-    34) zone="southamerica-east1-a" ;;
-    35) zone="southamerica-east1-b" ;;
-    36) zone="southamerica-east1-c" ;;
+    1)  zone="northamerica-northeast1-a" ;;
+    2)  zone="northamerica-northeast1-b" ;;
+    3)  zone="northamerica-northeast1-c" ;;
+    4)  zone="us-central1-a" ;;
+    5)  zone="us-central1-b" ;;
+    6)  zone="us-central1-c" ;;
+    7)  zone="us-central1-f" ;;
+    8)  zone="us-west1-a" ;;
+    9)  zone="us-west1-b" ;;
+    10) zone="us-west1-c" ;;
+    11) zone="us-east4-a" ;;
+    12) zone="us-east4-b" ;;
+    13) zone="us-east4-c" ;;
+    14) zone="us-east1-b" ;;
+    15) zone="us-east1-c" ;;
+    16) zone="us-east1-d" ;;
+    17) zone="southamerica-east1-a" ;;
+    18) zone="southamerica-east1-b" ;;
+    19) zone="southamerica-east1-c" ;;
+    20) zone="europe-west1-b" ;;
+    21) zone="europe-west1-c" ;;
+    22) zone="europe-west1-d" ;;
+    23) zone="europe-west2-a" ;;
+    24) zone="europe-west2-b" ;;
+    25) zone="europe-west2-c" ;;
+    26) zone="europe-west3-a" ;;
+    27) zone="europe-west3-b" ;;
+    28) zone="europe-west3-c" ;;
+    29) zone="europe-west4-a" ;;
+    30) zone="europe-west4-b" ;;
+    31) zone="europe-west4-c" ;;
+    32) zone="asia-south1-a" ;;
+    33) zone="asia-south1-b" ;;
+    34) zone="asia-south1-c" ;;
+    35) zone="asia-southeast1-a" ;;
+    36) zone="asia-southeast1-b" ;;
+    37) zone="asia-southeast1-c" ;;
+    38) zone="asia-east1-a" ;;
+    39) zone="asia-east1-b" ;;
+    40) zone="asia-east1-c" ;;
+    41) zone="asia-northeast1-a" ;;
+    42) zone="asia-northeast1-b" ;;
+    43) zone="asia-northeast1-c" ;;
+    44) zone="australia-southeast1-a" ;;
+    45) zone="australia-southeast1-b" ;;
+    46) zone="australia-southeast1-c" ;;
   esac
 
   ROLES="gce vpn cloud"
