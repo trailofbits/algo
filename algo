@@ -468,9 +468,9 @@ Name the vpn server:
     41. Northeast Asia         (Tokyo A)
     42. Northeast Asia         (Tokyo B)
     43. Northeast Asia         (Tokyo C)
-    44. Australia	             (Sydney A)
-    45. Australia	             (Sydney B)
-    46. Australia	             (Sydney C)
+    44. Australia              (Sydney A)
+    45. Australia              (Sydney B)
+    46. Australia              (Sydney C)
     
 Please choose the number of your zone. Press enter for default (#14) zone.
 [14]: " -r region
