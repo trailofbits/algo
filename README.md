@@ -97,7 +97,7 @@ Certificates and configuration files that users will need are placed in the `con
 
 ### Android Devices
 
-WireGuard is used to provide VPN services since IKEv2 is not supported on Android. Install the [WireGuard VPN Client](https://play.google.com/store/apps/details?id=com.wireguard.android). Import the corresponding `<name>.conf` file to your device, then setup a new connection with it. See the [Android setup instructions](/docs/client-android.md) for more detailed walkthrough.
+WireGuard is used to provide VPN services since IKEv2 is not supported on Android. Install the [WireGuard VPN Client](https://play.google.com/store/apps/details?id=com.wireguard.android). Import the corresponding `wireguard/<name>.conf` file to your device, then setup a new connection with it. See the [Android setup instructions](/docs/client-android.md) for more detailed walkthrough.
 
 ### Windows 10
 
