@@ -10,17 +10,16 @@
     state: present
     update_cache: true
 
-- block:
-  - name: Ensure the required directories exist
-    file:
-      dest: "{{ wireguard_config_path }}/{{ item }}"
-      state: directory
-      recurse: true
-    with_items:
-      - private
-      - public
+- name: Ensure the required directories exist
+  file:
+    dest: "{{ wireguard_config_path }}/{{ item }}"
+    state: directory
+    recurse: true
+  with_items:
+    - private
+    - public
   delegate_to: localhost
-  become: no
+  become: false
 
 - name: Generate keys
   import_tasks: keys.yml
@@ -33,6 +32,11 @@
     mode: "0600"
   notify: restart wireguard
   tags: update-users
+
+- name: WireGuard reload-module-on-update
+  file:
+    dest: /etc/wireguard/.reload-module-on-update
+    state: touch
 
 - name: WireGuard users config generated
   template:
