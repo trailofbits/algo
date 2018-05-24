@@ -20,6 +20,7 @@
       - { proto: icmp, port_min: -1, port_max: -1, range: 0.0.0.0/0 }
       - { proto: udp, port_min: 4500, port_max: 4500, range: 0.0.0.0/0 }
       - { proto: udp, port_min: 500, port_max: 500, range: 0.0.0.0/0 }
+      - { proto: udp, port_min: "{{ wireguard_port }}", port_max: "{{ wireguard_port }}", range: 0.0.0.0/0 }
 
   - name: Keypair created
     os_keypair:

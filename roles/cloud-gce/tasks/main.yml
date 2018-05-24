@@ -15,7 +15,7 @@
       gce_net:
         name: "algo-net-{{ server_name }}"
         fwname: "algo-net-{{ server_name }}-fw"
-        allowed: "udp:500,4500;tcp:22"
+        allowed: "udp:500,4500,{{ wireguard_port }};tcp:22"
         state: "present"
         mode: auto
         src_range: 0.0.0.0/0

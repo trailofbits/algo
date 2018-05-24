@@ -9,6 +9,8 @@ Parameters:
     Type: String
   ImageIdParameter:
     Type: String
+  WireGuardPort:
+    Type: String
 Resources:
   VPC:
     Type: AWS::EC2::VPC
@@ -131,6 +133,10 @@ Resources:
         - IpProtocol: udp
           FromPort: '4500'
           ToPort: '4500'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: udp
+          FromPort: !Ref WireGuardPort
+          ToPort: !Ref WireGuardPort
           CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
