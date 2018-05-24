@@ -26,7 +26,6 @@
     - { role: cloud-ec2, tags: ['ec2'] }
     - { role: cloud-gce, tags: ['gce'] }
     - { role: cloud-azure, tags: ['azure'] }
-    - { role: cloud-lightsail, tags: ['lightsail'] }
     - { role: cloud-scaleway, tags: ['scaleway'] }
     - { role: cloud-openstack, tags: ['openstack'] }
     - { role: local, tags: ['local'] }

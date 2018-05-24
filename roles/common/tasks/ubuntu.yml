@@ -48,34 +48,21 @@
   tags:
     - cloud
 
-- name: Install system specific tools
-  package: name="{{ item }}" state=present
-  with_items:
-    - ifupdown
-  tags:
-    - always
-
-- name: Ensure the interfaces directory exists
-  file:
-    path: /etc/network/interfaces.d/
-    state: directory
-    mode: 0755
-    owner: root
-    group: root
-  tags:
-    - always
-
 - name: Loopback for services configured
-  template: src=10-loopback-services.cfg.j2 dest=/etc/network/interfaces.d/10-loopback-services.cfg
+  template:
+    src: 10-algo-lo100.network.j2
+    dest: /etc/systemd/network/10-algo-lo100.network
   notify:
-    - restart loopback
+    - restart systemd-networkd
   tags:
     - always
 
-- name: Loopback included into the network config
-  lineinfile: dest=/etc/network/interfaces line='source /etc/network/interfaces.d/10-loopback-services.cfg' state=present
-  notify:
-    - restart loopback
+- name: systemd-networkd enabled and started
+  systemd:
+    name: systemd-networkd
+    state: started
+    enabled: true
+    daemon_reload: true
   tags:
     - always
 

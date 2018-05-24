@@ -1,0 +1,9 @@
+---
+- name: Set image id as a fact
+  set_fact:
+    image_id: "{{ item.id }}"
+  no_log: true
+  when:
+    - cloud_providers.scaleway.image == item.name
+    - cloud_providers.scaleway.arch == item.arch
+  with_items: "{{ outer_item['json']['images'] }}"
