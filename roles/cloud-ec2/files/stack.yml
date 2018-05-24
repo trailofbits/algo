@@ -147,11 +147,6 @@ Resources:
     Metadata:
       AWS::CloudFormation::Init:
         config:
-          users:
-            ubuntu:
-              groups:
-                - "sudo"
-              homeDir: "/home/ubuntu/"
           files:
             /home/ubuntu/.ssh/authorized_keys:
               content:
@@ -173,18 +168,9 @@ Resources:
         "Fn::Base64":
           !Sub |
             #!/bin/bash -xe
-            # http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-migrate-ipv6.html
-            # https://bugs.launchpad.net/ubuntu/+source/ifupdown/+bug/1013597
-            cat <<EOF > /etc/network/interfaces.d/60-default-with-ipv6.cfg
-            iface eth0 inet6 dhcp
-                up sysctl net.ipv6.conf.\$IFACE.accept_ra=2
-                pre-down ip link set dev \$IFACE up
-            EOF
-            ifdown eth0; ifup eth0
-            dhclient -6
             apt-get update
-            apt-get -y install python-setuptools
-            easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
+            apt-get -y install python-pip
+            pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
             cfn-init -v --stack ${AWS::StackName} --resource EC2Instance --region ${AWS::Region}
             cfn-signal -e $? --stack ${AWS::StackName} --resource EC2Instance --region ${AWS::Region}
       Tags:

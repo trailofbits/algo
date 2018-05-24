@@ -6,7 +6,7 @@
 
 - name: Ubuntu pre-tasks
   include_tasks: ubuntu.yml
-  when: '"Ubuntu" in OS.stdout'
+  when: '"Ubuntu" in OS.stdout or "Linux" in OS.stdout'
 
 - name: FreeBSD pre-tasks
   include_tasks: freebsd.yml
