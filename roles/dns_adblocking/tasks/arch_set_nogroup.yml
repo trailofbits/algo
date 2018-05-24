@@ -1,0 +1,5 @@
+---
+
+- name: Arch Linux | Set nogroup
+  set_fact:
+    nogroup: nobody

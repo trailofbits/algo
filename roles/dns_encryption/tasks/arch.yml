@@ -1,0 +1,6 @@
+---
+
+- name: Arch Linux | Install dnscrypt-proxy
+  pacman:
+    name: dnscrypt-proxy
+    state: latest

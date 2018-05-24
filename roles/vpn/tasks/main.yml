@@ -12,6 +12,9 @@
     - include_tasks: freebsd.yml
       when: ansible_distribution == 'FreeBSD'
 
+    - include_tasks: arch.yml
+      when: ansible_distribution == 'Archlinux'
+
     - name: Install strongSwan
       package: name=strongswan state=present
 

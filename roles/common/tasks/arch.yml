@@ -1,0 +1,27 @@
+---
+
+- set_fact:
+    tools: []
+    sysctl:
+      - item: net.ipv4.ip_forward
+        value: 1
+      - item: net.ipv4.conf.all.forwarding
+        value: 1
+      - item: net.ipv6.conf.all.forwarding
+        value: 1
+    sysctl_file: /etc/sysctl.d/99-sysctl.conf
+  tags:
+    - always
+
+- name: Loopback for services configured
+  template: src=10-loopback-services.network.j2 dest=/etc/systemd/network/10-loopback-services.network
+  tags:
+    - always
+
+- name: Networking restarted
+  systemd:
+    name: systemd-networkd
+    daemon_reload: yes
+    state: restarted
+  tags:
+    - always

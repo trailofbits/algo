@@ -1,5 +1,9 @@
 ---
 - block:
+    - name: Include tasks for Arch Linux
+      include_tasks: arch.yml
+      when: ansible_distribution == 'Archlinux'
+
     - name: Ensure that the sshd_config file has desired options
       blockinfile:
         dest: /etc/ssh/sshd_config

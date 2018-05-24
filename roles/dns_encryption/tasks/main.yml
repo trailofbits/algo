@@ -7,6 +7,10 @@
   include_tasks: freebsd.yml
   when: ansible_distribution == 'FreeBSD'
 
+- name: Include tasks for Arch Linux
+  include_tasks: arch.yml
+  when: ansible_distribution == 'Archlinux'
+
 - name: dnscrypt-proxy configured
   template:
     src: dnscrypt-proxy.toml.j2

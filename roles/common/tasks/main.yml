@@ -6,6 +6,10 @@
     - include_tasks: freebsd.yml
       when: ansible_distribution == 'FreeBSD'
 
+    - include_tasks: arch.yml
+      when: ansible_distribution == 'Archlinux'
+
+
     - name: Install tools
       package: name="{{ item }}" state=present
       with_items:
@@ -14,7 +18,10 @@
         - always
 
     - name: Sysctl tuning
-      sysctl: name="{{ item.item }}" value="{{ item.value }}"
+      sysctl:
+        name: "{{ item.item }}"
+        value: "{{ item.value }}"
+        sysctl_file: "{{ sysctl_file|default('/etc/sysctl.conf') }}"
       with_items:
         - "{{ sysctl|default([]) }}"
       tags:

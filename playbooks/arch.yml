@@ -1,0 +1,7 @@
+---
+
+- name: Arch Linux | Install prerequisites
+  become: yes
+  become_method: su
+  become_user: root
+  raw: sleep 10 && pacman -Syu --noconfirm && pacman -S python2 sudo --noconfirm

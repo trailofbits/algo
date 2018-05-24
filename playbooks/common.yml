@@ -12,4 +12,9 @@
   include_tasks: freebsd.yml
   when: '"FreeBSD" in OS.stdout'
 
+- name: Arch pre-tasks
+  include_tasks: arch.yml
+  when: '"ARCH" in OS.stdout'
+
+
 - include_tasks: facts/main.yml
