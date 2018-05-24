@@ -11,6 +11,7 @@
       InstanceTypeParameter: "{{ cloud_providers.ec2.size }}"
       PublicSSHKeyParameter: "{{ lookup('file', SSH_keys.public) }}"
       ImageIdParameter: "{{ ami_image }}"
+      WireGuardPort: "{{ wireguard_port }}"
     tags:
       Environment: Algo
   register: stack

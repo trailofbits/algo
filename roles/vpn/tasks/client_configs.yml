@@ -21,25 +21,6 @@
     - "{{ PayloadContent.results }}"
   no_log: True
 
-- name: Build the strongswan app android config
-  template:
-    src: sswan.j2
-    dest: configs/{{ IP_subject_alt_name }}/android_{{ item.0 }}.sswan
-    mode: 0600
-  with_together:
-    - "{{ users }}"
-    - "{{ PayloadContent.results }}"
-  no_log: True
-
-- name: Build the android helper html
-  template:
-    src: android_html_helper.j2
-    dest: configs/{{ IP_subject_alt_name }}/android_{{ item.0 }}_helper.html
-    mode: 0600
-  with_together:
-    - "{{ users }}"
-  no_log: True
-
 - name: Build the client ipsec config file
   template:
     src: client_ipsec.conf.j2

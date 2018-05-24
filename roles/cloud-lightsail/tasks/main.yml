@@ -22,6 +22,9 @@
         - from_port: 500
           to_port: 500
           protocol: udp
+        - from_port: "{{ wireguard_port }}"
+          to_port: "{{ wireguard_port }}"
+          protocol: udp
       user_data: |
         #!/bin/bash
         mkdir -p /home/ubuntu/.ssh/

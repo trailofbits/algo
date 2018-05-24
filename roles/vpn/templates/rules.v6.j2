@@ -13,7 +13,7 @@
 {% if max_mss is defined %}
 # MSS is the TCP Max Segment Size
 # See rules.v4 for a more complete explanation
--A FORWARD -s {{ vpn_network_ipv6 }} -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss {{ max_mss }}
+-A FORWARD -s {{ vpn_network_ipv6 }}{% if wireguard_enabled %},{{ wireguard_vpn_network_ipv6 }}{% endif %} -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss {{ max_mss }}
 {% endif %}
 
 COMMIT
@@ -28,7 +28,7 @@ COMMIT
 :POSTROUTING ACCEPT [0:0]
 
 # Allow traffic from the VPN network to the outside world, and replies
--A POSTROUTING -s {{ vpn_network_ipv6 }} -m policy --pol none --dir out -j MASQUERADE
+-A POSTROUTING -s {{ vpn_network_ipv6 }}{% if wireguard_enabled %},{{ wireguard_vpn_network_ipv6 }}{% endif %} -m policy --pol none --dir out -j MASQUERADE
 
 COMMIT
 
@@ -63,7 +63,7 @@ COMMIT
 # rate limit ICMP traffic per source
 -A INPUT -p icmpv6 --icmpv6-type echo-request -m hashlimit --hashlimit-upto 5/s --hashlimit-mode srcip --hashlimit-srcmask 32 --hashlimit-name icmp-echo-drop -j ACCEPT
 # Accept IPSEC traffic to ports 500 (IPSEC) and 4500 (MOBIKE aka IKE + NAT traversal)
--A INPUT -p udp -m multiport --dports 500,4500 -j ACCEPT
+-A INPUT -p udp -m multiport --dports 500,4500{% if wireguard_enabled %},{{ wireguard_port}}{% endif %} -j ACCEPT
 # Allow new traffic to port 22 (SSH)
 -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW -j ACCEPT
 
@@ -85,7 +85,7 @@ COMMIT
 -A INPUT -d fcaa::1 -p udp --dport 53 -j ACCEPT
 
 {% if BetweenClients_DROP is defined and BetweenClients_DROP == "Y" %}
--A FORWARD -s {{ vpn_network_ipv6 }} -d {{ vpn_network_ipv6 }} -j DROP
+-A FORWARD -s {{ vpn_network_ipv6 }}{% if wireguard_enabled %},{{ wireguard_vpn_network_ipv6 }}{% endif %} -d {{ vpn_network_ipv6 }}{% if wireguard_enabled %},{{ wireguard_vpn_network_ipv6 }}{% endif %} -j DROP
 {% endif %}
 -A FORWARD -j ICMPV6-CHECK
 -A FORWARD -p tcp --dport 445 -j DROP
@@ -93,6 +93,9 @@ COMMIT
 -A FORWARD -p tcp -m multiport --ports 137,139 -j DROP
 -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 -A FORWARD -m conntrack --ctstate NEW -s {{ vpn_network_ipv6 }} -m policy --pol ipsec --dir in -j ACCEPT
+{% if wireguard_enabled %}
+-A FORWARD -m conntrack --ctstate NEW -s {{ wireguard_vpn_network_ipv6 }} -m policy --pol none --dir in -j ACCEPT
+{% endif %}
 
 # Use the ICMPV6-CHECK chain, described above
 -A ICMPV6-CHECK -p icmpv6 -m hl ! --hl-eq 255 --icmpv6-type router-solicitation -j ICMPV6-CHECK-LOG

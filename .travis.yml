@@ -14,6 +14,7 @@ addons:
   apt:
     sources:
       - sourceline: 'ppa:ubuntu-lxc/stable'
+      - sourceline: 'ppa:wireguard/wireguard'
     packages:
       - python-pip
       - lxd
@@ -27,6 +28,8 @@ addons:
       - libssl-dev
       - libffi-dev
       - python-dev
+      - linux-headers-$(uname -r)
+      - wireguard-dkms
 
 cache:
   directories:
@@ -43,7 +46,7 @@ env:
   - LXC_NAME=docker LXC_DISTRO=ubuntu LXC_RELEASE=18.04
 
 before_install:
-  - test "${LXC_NAME}" != "docker" || docker build -t travis/algo .
+  - test "${LXC_NAME}" != "docker" && sudo modprobe wireguard || docker build -t travis/algo .
 
 install:
   - sudo tar xf $HOME/lxc/cache.tar -C / || echo "Didn't extract cache."
@@ -63,8 +66,8 @@ install:
 
 script:
   # - awesome_bot --allow-dupe --skip-save-results *.md docs/*.md --white-list paypal.com,do.co,microsoft.com,https://github.com/trailofbits/algo/archive/master.zip,https://github.com/trailofbits/algo/issues/new
-#  - shellcheck algo
-#  - ansible-lint deploy.yml users.yml deploy_client.yml
+# - shellcheck algo
+# - ansible-lint deploy.yml users.yml deploy_client.yml
   - ansible-playbook deploy.yml --syntax-check
   - ./tests/local-deploy.sh
 

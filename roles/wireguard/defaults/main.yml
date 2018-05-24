@@ -1,0 +1,18 @@
+---
+wireguard_config_path: "configs/{{ IP_subject_alt_name }}/wireguard/"
+wireguard_interface: wg0
+wireguard_network_ipv4:
+  subnet: 10.19.49.0
+  prefix: 24
+  gateway: 10.19.49.1
+  clients_range: 10.19.49
+  clients_start: 100
+wireguard_network_ipv6:
+  subnet: 'fd9d:bc11:4021::'
+  prefix: 48
+  gateway: 'fd9d:bc11:4021::1'
+  clients_range: 'fd9d:bc11:4021::'
+  clients_start: 100
+wireguard_vpn_network: "{{ wireguard_network_ipv4['subnet'] }}/{{ wireguard_network_ipv4['prefix'] }}"
+wireguard_vpn_network_ipv6: "{{ wireguard_network_ipv6['subnet'] }}/{{ wireguard_network_ipv6['prefix'] }}"
+easyrsa_reinit_existent: false

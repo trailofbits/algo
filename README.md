@@ -8,7 +8,7 @@ Algo VPN is a set of Ansible scripts that simplify the setup of a personal IPSEC
 
 ## Features
 
-* Supports only IKEv2 with strong crypto: AES-GCM, SHA2, and P-256
+* Supports only IKEv2 with strong crypto (AES-GCM, SHA2, and P-256) and [WireGuard](https://www.wireguard.com/)
 * Generates Apple profiles to auto-configure iOS and macOS devices
 * Includes a helper script to add and remove users
 * Blocks ads with a local DNS resolver (optional)
@@ -97,7 +97,7 @@ Certificates and configuration files that users will need are placed in the `con
 
 ### Android Devices
 
-No version of Android supports IKEv2. Install the [strongSwan VPN Client for Android 4 and newer](https://play.google.com/store/apps/details?id=org.strongswan.android). Import the corresponding user.p12 certificate to your device. See the [Android setup instructions](/docs/client-android.md) for more a more detailed walkthrough.
+WireGuard is used to provide VPN services on Android. Install the [WireGuard VPN Client](https://play.google.com/store/apps/details?id=com.wireguard.android). Import the corresponding `wireguard/<name>.conf` file to your device, then setup a new connection with it. See the [Android setup instructions](/docs/client-android.md) for more detailed walkthrough.
 
 ### Windows 10
 
