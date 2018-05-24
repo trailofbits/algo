@@ -11,7 +11,7 @@ You can deploy Algo non-interactively by running the Ansible playbooks directly 
 Here is a full example for DigitalOcean:
 
 ```shell
-ansible-playbook deploy.yml -t digitalocean,vpn,cloud -e 'do_access_token=my_secret_token do_server_name=algo.local do_region=ams2'
+ansible-playbook deploy.yml -t digitalocean,vpn,cloud -e 'do_access_token=my_secret_token algo_server_name=algo.local do_region=ams2'
 ```
 
 ### Ansible roles
@@ -62,7 +62,7 @@ ansible-playbook deploy.yml -t local,vpn --skip-tags iptables -e 'server_ip=172.
 Required variables:
 
 - do_access_token
-- do_server_name
+- algo_server_name
 - do_region
 
 Possible options for `do_region`:
@@ -86,7 +86,7 @@ Required variables:
 
 - aws_access_key
 - aws_secret_key
-- aws_server_name
+- algo_server_name
 - region
 
 Possible options for `region`:
@@ -179,7 +179,7 @@ Additional tags:
 Required variables:
 
 - credentials_file
-- gce_server_name
+- algo_server_name
 - ssh_public_key
 - zone
 

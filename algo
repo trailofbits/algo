@@ -102,8 +102,8 @@ $ADDITIONAL_PROMPT
   read -p "
 
 Name the vpn server:
-[algo]: " -r azure_server_name
-  azure_server_name=${azure_server_name:-algo}
+[algo]: " -r algo_server_name
+  algo_server_name=${algo_server_name:-algo}
 
   read -p "
 
@@ -181,7 +181,7 @@ Enter the number of your desired region:
   esac
 
   ROLES="azure vpn cloud"
-  EXTRA_VARS="azure_secret=$azure_secret azure_tenant=$azure_tenant azure_client_id=$azure_client_id azure_subscription_id=$azure_subscription_id azure_server_name=$azure_server_name ssh_public_key=$ssh_public_key region=$region"
+  EXTRA_VARS="azure_secret=$azure_secret azure_tenant=$azure_tenant azure_client_id=$azure_client_id azure_subscription_id=$azure_subscription_id algo_server_name=$algo_server_name ssh_public_key=$ssh_public_key region=$region"
 }
 
 digitalocean () {
@@ -193,8 +193,8 @@ $ADDITIONAL_PROMPT
   read -p "
 
 Name the vpn server:
-[algo.local]: " -r do_server_name
-  do_server_name=${do_server_name:-algo.local}
+[algo.local]: " -r algo_server_name
+  algo_server_name=${algo_server_name:-algo.local}
 
   read -p "
 
@@ -232,7 +232,7 @@ Enter the number of your desired region:
   esac
 
 ROLES="digitalocean vpn cloud"
-EXTRA_VARS="do_access_token=$do_access_token do_server_name=$do_server_name do_region=$do_region"
+EXTRA_VARS="do_access_token=$do_access_token algo_server_name=$algo_server_name do_region=$do_region"
 }
 
 ec2 () {
@@ -251,8 +251,8 @@ $ADDITIONAL_PROMPT
 read -p "
 
 Name the vpn server:
-[algo]: " -r aws_server_name
-  aws_server_name=${aws_server_name:-algo}
+[algo]: " -r algo_server_name
+  algo_server_name=${algo_server_name:-algo}
 
   read -p "
 
@@ -298,7 +298,7 @@ Enter the number of your desired region:
   esac
 
   ROLES="ec2 vpn cloud"
-  EXTRA_VARS="aws_access_key=$aws_access_key aws_secret_key=$aws_secret_key aws_server_name=$aws_server_name region=$region"
+  EXTRA_VARS="aws_access_key=$aws_access_key aws_secret_key=$aws_secret_key algo_server_name=$algo_server_name region=$region"
 }
 
 lightsail () {
@@ -419,8 +419,8 @@ Enter the local path to your credentials JSON file (https://support.google.com/c
   read -p "
 
 Name the vpn server:
-[algo]: " -r server_name
-  server_name=${server_name:-algo}
+[algo]: " -r algo_server_name
+  algo_server_name=${algo_server_name:-algo}
 
   read -p "
 
@@ -526,7 +526,7 @@ Please choose the number of your zone. Press enter for default (#20) zone.
   esac
 
   ROLES="gce vpn cloud"
-  EXTRA_VARS="credentials_file=$credentials_file gce_server_name=$server_name ssh_public_key=$ssh_public_key zone=$zone max_mss=1316"
+  EXTRA_VARS="credentials_file=$credentials_file algo_server_name=$algo_server_name ssh_public_key=$ssh_public_key zone=$zone max_mss=1316"
 }
 
 non_cloud () {

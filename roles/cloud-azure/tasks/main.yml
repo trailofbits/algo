@@ -82,7 +82,7 @@
         resource_group: "{{ resource_group }}"
         admin_username: ubuntu
         virtual_network: algo_net
-        name: "{{ azure_server_name }}"
+        name: "{{ algo_server_name }}"
         ssh_password_enabled: false
         vm_size: "{{ cloud_providers.azure.size }}"
         tags:

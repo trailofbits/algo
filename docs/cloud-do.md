@@ -82,6 +82,6 @@ If you are using Ansible to deploy to DigitalOcean, you will need to pass the AP
 
 For example,
 
-    ansible-playbook deploy.yml -t digitalocean,vpn,cloud -e 'do_access_token=my_secret_token do_server_name=algo.local do_region=ams2
+    ansible-playbook deploy.yml -t digitalocean,vpn,cloud -e 'do_access_token=my_secret_token algo_server_name=algo.local do_region=ams2
     
 Where "my_secret_token" is your API Token.
