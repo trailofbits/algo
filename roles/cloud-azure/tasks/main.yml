@@ -62,7 +62,7 @@
             protocol: Udp
             destination_port_range: "{{ wireguard_port }}"
             access: Allow
-            priority: 120
+            priority: 130
             direction: Inbound
 
     - name: Create a subnet
