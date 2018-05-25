@@ -75,7 +75,7 @@ You don't have a working compiler installed. You should install the XCode compil
 
 ### Error: "fatal error: 'openssl/opensslv.h' file not found"
 
-On macOS, you tried to install pycrypto and encountered the following error:
+On macOS, you tried to install `cryptography` and encountered the following error:
 
 ```
 build/temp.macosx-10.12-intel-2.7/_openssl.c:434:10: fatal error: 'openssl/opensslv.h' file not found
@@ -94,7 +94,7 @@ Command /usr/bin/python -c "import setuptools, tokenize;__file__='/private/tmp/p
 Storing debug log for failure in /Users/algore/Library/Logs/pip.log
 ```
 
-You are running an old version of `pip` that cannot build the `pycrypto` dependency. Upgrade to a new version of `pip` by running `sudo pip install -U pip`.
+You are running an old version of `pip` that cannot download the binary `cryptography` dependency. Upgrade to a new version of `pip` by running `sudo pip install -U pip`.
 
 ### Error: "TypeError: must be str, not bytes"
 
