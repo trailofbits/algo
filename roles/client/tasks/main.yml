@@ -58,3 +58,6 @@
       dest: "{{ configs_prefix }}/ipsec.d/private/{{ vpn_user }}.key"
   notify:
     - restart strongswan
+
+- name: Add network manager profile
+  command: "library/linux_nm_client_install.sh algo-{{ IP_subject_alt_name }} {{ vpn_user }} {{ IP_subject_alt_name }} {{ lookup('env','USER') }}"
