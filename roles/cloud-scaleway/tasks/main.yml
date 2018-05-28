@@ -74,6 +74,8 @@
           name: "{{ algo_server_name }}"
           image: "{{ image_id }}"
           commercial_type: "{{cloud_providers.scaleway.size }}"
+          enable_ipv6: true
+          boot_type: local
           tags:
             - Environment:Algo
             - AUTHORIZED_KEY={{ lookup('file', SSH_keys.public)|regex_replace(' ', '_') }}
