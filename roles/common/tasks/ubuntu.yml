@@ -88,7 +88,7 @@
       - coreutils
       - iptables-persistent
       - cgroup-tools
-      - openssl
+      - "openssl{% if install_headers|default(true)|bool %},linux-headers-{{ ansible_kernel }}{% endif %}"
     sysctl:
       - item: net.ipv4.ip_forward
         value: 1
