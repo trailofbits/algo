@@ -1,3 +1,13 @@
+## 24 May 2018
+### Changed
+- Switched to Ubuntu 18.04
+
+### Removed
+- Lightsail support until they have Ubuntu 18.04
+
+### Fixed
+- Scaleway API paginagion
+
 ## 30 Apr 2018
 ### Added
 - WireGuard support
