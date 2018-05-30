@@ -12,7 +12,7 @@ On the **Tokens/Keys** tab, select **Generate New Token**. A dialog will pop up.
 
 ![The new token dialog, showing a form requesting a name and confirmation on the scope for the new token.](/docs/images/do-new-token.png)
 
-You will be returned to the **Tokens/Keys** tab, and your new key will be shown under the **Personal Access Tokens** header. 
+You will be returned to the **Tokens/Keys** tab, and your new key will be shown under the **Personal Access Tokens** header.
 
 ![The new token in the listing.](/docs/images/do-view-token.png)
 
@@ -20,9 +20,9 @@ Copy or note down the hash that shows below the name you entered, as this will b
 
 ## Using DigitalOcean with Algo (command)
 
-These steps are for people who run Algo using Docker or using the "algo" command. 
+These steps are for people who run Algo using Docker or using the "algo" command.
 
-First you will be asked which server type to setup. You would want to enter "1" to use DigitalOcean. 
+First you will be asked which server type to setup. You would want to enter "1" to use DigitalOcean.
 
 ```
   What provider would you like to use?
@@ -33,7 +33,7 @@ First you will be asked which server type to setup. You would want to enter "1" 
     5. Google Compute Engine
     6. Scaleway
     7. OpenStack (DreamCompute optimised)
-    8. Install to existing Ubuntu 16.04 server
+    8. Install to existing Ubuntu 18.04 server
 
 Enter the number of your desired provider
 : 1
@@ -44,17 +44,17 @@ Next you will be asked for the API Token value. Paste the API Token value you co
 ```
 Enter your API token. The token must have read and write permissions (https://cloud.digitalocean.com/settings/api/tokens):
 [pasted values will not be displayed]
-: 
+:
 ```
 
 You will be prompted for the server name to enter. Feel free to leave this as the default ("algo.local") if you are not certain how this will affect your setup.
 
 ```
 Name the vpn server:
-[algo.local]: 
+[algo.local]:
 ```
 
-After entering the server name the script ask which region you wish to setup your new Algo instance in. Enter the number next to name of the region. 
+After entering the server name the script ask which region you wish to setup your new Algo instance in. Enter the number next to name of the region.
 
 ```
   What region should the server be located in?
@@ -83,5 +83,5 @@ If you are using Ansible to deploy to DigitalOcean, you will need to pass the AP
 For example,
 
     ansible-playbook deploy.yml -t digitalocean,vpn,cloud -e 'do_access_token=my_secret_token do_server_name=algo.local do_region=ams2
-    
+
 Where "my_secret_token" is your API Token.
