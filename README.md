@@ -14,7 +14,7 @@ Algo VPN is a set of Ansible scripts that simplify the setup of a personal IPSEC
 * Blocks ads with a local DNS resolver (optional)
 * Sets up limited SSH users for tunneling traffic (optional)
 * Based on current versions of Ubuntu and strongSwan
-* Installs to DigitalOcean, Amazon Lightsail, Amazon EC2, Microsoft Azure, Google Compute Engine, Scaleway, OpenStack or your own Ubuntu 16.04 LTS server
+* Installs to DigitalOcean, Amazon Lightsail, Amazon EC2, Microsoft Azure, Google Compute Engine, Scaleway, OpenStack or your own Ubuntu 18.04 LTS server
 
 ## Anti-features
 
@@ -116,7 +116,7 @@ Network Manager does not support AES-GCM. In order to support Linux Desktop clie
 
 Install strongSwan, then copy the included ipsec_user.conf, ipsec_user.secrets, user.crt (user certificate), and user.key (private key) files to your client device. These will require customization based on your exact use case. These files were originally generated with a point-to-point OpenWRT-based VPN in mind.
 
-#### Ubuntu Server 16.04 example
+#### Ubuntu Server 18.04 example
 
 1. `sudo apt-get install strongswan strongswan-plugin-openssl`: install strongSwan
 2. `/etc/ipsec.d/certs`: copy `<name>.crt` from `algo-master/configs/<server_ip>/pki/certs/<name>.crt`
@@ -195,7 +195,7 @@ After this process completes, the Algo VPN server will contains only the users l
   - Configure [DigitalOcean](docs/cloud-do.md)
 * Advanced Deployment
   - Deploy to your own [FreeBSD](docs/deploy-to-freebsd.md) server
-  - Deploy to your own [Ubuntu 16.04](docs/deploy-to-ubuntu.md) server
+  - Deploy to your own [Ubuntu 18.04](docs/deploy-to-ubuntu.md) server
   - Deploy to an [unsupported cloud provider](docs/deploy-to-unsupported-cloud.md)
 * [FAQ](docs/faq.md)
 * [Troubleshooting](docs/troubleshooting.md)
