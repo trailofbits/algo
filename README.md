@@ -8,13 +8,22 @@ Algo VPN is a set of Ansible scripts that simplify the setup of a personal IPSEC
 
 ## Features
 
+Algo VPN will help you deploy a personal VPN server that:
+
 * Supports only IKEv2 with strong crypto (AES-GCM, SHA2, and P-256) and [WireGuard](https://www.wireguard.com/)
-* Generates Apple profiles to auto-configure iOS and macOS devices
+* Uses DNS-over-HTTPS to resolve domain names with Cloudflare's privacy-conscious [1.1.1.1](https://1.1.1.1/) resolver
+* Uses current the versions of Ubuntu 18.04 and strongSwan
+* Protects all network-accessible services with AppArmor and limited privileges
+* Blocks ads with a local DNS resolver and auto-updated blocklists (optional)
+* Sets up limited SSH-only users for tunneling traffic over SSH (optional)
+* Deploys automatically to DigitalOcean, Amazon EC2, Microsoft Azure, Google Compute Engine, Scaleway, OpenStack, or your own Ubuntu 18.04 LTS server
+
+Algo VPN helps users configure their VPN clients:
+
+* Generates Apple profiles to auto-configure iOS and macOS clients
+* Generates PowerShell scripts to auto-configure Windows 10 clients
+* Generates WireGuard configurations to auto-configure Android 6+ clients
 * Includes a helper script to add and remove users
-* Blocks ads with a local DNS resolver (optional)
-* Sets up limited SSH users for tunneling traffic (optional)
-* Based on current versions of Ubuntu and strongSwan
-* Installs to DigitalOcean, Amazon Lightsail, Amazon EC2, Microsoft Azure, Google Compute Engine, Scaleway, OpenStack or your own Ubuntu 18.04 LTS server
 
 ## Anti-features
 
@@ -29,7 +38,7 @@ Algo VPN is a set of Ansible scripts that simplify the setup of a personal IPSEC
 
 The easiest way to get an Algo server running is to let it set up a _new_ virtual machine in the cloud for you.
 
-1. **Setup an account on a cloud hosting provider.** Algo supports [DigitalOcean](https://m.do.co/c/4d7f4ff9cfe4) (most user friendly), [Amazon Lightsail](https://aws.amazon.com/lightsail/), [Amazon EC2](https://aws.amazon.com/), [Microsoft Azure](https://azure.microsoft.com/), [Google Compute Engine](https://cloud.google.com/compute/), [Scaleway](https://www.scaleway.com/) and [OpenStack](https://www.openstack.org/).
+1. **Setup an account on a cloud hosting provider.** Algo supports [DigitalOcean](https://m.do.co/c/4d7f4ff9cfe4) (most user friendly), [Amazon EC2](https://aws.amazon.com/), [Microsoft Azure](https://azure.microsoft.com/), [Google Compute Engine](https://cloud.google.com/compute/), [Scaleway](https://www.scaleway.com/) and [OpenStack](https://www.openstack.org/).
 
 2. **[Download Algo](https://github.com/trailofbits/algo/archive/master.zip).** Unzip it in a convenient location on your local machine.
 
