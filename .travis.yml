@@ -70,8 +70,6 @@ script:
 # - ansible-lint deploy.yml users.yml deploy_client.yml
   - ansible-playbook deploy.yml --syntax-check
   - ./tests/local-deploy.sh
-
-after_script:
   - ./tests/update-users.sh
 
 notifications:
