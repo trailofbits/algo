@@ -7,7 +7,7 @@ touch /tmp/ca_password
 
 if [ "${LXC_NAME}" == "docker" ]
 then
-  docker run -it -v /tmp/ca_password:/tmp/ca_password -v $(pwd)/config.cfg:/algo/config.cfg -v ~/.ssh:/root/.ssh -v $(pwd)/configs:/algo/configs -e "DEPLOY_ARGS=${DEPLOY_ARGS}" travis/algo /bin/sh -c "chown -R 0:0 /root/.ssh && source env/bin/activate && ansible-playbook deploy.yml -t cloud,local,vpn,dns,ssh_tunneling,security,tests,dns_over_https -e \"${DEPLOY_ARGS}\" --skip-tags apparmor,wireguard"
+  docker run -it -v /tmp/ca_password:/tmp/ca_password -v $(pwd)/config.cfg:/algo/config.cfg -v ~/.ssh:/root/.ssh -v $(pwd)/configs:/algo/configs -e "DEPLOY_ARGS=${DEPLOY_ARGS}" travis/algo /bin/sh -c "chown -R 0:0 /root/.ssh && source env/bin/activate && ansible-playbook deploy.yml -t cloud,local,vpn,dns,ssh_tunneling,security,tests,dns_over_https -e \"${DEPLOY_ARGS}\" --skip-tags apparmor"
 else
   ansible-playbook deploy.yml -t cloud,local,vpn,dns,dns_over_https,ssh_tunneling,tests -e "${DEPLOY_ARGS}" --skip-tags apparmor
 fi
