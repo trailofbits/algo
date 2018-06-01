@@ -55,6 +55,7 @@
 
   roles:
     - { role: ssh_tunneling, tags: always, when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y" }
+    - { role: wireguard, tags: [ 'vpn', 'wireguard' ], when: wireguard_enabled }
     - { role: vpn }
 
   post_tasks:
