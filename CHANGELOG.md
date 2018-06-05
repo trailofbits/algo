@@ -1,3 +1,7 @@
+## 04 Jun 2018
+### Changed
+- Switched to [new cipher suite](https://github.com/trailofbits/algo/issues/981)
+
 ## 24 May 2018
 ### Changed
 - Switched to Ubuntu 18.04
