@@ -102,9 +102,10 @@
     - name: Set facts based on the input
       set_fact:
         algo_server_name: >-
-          {% if server_name is defined %}{{ server_name }}
-          {%- elif _algo_server_name.user_input is defined and _algo_server_name.user_input != "" %}{{ _algo_server_name.user_input }}
-          {%- else %}{{ defaults['server_name'] }}{% endif %}
+          {% if server_name is defined %}{% set _server = server_name %}
+          {%- elif _algo_server_name.user_input is defined and _algo_server_name.user_input != "" %}{% set _server = _algo_server_name.user_input %}
+          {%- else %}{% set _server = defaults['server_name'] %}{% endif -%}
+          {{ _server | regex_replace('(?!\.)(\W|_)', '-') }}
         algo_ondemand_cellular: >-
           {% if ondemand_cellular is defined %}{{ ondemand_cellular | bool }}
           {%- elif _ondemand_cellular.user_input is defined and _ondemand_cellular.user_input != "" %}{{ booleans_map[_ondemand_cellular.user_input] | default(defaults['ondemand_cellular']) }}
