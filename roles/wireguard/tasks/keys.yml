@@ -3,7 +3,7 @@
   file:
     dest: "/etc/wireguard/private_{{ item }}.lock"
     state: absent
-  when: easyrsa_reinit_existent|bool == True
+  when: keys_clean_all|bool == True
   with_items:
     - "{{ users }}"
     - "{{ IP_subject_alt_name }}"

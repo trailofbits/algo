@@ -9,7 +9,7 @@
     file:
       dest: configs/{{ IP_subject_alt_name }}/pki
       state: absent
-    when: easyrsa_reinit_existent|bool == True
+    when: keys_clean_all|bool == True
 
   - name: Ensure the pki directories exist
     file:

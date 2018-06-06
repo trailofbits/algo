@@ -16,7 +16,7 @@ wireguard_network_ipv6:
   clients_start: 100
 wireguard_vpn_network: "{{ wireguard_network_ipv4['subnet'] }}/{{ wireguard_network_ipv4['prefix'] }}"
 wireguard_vpn_network_ipv6: "{{ wireguard_network_ipv6['subnet'] }}/{{ wireguard_network_ipv6['prefix'] }}"
-easyrsa_reinit_existent: false
+keys_clean_all: false
 wireguard_dns_servers: >-
   {% if local_dns|default(false)|bool or dns_encryption|default(false)|bool == true %}
   {{ local_service_ip }}
