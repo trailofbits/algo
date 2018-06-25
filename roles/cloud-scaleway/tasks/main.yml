@@ -79,7 +79,6 @@
           tags:
             - Environment:Algo
             - AUTHORIZED_KEY={{ lookup('file', SSH_keys.public)|regex_replace(' ', '_') }}
-          enable_ipv6: true
         status_code: 201
         body_format: json
       register: algo_instance
