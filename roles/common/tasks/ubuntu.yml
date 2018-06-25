@@ -57,12 +57,15 @@
   tags:
     - always
 
-- name: systemd-networkd enabled and started
+- name: systemd services enabled and started
   systemd:
-    name: systemd-networkd
+    name: "{{ item }}"
     state: started
     enabled: true
     daemon_reload: true
+  with_items:
+    - systemd-networkd
+    - systemd-resolved
   tags:
     - always
 
