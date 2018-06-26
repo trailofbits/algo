@@ -5,16 +5,21 @@
   register: _algo_server
   when: server is undefined
 
+- name: Set the facts
+  set_fact:
+    cloud_instance_ip: "{{ server | default(_algo_server.user_input) }}"
+
 - pause:
     prompt: |
       What user should we use to login on the server? (note: passwordless login required, or ignore if you're deploying to localhost)
       [root]
   register: _algo_ssh_user
-  when: ssh_user is undefined
+  when:
+    - ssh_user is undefined
+    - cloud_instance_ip != "localhost"
 
 - name: Set the facts
   set_fact:
-    cloud_instance_ip: "{{ server | default(_algo_server.user_input) }}"
     ansible_ssh_user: >-
       {% if ssh_user is defined %}{{ ssh_user }}
       {%- elif _algo_ssh_user.user_input is defined and _algo_ssh_user.user_input != "" %}{{ _algo_ssh_user.user_input }}
