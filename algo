@@ -444,33 +444,36 @@ Name the vpn server:
     17. South America East     (São Paulo A)
     18. South America East     (São Paulo B)
     19. South America East     (São Paulo C)
-    20. Western Europe         (Belgium B)
-    21. Western Europe         (Belgium C)
-    22. Western Europe         (Belgium D)
-    23. Western Europe         (London A)
-    24. Western Europe         (London B)
-    25. Western Europe         (London C)
-    26. Western Europe         (Frankfurt A)
-    27. Western Europe         (Frankfurt B)
-    28. Western Europe         (Frankfurt C)
-    29. Western Europe         (Netherlands A)
-    30. Western Europe         (Netherlands B)
-    31. Western Europe         (Netherlands C)
-    32. South Asia             (Mumbai A)
-    33. South Asia             (Mumbai B)
-    34. South Asia             (Mumbai C)
-    35. Southeast Asia         (Singapore A)
-    36. Southeast Asia         (Singapore B)
-    37. Southeast Asia         (Singapore C)
-    38. East Asia              (Taiwan A)
-    39. East Asia              (Taiwan B)
-    40. East Asia              (Taiwan C)
-    41. Northeast Asia         (Tokyo A)
-    42. Northeast Asia         (Tokyo B)
-    43. Northeast Asia         (Tokyo C)
-    44. Australia              (Sydney A)
-    45. Australia              (Sydney B)
-    46. Australia              (Sydney C)
+    20. Northern Europe        (Hamina A)
+    21. Northern Europe        (Hamina B)
+    22. Northern Europe        (Hamina C)
+    23. Western Europe         (Belgium B)
+    24. Western Europe         (Belgium C)
+    25. Western Europe         (Belgium D)
+    26. Western Europe         (London A)
+    27. Western Europe         (London B)
+    28. Western Europe         (London C)
+    29. Western Europe         (Frankfurt A)
+    30. Western Europe         (Frankfurt B)
+    31. Western Europe         (Frankfurt C)
+    32. Western Europe         (Netherlands A)
+    33. Western Europe         (Netherlands B)
+    34. Western Europe         (Netherlands C)
+    35. South Asia             (Mumbai A)
+    36. South Asia             (Mumbai B)
+    37. South Asia             (Mumbai C)
+    38. Southeast Asia         (Singapore A)
+    39. Southeast Asia         (Singapore B)
+    40. Southeast Asia         (Singapore C)
+    41. East Asia              (Taiwan A)
+    42. East Asia              (Taiwan B)
+    43. East Asia              (Taiwan C)
+    44. Northeast Asia         (Tokyo A)
+    45. Northeast Asia         (Tokyo B)
+    46. Northeast Asia         (Tokyo C)
+    47. Australia              (Sydney A)
+    48. Australia              (Sydney B)
+    49. Australia              (Sydney C)
 
 Please choose the number of your zone. Press enter for default (#20) zone.
 [20]: " -r region
@@ -496,33 +499,36 @@ Please choose the number of your zone. Press enter for default (#20) zone.
     17) zone="southamerica-east1-a" ;;
     18) zone="southamerica-east1-b" ;;
     19) zone="southamerica-east1-c" ;;
-    20) zone="europe-west1-b" ;;
-    21) zone="europe-west1-c" ;;
-    22) zone="europe-west1-d" ;;
-    23) zone="europe-west2-a" ;;
-    24) zone="europe-west2-b" ;;
-    25) zone="europe-west2-c" ;;
-    26) zone="europe-west3-a" ;;
-    27) zone="europe-west3-b" ;;
-    28) zone="europe-west3-c" ;;
-    29) zone="europe-west4-a" ;;
-    30) zone="europe-west4-b" ;;
-    31) zone="europe-west4-c" ;;
-    32) zone="asia-south1-a" ;;
-    33) zone="asia-south1-b" ;;
-    34) zone="asia-south1-c" ;;
-    35) zone="asia-southeast1-a" ;;
-    36) zone="asia-southeast1-b" ;;
-    37) zone="asia-southeast1-c" ;;
-    38) zone="asia-east1-a" ;;
-    39) zone="asia-east1-b" ;;
-    40) zone="asia-east1-c" ;;
-    41) zone="asia-northeast1-a" ;;
-    42) zone="asia-northeast1-b" ;;
-    43) zone="asia-northeast1-c" ;;
-    44) zone="australia-southeast1-a" ;;
-    45) zone="australia-southeast1-b" ;;
-    46) zone="australia-southeast1-c" ;;
+    20) zone="europe-north1-a" ;;
+    21) zone="europe-north1-b" ;;
+    22) zone="europe-north1-c" ;;
+    23) zone="europe-west1-b" ;;
+    24) zone="europe-west1-c" ;;
+    25) zone="europe-west1-d" ;;
+    26) zone="europe-west2-a" ;;
+    27) zone="europe-west2-b" ;;
+    28) zone="europe-west2-c" ;;
+    29) zone="europe-west3-a" ;;
+    30) zone="europe-west3-b" ;;
+    31) zone="europe-west3-c" ;;
+    32) zone="europe-west4-a" ;;
+    33) zone="europe-west4-b" ;;
+    34) zone="europe-west4-c" ;;
+    35) zone="asia-south1-a" ;;
+    36) zone="asia-south1-b" ;;
+    37) zone="asia-south1-c" ;;
+    38) zone="asia-southeast1-a" ;;
+    39) zone="asia-southeast1-b" ;;
+    40) zone="asia-southeast1-c" ;;
+    41) zone="asia-east1-a" ;;
+    42) zone="asia-east1-b" ;;
+    43) zone="asia-east1-c" ;;
+    44) zone="asia-northeast1-a" ;;
+    45) zone="asia-northeast1-b" ;;
+    46) zone="asia-northeast1-c" ;;
+    47) zone="australia-southeast1-a" ;;
+    48) zone="australia-southeast1-b" ;;
+    49) zone="australia-southeast1-c" ;;
   esac
 
   ROLES="gce vpn cloud"
