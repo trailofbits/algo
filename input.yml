@@ -10,6 +10,7 @@
       local_dns: false
       ssh_tunneling: false
       windows: false
+      store_cakey: false
     providers_map:
       - { name: DigitalOcean, alias: digitalocean }
       - { name: Amazon EC2, alias: ec2 }
