@@ -11,14 +11,6 @@
 :POSTROUTING ACCEPT [0:0]
 
 {% if max_mss is defined %}
-# MSS is the TCP Max Segment Size
-# Setting the 'max_mss' Ansible variable can solve some issues related to packet fragmentation
-# This appears to be necessary on (at least) Google Cloud,
-# however, some routers also require a change to this parameter
-# See also:
-# - https://github.com/trailofbits/algo/issues/216
-# - https://github.com/trailofbits/algo/issues?utf8=%E2%9C%93&q=is%3Aissue%20mtu
-# - https://serverfault.com/questions/601143/ssh-not-working-over-ipsec-tunnel-strongswan
 -A FORWARD -s {{ vpn_network }}{% if wireguard_enabled %},{{ wireguard_vpn_network }}{% endif %} -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss {{ max_mss }}
 {% endif %}
 
