@@ -19,56 +19,51 @@
   vars:
     ansible_python_interpreter: /usr/bin/python3
 
-- setup:
+- name: Gather facts
+  setup:
 
 - name: Cloud only tasks
   block:
-  - name: Install software updates
-    apt:
-      update_cache: true
-      install_recommends: true
-      upgrade: dist
+    - name: Install software updates
+      apt:
+        update_cache: true
+        install_recommends: true
+        upgrade: dist
 
-  - name: Upgrade the ca certificates
-    apt:
-      name: ca-certificates
-      state: latest
+    - name: Check if reboot is required
+      shell: >
+        if [[ -e /var/run/reboot-required ]]; then echo "required"; else echo "no"; fi
+      args:
+        executable: /bin/bash
+      register: reboot_required
 
-  - name: Check if reboot is required
-    shell: >
-      if [[ -e /var/run/reboot-required ]]; then echo "required"; else echo "no"; fi
-    args:
-      executable: /bin/bash
-    register: reboot_required
+    - name: Reboot
+      shell: sleep 2 && shutdown -r now "Ansible updates triggered"
+      async: 1
+      poll: 0
+      when: reboot_required is defined and reboot_required.stdout == 'required'
+      ignore_errors: true
 
-  - name: Reboot
-    shell: sleep 2 && shutdown -r now "Ansible updates triggered"
-    async: 1
-    poll: 0
-    when: reboot_required is defined and reboot_required.stdout == 'required'
-    ignore_errors: true
+    - name: Wait until SSH becomes ready...
+      local_action:
+        module: wait_for
+        port: 22
+        host: "{{ inventory_hostname }}"
+        search_regex: OpenSSH
+        delay: 10
+        timeout: 320
+      when: reboot_required is defined and reboot_required.stdout == 'required'
+      become: false
+  when: algo_provider != "local"
 
-  - name: Wait until SSH becomes ready...
-    local_action:
-      module: wait_for
-      port: 22
-      host: "{{ inventory_hostname }}"
-      search_regex: OpenSSH
-      delay: 10
-      timeout: 320
-    when: reboot_required is defined and reboot_required.stdout == 'required'
-    become: false
+- name: Include unatteded upgrades configuration
+  import_tasks: unattended-upgrades.yml
 
-  - name: Include unatteded upgrades configuration
-    import_tasks: unattended-upgrades.yml
-
-  - name: Disable MOTD on login and SSHD
-    replace: dest="{{ item.file }}" regexp="{{ item.regexp }}" replace="{{ item.line }}"
-    with_items:
-      - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/login' }
-      - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/sshd' }
-  tags:
-    - cloud
+- name: Disable MOTD on login and SSHD
+  replace: dest="{{ item.file }}" regexp="{{ item.regexp }}" replace="{{ item.line }}"
+  with_items:
+    - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/login' }
+    - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/sshd' }
 
 - name: Loopback for services configured
   template:
