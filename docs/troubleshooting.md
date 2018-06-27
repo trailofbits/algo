@@ -209,6 +209,8 @@ Then, set the MTU size on your network adapter (wlan0 or eth0):
 $ sudo ifconfig wlan0 mtu 1438
 ```
 
+If you still have problems try to define the `max_mss` variable in config.cfg and redeploy your server
+
 ### "Error 809" or IKE_AUTH requests that never make it to the server
 
 On Windows, this issue may manifest with an error message that says "The network connection between your computer and the VPN server could not be established because the remote server is not responding... This is Error 809." On other operating systems, you may try to debug the issue by capturing packets with tcpdump and notice that, while IKE_SA_INIT request and responses are exchanged between the client and server, IKE_AUTH requests never make it to the server.
