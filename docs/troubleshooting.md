@@ -196,7 +196,9 @@ You're trying to connect Ubuntu or Debian to the Algo server through the Network
 
 ### Various websites appear to be offline through the VPN
 
-This issue appears intermittently due to issues with MTU size. If you experience this issue, we recommend [filing an issue](https://github.com/trailofbits/algo/issues/new) for assistance. Advanced users can troubleshoot the correct MTU size by retrying `ping` with the "don't fragment" bit set, then decreasing packet size until it works. This will determine the correct MTU size for your network, which you then need to update on your network adapter.
+This issue appears intermittently due to issues with MTU size. Different networks may require the MTU within a specific range to correctly pass traffic. We made an effort to set the MTU to the most conservative, most compatible size by default but problems may still occur.
+
+Advanced users can troubleshoot the correct MTU size by retrying `ping` with the "don't fragment" bit set, then decreasing packet size until it works. This will determine the correct MTU size for your network, which you then need to update on your network adapter.
 
 E.g., On Linux (client -- Ubuntu 18.04), connect to your IPsec tunnel then use the following commands to determine the correct MTU size:
 ```
@@ -209,7 +211,7 @@ Then, set the MTU size on your network adapter (wlan0 or eth0):
 $ sudo ifconfig wlan0 mtu 1438
 ```
 
-If you still have problems try to define the `max_mss` variable in config.cfg and redeploy your server
+You can also set the `max_mss` variable to a new value in config.cfg, and then redeploy your server rather than reconfigure the current one in-place.
 
 ### "Error 809" or IKE_AUTH requests that never make it to the server
 
