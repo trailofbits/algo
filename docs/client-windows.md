@@ -48,12 +48,12 @@ Add-VpnConnection @addVpnParams
 
 $setVpnParams = @{
     ConnectionName = $VpnName
-    AuthenticationTransformConstants = "GCMAES128"
-    CipherTransformConstants = "GCMAES128"
-    EncryptionMethod = "AES128"
+    AuthenticationTransformConstants = "GCMAES256"
+    CipherTransformConstants = "GCMAES256"
+    EncryptionMethod = "AES256"
     IntegrityCheckMethod = "SHA384"
-    DHGroup = "ECP256"
-    PfsGroup = "ECP256"
+    DHGroup = "ECP384"
+    PfsGroup = "ECP384"
     Force = $true
 }
 Set-VpnConnectionIPsecConfiguration @setVpnParams
