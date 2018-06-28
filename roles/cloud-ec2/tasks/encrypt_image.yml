@@ -1,8 +1,8 @@
 ---
 - name: Check if the encrypted image already exist
   ec2_ami_facts:
-    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'), true)}}"
-    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true)}}"
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
     owners: self
     region: "{{ algo_region }}"
     filters:
@@ -12,8 +12,8 @@
 
 - name: Copy to an encrypted image
   ec2_ami_copy:
-    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'), true)}}"
-    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true)}}"
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
     encrypted: yes
     name: algo
     kms_key_id: "{{ kms_key_id | default(omit) }}"

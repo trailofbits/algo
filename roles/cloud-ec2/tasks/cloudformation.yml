@@ -1,8 +1,8 @@
 ---
 - name: Deploy the template
   cloudformation:
-    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'), true)}}"
-    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true)}}"
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
     stack_name: "{{ stack_name }}"
     state: "present"
     region: "{{ algo_region }}"
