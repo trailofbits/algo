@@ -227,3 +227,21 @@ Required variables:
 - server - IP or hostname to access the server via SSH
 - endpoint - Public IP address of your server
 - ssh_user
+
+
+### Update users
+
+Playbook:
+
+```
+users.yml
+```
+
+Required variables:
+
+- server - IP or hostname to access the server via SSH
+- ca_password - Password to access the CA key
+
+Tags required:
+
+- update-users
