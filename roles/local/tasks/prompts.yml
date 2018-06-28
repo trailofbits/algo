@@ -2,12 +2,16 @@
 - pause:
     prompt: |
       Enter the IP address of your server: (or use localhost for local installation):
+      [localhost]
   register: _algo_server
   when: server is undefined
 
 - name: Set the facts
   set_fact:
-    cloud_instance_ip: "{{ server | default(_algo_server.user_input) }}"
+    cloud_instance_ip:  >-
+      {% if server is defined %}{{ server }}
+      {%- elif _algo_server.user_input is defined and _algo_server.user_input != "" %}{{ _algo_server.user_input }}
+      {%- else %}localhost{% endif %}
 
 - pause:
     prompt: |
