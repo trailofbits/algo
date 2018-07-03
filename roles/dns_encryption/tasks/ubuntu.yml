@@ -5,10 +5,10 @@
     codename: artful
     repo: ppa:shevchuk/dnscrypt-proxy
   register: result
-  until: result|succeeded
+  until: result is succeeded
   retries: 10
   delay: 3
-  
+
 - name: Install dnscrypt-proxy
   apt:
     name: dnscrypt-proxy

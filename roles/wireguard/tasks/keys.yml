@@ -13,7 +13,6 @@
   register: wg_genkey
   args:
     creates: "/etc/wireguard/private_{{ item }}.lock"
-    executable: bash
   with_items:
     - "{{ users }}"
     - "{{ IP_subject_alt_name }}"
