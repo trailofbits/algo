@@ -27,15 +27,15 @@ See below for more information about providers and extra variables
 
 ### Variables
 
-- `provider` - The provider to use. See possible values below
-- `server_name` - Server name (Default: algo)
-- `ondemand_cellular` - VPN On Demand when connected to cellular networks. Boolean (Default: false)
-- `ondemand_wifi` - VPN On Demand when connected to WiFi networks. Boolean (Default: false)
-- `ondemand_wifi_exclude` - WiFi networks to exclude from using the VPN. Comma-separated values
-- `local_dns` - Enable a DNS resolver. Boolean (Default: false)
-- `ssh_tunneling` - Enable SSH tunneling for each user. Boolean (Default: false)
-- `windows` - Enables compatible ciphers and key exchange to support Windows clietns, less secure. Boolean (Default: false)
-- `store_cakey` - Whether or not keep the CA key (required to add users in the future, but less secure). Boolean (Default: false)
+- `provider` - (Required) The provider to use. See possible values below
+- `server_name` - (Required) Server name. Default: algo
+- `ondemand_cellular` (Optional) VPN On Demand when connected to cellular networks. Default: false
+- `ondemand_wifi` - (Optional. See `ondemand_wifi_exclude`) VPN On Demand when connected to WiFi networks. Default: false
+- `ondemand_wifi_exclude` (Required if `ondemand_wifi` set) - WiFi networks to exclude from using the VPN. Comma-separated values
+- `local_dns` - (Optional) Enable a DNS resolver. Default: false
+- `ssh_tunneling` - (Optional) Enable SSH tunneling for each user. Default: false
+- `windows` - (Optional) Enables compatible ciphers and key exchange to support Windows clietns, less secure. Default: false
+- `store_cakey` - (Optional) Whether or not keep the CA key (required to add users in the future, but less secure). Default: false
 
 If any of those unspecified ansible will ask the user to input
 
