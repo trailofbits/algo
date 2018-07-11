@@ -50,7 +50,6 @@ Cloud roles:
 - role: cloud-vultr,        provider: vultr
 - role: cloud-gce,          provider: gce
 - role: cloud-azure,        provider: azure
-- role: cloud-lightsail,    provider: lightsail
 - role: cloud-scaleway,     provider: scaleway
 - role: cloud-openstack,    provider: openstack
 
