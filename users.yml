@@ -59,6 +59,7 @@
     - "configs/{{ inventory_hostname }}/config.yml"
 
   roles:
+    - role: common
     - role: ssh_tunneling
       when: algo_ssh_tunneling
     - role: wireguard

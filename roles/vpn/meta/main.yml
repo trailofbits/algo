@@ -1,7 +1,6 @@
 ---
 
 dependencies:
-  - { role: common, tags: common }
   - role: dns_encryption
     tags: dns_encryption
     when: dns_encryption
