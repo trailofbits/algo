@@ -30,7 +30,7 @@ options:
       - Name of the instance
     required: true
     default : null
-  zone:Ce
+  zone:
     description:
       - AWS availability zone in which to launch the instance. Required when state='present'
     required: false
