@@ -56,7 +56,7 @@
             - "{{ congrats.common.split('\n') }}"
             - "    {{ congrats.p12_pass }}"
             - "    {% if algo_store_cakey %}{{ congrats.ca_key_pass }}{% endif %}"
-            - "    {% if cloud_deployment is defined %}{{ congrats.ssh_access }}{% endif %}"
+            - "    {% if algo_provider != 'local' %}{{ congrats.ssh_access }}{% endif %}"
       tags: always
       rescue:
         - debug: var=fail_hint
