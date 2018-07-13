@@ -5,18 +5,22 @@
       Note: Make sure to use an IAM user with an acceptable policy attached (see https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md)
     echo: false
   register: _aws_access_key
-  when: aws_access_key is undefined
+  when:
+     - aws_access_key is undefined
+     - lookup('env','AWS_ACCESS_KEY_ID')|length <= 0
 
 - pause:
     prompt: |
       Enter your aws_secret_key (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
     echo: false
   register: _aws_secret_key
-  when: aws_secret_key is undefined
+  when:
+    - aws_secret_key is undefined
+    - lookup('env','AWS_SECRET_ACCESS_KEY')|length <= 0
 
 - set_fact:
-    access_key: "{{ aws_access_key | default(_aws_access_key.user_input|default(omit)) | default(lookup('env','AWS_ACCESS_KEY_ID'), true) }}"
-    secret_key: "{{ aws_secret_key | default(_aws_secret_key.user_input|default(omit)) | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true) }}"
+    access_key: "{{ aws_access_key | default(_aws_access_key.user_input|default(None)) | default(lookup('env','AWS_ACCESS_KEY_ID'), true) }}"
+    secret_key: "{{ aws_secret_key | default(_aws_secret_key.user_input|default(None)) | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true) }}"
 
 - block:
   - name: Get regions

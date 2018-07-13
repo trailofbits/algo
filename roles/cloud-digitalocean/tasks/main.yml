@@ -2,7 +2,7 @@
     - name: Include prompts
       import_tasks: prompts.yml
 
-    - name: Set the DigitalOcean Access Token fact
+    - name: Set additional facts
       set_fact:
         algo_do_region: >-
           {% if region is defined %}{{ region }}
