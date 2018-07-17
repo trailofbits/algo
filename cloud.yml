@@ -1,7 +1,7 @@
 ---
 - name: Provision the server
   hosts: localhost
-  tags: algo
+  tags: always
   vars_files:
     - config.cfg
 

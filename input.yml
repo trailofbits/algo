@@ -1,7 +1,7 @@
 ---
 - name: Ask user for the input
   hosts: localhost
-  tags: algo
+  tags: always
   vars:
     defaults:
       server_name: algo

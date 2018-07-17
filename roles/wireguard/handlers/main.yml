@@ -1,5 +1,5 @@
 ---
 - name: restart wireguard
   service:
-    name: "wg-quick@{{ wireguard_interface }}"
+    name: "{{ service_name }}"
     state: restarted

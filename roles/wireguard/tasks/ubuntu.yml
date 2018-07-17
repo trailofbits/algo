@@ -1,0 +1,32 @@
+---
+- name: WireGuard repository configured
+  apt_repository:
+    repo: ppa:wireguard/wireguard
+    state: present
+  register: result
+  until: result is succeeded
+  retries: 10
+  delay: 3
+
+- name: WireGuard installed
+  apt:
+    name: wireguard
+    state: present
+    update_cache: true
+
+- name: WireGuard reload-module-on-update
+  file:
+    dest: /etc/wireguard/.reload-module-on-update
+    state: touch
+
+- name: Configure unattended-upgrades
+  copy:
+    src: 50-wireguard-unattended-upgrades
+    dest: /etc/apt/apt.conf.d/50-wireguard-unattended-upgrades
+    owner: root
+    group: root
+    mode: 0644
+
+- set_fact:
+    service_name: "wg-quick@{{ wireguard_interface }}"
+  tags: always
