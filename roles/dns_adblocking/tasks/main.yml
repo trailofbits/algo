@@ -8,7 +8,7 @@
     - name: Dnsmasq installed
       package: name=dnsmasq
 
-    - name: Ensure that the dnsmasq user exist
+    - name: Ensure that the dnsmasq user exists
       user: name=dnsmasq groups=nogroup append=yes state=present
 
     - name: The dnsmasq directory created
