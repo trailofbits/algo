@@ -41,18 +41,6 @@ listen_addresses  = ['{{ local_service_ip }}:{{ listen_port }}']
 max_clients = 250
 
 
-## Switch to a non-privileged system user after listening sockets have been created.
-## Two processes will be running.
-## The first one will keep root privileges, but is only a supervisor, that does nothing
-## except create the sockets, manage the service, and restart it if it crashes.
-## The second process is the service itself, and that one will always run as a different
-## user.
-## Note (1): this feature is currently unsupported on Windows.
-## Note (2): this feature is not compatible with systemd socket activation.
-
-user_name = 'nobody'
-
-
 ## Require servers (from static + remote sources) to satisfy specific properties
 
 # Use servers reachable over IPv4
