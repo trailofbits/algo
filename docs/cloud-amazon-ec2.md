@@ -38,8 +38,7 @@ On the final screen, click the Download CSV button. This file includes the AWS a
 
 ## Using EC2 during Algo setup
 
-After you have downloaded Algo and installed its dependencies, the next step is running Algo to provision the VPN server 
-on your AWS account.
+After you have downloaded Algo and installed its dependencies, the next step is running Algo to provision the VPN server  on your AWS account.
 
 First you will be asked which server type to setup. You would want to enter "2" to use Amazon EC2.
 
@@ -59,9 +58,7 @@ Enter the number of your desired provider
 : 2
 ```
 
-Next you will be asked for the AWS Access Key (Access Key ID) and AWS Secret Key (Secret Access Key) that you received in 
-the CSV file when you setup the account (don't worry if you don't see your text entered in the console; the key input is 
-hidden here by Algo).
+Next you will be asked for the AWS Access Key (Access Key ID) and AWS Secret Key (Secret Access Key) that you received in  the CSV file when you setup the account (don't worry if you don't see your text entered in the console; the key input is  hidden here by Algo).
 
 ```
 Enter your aws_access_key (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
@@ -74,16 +71,14 @@ Enter your aws_secret_key (http://docs.aws.amazon.com/general/latest/gr/managing
 [ABCD...]: 
 ```
 
-You will be prompted for the server name to enter. Feel free to leave this as the default ("algo") if you are not certain 
-how this will affect your setup. Here we chose to call it "algovpn".
+You will be prompted for the server name to enter. Feel free to leave this as the default ("algo") if you are not certain  how this will affect your setup. Here we chose to call it "algovpn".
 
 ```
 Name the vpn server:
 [algo]: algovpn
 ```
 
-After entering the server name, the script ask which region you wish to setup your new Algo instance in. Enter the number 
-next to name of the region.
+After entering the server name, the script ask which region you wish to setup your new Algo instance in. Enter the number  next to name of the region.
 
 ```
   What region should the server be located in?
