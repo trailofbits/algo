@@ -191,6 +191,7 @@ After this process completes, the Algo VPN server will contains only the users l
   - Setup [Android](docs/client-android.md) clients
   - Setup [Generic/Linux](docs/client-linux.md) clients with Ansible
 * Cloud setup
+  - Configure [Amazon EC2](docs/cloud-amazon-ec2.md)
   - Configure [Azure](docs/cloud-azure.md)
   - Configure [DigitalOcean](docs/cloud-do.md)
 * Advanced Deployment
