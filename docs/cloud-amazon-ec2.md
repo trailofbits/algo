@@ -12,6 +12,14 @@ The cheapest EC2 plan you can choose is the "Free Plan" a.k.a. the "AWS Free Tie
 
 As of the time of this writing (July 2018), the Free Tier limits include "750 hours of Amazon EC2 Linux t2.micro instance  usage" per month, 15 GB of bandwidth (outbound) per month, and 30 GB of cloud storage. Algo will not even use 1% of the storage limit, but you may have to monitor your bandwidth usage or keep an eye out for the email from Amazon when you are about to exceed the Free Tier limits.
 
+### Create an AWS permissions policy
+
+In the AWS console, find the policies menu: click Services > IAM > Policies. Click Create Policy.
+
+Here, you have the policy editor. Switch to the JSON tab and copy-paste over the existing empty policy with [the minimum required AWS policy needed for Algo deployment](https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md#minimum-required-iam-permissions-for-deployment).
+
+![Creating a new permissions policy in the AWS console.](/docs/images/aws-ec2-new-policy.png)
+
 ### Set up an AWS user
 
 In the AWS console, find the users (“Identiy and Access Management”, a.k.a. IAM users) menu: click Services > IAM.
@@ -24,7 +32,7 @@ Now "Create individual IAM users" and click Add User. Create a user name. I chos
 
 ![The IAM user naming screen in the AWS console.](/docs/images/aws-ec2-new-user-name.png)
 
-Next, click “Attach existing policies directly.” Type “admin” in the search box to filter the policies. Find “AdministratorAccess” and click the checkbox next to that. Click Next when you’re done.
+Next, click “Attach existing policies directly.” Type “Algo” in the search box to filter the policies. Find “AlgoVPN_Provisioning” (the policy you created) and click the checkbox next to that. Click Next when you’re done.
 
 ![Attaching a policy to an IAM user in the AWS console.](/docs/images/aws-ec2-attach-policy.png)
 
