@@ -2,45 +2,29 @@
 
 ## AWS account creation
 
-Creating an Amazon AWS account requires giving Amazon a phone number that can receive a call and has a number pad to enter a 
-PIN challenge displayed in the browser. This phone system prompt occasionally fails to correctly validate input, but try again 
-(request a new PIN in the browser) until you succeed.
+Creating an Amazon AWS account requires giving Amazon a phone number that can receive a call and has a number pad to enter a PIN challenge displayed in the browser. This phone system prompt occasionally fails to correctly validate input, but try again (request a new PIN in the browser) until you succeed.
 
 ### Select an EC2 plan
 
-The cheapest EC2 plan you can choose is the "Free Plan" a.k.a. the "AWS Free Tier." It is only available to new AWS customers, 
-it has limits on usage, and is converts to standard pricing after 12 months (the "introductory period"). After you exceed the 
-usage limits, after the 12 month period, or if you are an existing AWS customer, then you will pay standard pay-as-you-go 
-service prices.
+The cheapest EC2 plan you can choose is the "Free Plan" a.k.a. the "AWS Free Tier." It is only available to new AWS customers, it has limits on usage, and is converts to standard pricing after 12 months (the "introductory period"). After you exceed the usage limits, after the 12 month period, or if you are an existing AWS customer, then you will pay standard pay-as-you-go service prices.
 
-*Note*: Your Algo instance will not stop working when you hit the bandwidth limit, you will just start accumulating service 
-charges on your AWS account.
+*Note*: Your Algo instance will not stop working when you hit the bandwidth limit, you will just start accumulating service charges on your AWS account.
 
-As of the time of this writing (July 2018), the Free Tier limits include "750 hours of Amazon EC2 Linux t2.micro instance 
-usage" per month, 15 GB of bandwidth (outbound) per month, and 30 GB of cloud storage. Algo will not even use 1% of the storage
-limit, but you may have to monitor your bandwidth usage or keep an eye out for the email from Amazon when you are about to 
-exceed the Free Tier limits.
+As of the time of this writing (July 2018), the Free Tier limits include "750 hours of Amazon EC2 Linux t2.micro instance  usage" per month, 15 GB of bandwidth (outbound) per month, and 30 GB of cloud storage. Algo will not even use 1% of the storage limit, but you may have to monitor your bandwidth usage or keep an eye out for the email from Amazon when you are about to exceed the Free Tier limits.
 
 ### Set up an AWS user
 
 In the AWS console, find the users (“Identiy and Access Management”, a.k.a. IAM users) menu: click Services > IAM.
 
-Activate multi-factor authentication (MFA) on your root account. The simplest choice is the mobile app "Google Authenticator." 
-A hardware U2F token is ideal (less prone to a phishing attack), but a TOTP authenticator like this is good enough.
+Activate multi-factor authentication (MFA) on your root account. The simplest choice is the mobile app "Google Authenticator." A hardware U2F token is ideal (less prone to a phishing attack), but a TOTP authenticator like this is good enough.
 
 ![The new user screen in the AWS console.](/docs/images/aws-ec2-new-user.png)
 
-Now "Create individual IAM users" and click Add User.
-
-Create a user name. I chose “algovpn”. Then click the box next to Programmatic Access. Then click Next.
+Now "Create individual IAM users" and click Add User. Create a user name. I chose “algovpn”. Then click the box next to Programmatic Access. Then click Next.
 
 ![The IAM user naming screen in the AWS console.](/docs/images/aws-ec2-new-user-name.png)
 
-Next, click “Attach existing policies directly.”
-
-Type “admin” in the search box to filter the policies. Find “AdministratorAccess” and click the checkbox next to that. 
-
-Click Next when you’re done.
+Next, click “Attach existing policies directly.” Type “admin” in the search box to filter the policies. Find “AdministratorAccess” and click the checkbox next to that. Click Next when you’re done.
 
 ![Attaching a policy to an IAM user in the AWS console.](/docs/images/aws-ec2-attach-policy.png)
 
@@ -48,8 +32,7 @@ The user creation confirmation screen should look like this if you've done every
 
 ![New user creation confirmation screen in the AWS console.](/docs/images/aws-ec2-new-user-confirm.png)
 
-On the final screen, click the Download CSV button. This file includes the AWS access keys you’ll need during the Algo set-up 
-process. Click Close, and you’re all set.
+On the final screen, click the Download CSV button. This file includes the AWS access keys you’ll need during the Algo set-up process. Click Close, and you’re all set.
 
 ![Downloading the credentials for an AWS IAM user.](/docs/images/aws-ec2-new-user-csv.png)
 
