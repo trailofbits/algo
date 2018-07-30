@@ -18,7 +18,7 @@
      * [I can't get my router to connect to the Algo server](#i-cant-get-my-router-to-connect-to-the-algo-server)
      * [I can't get Network Manager to connect to the Algo server](#i-cant-get-network-manager-to-connect-to-the-algo-server)
      * [Various websites appear to be offline through the VPN](#various-websites-appear-to-be-offline-through-the-vpn)
-     * [Devices appear to be stuck in reconnection loop](#devices-appear-to-be-stuck-in-reconnection-loop)
+     * [Clients appear stuck in a reconnection loop](#clients-appear-stuck-in-a-reconnection-loop)
      * ["Error 809" or IKE_AUTH requests that never make it to the server](#error-809-or-ike_auth-requests-that-never-make-it-to-the-server)
   * [I have a problem not covered here](#i-have-a-problem-not-covered-here)
 
