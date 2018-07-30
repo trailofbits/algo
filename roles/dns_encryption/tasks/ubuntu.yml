@@ -2,7 +2,7 @@
 - name: Add the repository
   apt_repository:
     state: present
-    codename: artful
+    codename: bionic
     repo: ppa:shevchuk/dnscrypt-proxy
   register: result
   until: result|succeeded
