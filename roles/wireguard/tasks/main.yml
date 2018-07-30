@@ -14,6 +14,14 @@
     state: present
     update_cache: true
 
+- name: Configure unattended-upgrades
+  copy:
+    src: 50-wireguard-unattended-upgrades
+    dest: /etc/apt/apt.conf.d/50-wireguard-unattended-upgrades
+    owner: root
+    group: root
+    mode: 0644
+
 - name: Ensure the required directories exist
   file:
     dest: "{{ wireguard_config_path }}/{{ item }}"
