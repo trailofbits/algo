@@ -18,6 +18,7 @@
      * [I can't get my router to connect to the Algo server](#i-cant-get-my-router-to-connect-to-the-algo-server)
      * [I can't get Network Manager to connect to the Algo server](#i-cant-get-network-manager-to-connect-to-the-algo-server)
      * [Various websites appear to be offline through the VPN](#various-websites-appear-to-be-offline-through-the-vpn)
+     * [Devices appear to be stuck in reconnection loop](#devices-appear-to-be-stuck-in-reconnection-loop)
      * ["Error 809" or IKE_AUTH requests that never make it to the server](#error-809-or-ike_auth-requests-that-never-make-it-to-the-server)
   * [I have a problem not covered here](#i-have-a-problem-not-covered-here)
 
@@ -212,6 +213,17 @@ $ sudo ifconfig wlan0 mtu 1438
 ```
 
 You can also set the `max_mss` variable to a new value in config.cfg, and then redeploy your server rather than reconfigure the current one in-place.
+
+### Devices appear to be stuck in reconnection loop
+
+If you're using 'connect on demand' on iOS and your device appears to be stuck in a reconnection loop after switching from WiFi to LTE or vice versa, you can disable charon DoS protection.
+
+The configuration value can be found in `/etc/strongswan.d/charon.conf`. After making the change you must reload or restart ipsec.
+
+Example command:
+```
+sed -i -e 's/#*.dos_protection = yes/dos_protection = no/' /etc/strongswan.d/charon.conf && ipsec restart
+```
 
 ### "Error 809" or IKE_AUTH requests that never make it to the server
 
