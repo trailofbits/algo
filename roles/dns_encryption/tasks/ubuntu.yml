@@ -8,12 +8,20 @@
   until: result|succeeded
   retries: 10
   delay: 3
-  
+
 - name: Install dnscrypt-proxy
   apt:
     name: dnscrypt-proxy
     state: latest
     update_cache: true
+
+- name: Configure unattended-upgrades
+  copy:
+    src: 50-dnscrypt-proxy-unattended-upgrades
+    dest: /etc/apt/apt.conf.d/50-dnscrypt-proxy-unattended-upgrades
+    owner: root
+    group: root
+    mode: 0644
 
 - block:
   - name: Ubuntu | Unbound profile for apparmor configured

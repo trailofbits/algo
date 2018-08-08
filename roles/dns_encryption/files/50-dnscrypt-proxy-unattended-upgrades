@@ -1,0 +1,4 @@
+// Automatically upgrade packages from these (origin:archive) pairs
+Unattended-Upgrade::Allowed-Origins {
+    "LP-PPA-shevchuk-dnscrypt-proxy:${distro_codename}";
+};
