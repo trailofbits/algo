@@ -94,6 +94,7 @@ server={{ local_service_ip }}#5353
 {% for host in dns_servers.ipv4 %}
 server={{ host }}
 {% endfor %}
+stop-dns-rebind
 {% endif %}
 
 # and this sets the source (ie local) address used to talk to
