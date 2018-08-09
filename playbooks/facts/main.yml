@@ -24,6 +24,7 @@
     module: shell
       openssl rand -hex 16
   become: no
+  ignore_errors: yes
   register: CA_password
 
 - name: Generate p12 export password
