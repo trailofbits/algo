@@ -42,7 +42,6 @@ before_cache:
   - sudo chown $USER. $HOME/lxc/cache.tar
 
 env:
-  - LXC_NAME=ubuntu1804 LXC_DISTRO=ubuntu LXC_RELEASE=18.04
   - LXC_NAME=docker LXC_DISTRO=ubuntu LXC_RELEASE=18.04
 
 before_install:
@@ -67,8 +66,8 @@ install:
 script:
   # - awesome_bot --allow-dupe --skip-save-results *.md docs/*.md --white-list paypal.com,do.co,microsoft.com,https://github.com/trailofbits/algo/archive/master.zip,https://github.com/trailofbits/algo/issues/new
 # - shellcheck algo
-# - ansible-lint deploy.yml users.yml deploy_client.yml
-  - ansible-playbook deploy.yml --syntax-check
+# - ansible-lint main.yml users.yml deploy_client.yml
+  - ansible-playbook main.yml --syntax-check
   - ./tests/local-deploy.sh
   - ./tests/update-users.sh
 

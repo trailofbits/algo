@@ -1,5 +1,11 @@
 ---
 - block:
+    - name: Include WireGuard role
+      include_role:
+        name: wireguard
+      tags: wireguard
+      when: wireguard_enabled and ansible_distribution == 'Ubuntu'
+
     - name: Ensure that the strongswan group exist
       group: name=strongswan state=present
 
@@ -9,25 +15,25 @@
     - include_tasks: ubuntu.yml
       when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
-    - include_tasks: freebsd.yml
-      when: ansible_distribution == 'FreeBSD'
-
     - name: Install strongSwan
       package: name=strongswan state=present
 
-    - include_tasks: ipsec_configuration.yml
-    - include_tasks: openssl.yml
+    - import_tasks: ipsec_configuration.yml
+    - import_tasks: openssl.yml
       tags: update-users
-    - include_tasks: distribute_keys.yml
-    - include_tasks: client_configs.yml
+    - import_tasks: distribute_keys.yml
+    - import_tasks: client_configs.yml
       delegate_to: localhost
       become: no
       tags: update-users
 
-    - meta: flush_handlers
-
     - name: strongSwan started
-      service: name=strongswan state=started
+      service:
+        name: strongswan
+        state: started
+        enabled: true
+
+    - meta: flush_handlers
   rescue:
     - debug: var=fail_hint
       tags: always

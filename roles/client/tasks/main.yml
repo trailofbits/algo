@@ -2,7 +2,7 @@
   setup:
 
 - name: Include system based facts and tasks
-  include_tasks: systems/main.yml
+  import_tasks: systems/main.yml
 
 - name: Install prerequisites
   package: name="{{ item }}" state=present

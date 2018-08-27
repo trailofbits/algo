@@ -1,6 +1,13 @@
 ---
-
 - set_fact:
+    config_prefix: "/usr/local/"
+    root_group: wheel
+    ssh_service_name: sshd
+    apparmor_enabled: false
+    strongswan_additional_plugins:
+      - kernel-pfroute
+      - kernel-pfkey
+    ansible_python_interpreter: /usr/local/bin/python2.7
     tools:
       - git
       - subversion
@@ -14,6 +21,15 @@
         value: 1
       - item: net.inet6.ip6.forwarding
         value: 1
+  tags:
+    - always
+
+- setup:
+
+- name: Install tools
+  package: name="{{ item }}" state=present
+  with_items:
+    - "{{ tools|default([]) }}"
   tags:
     - always
 

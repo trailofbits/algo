@@ -78,10 +78,10 @@ You will then be asked the remainder of the setup questions.
 
 ## Using DigitalOcean with Algo (via Ansible)
 
-If you are using Ansible to deploy to DigitalOcean, you will need to pass the API Token to Ansible as `do_access_token`.
+If you are using Ansible to deploy to DigitalOcean, you will need to pass the API Token to Ansible as `do_token`.
 
 For example,
 
-    ansible-playbook deploy.yml -t digitalocean,vpn,cloud -e 'do_access_token=my_secret_token do_server_name=algo.local do_region=ams2
+    ansible-playbook deploy.yml -e 'provider=digitalocean do_token=my_secret_token'
 
-Where "my_secret_token" is your API Token.
+Where "my_secret_token" is your API Token. For more references see [deploy-from-ansible](deploy-from-ansible.md)

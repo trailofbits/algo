@@ -1,0 +1,36 @@
+- block:
+  - name: Include prompts
+    import_tasks: prompts.yml
+
+  - name: Upload the SSH key
+    vr_ssh_key:
+      name: "{{ SSH_keys.comment }}"
+      ssh_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
+    register: ssh_key
+
+  - name: Creating a server
+    vr_server:
+      name: "{{ algo_server_name }}"
+      hostname: "{{ algo_server_name }}"
+      os: "{{ cloud_providers.vultr.os }}"
+      plan: "{{ cloud_providers.vultr.size }}"
+      region: "{{ algo_vultr_region }}"
+      state: started
+      tag: Environment:Algo
+      ssh_key: "{{ ssh_key.vultr_ssh_key.name }}"
+      ipv6_enabled: true
+      auto_backup_enabled: false
+      notify_activate: false
+    register: vultr_server
+
+  - set_fact:
+      cloud_instance_ip: "{{ vultr_server.vultr_server.v4_main_ip }}"
+      ansible_ssh_user: root
+
+  environment:
+    VULTR_API_CONFIG: "{{ algo_vultr_config }}"
+  rescue:
+    - debug: var=fail_hint
+      tags: always
+    - fail:
+      tags: always

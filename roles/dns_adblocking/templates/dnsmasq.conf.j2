@@ -88,7 +88,7 @@ no-resolv
 # You can control how dnsmasq talks to a server: this forces
 # queries to 10.1.2.3 to be routed via eth1
 # server=10.1.2.3@eth1
-{% if dns_encryption|default(false)|bool == true %}
+{% if dns_encryption %}
 server={{ local_service_ip }}#5353
 {% else %}
 {% for host in dns_servers.ipv4 %}
