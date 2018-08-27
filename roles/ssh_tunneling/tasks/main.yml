@@ -36,11 +36,12 @@
         ssh_key_type: ecdsa
         ssh_key_bits: 256
         ssh_key_comment: '{{ item }}@{{ IP_subject_alt_name }}'
-        ssh_key_passphrase: "{{ easyrsa_p12_export_password }}"
+        ssh_key_passphrase: "{{ p12_export_password }}"
         update_password: on_create
         state: present
         append: yes
       with_items: "{{ users }}"
+      tags: update-users
 
     - name: The authorized keys file created
       file:
@@ -50,6 +51,7 @@
         group: "{{ item }}"
         state: link
       with_items: "{{ users }}"
+      tags: update-users
 
     - name: Generate SSH fingerprints
       shell: ssh-keyscan {{ IP_subject_alt_name }} 2>/dev/null
@@ -60,12 +62,9 @@
         src: '/var/jail/{{ item }}/.ssh/id_ecdsa'
         dest: configs/{{ IP_subject_alt_name }}/{{ item }}.ssh.pem
         flat: yes
+        mode: "0600"
       with_items: "{{ users }}"
-
-    - name: Change mode for SSH private keys
-      local_action: file path=configs/{{ IP_subject_alt_name }}/{{ item }}.ssh.pem mode=0600
-      with_items: "{{ users }}"
-      become: false
+      tags: update-users
 
     - name: Fetch the known_hosts file
       local_action:
@@ -80,15 +79,15 @@
         src: ssh_config.j2
         dest: configs/{{ IP_subject_alt_name }}/{{ item }}.ssh_config
         mode: 0600
-      become: no
-      with_items:
-        - "{{ users }}"
+      become: false
+      tags: update-users
+      with_items: "{{ users }}"
 
     - name: SSH | Get active system users
       shell: >
         getent group algo | cut -f4 -d: | sed "s/,/\n/g"
       register: valid_users
-      when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
+      tags: update-users
 
     - name: SSH | Delete non-existing users
       user:
@@ -96,8 +95,9 @@
         state: absent
         remove: yes
         force: yes
-      when: item not in users and ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
+      when: item not in users
       with_items: "{{ valid_users.stdout_lines | default('null') }}"
+      tags: update-users
   rescue:
     - debug: var=fail_hint
       tags: always

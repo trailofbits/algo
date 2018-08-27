@@ -1,0 +1,56 @@
+---
+- pause:
+    prompt: |
+      Enter the local path to your configuration INI file
+      (https://github.com/trailofbits/algo/docs/cloud-vultr.md):
+  register: _vultr_config
+  when: vultr_config is undefined
+
+- name: Set the token as a fact
+  set_fact:
+    algo_vultr_config: "{{ vultr_config | default(_vultr_config.user_input) | default(lookup('env','VULTR_API_CONFIG'), true) }}"
+
+- name: Get regions
+  uri:
+    url: https://api.vultr.com/v1/regions/list
+    method: GET
+    status_code: 200
+  register: _vultr_regions
+
+- name: Format regions
+  set_fact:
+    regions: >-
+      [ {% for k, v in _vultr_regions.json.items() %}
+      {{ v }}{% if not loop.last %},{% endif %}
+      {% endfor %} ]
+
+- name: Set regions as a fact
+  set_fact:
+    vultr_regions: "{{ regions | sort(attribute='country') }}"
+
+- name: Set default region
+  set_fact:
+    default_region: >-
+      {% for r in vultr_regions %}
+      {%- if r['DCID'] == "1" %}{{ loop.index }}{% endif %}
+      {%- endfor %}
+
+- pause:
+    prompt: |
+      What region should the server be located in?
+      (https://www.vultr.com/locations/):
+        {% for r in vultr_regions %}
+        {{ loop.index }}.   {{ r['name'] }}
+        {% endfor %}
+
+      Enter the number of your desired region
+      [{{ default_region }}]
+  register: _algo_region
+  when: region is undefined
+
+- name: Set the desired region as a fact
+  set_fact:
+    algo_vultr_region: >-
+      {% if region is defined %}{{ region }}
+      {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ vultr_regions[_algo_region.user_input | int -1 ]['name'] }}
+      {%- else %}{{ vultr_regions[default_region | int - 1]['name'] }}{% endif %}

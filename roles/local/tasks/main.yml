@@ -1,40 +1,8 @@
 ---
 - block:
-    - name: Add the instance to an inventory group
-      add_host:
-        name: "{{ server_ip }}"
-        groups: vpn-host
-        ansible_ssh_user: "{{ server_user }}"
-        ansible_python_interpreter: "/usr/bin/python2.7"
-        cloud_provider: local
-      when: server_ip != "localhost"
+  - name: Include prompts
+    import_tasks: prompts.yml
 
-    - name: Add the instance to an inventory group
-      add_host:
-        name: "{{ server_ip }}"
-        groups: vpn-host
-        ansible_ssh_user: "{{ server_user }}"
-        ansible_python_interpreter: "/usr/bin/python2.7"
-        ansible_connection: local
-        cloud_provider: local
-      when: server_ip == "localhost"
-
-    - set_fact:
-        cloud_instance_ip: "{{ server_ip }}"
-
-    - name: Ensure the group local exists in the dynamic inventory file
-      lineinfile:
-        state: present
-        dest: configs/inventory.dynamic
-        line: '[local]'
-
-    - name: Populate the dynamic inventory
-      lineinfile:
-        state: present
-        dest: configs/inventory.dynamic
-        insertafter: '\[local\]'
-        regexp: "^{{ server_ip }}.*"
-        line: "{{ server_ip }}"
   rescue:
     - debug: var=fail_hint
       tags: always

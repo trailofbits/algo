@@ -1,26 +1,26 @@
 ---
 - block:
-    - include_tasks: ubuntu.yml
-      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  - name: Check the system
+    raw: uname -a
+    register: OS
 
-    - include_tasks: freebsd.yml
-      when: ansible_distribution == 'FreeBSD'
+  - include_tasks: ubuntu.yml
+    when: '"Ubuntu" in OS.stdout or "Linux" in OS.stdout'
 
-    - name: Install tools
-      package: name="{{ item }}" state=present
-      with_items:
-        - "{{ tools|default([]) }}"
-      tags:
-        - always
+  - include_tasks: freebsd.yml
+    when: '"FreeBSD" in OS.stdout'
 
-    - name: Sysctl tuning
-      sysctl: name="{{ item.item }}" value="{{ item.value }}"
-      with_items:
-        - "{{ sysctl|default([]) }}"
-      tags:
-        - always
+  - name: Gather additional facts
+    import_tasks: facts.yml
 
-    - meta: flush_handlers
+  - name: Sysctl tuning
+    sysctl: name="{{ item.item }}" value="{{ item.value }}"
+    with_items:
+      - "{{ sysctl|default([]) }}"
+    tags:
+      - always
+
+  - meta: flush_handlers
   rescue:
     - debug: var=fail_hint
       tags: always

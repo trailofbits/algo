@@ -1,0 +1,26 @@
+---
+- block:
+  - name: Generate password for the CA key
+    local_action:
+      module: shell
+        openssl rand -hex 16
+    register: CA_password
+
+  - name: Generate p12 export password
+    local_action:
+      module: shell
+        openssl rand 8 | python -c 'import sys,string; chars=string.ascii_letters + string.digits + "_@"; print "".join([chars[ord(c) % 64] for c in list(sys.stdin.read())])'
+    register: p12_password_generated
+    when: p12_password is not defined
+    tags: update-users
+  become: false
+
+- name: Define facts
+  set_fact:
+    p12_export_password: "{{ p12_password|default(p12_password_generated.stdout) }}"
+  tags: update-users
+
+- set_fact:
+    CA_password: "{{ CA_password.stdout }}"
+    IP_subject_alt_name: "{{ IP_subject_alt_name }}"
+    ipv6_support: "{% if ansible_default_ipv6['gateway'] is defined %}true{% else %}false{% endif %}"

@@ -1,4 +1,8 @@
 ---
+- fail:
+    msg: "OpenStack credentials are not set. Download it from the OpenStack dashboard->Compute->API Access and source it in the shell (eg: source /tmp/dhc-openrc.sh)"
+  when: lookup('env', 'OS_AUTH_URL') == ""
+
 - block:
   - name: Security group created
     os_security_group:
@@ -70,15 +74,7 @@
 
   - set_fact:
       cloud_instance_ip: "{{ os_server['openstack']['public_v4'] }}"
-
-  - name: Add new instance to host group
-    add_host:
-      hostname: "{{ cloud_instance_ip }}"
-      groupname: vpn-host
       ansible_ssh_user: ubuntu
-      ansible_python_interpreter: "/usr/bin/python2.7"
-      ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
-      cloud_provider: openstack
 
   rescue:
   - debug: var=fail_hint
