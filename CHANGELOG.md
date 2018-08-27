@@ -4,7 +4,7 @@
 - Add a new cloud provider - Vultr
 
 ### Upgrade notes
-- Follow the [instructions](https://github.com/trailofbits/algo#deploy-the-algo-server) from scratch
+- If any problems encountered follow the [instructions](https://github.com/trailofbits/algo#deploy-the-algo-server) from scratch
 - You can't update users on your old servers with the new code. Use the old code before this release or rebuild the server from scratch
 
 ## 04 Jun 2018
