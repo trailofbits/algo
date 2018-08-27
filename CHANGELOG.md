@@ -1,3 +1,10 @@
+## 27 Aug 2018
+### Changed
+- Large refactor to support Ansible 2.5. [Details](https://github.com/trailofbits/algo/pull/976)
+
+### How to upgrade
+- Follow the [instructions](https://github.com/trailofbits/algo#deploy-the-algo-server) from scratch
+
 ## 04 Jun 2018
 ### Changed
 - Switched to [new cipher suite](https://github.com/trailofbits/algo/issues/981)
