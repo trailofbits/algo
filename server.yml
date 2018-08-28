@@ -51,6 +51,14 @@
             {% if tests|default(false)|bool %}ca_password: {{ CA_password }}{% endif %}
         become: false
 
+      - name: Create a symlink if deploying to localhost
+        file:
+          src: "{{ IP_subject_alt_name }}"
+          dest: configs/localhost
+          state: link
+          force: true
+        when: inventory_hostname == 'localhost'
+
       - debug:
           msg:
             - "{{ congrats.common.split('\n') }}"
