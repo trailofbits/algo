@@ -113,6 +113,7 @@ Additional variables:
             "Action": [
                 "ec2:DescribeImages",
                 "ec2:DescribeKeyPairs",
+                "ec2:DescribeRegions",
                 "ec2:ImportKeyPair"
             ],
             "Resource": [
