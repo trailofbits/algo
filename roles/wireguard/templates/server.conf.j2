@@ -5,7 +5,6 @@ Address = {{ wireguard_network_ipv4['subnet'] }}/{{ wireguard_network_ipv4['pref
 ListenPort = {{ wireguard_port }}
 PrivateKey = {{ lookup('file', wireguard_config_path + '/private/' + IP_subject_alt_name) }}
 SaveConfig = false
-Table = off
 
 {% for u in users %}
 
