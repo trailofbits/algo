@@ -54,7 +54,7 @@
         method: GET
         headers:
           Content-Type: 'application/json'
-          X-Auth-Token: "{{ scaleway_auth_token }}"
+          X-Auth-Token: "{{ algo_scaleway_token }}"
         status_code: 200
       register: scaleway_images
       with_sequence: start=1 end={{ ((scaleway_pages.x_total_count|int / 100)| round )|int }}
