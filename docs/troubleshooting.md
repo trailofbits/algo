@@ -8,8 +8,9 @@
      * [Error: "ansible-playbook: command not found"](#error-ansible-playbook-command-not-found)
      * [Bad owner or permissions on .ssh](#bad-owner-or-permissions-on-ssh)
      * [The region you want is not available](#the-region-you-want-is-not-available)
-	 * [AWS: SSH permission denied with an ECDSA key](#aws-ssh-permission-denied-with-an-ecdsa-key)
-	 * [AWS: "Deploy the template" fails with CREATE_FAILED](#aws-deploy-the-template-fails-with-create_failed)
+     * [AWS: SSH permission denied with an ECDSA key](#aws-ssh-permission-denied-with-an-ecdsa-key)
+     * [AWS: "Deploy the template" fails with CREATE_FAILED](#aws-deploy-the-template-fails-with-create_failed)
+     * [DigitalOcean: error tagging resource 'xxxxxxxx': param is missing or the value is empty: resources](#digitalocean-error-tagging-resource)
   * [Connection Problems](#connection-problems)
      * [I'm blocked or get CAPTCHAs when I access certain websites](#im-blocked-or-get-captchas-when-i-access-certain-websites)
      * [I want to change the list of trusted Wifi networks on my Apple device](#i-want-to-change-the-list-of-trusted-wifi-networks-on-my-apple-device)
@@ -162,6 +163,26 @@ fatal: [localhost]: FAILED! => {"changed": true, "events": ["StackEvent AWS::Clo
 Algo builds a [Cloudformation](https://aws.amazon.com/cloudformation/) template to deploy to AWS. You can find the entire contents of the Cloudformation template in `configs/algo.yml`. In order to troubleshoot this issue, login to the AWS console, go to the Cloudformation service, find the failed deployment, click the events tab, and find the corresponding "CREATE_FAILED" events. Note that all AWS resources created by Algo are tagged with `Environment => Algo` for easy identification.
 
 In many cases, failed deployments are the result of [service limits](http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html) being reached, such as "CREATE_FAILED	AWS::EC2::VPC	VPC	The maximum number of VPCs has been reached." In these cases, you must either [delete the VPCs from previous deployments](https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/working-with-vpcs.html#VPC_Deleting), or [contact AWS support](https://console.aws.amazon.com/support/home?region=us-east-1#/case/create?issueType=service-limit-increase&limitType=service-code-direct-connect) to increase the limits on your account.
+
+### DigitalOcean: error tagging resource
+
+You tried to deploy to Algo to DigitalOcean and you received an error like this one:
+
+```
+TASK [cloud-digitalocean : Tag the droplet] ************************************
+failed: [localhost] (item=staging) => {"failed": true, "item": "staging", "msg": "error tagging resource '73204383': param is missing or the value is empty: resources"}
+failed: [localhost] (item=dbserver) => {"failed": true, "item": "dbserver", "msg": "error tagging resource '73204383': param is missing or the value is empty: resources"}
+```
+
+The error is caused because Digital Ocean changed its API to treat the tag argument as a string instead of a number.
+
+1. Download [doctl](https://github.com/digitalocean/doctl)
+2. Run `doctl auth init`; it will ask you for your token which you can get (or generate) on the API tab at DigitalOcean
+3. Once you are authorized on DO, you can run `doctl compute tag list` to see the list of tags
+4. Run `doctl compute tag delete enivronment:algo --force` to delete the environment:algo tag
+5. Finally run `doctl compute tag list` to make sure that the tag has been deleted
+6. Run algo as directed
+
 
 ## Connection Problems
 
