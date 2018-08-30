@@ -8,7 +8,7 @@ tl;dr:
 
 ```shell
 sudo apt-get install software-properties-common && sudo apt-add-repository ppa:ansible/ansible
-sudo apt-get update && sudo apt-get install ansible python-pip build-essential python-dev
+sudo apt-get update && sudo apt-get install ansible python-pip build-essential python-dev libssl-dev libffi-dev
 pip install virtualenv
 pip install --upgrade pip
 git clone https://github.com/trailofbits/algo
