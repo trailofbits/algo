@@ -6,11 +6,15 @@
      * [Error: "fatal error: 'openssl/opensslv.h' file not found"](#error-fatal-error-opensslopensslvh-file-not-found)
      * [Error: "TypeError: must be str, not bytes"](#error-typeerror-must-be-str-not-bytes)
      * [Error: "ansible-playbook: command not found"](#error-ansible-playbook-command-not-found)
+     * [Error: "Could not fetch URL ... TLSV1_ALERT_PROTOCOL_VERSION](#could-not-fetch-url--tlsv1_alert_protocol_version)
      * [Bad owner or permissions on .ssh](#bad-owner-or-permissions-on-ssh)
      * [The region you want is not available](#the-region-you-want-is-not-available)
      * [AWS: SSH permission denied with an ECDSA key](#aws-ssh-permission-denied-with-an-ecdsa-key)
      * [AWS: "Deploy the template" fails with CREATE_FAILED](#aws-deploy-the-template-fails-with-create_failed)
+     * [AWS: not authorized to perform: cloudformation:UpdateStack](#aws-not-authorized-to-perform-cloudformationupdatestack)
      * [DigitalOcean: error tagging resource 'xxxxxxxx': param is missing or the value is empty: resources](#digitalocean-error-tagging-resource)
+     * [Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid](#windows-the-value-of-parameter-linuxconfigurationsshpublickeyskeydata-is-invalid)
+     * [Docker: Failed to connect to the host via ssh](#docker-failed-to-connect-to-the-host-via-ssh)
   * [Connection Problems](#connection-problems)
      * [I'm blocked or get CAPTCHAs when I access certain websites](#im-blocked-or-get-captchas-when-i-access-certain-websites)
      * [I want to change the list of trusted Wifi networks on my Apple device](#i-want-to-change-the-list-of-trusted-wifi-networks-on-my-apple-device)
@@ -21,6 +25,7 @@
      * [Various websites appear to be offline through the VPN](#various-websites-appear-to-be-offline-through-the-vpn)
      * [Clients appear stuck in a reconnection loop](#clients-appear-stuck-in-a-reconnection-loop)
      * ["Error 809" or IKE_AUTH requests that never make it to the server](#error-809-or-ike_auth-requests-that-never-make-it-to-the-server)
+     * [Windows: Parameter is incorrect](#windows-parameter-is-incorrect)
   * [I have a problem not covered here](#i-have-a-problem-not-covered-here)
 
 ## Installation Problems
@@ -150,7 +155,7 @@ In order to fix this issue, delete the `algo.pem` and `algo.pem.pub` keys from y
 
 ### AWS: "Deploy the template fails" with CREATE_FAILED
 
-You tried to deploy to Algo to AWS and you received an error like this one:
+You tried to deploy Algo to AWS and you received an error like this one:
 
 ```
 TASK [cloud-ec2 : Make a cloudformation template] ******************************
@@ -166,7 +171,7 @@ In many cases, failed deployments are the result of [service limits](http://docs
 
 ### DigitalOcean: error tagging resource
 
-You tried to deploy to Algo to DigitalOcean and you received an error like this one:
+You tried to deploy Algo to DigitalOcean and you received an error like this one:
 
 ```
 TASK [cloud-digitalocean : Tag the droplet] ************************************
@@ -183,6 +188,65 @@ The error is caused because Digital Ocean changed its API to treat the tag argum
 5. Finally run `doctl compute tag list` to make sure that the tag has been deleted
 6. Run algo as directed
 
+### Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid
+
+You tried to deploy Algo from Windows and you received an error like this one:
+
+```
+TASK [cloud-azure : Create an instance].
+fatal: [localhost]: FAILED! => {"changed": false, 
+"msg": "Error creating or updating virtual machine AlgoVPN - Azure Error:
+InvalidParameter\n
+Message: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid.\n
+Target: linuxConfiguration.ssh.publicKeys.keyData"}
+```
+
+This is related to [the chmod issue](https://github.com/Microsoft/WSL/issues/81) inside /mnt directory which is NTFS. The fix is to place Algo outside of /mnt directory.
+
+### Could not fetch URL ... TLSV1_ALERT_PROTOCOL_VERSION
+
+You tried to install Algo and you received an error like this one:
+
+```
+Could not fetch URL https://pypi.python.org/simple/secretstorage/: There was a problem confirming the ssl certificate: [SSL: TLSV1_ALERT_PROTOCOL_VERSION] tlsv1 alert protocol version (_ssl.c:590) - skipping
+  Could not find a version that satisfies the requirement SecretStorage<3 (from -r requirements.txt (line 2)) (from versions: )
+No matching distribution found for SecretStorage<3 (from -r requirements.txt (line 2))
+```
+
+It's time to upgrade your python
+
+`brew upgrade python2`
+
+You can also download python 2.7.x from python.org
+
+### Docker: Failed to connect to the host via ssh
+
+You tried to deploy Algo from Docker and you received an error like this one:
+
+```
+Failed to connect to the host via ssh: 
+Warning: Permanently added 'xxx.xxx.xxx.xxx' (ECDSA) to the list of known hosts.\r\n
+Control socket connect(/root/.ansible/cp/6d9d22e981): Connection refused\r\n
+Failed to connect to new control master\r\n
+```
+
+You need to add the following to the ansible.cfg in repo root:
+
+```
+[ssh_connection]
+control_path_dir=/dev/shm/ansible_control_path
+```
+
+### AWS: not authorized to perform: cloudformation:UpdateStack
+
+You tried to deploy Algo to AWS and you received an error like this one:
+
+```
+TASK [cloud-ec2 : Deploy the template] *****************************************
+fatal: [localhost]: FAILED! => {"changed": false, "failed": true, "msg": "User: arn:aws:iam::082851645362:user/algo is not authorized to perform: cloudformation:UpdateStack on resource: arn:aws:cloudformation:us-east-1:082851645362:stack/algo/*"}
+```
+
+This error indicates you already have Algo deployed to Cloudformation. Need to [delete it](cloud-amazon-ec2.md#cleanup) first, then re-deploy.
 
 ## Connection Problems
 
@@ -277,6 +341,29 @@ Then rerun the dependency installation explicitly using python 2.7
 ```
 python2.7 -m virtualenv --python=`which python2.7` env && source env/bin/activate && python2.7 -m pip install -U pip && python2.7 -m pip install -r requirements.txt
 ```
+
+### Windows: Parameter is incorrect
+
+The problem may happen if you recently moved to a new server, where you have Algo VPN.
+
+1. Clear the Networking caches:
+	- Run CDM (click windows start menu, type 'cmd', right click on 'Command Prompt' and select "Run as Administrator").
+	- Type the commands below:
+	```
+	netsh int ip reset
+	netsh int ipv6 reset
+	netsh winsock reset
+	```
+
+3. Restart your computer
+4. Reset Device Manager adaptors:
+	- Open Device Manager
+	- Find Network Adapters
+	- Uninstall WAN Miniport drivers (IKEv2, IP, IPv6, etc)
+	- Click Action > Scan for hardware changes
+	- The adapters you just uninstalled should come back
+
+The VPN connection should work again
 
 ## I have a problem not covered here
 
