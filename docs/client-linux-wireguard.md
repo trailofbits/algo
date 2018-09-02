@@ -4,11 +4,13 @@
 
 To connect to your Algo VPN using [WireGuard](https://www.wireguard.com) from an Ubuntu Server 16.04 (Xenial) or 18.04 (Bionic) client, first install WireGuard on the client:
 
-```
+```shell
 # Add the WireGuard repository:
 sudo add-apt-repository ppa:wireguard/wireguard
+
 # Update the list of available packages (not necessary on Bionic):
 sudo apt update 
+
 # Install the tools and kernel module:
 sudo apt install wireguard
 ```
@@ -29,18 +31,23 @@ Use the IP address shown on the `DNS =` line (for most, this will be `172.16.0.1
 
 Finally, install the config file on your client as `/etc/wireguard/wg0.conf` and start WireGuard:
 
-```
+```shell
 # Install the config file to the WireGuard configuration directory on your
 # Bionic or Xenial client:
 sudo install -o root -g root -m 600 <username>.conf /etc/wireguard/wg0.conf
+
 # Start the WireGuard VPN:
 sudo systemctl start wg-quick@wg0
+
 # Check that it started properly:
 sudo systemctl status wg-quick@wg0
+
 # Verify the connection to the Algo VPN:
 sudo wg
+
 # See that your client is using the IP address of your Algo VPN:
 curl ipv4.icanhazip.com
+
 # Optionally configure the connection to come up at boot time:
 sudo systemctl enable wg-quick@wg0
 ```
