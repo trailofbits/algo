@@ -1,3 +1,8 @@
+{% if (algo_server_name == 'algo') or (algo_server_name == 'algo.local') %}
+    {% set vpn_server_name = 'Algo VPN '+IP_subject_alt_name+' IKEv2' %}
+{% else %}
+    {% set vpn_server_name = algo_server_name+' VPN' %}
+{% endif %}
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -129,7 +134,7 @@
                 <integer>0</integer>
             </dict>
             <key>UserDefinedName</key>
-            <string>Algo VPN {{ IP_subject_alt_name }} IKEv2</string>
+            <string>{{ vpn_server_name }}</string>
             <key>VPNType</key>
             <string>IKEv2</string>
         </dict>
@@ -175,7 +180,7 @@
         </dict>
     </array>
     <key>PayloadDisplayName</key>
-    <string>{{ IP_subject_alt_name }} IKEv2</string>
+    <string>{{ vpn_server_name }}</string>
     <key>PayloadIdentifier</key>
     <string>donut.local.{{ 500000 | random | to_uuid | upper }}</string>
     <key>PayloadRemovalDisallowed</key>

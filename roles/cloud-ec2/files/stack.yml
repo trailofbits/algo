@@ -21,7 +21,7 @@ Resources:
       InstanceTenancy: default
       Tags:
         - Key: Name
-          Value: Algo
+          Value: !Ref AWS::StackName
         - Key: Environment
           Value: Algo
 
@@ -38,7 +38,7 @@ Resources:
         - Key: Environment
           Value: Algo
         - Key: Name
-          Value: Algo
+          Value: !Ref AWS::StackName
 
   Subnet:
     Type: AWS::EC2::Subnet
@@ -49,7 +49,7 @@ Resources:
         - Key: Environment
           Value: Algo
         - Key: Name
-          Value: Algo
+          Value: !Ref AWS::StackName
       VpcId: !Ref VPC
 
   VPCGatewayAttachment:
@@ -66,7 +66,7 @@ Resources:
         - Key: Environment
           Value: Algo
         - Key: Name
-          Value: Algo
+          Value: !Ref AWS::StackName
 
   Route:
     Type: AWS::EC2::Route
@@ -140,7 +140,7 @@ Resources:
           CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
-          Value: Algo
+          Value: !Ref AWS::StackName
         - Key: Environment
           Value: Algo
 
@@ -181,7 +181,7 @@ Resources:
             cfn-signal -e $? --stack ${AWS::StackName} --resource EC2Instance --region ${AWS::Region}
       Tags:
         - Key: Name
-          Value: Algo
+          Value: !Ref AWS::StackName
         - Key: Environment
           Value: Algo
 
