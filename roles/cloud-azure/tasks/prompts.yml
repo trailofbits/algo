@@ -48,20 +48,20 @@
 - block:
   - name: Set facts about the regions
     set_fact:
-      aws_regions: "{{ azure_regions | sort(attribute='region_name') }}"
+      azure_regions: "{{ _azure_regions|from_json | sort(attribute='name') }}"
 
   - name: Set the default region
     set_fact:
       default_region: >-
-        {% for r in aws_regions %}
-        {%- if r['region_name'] == "us-east-1" %}{{ loop.index }}{% endif %}
+        {% for r in azure_regions %}
+        {%- if r['name'] == "eastus" %}{{ loop.index }}{% endif %}
         {%- endfor %}
 
   - pause:
       prompt: |
         What region should the server be located in?
-          {% for r in aws_regions %}
-          {{ loop.index }}. {{ r['region_name'] }}
+          {% for r in azure_regions %}
+          {{ loop.index }}. {{ r['displayName'] }}
           {% endfor %}
 
         Enter the number of your desired region
