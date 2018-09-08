@@ -25,7 +25,9 @@ Get-Help -Name .\windows_USER.ps1 -Full | more
 Set-ExecutionPolicy Unrestricted -Scope CurrentUser
 ```
 
-4. In the same window, run the necessary commands to install the certificates and create the VPN configuration. Note the lines at the top defining the VPN address, USER.p12 file location, and CA certificate location - change those lines to the IP address of your Algo server and the location you saved those two files. Also note that it will prompt for the "User p12 password", which is printed at the end of a successful Algo deployment. If you have more than one account on your Windows 10 machine (e.g. one with administrator privileges and one without) and would like to have the VPN connection available to all, then also insert the line `AllUserConnection = $true` after `$EncryptionLevel = "Required"`.
+4. In the same window, run the necessary commands to install the certificates and create the VPN configuration. Note the lines at the top defining the VPN address, USER.p12 file location, and CA certificate location - change those lines to the IP address of your Algo server and the location you saved those two files. Also note that it will prompt for the "User p12 password", which is printed at the end of a successful Algo deployment.
+
+If you have more than one account on your Windows 10 machine (e.g. one with administrator privileges and one without) and would like to have the VPN connection available to all users, then insert the line `AllUserConnection = $true` after `$EncryptionLevel = "Required"`.
 
 ```powershell
 $VpnServerAddress = "1.2.3.4"
