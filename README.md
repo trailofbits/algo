@@ -89,7 +89,7 @@ Certificates and configuration files that users will need are placed in the `con
 
 ### Apple Devices
 
-**Send users their Apple Profile.** Find the corresponding mobileconfig (Apple Profile) for each user and send it to them over AirDrop or other secure means. Apple Configuration Profiles are all-in-one configuration files for iOS and macOS devices. On macOS, double-clicking a profile to install it will fully configure the VPN. On iOS, users are prompted to install the profile as soon as the AirDrop is accepted.
+**Send users their Apple Profile.** Find the corresponding mobileconfig (Apple Profile) for each user and send it to them over AirDrop or other secure means. Apple Configuration Profiles are all-in-one configuration files for iOS and macOS devices. On macOS, double-clicking a profile to install it will fully configure the VPN (user will be prompted for the p12 password printed following successful server installation). On iOS, users are prompted to install the profile as soon as the AirDrop is accepted.
 
 **Turn on the VPN.** On iOS, connect to the VPN by opening Settings and clicking the toggle next to "VPN" near the top of the list. On macOS, connect to the VPN by opening System Preferences -> Network, finding Algo VPN in the left column and clicking "Connect." On macOS, check "Show VPN status in menu bar" to easily connect and disconnect from the menu bar.
 
