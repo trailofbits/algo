@@ -89,7 +89,7 @@ Certificates and configuration files that users will need are placed in the `con
 
 ### Apple Devices
 
-**Send users their Apple Profile.** Find the corresponding mobileconfig (Apple Profile) for each user and send it to them over AirDrop or other secure means. Apple Configuration Profiles are all-in-one configuration files for iOS and macOS devices. On macOS, double-clicking a profile to install it will fully configure the VPN (user will be prompted for the p12 password printed following successful server installation). On iOS, users are prompted to install the profile as soon as the AirDrop is accepted.
+**Send users their Apple Profile.** Find the corresponding mobileconfig (Apple Profile) for each user and send it to them over AirDrop or other secure means. Apple Configuration Profiles are all-in-one configuration files for iOS and macOS devices. On macOS, double-clicking a profile to install it will fully configure the VPN. On iOS, users are prompted to install the profile as soon as the AirDrop is accepted. User will be prompted for the appropriate p12 password.
 
 **Turn on the VPN.** On iOS, connect to the VPN by opening Settings and clicking the toggle next to "VPN" near the top of the list. On macOS, connect to the VPN by opening System Preferences -> Network, finding Algo VPN in the left column and clicking "Connect." On macOS, check "Show VPN status in menu bar" to easily connect and disconnect from the menu bar.
 
@@ -105,6 +105,7 @@ Copy your PowerShell script `windows_{username}.ps1` to the Windows client and r
 ```
 powershell -ExecutionPolicy ByPass -File windows_{username}.ps1 -Add
 ```
+User will be prompted for the appropriate p12 password.
 
 For a manual installation, see the [Windows setup instructions](/docs/client-windows.md).
 
@@ -136,6 +137,8 @@ One common use case is to let your server access your local LAN without going th
     authby=never # No authentication necessary
     type=pass # passthrough
     auto=route # no need to ipsec up lan-passthrough
+
+These instructions also work for Debian stretch provided that `libstrongswan-standard-plugins` is substituted for `strongswan-plugin-openssl` in step 1.
 
 ### Other Devices
 
