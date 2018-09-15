@@ -1,5 +1,5 @@
 [Interface]
-Address = {{ wireguard_network_ipv4['subnet'] }}/{{ wireguard_network_ipv4['prefix'] }}{% if ipv6_support %},{{ wireguard_network_ipv6['gateway'] }}/{{ wireguard_network_ipv6['prefix'] }}
+Address = {{ wireguard_network_ipv4['gateway'] }}/{{ wireguard_network_ipv4['prefix'] }}{% if ipv6_support %},{{ wireguard_network_ipv6['gateway'] }}/{{ wireguard_network_ipv6['prefix'] }}
 {% endif %}
 
 ListenPort = {{ wireguard_port }}
