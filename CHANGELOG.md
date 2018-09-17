@@ -1,3 +1,7 @@
+## 7 Sep 2018
+### Changed
+- Azure: Deployment via Azure Resource Manager
+
 ## 27 Aug 2018
 ### Changed
 - Large refactor to support Ansible 2.5. [Details](https://github.com/trailofbits/algo/pull/976)

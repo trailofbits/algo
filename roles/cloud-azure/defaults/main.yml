@@ -1,5 +1,5 @@
 ---
-azure_regions: >
+_azure_regions: >
   [
     {
       "displayName": "East Asia",
