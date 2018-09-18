@@ -6,7 +6,7 @@ Creating an Amazon AWS account requires giving Amazon a phone number that can re
 
 ### Select an EC2 plan
 
-The cheapest EC2 plan you can choose is the "Free Plan" a.k.a. the "AWS Free Tier." It is only available to new AWS customers, it has limits on usage, and is converts to standard pricing after 12 months (the "introductory period"). After you exceed the usage limits, after the 12 month period, or if you are an existing AWS customer, then you will pay standard pay-as-you-go service prices.
+The cheapest EC2 plan you can choose is the "Free Plan" a.k.a. the "AWS Free Tier." It is only available to new AWS customers, it has limits on usage, and it converts to standard pricing after 12 months (the "introductory period"). After you exceed the usage limits, after the 12 month period, or if you are an existing AWS customer, then you will pay standard pay-as-you-go service prices.
 
 *Note*: Your Algo instance will not stop working when you hit the bandwidth limit, you will just start accumulating service charges on your AWS account.
 
@@ -22,7 +22,7 @@ Here, you have the policy editor. Switch to the JSON tab and copy-paste over the
 
 ### Set up an AWS user
 
-In the AWS console, find the users (“Identiy and Access Management”, a.k.a. IAM users) menu: click Services > IAM.
+In the AWS console, find the users (“Identity and Access Management”, a.k.a. IAM users) menu: click Services > IAM.
 
 Activate multi-factor authentication (MFA) on your root account. The simplest choice is the mobile app "Google Authenticator." A hardware U2F token is ideal (less prone to a phishing attack), but a TOTP authenticator like this is good enough.
 
