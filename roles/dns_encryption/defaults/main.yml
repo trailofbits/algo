@@ -5,5 +5,9 @@ listen_port: "{% if algo_local_dns %}5353{% else %}53{% endif %}"
 dnscrypt_proxy_version: 2.0.10
 apparmor_enabled: true
 dns_encryption: true
-dns_encryption_provider: "*"
 ipv6_support: false
+dnscrypt_servers:
+  ipv4:
+    - cloudflare
+  ipv6:
+    - cloudflare-ipv6
