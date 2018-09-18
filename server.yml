@@ -16,14 +16,14 @@
     - role: dns_adblocking
       when: algo_local_dns
       tags: dns_adblocking
-    - role: ssh_tunneling
-      when: algo_ssh_tunneling
-      tags: ssh_tunneling
     - role: wireguard
       when: wireguard_enabled
       tags: wireguard
     - role: vpn
       tags: vpn
+    - role: ssh_tunneling
+      when: algo_ssh_tunneling
+      tags: ssh_tunneling
 
   post_tasks:
     - block:
