@@ -1,51 +1,10 @@
 ---
-- name: FreeBSD | Ensure that the required directories exist
-  file:
-    path: "{{ item }}"
-    state: directory
-  with_items:
-    - "{{ config_prefix|default('/') }}etc/dnscrypt-proxy/"
-    - /usr/dnscrypt-proxy/
-
-- name: Required tools installed
+- name: Install dnscrypt-proxy
   package:
-    name: gtar
+    name: dnscrypt-proxy2
 
-- name: FreeBSD | Retrive the latest versions
-  uri:
-    url: https://api.github.com/repos/jedisct1/dnscrypt-proxy/releases/latest
-  register: dnscrypt_proxy_latest
-  ignore_errors: true
-
-- name: FreeBSD | Set default dnscrypt-proxy assets
-  set_fact:
-    dnscrypt_proxy_latest:
-      json:
-        assets:
-          - name: "dnscrypt-proxy-freebsd_amd64-{{ dnscrypt_proxy_version }}.tar.gz"
-            browser_download_url: "https://github.com/jedisct1/dnscrypt-proxy/releases/download/{{ dnscrypt_proxy_version }}/dnscrypt-proxy-freebsd_amd64-{{ dnscrypt_proxy_version }}.tar.gz"
-  when: dnscrypt_proxy_latest.failed
-
-- name: FreeBSD | Download the latest archive
-  get_url:
-    url: "{{ item['browser_download_url'] }}"
-    dest: "/tmp/dnscrypt-proxy-freebsd_amd64-{{ dnscrypt_proxy_version }}.tar.gz"
-    mode: '0755'
-    force: true
-  with_items: "{{ dnscrypt_proxy_latest['json']['assets'] }}"
-  no_log: true
-  when: '"freebsd_amd64" in item.name and not item.name.endswith("minisig")'
-  notify: restart dnscrypt-proxy
-
-- name: FreeBSD | Extract the latest archive
-  unarchive:
-    remote_src: true
-    src: /tmp/dnscrypt-proxy-freebsd_amd64-{{ dnscrypt_proxy_version }}.tar.gz
-    dest: /usr/dnscrypt-proxy
-
-- name: FreeBSD | Configure rc script
-  copy:
-    src: rc.dnscrypt-proxy.sh
-    dest: /usr/local/etc/rc.d/dnscrypt-proxy
-    mode: "0755"
-  notify: restart dnscrypt-proxy
+- name: Enable mac_portacl
+  lineinfile:
+    path: /etc/rc.conf
+    line: 'dnscrypt_proxy_mac_portacl_enable="YES"'
+  when: listen_port|int == 53
