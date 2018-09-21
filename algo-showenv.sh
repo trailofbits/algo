@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Print information about Algo's invocation environment to aid in debugging.
 # This is normally called from Ansible right before a deployment gets underway.
