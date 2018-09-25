@@ -42,6 +42,20 @@
   delegate_to: localhost
   become: false
 
+- name: Generate QR codes
+  shell: >
+    umask 077;
+    which segno &&
+    segno --scale=5 --output={{ item.1 }}.png \
+      "{{ lookup('template', 'client.conf.j2') }}" || true
+  changed_when: false
+  with_indexed_items: "{{ users }}"
+  delegate_to: localhost
+  become: false
+  args:
+    chdir: "{{ wireguard_config_path }}"
+    executable: bash
+
 - name: WireGuard enabled and started
   service:
     name: "{{ service_name }}"
