@@ -14,10 +14,27 @@
         credentials_file: "{{ credentials_file_path  }}"
         project_id: "{{ project_id }}"
 
+    - block:
+      - name: External IP allocated
+        gce_eip:
+          service_account_email: "{{ service_account_email }}"
+          credentials_file: "{{ credentials_file_path }}"
+          project_id: "{{ project_id }}"
+          name: "{{ algo_server_name }}"
+          region: "{{ algo_region.split('-')[0:2] | join('-') }}"
+          state: present
+        register: gce_eip
+
+      - name: Set External IP as a fact
+        set_fact:
+          external_ip: "{{ gce_eip.address }}"
+      when: cloud_providers.gce.external_static_ip
+
     - name: "Creating a new instance..."
       gce:
         instance_names: "{{ algo_server_name }}"
         zone: "{{ algo_region }}"
+        external_ip: "{{ external_ip | default('ephemeral') }}"
         machine_type: "{{ cloud_providers.gce.size }}"
         image: "{{ cloud_providers.gce.image }}"
         service_account_email: "{{ service_account_email }}"
