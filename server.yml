@@ -9,6 +9,7 @@
 
   roles:
     - role: common
+      tags: common
     - role: dns_encryption
       when: dns_encryption
       tags: dns_encryption
@@ -18,6 +19,9 @@
     - role: ssh_tunneling
       when: algo_ssh_tunneling
       tags: ssh_tunneling
+    - role: wireguard
+      when: wireguard_enabled
+      tags: wireguard
     - role: vpn
       tags: vpn
 

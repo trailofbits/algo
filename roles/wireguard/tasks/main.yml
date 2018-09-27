@@ -1,27 +1,4 @@
 ---
-- name: WireGuard repository configured
-  apt_repository:
-    repo: ppa:wireguard/wireguard
-    state: present
-  register: result
-  until: result is succeeded
-  retries: 10
-  delay: 3
-
-- name: WireGuard installed
-  apt:
-    name: wireguard
-    state: present
-    update_cache: true
-
-- name: Configure unattended-upgrades
-  copy:
-    src: 50-wireguard-unattended-upgrades
-    dest: /etc/apt/apt.conf.d/50-wireguard-unattended-upgrades
-    owner: root
-    group: root
-    mode: 0644
-
 - name: Ensure the required directories exist
   file:
     dest: "{{ wireguard_config_path }}/{{ item }}"
@@ -33,6 +10,16 @@
   delegate_to: localhost
   become: false
 
+- name: Include tasks for Ubuntu
+  include_tasks: ubuntu.yml
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  tags: always
+
+- name: Include tasks for FreeBSD
+  include_tasks: freebsd.yml
+  when: ansible_distribution == 'FreeBSD'
+  tags: always
+
 - name: Generate keys
   import_tasks: keys.yml
   tags: update-users
@@ -40,15 +27,10 @@
 - name: WireGuard configured
   template:
     src: server.conf.j2
-    dest: "/etc/wireguard/{{ wireguard_interface }}.conf"
+    dest: "{{ config_prefix|default('/') }}etc/wireguard/{{ wireguard_interface }}.conf"
     mode: "0600"
   notify: restart wireguard
   tags: update-users
-
-- name: WireGuard reload-module-on-update
-  file:
-    dest: /etc/wireguard/.reload-module-on-update
-    state: touch
 
 - name: WireGuard users config generated
   template:
@@ -62,7 +44,7 @@
 
 - name: WireGuard enabled and started
   service:
-    name: "wg-quick@{{ wireguard_interface }}"
+    name: "{{ service_name }}"
     state: started
     enabled: true
 
