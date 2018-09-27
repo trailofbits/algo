@@ -9,3 +9,4 @@ DNS = {{ wireguard_dns_servers }}
 PublicKey = {{ lookup('file', wireguard_config_path + '/public/' + IP_subject_alt_name) }}
 AllowedIPs = 0.0.0.0/0, ::/0
 Endpoint = {{ IP_subject_alt_name }}:{{ wireguard_port }}
+PersistentKeepalive = 25

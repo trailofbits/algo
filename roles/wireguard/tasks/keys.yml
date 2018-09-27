@@ -1,7 +1,7 @@
 ---
 - name: Delete the lock files
   file:
-    dest: "/etc/wireguard/private_{{ item }}.lock"
+    dest: "{{ config_prefix|default('/') }}etc/wireguard/private_{{ item }}.lock"
     state: absent
   when: keys_clean_all|bool == True
   with_items:
@@ -12,7 +12,7 @@
   command: wg genkey
   register: wg_genkey
   args:
-    creates: "/etc/wireguard/private_{{ item }}.lock"
+    creates: "{{ config_prefix|default('/') }}etc/wireguard/private_{{ item }}.lock"
   with_items:
     - "{{ users }}"
     - "{{ IP_subject_alt_name }}"
@@ -31,7 +31,7 @@
 
   - name: Touch the lock file
     file:
-      dest: "/etc/wireguard/private_{{ item }}.lock"
+      dest: "{{ config_prefix|default('/') }}etc/wireguard/private_{{ item }}.lock"
       state: touch
     with_items:
       - "{{ users }}"

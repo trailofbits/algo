@@ -151,7 +151,7 @@ tls_disable_session_tickets = true
 ## People in China may need to use 114.114.114.114:53 here.
 ## Other popular options include 8.8.8.8 and 1.1.1.1.
 
-fallback_resolver = '127.0.0.53:53'
+fallback_resolver = '{% if ansible_distribution == "FreeBSD" %}{{ ansible_dns.nameservers.0 }}:53{% else %}127.0.0.53:53{% endif %}'
 
 
 ## Never try to use the system DNS settings; unconditionally use the

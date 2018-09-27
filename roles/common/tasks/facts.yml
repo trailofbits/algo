@@ -23,4 +23,8 @@
 - set_fact:
     CA_password: "{{ CA_password.stdout }}"
     IP_subject_alt_name: "{{ IP_subject_alt_name }}"
+
+- name: Set IPv6 support as a fact
+  set_fact:
     ipv6_support: "{% if ansible_default_ipv6['gateway'] is defined %}true{% else %}false{% endif %}"
+  tags: always
