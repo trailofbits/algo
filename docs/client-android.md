@@ -3,5 +3,4 @@
 ## Installation via profiles
 
 1. [Install the WireGuard VPN Client](https://play.google.com/store/apps/details?id=com.wireguard.android).
-2. Copy `wireguard/{username}.conf` to your phone's internal storage.
-3. Open the WireGuard app and add a connection using your AlgoVPN configuration file.
+2. Open QR code `configs/<ip_address>/wireguard/<username>.png` and scan it in the WireGuard app
