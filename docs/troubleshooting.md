@@ -1,5 +1,7 @@
 # Troubleshooting
 
+First of all, check [this](https://github.com/trailofbits/algo#features) and ensure that you are deploying to the supported ubuntu version.
+
   * [Installation Problems](#installation-problems)
      * [Error: "You have not agreed to the Xcode license agreements"](#error-you-have-not-agreed-to-the-xcode-license-agreements)
      * [Error: checking whether the C compiler works... no](#error-checking-whether-the-c-compiler-works-no)
