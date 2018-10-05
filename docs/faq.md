@@ -74,4 +74,4 @@ No.
 
 ## What inbound ports are used?
 
-You should only need 22/TCP, 500/UDP, and 4500/UDP. 
+You should only need 22/TCP, 500/UDP, 4500/UDP, and 51820/UDP opened on any firewall that sits between your clients and your Algo server.
