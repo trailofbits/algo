@@ -60,13 +60,13 @@
 
   roles:
     - role: common
-    - role: ssh_tunneling
-      when: algo_ssh_tunneling
     - role: wireguard
       tags: [ 'vpn', 'wireguard' ]
       when: wireguard_enabled
     - role: vpn
       tags: vpn
+    - role: ssh_tunneling
+      when: algo_ssh_tunneling
 
   post_tasks:
     - block:
