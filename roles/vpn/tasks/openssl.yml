@@ -196,6 +196,8 @@
       executable: bash
   delegate_to: localhost
   become: no
+  vars:
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
 
 - name: Copy the CRL to the vpn server
   copy:
