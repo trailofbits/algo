@@ -1,4 +1,3 @@
----
 - name: Deploy the template
   cloudformation:
     aws_access_key: "{{ access_key }}"
