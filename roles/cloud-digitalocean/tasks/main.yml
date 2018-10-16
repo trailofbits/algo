@@ -60,8 +60,16 @@
         ipv6: yes
       register: do
 
+    - name: "Assigning floating IP..."
+      digital_ocean_floating_ip:
+        oauth_token: "{{ algo_do_token }}"
+        ip: "{{ cloud_providers.digitalocean.floating_ip }}"
+        droplet_id: "{{ do.droplet.id }}"
+      when:
+        - cloud_providers.digitalocean.floating_ip
+
     - set_fact:
-        cloud_instance_ip: "{{ do.droplet.ip_address }}"
+        cloud_instance_ip: "{% if cloud_providers.digitalocean.floating_ip %}{{ cloud_providers.digitalocean.floating_ip }}{% else %}{{ do.droplet.ip_address }}{% endif %}"
         ansible_ssh_user: root
 
     - name: Tag the droplet
