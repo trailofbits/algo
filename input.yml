@@ -13,6 +13,7 @@
       store_cakey: false
     providers_map:
       - { name: DigitalOcean, alias: digitalocean }
+      - { name: Amazon Lightsail, alias: lightsail }
       - { name: Amazon EC2, alias: ec2 }
       - { name: Vultr, alias: vultr }
       - { name: Microsoft Azure, alias: azure }
