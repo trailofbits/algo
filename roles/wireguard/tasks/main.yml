@@ -7,6 +7,7 @@
   with_items:
     - private
     - public
+    - ip
   delegate_to: localhost
   become: false
 
@@ -24,6 +25,16 @@
   import_tasks: keys.yml
   tags: update-users
 
+- name: Dump IP addresses
+  copy:
+    dest: "{{ wireguard_config_path }}/ip/{{ item.1 }}"
+    content: "{{ wireguard_client_ip }}"
+    force: false
+  with_indexed_items: "{{ users }}"
+  tags: update-users
+  become: false
+  delegate_to: localhost
+
 - name: WireGuard configured
   template:
     src: server.conf.j2
@@ -38,9 +49,9 @@
     dest: "{{ wireguard_config_path }}/{{ item.1 }}.conf"
     mode: "0600"
   with_indexed_items: "{{ users }}"
+  become: false
   tags: update-users
   delegate_to: localhost
-  become: false
 
 - name: Generate QR codes
   shell: >
