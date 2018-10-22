@@ -6,4 +6,5 @@
   when:
     - cloud_providers.scaleway.image == item.name
     - cloud_providers.scaleway.arch == item.arch
+    - server_disk_size == item.root_volume.size
   with_items: "{{ outer_item['json']['images'] }}"
