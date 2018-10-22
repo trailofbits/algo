@@ -1,3 +1,7 @@
+## 20 Oct 2018
+### Added
+- AWS Lightsail
+
 ## 7 Sep 2018
 ### Changed
 - Azure: Deployment via Azure Resource Manager

@@ -37,7 +37,7 @@
     set_fact:
       default_region: >-
         {% for r in lightsail_regions %}
-        {%- if r['name'] == "eu-west-1" %}{{ loop.index }}{% endif %}
+        {%- if r['name'] == "us-east-1" %}{{ loop.index }}{% endif %}
         {%- endfor %}
 
   - pause:
@@ -45,7 +45,7 @@
         What region should the server be located in?
         (https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/)
           {% for r in lightsail_regions %}
-          {{ loop.index }}. {{ r['name'] }}       {{ r['displayName'] }}
+          {{ (loop.index|string + '.').ljust(3) }} {{ r['name'].ljust(20) }} {{ r['displayName'] }}
           {% endfor %}
 
         Enter the number of your desired region
