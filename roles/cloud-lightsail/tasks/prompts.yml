@@ -29,7 +29,7 @@
       aws_secret_key: "{{ secret_key }}"
     register: _lightsail_regions
 
-  - name: Set facts about thre regions
+  - name: Set facts about the regions
     set_fact:
       lightsail_regions: "{{ _lightsail_regions.results.regions | sort(attribute='name') }}"
 
