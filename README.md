@@ -195,6 +195,7 @@ After this process completes, the Algo VPN server will contains only the users l
   - Configure [Amazon EC2](docs/cloud-amazon-ec2.md)
   - Configure [Azure](docs/cloud-azure.md)
   - Configure [DigitalOcean](docs/cloud-do.md)
+  - Configure [Google Cloud Platform](docs/cloud-gce.md)
 * Advanced Deployment
   - Deploy to your own [FreeBSD](docs/deploy-to-freebsd.md) server
   - Deploy to your own [Ubuntu 18.04](docs/deploy-to-ubuntu.md) server
