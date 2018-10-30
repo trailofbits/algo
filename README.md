@@ -132,10 +132,12 @@ One common use case is to let your server access your local LAN without going th
 
     conn lan-passthrough
     leftsubnet=192.168.1.1/24 # Replace with your LAN subnet
-    rightsubnet=192.168.1.1/24 # Replac with your LAND subnet
+    rightsubnet=192.168.1.1/24 # Replace with your LAN subnet
     authby=never # No authentication necessary
     type=pass # passthrough
     auto=route # no need to ipsec up lan-passthrough
+
+To configure the connection to come up at boot time replace `auto=add` with `auto=start`.
 
 ### Other Devices
 
