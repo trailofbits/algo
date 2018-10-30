@@ -14,6 +14,16 @@
         'dns_encryption "{{ dns_encryption }}"' \
         > /dev/tty
 
+- name: Install the requirements
+  local_action:
+    module: pip
+    state: latest
+    name:
+      - pyOpenSSL
+      - jinja2==2.8
+      - segno
+  tags: always
+
 - name: Generate the SSH private key
   openssl_privatekey:
     path: "{{ SSH_keys.private }}"

@@ -58,7 +58,7 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
     ```bash
     $ python -m virtualenv --python=`which python2` env &&
         source env/bin/activate &&
-        python -m pip install -U pip &&
+        python -m pip install -U pip virtualenv &&
         python -m pip install -r requirements.txt
     ```
     On macOS, you may be prompted to install `cc`. You should press accept if so.

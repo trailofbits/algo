@@ -1,0 +1,2 @@
+---
+digitalocean_venv: "{{ playbook_dir }}/configs/.venvs/digitalocean"
