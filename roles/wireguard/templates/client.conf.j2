@@ -1,6 +1,6 @@
 [Interface]
 PrivateKey = {{ lookup('file', wireguard_config_path + '/private/' + item.1) }}
-Address = {{ lookup('file', wireguard_config_path + '/ip/' + item.1) }}
+Address = {{ wireguard_client_ip }}
 DNS = {{ wireguard_dns_servers }}
 
 [Peer]
