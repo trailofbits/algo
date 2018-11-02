@@ -2,6 +2,15 @@
   - name: Include prompts
     import_tasks: prompts.yml
 
+  - name: Set disk size
+    set_fact:
+      server_disk_size: 50000000000
+
+  - name: Check server size
+    set_fact:
+      server_disk_size: 25000000000
+    when: cloud_providers.scaleway.size == "START1-XS"
+
   - name: Check if server exists
     uri:
       url: "https://cp-{{ algo_region }}.scaleway.com/servers"
