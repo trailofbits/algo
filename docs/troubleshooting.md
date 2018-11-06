@@ -349,7 +349,7 @@ python2.7 -m virtualenv --python=`which python2.7` env && source env/bin/activat
 The problem may happen if you recently moved to a new server, where you have Algo VPN.
 
 1. Clear the Networking caches:
-	- Run CDM (click windows start menu, type 'cmd', right click on 'Command Prompt' and select "Run as Administrator").
+	- Run CMD (click windows start menu, type 'cmd', right click on 'Command Prompt' and select "Run as Administrator").
 	- Type the commands below:
 	```
 	netsh int ip reset
