@@ -17,6 +17,7 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
      * [DigitalOcean: error tagging resource 'xxxxxxxx': param is missing or the value is empty: resources](#digitalocean-error-tagging-resource)
      * [Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid](#windows-the-value-of-parameter-linuxconfigurationsshpublickeyskeydata-is-invalid)
      * [Docker: Failed to connect to the host via ssh](#docker-failed-to-connect-to-the-host-via-ssh)
+     * [Wireguard: Unable to find 'configs/...' in expected paths](#wireguard-unable-to-find-configs-in-expected-paths)
   * [Connection Problems](#connection-problems)
      * [I'm blocked or get CAPTCHAs when I access certain websites](#im-blocked-or-get-captchas-when-i-access-certain-websites)
      * [I want to change the list of trusted Wifi networks on my Apple device](#i-want-to-change-the-list-of-trusted-wifi-networks-on-my-apple-device)
@@ -123,6 +124,22 @@ You tried to install Algo and you see an error that reads "ansible-playbook: com
 
 You did not finish step 4 in the installation instructions, "[Install Algo's remaining dependencies](https://github.com/trailofbits/algo#deploy-the-algo-server)." Algo depends on [Ansible](https://github.com/ansible/ansible), an automation framework, and this error indicates that you do not have Ansible installed. Ansible is installed by `pip` when you run `python -m pip install -r requirements.txt`. You must complete the installation instructions to run the Algo server deployment process.
 
+### Could not fetch URL ... TLSV1_ALERT_PROTOCOL_VERSION
+
+You tried to install Algo and you received an error like this one:
+
+```
+Could not fetch URL https://pypi.python.org/simple/secretstorage/: There was a problem confirming the ssl certificate: [SSL: TLSV1_ALERT_PROTOCOL_VERSION] tlsv1 alert protocol version (_ssl.c:590) - skipping
+  Could not find a version that satisfies the requirement SecretStorage<3 (from -r requirements.txt (line 2)) (from versions: )
+No matching distribution found for SecretStorage<3 (from -r requirements.txt (line 2))
+```
+
+It's time to upgrade your python.
+
+`brew upgrade python2`
+
+You can also download python 2.7.x from python.org.
+
 ### Bad owner or permissions on .ssh
 
 You tried to run Algo and it quickly exits with an error about a bad owner or permissions:
@@ -171,6 +188,17 @@ Algo builds a [Cloudformation](https://aws.amazon.com/cloudformation/) template 
 
 In many cases, failed deployments are the result of [service limits](http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html) being reached, such as "CREATE_FAILED	AWS::EC2::VPC	VPC	The maximum number of VPCs has been reached." In these cases, you must either [delete the VPCs from previous deployments](https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/working-with-vpcs.html#VPC_Deleting), or [contact AWS support](https://console.aws.amazon.com/support/home?region=us-east-1#/case/create?issueType=service-limit-increase&limitType=service-code-direct-connect) to increase the limits on your account.
 
+### AWS: not authorized to perform: cloudformation:UpdateStack
+
+You tried to deploy Algo to AWS and you received an error like this one:
+
+```
+TASK [cloud-ec2 : Deploy the template] *****************************************
+fatal: [localhost]: FAILED! => {"changed": false, "failed": true, "msg": "User: arn:aws:iam::082851645362:user/algo is not authorized to perform: cloudformation:UpdateStack on resource: arn:aws:cloudformation:us-east-1:082851645362:stack/algo/*"}
+```
+
+This error indicates you already have Algo deployed to Cloudformation. Need to [delete it](cloud-amazon-ec2.md#cleanup) first, then re-deploy.
+
 ### DigitalOcean: error tagging resource
 
 You tried to deploy Algo to DigitalOcean and you received an error like this one:
@@ -205,22 +233,6 @@ Target: linuxConfiguration.ssh.publicKeys.keyData"}
 
 This is related to [the chmod issue](https://github.com/Microsoft/WSL/issues/81) inside /mnt directory which is NTFS. The fix is to place Algo outside of /mnt directory.
 
-### Could not fetch URL ... TLSV1_ALERT_PROTOCOL_VERSION
-
-You tried to install Algo and you received an error like this one:
-
-```
-Could not fetch URL https://pypi.python.org/simple/secretstorage/: There was a problem confirming the ssl certificate: [SSL: TLSV1_ALERT_PROTOCOL_VERSION] tlsv1 alert protocol version (_ssl.c:590) - skipping
-  Could not find a version that satisfies the requirement SecretStorage<3 (from -r requirements.txt (line 2)) (from versions: )
-No matching distribution found for SecretStorage<3 (from -r requirements.txt (line 2))
-```
-
-It's time to upgrade your python
-
-`brew upgrade python2`
-
-You can also download python 2.7.x from python.org
-
 ### Docker: Failed to connect to the host via ssh
 
 You tried to deploy Algo from Docker and you received an error like this one:
@@ -239,16 +251,22 @@ You need to add the following to the ansible.cfg in repo root:
 control_path_dir=/dev/shm/ansible_control_path
 ```
 
-### AWS: not authorized to perform: cloudformation:UpdateStack
+### Wireguard: Unable to find 'configs/...' in expected paths
 
-You tried to deploy Algo to AWS and you received an error like this one:
+You tried to install WireGuard and hit an error message like this one:
 
 ```
-TASK [cloud-ec2 : Deploy the template] *****************************************
-fatal: [localhost]: FAILED! => {"changed": false, "failed": true, "msg": "User: arn:aws:iam::082851645362:user/algo is not authorized to perform: cloudformation:UpdateStack on resource: arn:aws:cloudformation:us-east-1:082851645362:stack/algo/*"}
-```
+TASK [wireguard : Generate public keys] ********************************************************************************
+[WARNING]: Unable to find 'configs/xxx.xxx.xxx.xxx/wireguard//private/poipt' in expected paths.
 
-This error indicates you already have Algo deployed to Cloudformation. Need to [delete it](cloud-amazon-ec2.md#cleanup) first, then re-deploy.
+fatal: [localhost]: FAILED! => {"msg": "An unhandled exception occurred while running the lookup plugin 'file'. Error was a <class 'ansible.errors.AnsibleError'>, original message: could not locate file in lookup: configs/xxx.xxx.xxx.xxx/wireguard//private/dan"}
+``` 
+This error is usually hit when using the local install option on a server that isn't Ubuntu 18.04. You can either upgrade your server to Ubuntu 18.04, or remove `*.lock` files at /etc/wireguard/ as follows:
+
+```ssh
+sudo rm -rf /etc/wireguard/*.lock
+```
+Then immediately re-run `./algo`.
 
 ## Connection Problems
 
