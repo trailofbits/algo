@@ -7,13 +7,13 @@ wireguard_network_ipv4:
   prefix: 24
   gateway: 10.19.49.1
   clients_range: 10.19.49
-  clients_start: 100
+  clients_start: 2
 wireguard_network_ipv6:
   subnet: 'fd9d:bc11:4021::'
   prefix: 48
   gateway: 'fd9d:bc11:4021::1'
   clients_range: 'fd9d:bc11:4021::'
-  clients_start: 100
+  clients_start: 2
 wireguard_vpn_network: "{{ wireguard_network_ipv4['subnet'] }}/{{ wireguard_network_ipv4['prefix'] }}"
 wireguard_vpn_network_ipv6: "{{ wireguard_network_ipv6['subnet'] }}/{{ wireguard_network_ipv6['prefix'] }}"
 keys_clean_all: false
