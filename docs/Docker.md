@@ -22,7 +22,7 @@ While it is not possible to run your Algo server from within a Docker container,
    ```
   - From Linux:
   ```bash
-  $ docker run --cap-drop-all -it \
+  $ docker run --cap-drop=all -it \
     -v /home/trailofbits/Documents/VPNs:/data \
     trailofbits/algo:latest
   ```
