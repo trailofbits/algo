@@ -46,6 +46,8 @@ if [[ -x $(command -v systemd-detect-virt) ]]; then
     if [[ ${DETECT_VIRT} != "none" ]]; then
         VIRTUALIZED=" (Virtualized: ${DETECT_VIRT})"
     fi
+elif [[ -f /.dockerenv ]]; then
+    VIRTUALIZED=" (Virtualized: docker)"
 fi
 
 echo "Algo running on: ${OS}${VIRTUALIZED}"
