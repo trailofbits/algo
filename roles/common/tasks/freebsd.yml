@@ -1,6 +1,8 @@
 ---
 - set_fact:
     config_prefix: "/usr/local/"
+    strongswan_shell: /usr/sbin/nologin
+    strongswan_home: /var/empty
     root_group: wheel
     ssh_service_name: sshd
     apparmor_enabled: false
