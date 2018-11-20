@@ -31,41 +31,26 @@
         groups: algo
         home: '/var/jail/{{ item }}'
         createhome: yes
-        generate_ssh_key: yes
+        generate_ssh_key: false
         shell: /bin/false
-        ssh_key_type: ecdsa
-        ssh_key_bits: 256
-        ssh_key_comment: '{{ item }}@{{ IP_subject_alt_name }}'
-        ssh_key_passphrase: "{{ easyrsa_p12_export_password }}"
-        update_password: on_create
         state: present
         append: yes
       with_items: "{{ users }}"
+      tags: update-users
 
     - name: The authorized keys file created
-      file:
-        src: '/var/jail/{{ item }}/.ssh/id_ecdsa.pub'
-        dest: '/var/jail/{{ item }}/.ssh/authorized_keys'
-        owner: "{{ item }}"
-        group: "{{ item }}"
-        state: link
+      authorized_key:
+        user: "{{ item }}"
+        key: "{{ lookup('file', 'configs/' + IP_subject_alt_name + '/pki/public/' + item + '.pub') }}"
+        state: present
+        manage_dir: true
+        exclusive: true
       with_items: "{{ users }}"
+      tags: update-users
 
     - name: Generate SSH fingerprints
       shell: ssh-keyscan {{ IP_subject_alt_name }} 2>/dev/null
       register: ssh_fingerprints
-
-    - name: Fetch users SSH private keys
-      fetch:
-        src: '/var/jail/{{ item }}/.ssh/id_ecdsa'
-        dest: configs/{{ IP_subject_alt_name }}/{{ item }}.ssh.pem
-        flat: yes
-      with_items: "{{ users }}"
-
-    - name: Change mode for SSH private keys
-      local_action: file path=configs/{{ IP_subject_alt_name }}/{{ item }}.ssh.pem mode=0600
-      with_items: "{{ users }}"
-      become: false
 
     - name: Fetch the known_hosts file
       local_action:
@@ -80,24 +65,26 @@
         src: ssh_config.j2
         dest: configs/{{ IP_subject_alt_name }}/{{ item }}.ssh_config
         mode: 0600
-      become: no
-      with_items:
-        - "{{ users }}"
+      become: false
+      tags: update-users
+      with_items: "{{ users }}"
 
-    - name: SSH | Get active system users
-      shell: >
-        getent group algo | cut -f4 -d: | sed "s/,/\n/g"
-      register: valid_users
-      when: ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
+    - name: Get active users
+      getent:
+        database: group
+        key: algo
+        split: ':'
+      tags: update-users
 
-    - name: SSH | Delete non-existing users
+    - name: Delete non-existing users
       user:
         name: "{{ item }}"
         state: absent
         remove: yes
         force: yes
-      when: item not in users and ssh_tunneling_enabled is defined and ssh_tunneling_enabled == "y"
-      with_items: "{{ valid_users.stdout_lines | default('null') }}"
+      when: item not in users
+      with_items: "{{ getent_group['algo'][2].split(',') }}"
+      tags: update-users
   rescue:
     - debug: var=fail_hint
       tags: always

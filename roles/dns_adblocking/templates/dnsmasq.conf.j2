@@ -88,12 +88,13 @@ no-resolv
 # You can control how dnsmasq talks to a server: this forces
 # queries to 10.1.2.3 to be routed via eth1
 # server=10.1.2.3@eth1
-{% if dns_encryption|default(false)|bool == true %}
+{% if dns_encryption %}
 server={{ local_service_ip }}#5353
 {% else %}
 {% for host in dns_servers.ipv4 %}
 server={{ host }}
 {% endfor %}
+stop-dns-rebind
 {% endif %}
 
 # and this sets the source (ie local) address used to talk to
@@ -103,7 +104,7 @@ server={{ host }}
 
 # If you want dnsmasq to change uid and gid to something other
 # than the default, edit the following lines.
-user=nobody
+user=dnsmasq
 group=nogroup
 
 # If you want dnsmasq to listen for DHCP and DNS requests only on

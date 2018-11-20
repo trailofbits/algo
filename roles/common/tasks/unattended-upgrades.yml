@@ -19,3 +19,11 @@
     owner: root
     group: root
     mode: 0644
+
+- name: Unattended reboots configured
+  template:
+    src: 60unattended-reboot.j2
+    dest: /etc/apt/apt.conf.d/60unattended-reboot
+    owner: root
+    group: root
+    mode: 0644

@@ -1,15 +1,7 @@
 ---
 - block:
-
-    - name: The DNS tag is defined
-      set_fact:
-        local_dns: true
-
     - name: Dnsmasq installed
       package: name=dnsmasq
-
-    - name: Ensure that the dnsmasq user exist
-      user: name=dnsmasq groups=nogroup append=yes state=present
 
     - name: The dnsmasq directory created
       file: dest=/var/lib/dnsmasq state=directory mode=0755 owner=dnsmasq group=nogroup

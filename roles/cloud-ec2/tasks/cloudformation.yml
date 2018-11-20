@@ -1,16 +1,17 @@
 ---
 - name: Deploy the template
   cloudformation:
-    aws_access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID'), true)}}"
-    aws_secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true)}}"
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
     stack_name: "{{ stack_name }}"
     state: "present"
-    region: "{{ region }}"
+    region: "{{ algo_region }}"
     template: roles/cloud-ec2/files/stack.yml
     template_parameters:
       InstanceTypeParameter: "{{ cloud_providers.ec2.size }}"
       PublicSSHKeyParameter: "{{ lookup('file', SSH_keys.public) }}"
       ImageIdParameter: "{{ ami_image }}"
+      WireGuardPort: "{{ wireguard_port }}"
     tags:
       Environment: Algo
   register: stack

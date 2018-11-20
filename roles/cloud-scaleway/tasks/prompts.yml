@@ -1,0 +1,34 @@
+---
+- pause:
+    prompt: |
+      Enter your auth token (https://www.scaleway.com/docs/generate-an-api-token/)
+    echo: false
+  register: _scaleway_token
+  when: scaleway_token is undefined
+
+- pause:
+    prompt: |
+      Enter your organization name (https://cloud.scaleway.com/#/billing)
+  register: _scaleway_org
+  when: scaleway_org is undefined
+
+- pause:
+    prompt: |
+      What region should the server be located in?
+        {% for r in scaleway_regions %}
+        {{ loop.index }}. {{ r['alias'] }}
+        {% endfor %}
+
+      Enter the number of your desired region
+      [{{ scaleway_regions.0.alias }}]
+  register: _algo_region
+  when: region is undefined
+
+- name: Set scaleway facts
+  set_fact:
+    algo_scaleway_token: "{{ scaleway_token | default(_scaleway_token.user_input) }}"
+    algo_scaleway_org: "{{ scaleway_org | default(_scaleway_org.user_input|default(omit)) }}"
+    algo_region: >-
+      {% if region is defined %}{{ region }}
+      {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ scaleway_regions[_algo_region.user_input | int -1 ]['alias'] }}
+      {%- else %}{{ scaleway_regions.0.alias }}{% endif %}

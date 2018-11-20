@@ -10,7 +10,7 @@ charon {
 		include strongswan.d/charon/*.conf
 	}
 	user = strongswan
-	group = strongswan
+	group = nogroup
 {% if ansible_distribution == 'FreeBSD' %}
 	filelog {
 	  /var/log/charon.log {

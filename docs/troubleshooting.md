@@ -1,15 +1,23 @@
 # Troubleshooting
 
+First of all, check [this](https://github.com/trailofbits/algo#features) and ensure that you are deploying to the supported ubuntu version.
+
   * [Installation Problems](#installation-problems)
      * [Error: "You have not agreed to the Xcode license agreements"](#error-you-have-not-agreed-to-the-xcode-license-agreements)
      * [Error: checking whether the C compiler works... no](#error-checking-whether-the-c-compiler-works-no)
      * [Error: "fatal error: 'openssl/opensslv.h' file not found"](#error-fatal-error-opensslopensslvh-file-not-found)
      * [Error: "TypeError: must be str, not bytes"](#error-typeerror-must-be-str-not-bytes)
      * [Error: "ansible-playbook: command not found"](#error-ansible-playbook-command-not-found)
+     * [Error: "Could not fetch URL ... TLSV1_ALERT_PROTOCOL_VERSION](#could-not-fetch-url--tlsv1_alert_protocol_version)
      * [Bad owner or permissions on .ssh](#bad-owner-or-permissions-on-ssh)
      * [The region you want is not available](#the-region-you-want-is-not-available)
-	 * [AWS: SSH permission denied with an ECDSA key](#aws-ssh-permission-denied-with-an-ecdsa-key)
-	 * [AWS: "Deploy the template" fails with CREATE_FAILED](#aws-deploy-the-template-fails-with-create_failed)
+     * [AWS: SSH permission denied with an ECDSA key](#aws-ssh-permission-denied-with-an-ecdsa-key)
+     * [AWS: "Deploy the template" fails with CREATE_FAILED](#aws-deploy-the-template-fails-with-create_failed)
+     * [AWS: not authorized to perform: cloudformation:UpdateStack](#aws-not-authorized-to-perform-cloudformationupdatestack)
+     * [DigitalOcean: error tagging resource 'xxxxxxxx': param is missing or the value is empty: resources](#digitalocean-error-tagging-resource)
+     * [Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid](#windows-the-value-of-parameter-linuxconfigurationsshpublickeyskeydata-is-invalid)
+     * [Docker: Failed to connect to the host via ssh](#docker-failed-to-connect-to-the-host-via-ssh)
+     * [Wireguard: Unable to find 'configs/...' in expected paths](#wireguard-unable-to-find-configs-in-expected-paths)
   * [Connection Problems](#connection-problems)
      * [I'm blocked or get CAPTCHAs when I access certain websites](#im-blocked-or-get-captchas-when-i-access-certain-websites)
      * [I want to change the list of trusted Wifi networks on my Apple device](#i-want-to-change-the-list-of-trusted-wifi-networks-on-my-apple-device)
@@ -18,7 +26,9 @@
      * [I can't get my router to connect to the Algo server](#i-cant-get-my-router-to-connect-to-the-algo-server)
      * [I can't get Network Manager to connect to the Algo server](#i-cant-get-network-manager-to-connect-to-the-algo-server)
      * [Various websites appear to be offline through the VPN](#various-websites-appear-to-be-offline-through-the-vpn)
+     * [Clients appear stuck in a reconnection loop](#clients-appear-stuck-in-a-reconnection-loop)
      * ["Error 809" or IKE_AUTH requests that never make it to the server](#error-809-or-ike_auth-requests-that-never-make-it-to-the-server)
+     * [Windows: Parameter is incorrect](#windows-parameter-is-incorrect)
   * [I have a problem not covered here](#i-have-a-problem-not-covered-here)
 
 ## Installation Problems
@@ -75,7 +85,7 @@ You don't have a working compiler installed. You should install the XCode compil
 
 ### Error: "fatal error: 'openssl/opensslv.h' file not found"
 
-On macOS, you tried to install pycrypto and encountered the following error:
+On macOS, you tried to install `cryptography` and encountered the following error:
 
 ```
 build/temp.macosx-10.12-intel-2.7/_openssl.c:434:10: fatal error: 'openssl/opensslv.h' file not found
@@ -94,7 +104,7 @@ Command /usr/bin/python -c "import setuptools, tokenize;__file__='/private/tmp/p
 Storing debug log for failure in /Users/algore/Library/Logs/pip.log
 ```
 
-You are running an old version of `pip` that cannot build the `pycrypto` dependency. Upgrade to a new version of `pip` by running `sudo pip install -U pip`.
+You are running an old version of `pip` that cannot download the binary `cryptography` dependency. Upgrade to a new version of `pip` by running `sudo pip install -U pip`.
 
 ### Error: "TypeError: must be str, not bytes"
 
@@ -113,6 +123,22 @@ You may be trying to run Algo with Python3. Algo uses [Ansible](https://github.c
 You tried to install Algo and you see an error that reads "ansible-playbook: command not found."
 
 You did not finish step 4 in the installation instructions, "[Install Algo's remaining dependencies](https://github.com/trailofbits/algo#deploy-the-algo-server)." Algo depends on [Ansible](https://github.com/ansible/ansible), an automation framework, and this error indicates that you do not have Ansible installed. Ansible is installed by `pip` when you run `python -m pip install -r requirements.txt`. You must complete the installation instructions to run the Algo server deployment process.
+
+### Could not fetch URL ... TLSV1_ALERT_PROTOCOL_VERSION
+
+You tried to install Algo and you received an error like this one:
+
+```
+Could not fetch URL https://pypi.python.org/simple/secretstorage/: There was a problem confirming the ssl certificate: [SSL: TLSV1_ALERT_PROTOCOL_VERSION] tlsv1 alert protocol version (_ssl.c:590) - skipping
+  Could not find a version that satisfies the requirement SecretStorage<3 (from -r requirements.txt (line 2)) (from versions: )
+No matching distribution found for SecretStorage<3 (from -r requirements.txt (line 2))
+```
+
+It's time to upgrade your python.
+
+`brew upgrade python2`
+
+You can also download python 2.7.x from python.org.
 
 ### Bad owner or permissions on .ssh
 
@@ -148,7 +174,7 @@ In order to fix this issue, delete the `algo.pem` and `algo.pem.pub` keys from y
 
 ### AWS: "Deploy the template fails" with CREATE_FAILED
 
-You tried to deploy to Algo to AWS and you received an error like this one:
+You tried to deploy Algo to AWS and you received an error like this one:
 
 ```
 TASK [cloud-ec2 : Make a cloudformation template] ******************************
@@ -160,7 +186,87 @@ fatal: [localhost]: FAILED! => {"changed": true, "events": ["StackEvent AWS::Clo
 
 Algo builds a [Cloudformation](https://aws.amazon.com/cloudformation/) template to deploy to AWS. You can find the entire contents of the Cloudformation template in `configs/algo.yml`. In order to troubleshoot this issue, login to the AWS console, go to the Cloudformation service, find the failed deployment, click the events tab, and find the corresponding "CREATE_FAILED" events. Note that all AWS resources created by Algo are tagged with `Environment => Algo` for easy identification.
 
-In many cases, failed deployments are the result of [service limits](http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html) being reached, such as "CREATE_FAILED	AWS::EC2::VPC	VPC	The maximum number of VPCs has been reached." In these cases, you must [contact AWS support](https://console.aws.amazon.com/support/home?region=us-east-1#/case/create?issueType=service-limit-increase&limitType=service-code-direct-connect) to increase the limits on your account.
+In many cases, failed deployments are the result of [service limits](http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html) being reached, such as "CREATE_FAILED	AWS::EC2::VPC	VPC	The maximum number of VPCs has been reached." In these cases, you must either [delete the VPCs from previous deployments](https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/working-with-vpcs.html#VPC_Deleting), or [contact AWS support](https://console.aws.amazon.com/support/home?region=us-east-1#/case/create?issueType=service-limit-increase&limitType=service-code-direct-connect) to increase the limits on your account.
+
+### AWS: not authorized to perform: cloudformation:UpdateStack
+
+You tried to deploy Algo to AWS and you received an error like this one:
+
+```
+TASK [cloud-ec2 : Deploy the template] *****************************************
+fatal: [localhost]: FAILED! => {"changed": false, "failed": true, "msg": "User: arn:aws:iam::082851645362:user/algo is not authorized to perform: cloudformation:UpdateStack on resource: arn:aws:cloudformation:us-east-1:082851645362:stack/algo/*"}
+```
+
+This error indicates you already have Algo deployed to Cloudformation. Need to [delete it](cloud-amazon-ec2.md#cleanup) first, then re-deploy.
+
+### DigitalOcean: error tagging resource
+
+You tried to deploy Algo to DigitalOcean and you received an error like this one:
+
+```
+TASK [cloud-digitalocean : Tag the droplet] ************************************
+failed: [localhost] (item=staging) => {"failed": true, "item": "staging", "msg": "error tagging resource '73204383': param is missing or the value is empty: resources"}
+failed: [localhost] (item=dbserver) => {"failed": true, "item": "dbserver", "msg": "error tagging resource '73204383': param is missing or the value is empty: resources"}
+```
+
+The error is caused because Digital Ocean changed its API to treat the tag argument as a string instead of a number.
+
+1. Download [doctl](https://github.com/digitalocean/doctl)
+2. Run `doctl auth init`; it will ask you for your token which you can get (or generate) on the API tab at DigitalOcean
+3. Once you are authorized on DO, you can run `doctl compute tag list` to see the list of tags
+4. Run `doctl compute tag delete enivronment:algo --force` to delete the environment:algo tag
+5. Finally run `doctl compute tag list` to make sure that the tag has been deleted
+6. Run algo as directed
+
+### Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid
+
+You tried to deploy Algo from Windows and you received an error like this one:
+
+```
+TASK [cloud-azure : Create an instance].
+fatal: [localhost]: FAILED! => {"changed": false, 
+"msg": "Error creating or updating virtual machine AlgoVPN - Azure Error:
+InvalidParameter\n
+Message: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid.\n
+Target: linuxConfiguration.ssh.publicKeys.keyData"}
+```
+
+This is related to [the chmod issue](https://github.com/Microsoft/WSL/issues/81) inside /mnt directory which is NTFS. The fix is to place Algo outside of /mnt directory.
+
+### Docker: Failed to connect to the host via ssh
+
+You tried to deploy Algo from Docker and you received an error like this one:
+
+```
+Failed to connect to the host via ssh: 
+Warning: Permanently added 'xxx.xxx.xxx.xxx' (ECDSA) to the list of known hosts.\r\n
+Control socket connect(/root/.ansible/cp/6d9d22e981): Connection refused\r\n
+Failed to connect to new control master\r\n
+```
+
+You need to add the following to the ansible.cfg in repo root:
+
+```
+[ssh_connection]
+control_path_dir=/dev/shm/ansible_control_path
+```
+
+### Wireguard: Unable to find 'configs/...' in expected paths
+
+You tried to run Algo and you received an error like this one:
+
+```
+TASK [wireguard : Generate public keys] ********************************************************************************
+[WARNING]: Unable to find 'configs/xxx.xxx.xxx.xxx/wireguard//private/dan' in expected paths.
+
+fatal: [localhost]: FAILED! => {"msg": "An unhandled exception occurred while running the lookup plugin 'file'. Error was a <class 'ansible.errors.AnsibleError'>, original message: could not locate file in lookup: configs/xxx.xxx.xxx.xxx/wireguard//private/dan"}
+``` 
+This error is usually hit when using the local install option on a server that isn't Ubuntu 18.04. You should upgrade your server to Ubuntu 18.04. If this doesn't work, try removing `*.lock` files at /etc/wireguard/ as follows:
+
+```ssh
+sudo rm -rf /etc/wireguard/*.lock
+```
+Then immediately re-run `./algo`.
 
 ## Connection Problems
 
@@ -196,9 +302,11 @@ You're trying to connect Ubuntu or Debian to the Algo server through the Network
 
 ### Various websites appear to be offline through the VPN
 
-This issue appears intermittently due to issues with MTU size. If you experience this issue, we recommend [filing an issue](https://github.com/trailofbits/algo/issues/new) for assistance. Advanced users can troubleshoot the correct MTU size by retrying `ping` with the "don't fragment" bit set, then decreasing packet size until it works. This will determine the correct MTU size for your network, which you then need to update on your network adapter.
+This issue appears intermittently due to issues with MTU size. Different networks may require the MTU within a specific range to correctly pass traffic. We made an effort to set the MTU to the most conservative, most compatible size by default but problems may still occur.
 
-E.g., On Linux (client -- Ubuntu 16.04), connect to your IPsec tunnel then use the following commands to determine the correct MTU size:
+Advanced users can troubleshoot the correct MTU size by retrying `ping` with the "don't fragment" bit set, then decreasing packet size until it works. This will determine the correct MTU size for your network, which you then need to update on your network adapter.
+
+E.g., On Linux (client -- Ubuntu 18.04), connect to your IPsec tunnel then use the following commands to determine the correct MTU size:
 ```
 $ ping -M do -s 1500 www.google.com
 PING www.google.com (74.125.22.147) 1500(1528) bytes of data.
@@ -207,6 +315,19 @@ ping: local error: Message too long, mtu=1438
 Then, set the MTU size on your network adapter (wlan0 or eth0):
 ```
 $ sudo ifconfig wlan0 mtu 1438
+```
+
+You can also set the `max_mss` variable to a new value in config.cfg, and then redeploy your server rather than reconfigure the current one in-place.
+
+### Clients appear stuck in a reconnection loop
+
+If you're using 'Connect on Demand' on iOS and your client device appears stuck in a reconnection loop after switching from WiFi to LTE or vice versa, you may want to try disabling DoS protection in strongSwan.
+
+The configuration value can be found in `/etc/strongswan.d/charon.conf`. After making the change you must reload or restart ipsec.
+
+Example command:
+```
+sed -i -e 's/#*.dos_protection = yes/dos_protection = no/' /etc/strongswan.d/charon.conf && ipsec restart
 ```
 
 ### "Error 809" or IKE_AUTH requests that never make it to the server
@@ -240,6 +361,29 @@ Then rerun the dependency installation explicitly using python 2.7
 ```
 python2.7 -m virtualenv --python=`which python2.7` env && source env/bin/activate && python2.7 -m pip install -U pip && python2.7 -m pip install -r requirements.txt
 ```
+
+### Windows: Parameter is incorrect
+
+The problem may happen if you recently moved to a new server, where you have Algo VPN.
+
+1. Clear the Networking caches:
+	- Run CMD (click windows start menu, type 'cmd', right click on 'Command Prompt' and select "Run as Administrator").
+	- Type the commands below:
+	```
+	netsh int ip reset
+	netsh int ipv6 reset
+	netsh winsock reset
+	```
+
+3. Restart your computer
+4. Reset Device Manager adaptors:
+	- Open Device Manager
+	- Find Network Adapters
+	- Uninstall WAN Miniport drivers (IKEv2, IP, IPv6, etc)
+	- Click Action > Scan for hardware changes
+	- The adapters you just uninstalled should come back
+
+The VPN connection should work again
 
 ## I have a problem not covered here
 

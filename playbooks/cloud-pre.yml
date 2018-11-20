@@ -1,0 +1,28 @@
+---
+- name: Display the invocation environment
+  local_action:
+    module: shell
+      ./algo-showenv.sh \
+        'algo_provider "{{ algo_provider }}"' \
+        'algo_ondemand_cellular "{{ algo_ondemand_cellular }}"' \
+        'algo_ondemand_wifi "{{ algo_ondemand_wifi }}"' \
+        'algo_ondemand_wifi_exclude "{{ algo_ondemand_wifi_exclude }}"' \
+        'algo_local_dns "{{ algo_local_dns }}"' \
+        'algo_ssh_tunneling "{{ algo_ssh_tunneling }}"' \
+        'algo_windows "{{ algo_windows }}"' \
+        'wireguard_enabled "{{ wireguard_enabled }}"' \
+        'dns_encryption "{{ dns_encryption }}"' \
+        > /dev/tty
+
+- name: Generate the SSH private key
+  openssl_privatekey:
+    path: "{{ SSH_keys.private }}"
+    size: 2048
+    mode: "0600"
+    type: RSA
+
+- name: Generate the SSH public key
+  openssl_publickey:
+    path: "{{ SSH_keys.public }}"
+    privatekey_path: "{{ SSH_keys.private }}"
+    format: OpenSSH
