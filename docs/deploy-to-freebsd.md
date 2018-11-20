@@ -26,5 +26,7 @@ device	crypto
 ## Installation
 
 ```shell
-ansible-playbook deploy.yml -t local,vpn -e "server_ip=$server_ip server_user=$server_user IP_subject_alt_name=$server_ip Store_CAKEY=N" --skip-tags cloud
+ansible-playbook main.yml -e "provider=local"
 ```
+
+And follow the instructions

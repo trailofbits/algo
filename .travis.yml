@@ -13,15 +13,23 @@ matrix:
 addons:
   apt:
     sources:
-    - sourceline: 'ppa:ubuntu-lxc/stable'
+      - sourceline: 'ppa:ubuntu-lxc/stable'
+      - sourceline: 'ppa:wireguard/wireguard'
     packages:
-    - python-pip
-    - lxc
-    - lxc-templates
-    - expect-dev
-    - debootstrap
-    - shellcheck
-    - tree
+      - python-pip
+      - lxd
+      - expect-dev
+      - debootstrap
+      - shellcheck
+      - tree
+      - bridge-utils
+      - dnsutils
+      - build-essential
+      - libssl-dev
+      - libffi-dev
+      - python-dev
+      - linux-headers-$(uname -r)
+      - wireguard-dkms
 
 cache:
   directories:
@@ -30,29 +38,25 @@ cache:
 
 before_cache:
   - mkdir $HOME/lxc
-  - sudo tar cf $HOME/lxc/cache.tar /var/cache/lxc/
+  - sudo tar cf $HOME/lxc/cache.tar /var/lib/lxd/images/
   - sudo chown $USER. $HOME/lxc/cache.tar
 
 env:
-  - LXC_NAME=ubuntu1604 LXC_DISTRO=ubuntu LXC_RELEASE=xenial
-  - LXC_NAME=ubuntu1710 LXC_DISTRO=ubuntu LXC_RELEASE=artful
-  - LXC_NAME=docker LXC_DISTRO=ubuntu LXC_RELEASE=artful
+  - LXC_NAME=docker LXC_DISTRO=ubuntu LXC_RELEASE=18.04
 
 before_install:
-  - test "${LXC_NAME}" != "docker" || docker build -t travis/algo .
+  - test "${LXC_NAME}" != "docker" && sudo modprobe wireguard || docker build -t travis/algo .
 
 install:
   - sudo tar xf $HOME/lxc/cache.tar -C / || echo "Didn't extract cache."
-  - export LXC_ROOTFS=/var/lib/lxc/$LXC_NAME/rootfs
-  - 'sudo lxc-create -n $LXC_NAME -t ubuntu -- -r $LXC_RELEASE --mirror http://mirrors.us.kernel.org/ubuntu --packages python || true'
-  - 'sudo lxc-start -n $LXC_NAME && until (sudo lxc-info -n $LXC_NAME | grep -q ^IP:); do printf . && sleep 1; done && sleep 2'
-  - export LXC_IP="$(sudo lxc-info -Hin $LXC_NAME)"
-  - sudo /bin/bash -c "printf '\n$LXC_IP test.lxc\n' >> /etc/hosts"
   - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
   - chmod 0644 ~/.ssh/config
-  - sudo mkdir -vm 0700 $LXC_ROOTFS/root/.ssh/
-  - sudo cp -v ~/.ssh/id_rsa.pub $LXC_ROOTFS/root/.ssh/authorized_keys
-  - sudo apt-get install build-essential libssl-dev libffi-dev python-dev
+  - echo -e "#cloud-config\nssh_authorized_keys:\n - $(cat ~/.ssh/id_rsa.pub)" | sudo lxc profile set default user.user-data -
+  - sudo cp -f tests/lxd-bridge /etc/default/lxd-bridge
+  - sudo service lxd restart
+  - sudo lxc launch ${LXC_DISTRO}:${LXC_RELEASE} ${LXC_NAME}
+  - until host ${LXC_NAME}.lxd 10.0.8.1 -t A; do sleep 3; done
+  - export LXC_IP="$(dig ${LXC_NAME}.lxd @10.0.8.1 +short)"
   - pip install -r requirements.txt
   - pip install ansible-lint
   - gem install awesome_bot
@@ -61,12 +65,10 @@ install:
 
 script:
   # - awesome_bot --allow-dupe --skip-save-results *.md docs/*.md --white-list paypal.com,do.co,microsoft.com,https://github.com/trailofbits/algo/archive/master.zip,https://github.com/trailofbits/algo/issues/new
-#  - shellcheck algo
-#  - ansible-lint deploy.yml users.yml deploy_client.yml
-  - ansible-playbook deploy.yml --syntax-check
+# - shellcheck algo
+# - ansible-lint main.yml users.yml deploy_client.yml
+  - ansible-playbook main.yml --syntax-check
   - ./tests/local-deploy.sh
-
-after_script:
   - ./tests/update-users.sh
 
 notifications:

@@ -1,9 +1,0 @@
----
-
-- name: FreeBSD / HardenedBSD | Install prerequisites
-  raw: sleep 10 && env ASSUME_ALWAYS_YES=YES sudo pkg install -y python27
-
-- name: FreeBSD / HardenedBSD | Configure defaults
-  raw: sudo ln -sf /usr/local/bin/python2.7 /usr/bin/python2.7
-
-- include_tasks: facts/FreeBSD.yml

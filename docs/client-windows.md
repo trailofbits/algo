@@ -1,6 +1,6 @@
 # Windows client manual setup
 
-## Automatic installtion
+## Automatic installation
 
 To install automatically, use the generated user Powershell script.
 
@@ -8,7 +8,7 @@ To install automatically, use the generated user Powershell script.
 2. Open Powershell as Administrator.
 3. Run the following command:
 ```powershell
-powershell -ExecutionPolicy ByPass -File C:\path\to\windows_USER.ps1 -Add
+powershell -ExecutionPolicy ByPass -File C:\path\to\windows_USER.ps1 Add
 ```
 4. The command has help information available. To view its full help, run this from Powershell:
 ```powershell
@@ -26,6 +26,8 @@ Set-ExecutionPolicy Unrestricted -Scope CurrentUser
 ```
 
 4. In the same window, run the necessary commands to install the certificates and create the VPN configuration. Note the lines at the top defining the VPN address, USER.p12 file location, and CA certificate location - change those lines to the IP address of your Algo server and the location you saved those two files. Also note that it will prompt for the "User p12 password", which is printed at the end of a successful Algo deployment.
+
+If you have more than one account on your Windows 10 machine (e.g. one with administrator privileges and one without) and would like to have the VPN connection available to all users, then insert the line `AllUserConnection = $true` after `$EncryptionLevel = "Required"`.
 
 ```powershell
 $VpnServerAddress = "1.2.3.4"
@@ -48,12 +50,12 @@ Add-VpnConnection @addVpnParams
 
 $setVpnParams = @{
     ConnectionName = $VpnName
-    AuthenticationTransformConstants = "GCMAES128"
-    CipherTransformConstants = "GCMAES128"
-    EncryptionMethod = "AES128"
+    AuthenticationTransformConstants = "GCMAES256"
+    CipherTransformConstants = "GCMAES256"
+    EncryptionMethod = "AES256"
     IntegrityCheckMethod = "SHA384"
-    DHGroup = "ECP256"
-    PfsGroup = "ECP256"
+    DHGroup = "ECP384"
+    PfsGroup = "ECP384"
     Force = $true
 }
 Set-VpnConnectionIPsecConfiguration @setVpnParams

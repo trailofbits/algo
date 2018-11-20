@@ -10,6 +10,7 @@
 * [Where did the name "Algo" come from?](#where-did-the-name-algo-come-from)
 * [Can DNS filtering be disabled?](#can-dns-filtering-be-disabled)
 * [Wasn't IPSEC backdoored by the US government?](#wasnt-ipsec-backdoored-by-the-us-government)
+* [What inbound ports are used?](#what-inbound-ports-are-used)
 
 ## Has Algo been audited?
 
@@ -70,3 +71,7 @@ No.
 > It's interesting that the bug was fixed without an advisory (oh to be a fly on the wall on ICB that day; Theo had a, um, a, "way" with his dev team). On the other hand, we don't know what releases of OpenBSD actually had the bug right now.
 >
 > It seems vanishingly unlikely that there could have been anything deliberate about this series of changes. You are unlikely to find anyone who will impugn Angelos. Meanwhile, the diffs tell exactly the opposite of the story that Greg Perry told.
+
+## What inbound ports are used?
+
+You should only need 22/TCP, 500/UDP, 4500/UDP, and 51820/UDP opened on any firewall that sits between your clients and your Algo server.

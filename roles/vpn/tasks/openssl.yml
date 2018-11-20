@@ -9,19 +9,21 @@
     file:
       dest: configs/{{ IP_subject_alt_name }}/pki
       state: absent
-    when: easyrsa_reinit_existent|bool == True
+    when: keys_clean_all|bool == True
 
   - name: Ensure the pki directories exist
     file:
       dest: "configs/{{ IP_subject_alt_name }}/pki/{{ item }}"
       state: directory
       recurse: yes
+      mode: '0700'
     with_items:
       - ecparams
       - certs
       - crl
       - newcerts
       - private
+      - public
       - reqs
 
   - name: Ensure the files exist
@@ -42,14 +44,15 @@
 
   - name: Build the CA pair
     shell: >
-      {{ openssl_bin }} ecparam -name prime256v1 -out ecparams/prime256v1.pem &&
+      umask 077;
+      {{ openssl_bin }} ecparam -name secp384r1 -out ecparams/secp384r1.pem &&
       {{ openssl_bin }} req -utf8 -new
-      -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }}
+      -newkey ec:ecparams/secp384r1.pem
       -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName }}"))
       -keyout private/cakey.pem
       -out cacert.pem -x509 -days 3650
       -batch
-      -passout pass:"{{ easyrsa_CA_password }}" &&
+      -passout pass:"{{ CA_password }}" &&
       touch {{ IP_subject_alt_name }}_ca_generated
     args:
       chdir: "configs/{{ IP_subject_alt_name }}/pki/"
@@ -70,19 +73,20 @@
 
   - name: Build the server pair
     shell: >
+      umask 077;
       {{ openssl_bin }} req -utf8 -new
-      -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }}
+      -newkey ec:ecparams/secp384r1.pem
       -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName }}"))
       -keyout private/{{ IP_subject_alt_name }}.key
       -out reqs/{{ IP_subject_alt_name }}.req -nodes
-      -passin pass:"{{ easyrsa_CA_password }}"
+      -passin pass:"{{ CA_password }}"
       -subj "/CN={{ IP_subject_alt_name }}" -batch &&
       {{ openssl_bin }} ca -utf8
       -in reqs/{{ IP_subject_alt_name }}.req
       -out certs/{{ IP_subject_alt_name }}.crt
       -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName }}"))
       -days 3650 -batch
-      -passin pass:"{{ easyrsa_CA_password }}"
+      -passin pass:"{{ CA_password }}"
       -subj "/CN={{ IP_subject_alt_name }}" &&
       touch certs/{{ IP_subject_alt_name }}_crt_generated
     args:
@@ -92,19 +96,20 @@
 
   - name: Build the client's pair
     shell: >
+      umask 077;
       {{ openssl_bin }} req -utf8 -new
-      -newkey {{ algo_params | default('ec:ecparams/prime256v1.pem') }}
-      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ item }}"))
+      -newkey ec:ecparams/secp384r1.pem
+      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName_USER }}"))
       -keyout private/{{ item }}.key
       -out reqs/{{ item }}.req -nodes
-      -passin pass:"{{ easyrsa_CA_password }}"
+      -passin pass:"{{ CA_password }}"
       -subj "/CN={{ item }}" -batch &&
       {{ openssl_bin }} ca -utf8
       -in reqs/{{ item }}.req
       -out certs/{{ item }}.crt
-      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ item }}"))
+      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName_USER }}"))
       -days 3650 -batch
-      -passin pass:"{{ easyrsa_CA_password }}"
+      -passin pass:"{{ CA_password }}"
       -subj "/CN={{ item }}" &&
       touch certs/{{ item }}_crt_generated
     args:
@@ -113,15 +118,31 @@
       executable: bash
     with_items: "{{ users }}"
 
+  - name: Create links for the private keys
+    file:
+      src: "pki/private/{{ item }}.key"
+      dest: "configs/{{ IP_subject_alt_name }}/{{ item }}.ssh.pem"
+      state: link
+      force: true
+    with_items: "{{ users }}"
+
+  - name: Build openssh public keys
+    openssl_publickey:
+      path:  "configs/{{ IP_subject_alt_name }}/pki/public/{{ item }}.pub"
+      privatekey_path: "configs/{{ IP_subject_alt_name }}/pki/private/{{ item }}.key"
+      format: OpenSSH
+    with_items: "{{ users }}"
+
   - name: Build the client's p12
     shell: >
+      umask 077;
       {{ openssl_bin }} pkcs12
       -in certs/{{ item }}.crt
       -inkey private/{{ item }}.key
       -export
       -name {{ item }}
       -out private/{{ item }}.p12
-      -passout pass:"{{ easyrsa_p12_export_password }}"
+      -passout pass:"{{ p12_export_password }}"
     args:
       chdir: "configs/{{ IP_subject_alt_name }}/pki/"
       executable: bash
@@ -149,8 +170,8 @@
   - name: Revoke non-existing users
     shell: >
       {{ openssl_bin }} ca -gencrl
-      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ item }}"))
-      -passin pass:"{{ easyrsa_CA_password }}"
+      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName_USER }}"))
+      -passin pass:"{{ CA_password }}"
       -revoke certs/{{ item }}.crt
       -out crl/{{ item }}.crt
     register: gencrl
@@ -165,7 +186,7 @@
     shell: >
       {{ openssl_bin }} ca -gencrl
       -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ IP_subject_alt_name }}"))
-      -passin pass:"{{ easyrsa_CA_password }}"
+      -passin pass:"{{ CA_password }}"
       -out crl/algo.root.pem
     when:
       - gencrl is defined
@@ -175,6 +196,8 @@
       executable: bash
   delegate_to: localhost
   become: no
+  vars:
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
 
 - name: Copy the CRL to the vpn server
   copy:

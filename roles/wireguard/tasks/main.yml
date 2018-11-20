@@ -1,0 +1,85 @@
+---
+- name: Ensure the required directories exist
+  file:
+    dest: "{{ wireguard_config_path }}/{{ item }}"
+    state: directory
+    recurse: true
+  with_items:
+    - private
+    - public
+  delegate_to: localhost
+  become: false
+
+- name: Include tasks for Ubuntu
+  include_tasks: ubuntu.yml
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  tags: always
+
+- name: Include tasks for FreeBSD
+  include_tasks: freebsd.yml
+  when: ansible_distribution == 'FreeBSD'
+  tags: always
+
+- name: Generate keys
+  import_tasks: keys.yml
+  tags: update-users
+
+- block:
+  - block:
+    - name: WireGuard user list updated
+      lineinfile:
+        dest: "{{ wireguard_config_path }}/index.txt"
+        create: true
+        mode: "0600"
+        insertafter: EOF
+        line: "{{ item }}"
+      register: lineinfile
+      with_items: "{{ users }}"
+
+    - set_fact:
+        wireguard_users: "{{ (lookup('file', wireguard_config_path + 'index.txt')).split('\n') }}"
+
+    - name: WireGuard users config generated
+      template:
+        src: client.conf.j2
+        dest: "{{ wireguard_config_path }}/{{ item.1 }}.conf"
+        mode: "0600"
+      with_indexed_items:  "{{ wireguard_users }}"
+      when: item.1 in users
+      vars:
+        index: "{{ item.0 }}"
+
+    - name: Generate QR codes
+      shell: >
+        umask 077;
+        which segno &&
+        segno --scale=5 --output={{ item.1 }}.png \
+          "{{ lookup('template', 'client.conf.j2') }}" || true
+      changed_when: false
+      with_indexed_items:  "{{ wireguard_users }}"
+      when: item.1 in users
+      vars:
+        index: "{{ item.0 }}"
+        ansible_python_interpreter: "{{ ansible_playbook_python }}"
+      args:
+        chdir: "{{ wireguard_config_path }}"
+        executable: bash
+    become: false
+    delegate_to: localhost
+
+  - name: WireGuard configured
+    template:
+      src: server.conf.j2
+      dest: "{{ config_prefix|default('/') }}etc/wireguard/{{ wireguard_interface }}.conf"
+      mode: "0600"
+    notify: restart wireguard
+  tags: update-users
+
+
+- name: WireGuard enabled and started
+  service:
+    name: "{{ service_name }}"
+    state: started
+    enabled: true
+
+- meta: flush_handlers

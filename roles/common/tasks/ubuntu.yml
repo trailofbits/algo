@@ -1,81 +1,88 @@
 ---
+- block:
+  - name: Ubuntu | Install prerequisites
+    apt:
+      name: "{{ item }}"
+      update_cache: true
+    with_items:
+      - python2.7
+      - sudo
+
+  - name: Ubuntu | Configure defaults
+    alternatives:
+      name: python
+      link: /usr/bin/python
+      path: /usr/bin/python2.7
+      priority: 1
+    tags:
+      - update-alternatives
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+- name: Gather facts
+  setup:
+
 - name: Cloud only tasks
   block:
-  - name: Install software updates
-    apt:
-      update_cache: true
-      install_recommends: true
-      upgrade: dist
+    - name: Install software updates
+      apt:
+        update_cache: true
+        install_recommends: true
+        upgrade: dist
 
-  - name: Upgrade the ca certificates
-    apt:
-      name: ca-certificates
-      state: latest
+    - name: Check if reboot is required
+      shell: >
+        if [[ -e /var/run/reboot-required ]]; then echo "required"; else echo "no"; fi
+      args:
+        executable: /bin/bash
+      register: reboot_required
 
-  - name: Check if reboot is required
-    shell: >
-      if [[ -e /var/run/reboot-required ]]; then echo "required"; else echo "no"; fi
-    args:
-      executable: /bin/bash
-    register: reboot_required
+    - name: Reboot
+      shell: sleep 2 && shutdown -r now "Ansible updates triggered"
+      async: 1
+      poll: 0
+      when: reboot_required is defined and reboot_required.stdout == 'required'
+      ignore_errors: true
 
-  - name: Reboot
-    shell: sleep 2 && shutdown -r now "Ansible updates triggered"
-    async: 1
-    poll: 0
-    when: reboot_required is defined and reboot_required.stdout == 'required'
-    ignore_errors: true
+    - name: Wait until SSH becomes ready...
+      local_action:
+        module: wait_for
+        port: 22
+        host: "{{ inventory_hostname }}"
+        search_regex: OpenSSH
+        delay: 10
+        timeout: 320
+      when: reboot_required is defined and reboot_required.stdout == 'required'
+      become: false
+  when: algo_provider != "local"
 
-  - name: Wait until SSH becomes ready...
-    local_action:
-      module: wait_for
-      port: 22
-      host: "{{ inventory_hostname }}"
-      search_regex: OpenSSH
-      delay: 10
-      timeout: 320
-    when: reboot_required is defined and reboot_required.stdout == 'required'
-    become: false
+- name: Include unatteded upgrades configuration
+  import_tasks: unattended-upgrades.yml
 
-  - name: Include unatteded upgrades configuration
-    include_tasks: unattended-upgrades.yml
-
-  - name: Disable MOTD on login and SSHD
-    replace: dest="{{ item.file }}" regexp="{{ item.regexp }}" replace="{{ item.line }}"
-    with_items:
-      - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/login' }
-      - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/sshd' }
-  tags:
-    - cloud
-
-- name: Install system specific tools
-  package: name="{{ item }}" state=present
+- name: Disable MOTD on login and SSHD
+  replace: dest="{{ item.file }}" regexp="{{ item.regexp }}" replace="{{ item.line }}"
   with_items:
-    - ifupdown
-  tags:
-    - always
-
-- name: Ensure the interfaces directory exists
-  file:
-    path: /etc/network/interfaces.d/
-    state: directory
-    mode: 0755
-    owner: root
-    group: root
-  tags:
-    - always
+    - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/login' }
+    - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/sshd' }
 
 - name: Loopback for services configured
-  template: src=10-loopback-services.cfg.j2 dest=/etc/network/interfaces.d/10-loopback-services.cfg
+  template:
+    src: 10-algo-lo100.network.j2
+    dest: /etc/systemd/network/10-algo-lo100.network
   notify:
-    - restart loopback
+    - restart systemd-networkd
   tags:
     - always
 
-- name: Loopback included into the network config
-  lineinfile: dest=/etc/network/interfaces line='source /etc/network/interfaces.d/10-loopback-services.cfg' state=present
-  notify:
-    - restart loopback
+- name: systemd services enabled and started
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+    daemon_reload: true
+  with_items:
+    - systemd-networkd
+    - systemd-resolved
   tags:
     - always
 
@@ -111,3 +118,19 @@
         value: 1
   tags:
     - always
+
+- name: Install tools
+  package: name="{{ item }}" state=present
+  with_items:
+    - "{{ tools|default([]) }}"
+  tags:
+    - always
+
+- name: Install headers
+  apt:
+    name: "{{ item }}"
+    state: present
+  when: install_headers
+  with_items:
+    - linux-headers-generic
+    - "linux-headers-{{ ansible_kernel }}"
