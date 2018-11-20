@@ -1,4 +1,6 @@
 ---
+strongswan_shell: /usr/sbin/nologin
+strongswan_home: /var/lib/strongswan
 BetweenClients_DROP: true
 wireguard_config_path: "configs/{{ IP_subject_alt_name }}/wireguard/"
 wireguard_interface: wg0
