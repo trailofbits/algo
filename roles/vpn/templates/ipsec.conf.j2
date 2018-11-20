@@ -4,11 +4,14 @@ config setup
 
 conn %default
     fragmentation=yes
-    rekey=no
+    rekey=yes
+    reauth=no
     dpdaction=clear
     keyexchange=ikev2
     compress=yes
     dpddelay=35s
+    lifetime=2h
+    ikelifetime=12h
 
 {% if algo_windows %}
     ike={{ ciphers.compat.ike }}
