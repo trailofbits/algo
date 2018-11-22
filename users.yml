@@ -58,6 +58,16 @@
     - config.cfg
     - "configs/{{ inventory_hostname }}/config.yml"
 
+  pre_tasks:
+    - block:
+      - name: Local pre-tasks
+        import_tasks: playbooks/cloud-pre.yml
+      rescue:
+        - debug: var=fail_hint
+          tags: always
+        - fail:
+          tags: always
+
   roles:
     - role: common
     - role: wireguard
