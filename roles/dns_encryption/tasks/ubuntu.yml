@@ -27,14 +27,14 @@
   - name: Ubuntu | Unbound profile for apparmor configured
     copy:
       src: apparmor.profile.dnscrypt-proxy
-      dest: /etc/apparmor.d/usr.sbin.dnscrypt-proxy
+      dest: /etc/apparmor.d/usr.bin.dnscrypt-proxy
       owner: root
       group: root
       mode: 0600
     notify: restart dnscrypt-proxy
 
   - name: Ubuntu | Enforce the dnscrypt-proxy AppArmor policy
-    command: aa-enforce usr.sbin.dnscrypt-proxy
+    command: aa-enforce usr.bin.dnscrypt-proxy
     changed_when: false
   tags: apparmor
   when: apparmor_enabled|default(false)|bool == true
