@@ -18,6 +18,7 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
      * [Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid](#windows-the-value-of-parameter-linuxconfigurationsshpublickeyskeydata-is-invalid)
      * [Docker: Failed to connect to the host via ssh](#docker-failed-to-connect-to-the-host-via-ssh)
      * [Wireguard: Unable to find 'configs/...' in expected paths](#wireguard-unable-to-find-configs-in-expected-paths)
+     * [Ubuntu Error: "unable to write 'random state" when generating CA password](#ubuntu-error-unable-to-write-random-state-when-generating-ca-password")
   * [Connection Problems](#connection-problems)
      * [I'm blocked or get CAPTCHAs when I access certain websites](#im-blocked-or-get-captchas-when-i-access-certain-websites)
      * [I want to change the list of trusted Wifi networks on my Apple device](#i-want-to-change-the-list-of-trusted-wifi-networks-on-my-apple-device)
@@ -267,6 +268,23 @@ This error is usually hit when using the local install option on a server that i
 sudo rm -rf /etc/wireguard/*.lock
 ```
 Then immediately re-run `./algo`.
+
+### Ubuntu Error: "unable to write 'random state" when generating CA password
+
+When running Algo, you received an error like this:
+
+```
+TASK [common : Generate password for the CA key] ***********************************************************************************************************************************************************
+fatal: [xxx.xxx.xxx.xxx -> localhost]: FAILED! => {"changed": true, "cmd": "openssl rand -hex 16", "delta": "0:00:00.024776", "end": "2018-11-26 13:13:55.879921", "msg": "non-zero return code", "rc": 1, "start": "2018-11-26 13:13:55.855145", "stderr": "unable to write 'random state'", "stderr_lines": ["unable to write 'random state'"], "stdout": "xxxxxxxxxxxxxxxxxxx", "stdout_lines": ["xxxxxxxxxxxxxxxxxxx"]}
+```
+
+This happens when your user does not have ownership of the `$HOME/.rnd` file, which is a seed for randomization. To fix this issue, give your user ownership of the file with this command:
+
+```
+sudo chown $USER:$USER $HOME/.rnd
+```
+
+Now, run Algo again.
 
 ## Connection Problems
 
