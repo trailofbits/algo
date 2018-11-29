@@ -8,7 +8,7 @@ To install automatically, use the generated user Powershell script.
 2. Open Powershell as Administrator.
 3. Run the following command:
 ```powershell
-powershell -ExecutionPolicy ByPass -File C:\path\to\windows_USER.ps1 Add
+powershell -ExecutionPolicy ByPass -File C:\path\to\windows_USER.ps1 -Add
 ```
 4. The command has help information available. To view its full help, run this from Powershell:
 ```powershell
