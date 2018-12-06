@@ -2,6 +2,8 @@
 PrivateKey = {{ lookup('file', wireguard_config_path + '/private/' + item.1) }}
 Address = {{ wireguard_client_ip }}
 DNS = {{ wireguard_dns_servers }}
+{% if reduce_mtu|int > 0 %}MTU = {{ 1420 - reduce_mtu|int }}
+{% endif %}
 
 [Peer]
 PublicKey = {{ lookup('file', wireguard_config_path + '/public/' + IP_subject_alt_name) }}

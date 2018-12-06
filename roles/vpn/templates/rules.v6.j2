@@ -10,10 +10,8 @@
 :OUTPUT ACCEPT [0:0]
 :POSTROUTING ACCEPT [0:0]
 
-{% if max_mss is defined %}
-# MSS is the TCP Max Segment Size
-# See rules.v4 for a more complete explanation
--A FORWARD -s {{ vpn_network_ipv6 }}{% if wireguard_enabled %},{{ wireguard_vpn_network_ipv6 }}{% endif %} -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss {{ max_mss }}
+{% if reduce_mtu|int > 0 %}
+-A FORWARD -s {{ vpn_network_ipv6 }} -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss {{ 1340 - reduce_mtu|int }}
 {% endif %}
 
 COMMIT
