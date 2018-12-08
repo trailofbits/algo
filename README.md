@@ -118,7 +118,7 @@ Install strongSwan, then copy the included ipsec_user.conf, ipsec_user.secrets, 
 
 #### Ubuntu Server 18.04 example
 
-1. `sudo apt-get install strongswan strongswan-plugin-openssl`: install strongSwan
+1. `sudo apt-get install strongswan libstrongswan-standard-plugins`: install strongSwan
 2. `/etc/ipsec.d/certs`: copy `<name>.crt` from `algo-master/configs/<server_ip>/pki/certs/<name>.crt`
 3. `/etc/ipsec.d/private`: copy `<name>.key` from `algo-master/configs/<server_ip>/pki/private/<name>.key`
 4. `/etc/ipsec.d/cacerts`: copy `cacert.pem` from `algo-master/configs/<server_ip>/pki/cacert.pem`
