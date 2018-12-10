@@ -9,7 +9,6 @@
 
 - name: Set facts for mobileconfigs
   set_fact:
-    proxy_enabled: false
     PayloadContentCA: "{{ lookup('file' , 'configs/{{ IP_subject_alt_name }}/pki/cacert.pem')|b64encode }}"
 
 - name: Build the mobileconfigs
@@ -20,25 +19,6 @@
   with_together:
     - "{{ users }}"
     - "{{ PayloadContent.results }}"
-  no_log: True
-
-- name: Build the strongswan app android config
-  template:
-    src: sswan.j2
-    dest: configs/{{ IP_subject_alt_name }}/android_{{ item.0 }}.sswan
-    mode: 0600
-  with_together:
-    - "{{ users }}"
-    - "{{ PayloadContent.results }}"
-  no_log: True
-
-- name: Build the android helper html
-  template:
-    src: android_html_helper.j2
-    dest: configs/{{ IP_subject_alt_name }}/android_{{ item.0 }}_helper.html
-    mode: 0600
-  with_together:
-    - "{{ users }}"
   no_log: True
 
 - name: Build the client ipsec config file
@@ -57,24 +37,15 @@
   with_items:
     - "{{ users }}"
 
-- name: Create the windows check file
-  file:
-    state: touch
-    path: configs/{{ IP_subject_alt_name }}/.supports_windows
-  when: Win10_Enabled is defined and Win10_Enabled == "Y"
-
-- name: Check if the windows check file exists
-  stat:
-    path: configs/{{ IP_subject_alt_name }}/.supports_windows
-  register: supports_windows
-
 - name: Build the windows client powershell script
   template:
     src: client_windows.ps1.j2
-    dest: configs/{{ IP_subject_alt_name }}/windows_{{ item }}.ps1
+    dest: configs/{{ IP_subject_alt_name }}/windows_{{ item.0 }}.ps1
     mode: 0600
-  when: Win10_Enabled is defined and Win10_Enabled == "Y" or supports_windows.stat.exists == true
-  with_items: "{{ users }}"
+  when: algo_windows
+  with_together:
+    - "{{ users }}"
+    - "{{ PayloadContent.results }}"
 
 - name: Restrict permissions for the local private directories
   file:

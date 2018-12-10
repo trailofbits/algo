@@ -1,6 +1,15 @@
 ---
-
 - set_fact:
+    config_prefix: "/usr/local/"
+    strongswan_shell: /usr/sbin/nologin
+    strongswan_home: /var/empty
+    root_group: wheel
+    ssh_service_name: sshd
+    apparmor_enabled: false
+    strongswan_additional_plugins:
+      - kernel-pfroute
+      - kernel-pfkey
+    ansible_python_interpreter: /usr/local/bin/python2.7
     tools:
       - git
       - subversion
@@ -17,6 +26,15 @@
   tags:
     - always
 
+- setup:
+
+- name: Install tools
+  package: name="{{ item }}" state=present
+  with_items:
+    - "{{ tools|default([]) }}"
+  tags:
+    - always
+
 - name: Loopback included into the rc config
   blockinfile:
     dest: /etc/rc.conf
@@ -24,7 +42,7 @@
     block: |
       cloned_interfaces="lo100"
       ifconfig_lo100="inet {{ local_service_ip }} netmask 255.255.255.255"
-      ifconfig_lo100="inet6 FCAA::1/64"
+      ifconfig_lo100_ipv6="inet6 FCAA::1/64"
   notify:
     - restart loopback bsd
   tags:

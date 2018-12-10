@@ -1,0 +1,57 @@
+---
+- name: Add the repository
+  apt_repository:
+    state: present
+    codename: bionic
+    repo: ppa:shevchuk/dnscrypt-proxy
+  register: result
+  until: result is succeeded
+  retries: 10
+  delay: 3
+
+- name: Install dnscrypt-proxy
+  apt:
+    name: dnscrypt-proxy
+    state: latest
+    update_cache: true
+
+- name: Configure unattended-upgrades
+  copy:
+    src: 50-dnscrypt-proxy-unattended-upgrades
+    dest: /etc/apt/apt.conf.d/50-dnscrypt-proxy-unattended-upgrades
+    owner: root
+    group: root
+    mode: 0644
+
+- block:
+  - name: Ubuntu | Unbound profile for apparmor configured
+    copy:
+      src: apparmor.profile.dnscrypt-proxy
+      dest: /etc/apparmor.d/usr.bin.dnscrypt-proxy
+      owner: root
+      group: root
+      mode: 0600
+    notify: restart dnscrypt-proxy
+
+  - name: Ubuntu | Enforce the dnscrypt-proxy AppArmor policy
+    command: aa-enforce usr.bin.dnscrypt-proxy
+    changed_when: false
+  tags: apparmor
+  when: apparmor_enabled|default(false)|bool == true
+
+- name: Ubuntu | Ensure that the dnscrypt-proxy service directory exist
+  file:
+    path: /etc/systemd/system/dnscrypt-proxy.service.d/
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
+
+- name: Ubuntu | Add capabilities to bind ports
+  copy:
+    dest: /etc/systemd/system/dnscrypt-proxy.service.d/99-capabilities.conf
+    content: |
+      [Service]
+      AmbientCapabilities=CAP_NET_BIND_SERVICE
+  notify:
+   - restart dnscrypt-proxy

@@ -1,5 +1,7 @@
 ---
-
+ami_search_encrypted: omit
+encrypted: "{{ cloud_providers.ec2.encrypted }}"
 ec2_vpc_nets:
   cidr_block: 172.16.0.0/16
   subnet_cidr: 172.16.254.0/23
+ec2_venv: "{{ playbook_dir }}/configs/.venvs/aws"

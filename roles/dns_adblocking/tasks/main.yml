@@ -1,23 +1,15 @@
 ---
 - block:
-
-    - name: The DNS tag is defined
-      set_fact:
-        local_dns: Y
-
     - name: Dnsmasq installed
       package: name=dnsmasq
-
-    - name: Ensure that the dnsmasq user exist
-      user: name=dnsmasq groups=nogroup append=yes state=present
 
     - name: The dnsmasq directory created
       file: dest=/var/lib/dnsmasq state=directory mode=0755 owner=dnsmasq group=nogroup
 
-    - include: ubuntu.yml
+    - include_tasks: ubuntu.yml
       when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
-    - include: freebsd.yml
+    - include_tasks: freebsd.yml
       when: ansible_distribution == 'FreeBSD'
 
     - name: Dnsmasq configured
@@ -38,8 +30,8 @@
     - name: Adblock script added to cron
       cron:
         name: Adblock hosts update
-        minute: 10
-        hour: 2
+        minute: "{{ range(0, 60) | random }}"
+        hour: "{{ range(0, 24) | random }}"
         job: /usr/local/sbin/adblock.sh
         user: root
 

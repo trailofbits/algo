@@ -11,10 +11,11 @@
   - Setup [Generic/Linux](client-linux.md) clients with Ansible
 * Cloud setup
   - Configure [Azure](cloud-azure.md)
+  - Configure [DigitalOcean](cloud-do.md)
+  - Configure [Vultr](cloud-vultr.md)
 * Advanced Deployment
   - Deploy to your own [FreeBSD](deploy-to-freebsd.md) server
-  - Deploy to your own [Ubuntu 16.04](deploy-to-ubuntu.md) server
+  - Deploy to your own [Ubuntu 18.04](deploy-to-ubuntu.md) server
   - Deploy to an [unsupported cloud provider](deploy-to-unsupported-cloud.md)
 * [FAQ](faq.md)
 * [Troubleshooting](troubleshooting.md)
-

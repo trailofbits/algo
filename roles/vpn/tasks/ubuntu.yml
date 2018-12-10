@@ -12,7 +12,7 @@
 
 - name: Ubuntu | Enforcing ipsec with apparmor
   shell: aa-enforce "{{ item }}"
-  when: apparmor_enabled is defined and apparmor_enabled == true
+  when: apparmor_enabled|default(false)|bool == true
   with_items:
     - /usr/lib/ipsec/charon
     - /usr/lib/ipsec/lookip
@@ -44,5 +44,5 @@
     - daemon-reload
     - restart strongswan
 
-- include: iptables.yml
+- include_tasks: iptables.yml
   tags: iptables

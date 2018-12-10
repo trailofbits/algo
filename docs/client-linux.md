@@ -61,11 +61,11 @@ In this example we'll assume the IP of our Algo VPN server is `1.2.3.4` and the 
   * Name: your choice, e.g.: *ikev2-1.2.3.4*
   * Gateway:
     * Address: IP of the Algo VPN server, e.g: `1.2.3.4`
-    * Certificate: `cacert.pem` found at `/path/to/algo/1.2.3.4/cacert.pem`
+    * Certificate: `cacert.pem` found at `/path/to/algo/configs/1.2.3.4/cacert.pem`
   * Client:
     * Authentication: *Certificate/Private key*
-    * Certificate: `user-name.crt` found at `/path/to/algo/1.2.3.4/pki/certs/user-name.crt` 
-    * Private key: `user-name.key` found at `/path/to/algo/1.2.3.4/pki/private/user-name.key`
+    * Certificate: `user-name.crt` found at `/path/to/algo/configs/1.2.3.4/pki/certs/user-name.crt`
+    * Private key: `user-name.key` found at `/path/to/algo/configs/1.2.3.4/pki/private/user-name.key`
   * Options:
     * Check *Request an inner IP address*, connection will fail without this option
     * Optionally check *Enforce UDP encapsulation*
@@ -73,6 +73,6 @@ In this example we'll assume the IP of our Algo VPN server is `1.2.3.4` and the 
     * For the later 2 options, hover to option in the settings to see a description
   * Cipher proposal:
     * Check *Enable custom proposals*
-    * IKE: `aes128gcm16-prfsha512-ecp256,aes128-sha2_512-prfsha512-ecp256,aes128-sha2_384-prfsha384-ecp256`
-    * ESP: `aes128gcm16-ecp256,aes128-sha2_512-prfsha512-ecp256`
+    * IKE: `aes256gcm16-prfsha512-ecp384,aes256-sha2_512-prfsha512-ecp384,aes256-sha2_384-prfsha384-ecp384`
+    * ESP: `aes256gcm16-ecp384,aes256-sha2_512-prfsha512-ecp384`
 * Apply and turn the connection on, you should now be connected

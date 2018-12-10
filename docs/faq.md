@@ -8,6 +8,9 @@
 * [Why aren't you using Alpine Linux, OpenBSD, or HardenedBSD?](#why-arent-you-using-alpine-linux-openbsd-or-hardenedbsd)
 * [I deployed an Algo server. Can you update it with new features?](#i-deployed-an-algo-server-can-you-update-it-with-new-features)
 * [Where did the name "Algo" come from?](#where-did-the-name-algo-come-from)
+* [Can DNS filtering be disabled?](#can-dns-filtering-be-disabled)
+* [Wasn't IPSEC backdoored by the US government?](#wasnt-ipsec-backdoored-by-the-us-government)
+* [What inbound ports are used?](#what-inbound-ports-are-used)
 
 ## Has Algo been audited?
 
@@ -44,3 +47,31 @@ In the future, we will make it easier for users who want to update their own ser
 ## Where did the name "Algo" come from?
 
 Algo is short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhere for [inventing the Internet](https://www.youtube.com/watch?v=BnFJ8cHAlco).
+
+## Can DNS filtering be disabled?
+
+There is no official way to disable DNS filtering, but there is a workaround: SSH to your Algo server (using the 'shell access' command printed upon a successful deployment), edit `/etc/ipsec.conf`, and change `rightdns=172.16.0.1` to `rightdns=8.8.8.8`. Then run `ipsec restart`. If all else fails, we recommend deploying a new Algo server without the adblocking feature enabled.
+
+## Wasn't IPSEC backdoored by the US government?
+
+No.
+
+[Per security researcher Thomas Ptacek](https://news.ycombinator.com/item?id=2014197):
+
+> In 2001, Angelos Keromytis --- then a grad student at Penn, now a Columbia professor --- added support for hardware-accelerated IPSEC NICs. When you have an IPSEC NIC, the channel between the NIC and the IPSEC stack keeps state to tell the stack not to bother doing the things the NIC already did, among them validating the IPSEC ESP authenticator. Angelos' code had a bug; it appears to have done the software check only when the hardware had already done it, and skipped it otherwise.
+>
+> The bug happened during a change that simultaneously refactored and added a feature to OpenBSD's ESP code; a comparison that should have been == was instead !=; the "if" statement with the bug was originally and correctly !=, but should have been flipped based on how the code was refactored.
+>
+> HD Moore may as we speak be going through the pain of reconstituting a nearly decade-old version of OpenBSD to verify the bug, but stipulate that it was there, and here's what you get: IPSEC ESP packet authentication was disabled if you didn't have hardware IPSEC. There is probably an elaborate man-in-the-middle scenario in which this could get you traffic inspection, but it's nowhere nearly as straightforward as leaking key bits.
+>
+> To entertain the conspiracy theory, you're still suggesting that the FBI not only introduced this bug, but also developed the technology required to MITM ESP sessions, bouncing them through some secret FBI-developed middlebox.
+>
+> One year later, Jason Wright from NETSEC (the company at the heart of the [I think silly] allegations about OpenBSD IPSEC backdoors) fixed the bug.
+>
+> It's interesting that the bug was fixed without an advisory (oh to be a fly on the wall on ICB that day; Theo had a, um, a, "way" with his dev team). On the other hand, we don't know what releases of OpenBSD actually had the bug right now.
+>
+> It seems vanishingly unlikely that there could have been anything deliberate about this series of changes. You are unlikely to find anyone who will impugn Angelos. Meanwhile, the diffs tell exactly the opposite of the story that Greg Perry told.
+
+## What inbound ports are used?
+
+You should only need 22/TCP, 500/UDP, 4500/UDP, and 51820/UDP opened on any firewall that sits between your clients and your Algo server.

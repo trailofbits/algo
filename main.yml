@@ -1,0 +1,9 @@
+---
+- name: Include prompts playbook
+  import_playbook: input.yml
+
+- name: Include cloud provisioning playbook
+  import_playbook: cloud.yml
+
+- name: Include server configuration playbook
+  import_playbook: server.yml

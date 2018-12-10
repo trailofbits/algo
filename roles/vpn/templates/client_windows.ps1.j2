@@ -1,18 +1,198 @@
+#Requires -RunAsAdministrator
 
-function AddAlgoVPN {
-  certutil -f -importpfx .\{{ item }}.p12
-  Add-VpnConnection -name "Algo VPN {{ IP_subject_alt_name }} IKEv2" -ServerAddress "{{ IP_subject_alt_name }}" -TunnelType IKEv2 -AuthenticationMethod MachineCertificate -EncryptionLevel Required
-  Set-VpnConnectionIPsecConfiguration -ConnectionName "Algo VPN {{ IP_subject_alt_name }} IKEv2" -AuthenticationTransformConstants GCMAES128 -CipherTransformConstants GCMAES128 -EncryptionMethod AES128 -IntegrityCheckMethod SHA384 -DHGroup ECP256 -PfsGroup ECP256  -Force
+<#
+.SYNOPSIS
+Add or remove the Algo VPN
+
+.DESCRIPTION
+Add or remove the Algo VPN
+See the examples for more information
+
+.PARAMETER Add
+Add the VPN to the local system
+
+.PARAMETER Remove
+Remove the VPN from the local system
+
+.PARAMETER GetInstalledCerts
+Retrieve Algo certs, if any, from the system certificate store
+
+.PARAMETER SaveCerts
+Save the Algo certs embedded in this file
+
+.PARAMETER OutputDirectory
+When saving the Algo certs, save to this directory
+
+.PARAMETER Pkcs12DecryptionPassword
+The decryption password for the user's PKCS12 certificate, sometimes called the "p12 password".
+Note that this must be passed in as a SecureString, not a regular string.
+You can create a secure string with the `Read-Host -AsSecureString` cmdlet.
+See the examples for more information.
+
+.EXAMPLE
+client_USER.ps1 -Add
+
+Adds the Algo VPN
+
+.EXAMPLE
+$p12pass = Read-Host -AsSecureString; client_USER.ps1 -Add -Pkcs12DecryptionPassword $p12pass
+
+Create a variable containing the PKCS12 decryption password, then use it when adding the VPN.
+This can be especially useful when troubleshooting, because you can use the same variable with
+multiple calls to client_USER.ps1, rather than having to type the PKCS12 password each time.
+
+.EXAMPLE
+client_USER.ps1 -Remove
+
+Removes the Algo VPN if installed.
+
+.EXAMPLE
+client_USER.ps1 -GetIntalledCerts
+
+Show the Algo VPN's installed certificates, if any.
+
+.EXAMPLE
+client_USER.ps1 -SaveCerts -OutputDirectory $Home\Downloads
+
+Save the embedded CA cert and encrypted user PKCS12 file.
+#>
+[CmdletBinding(DefaultParameterSetName="Add")] Param(
+    [Parameter(ParameterSetName="Add")]
+    [Switch] $Add,
+
+    [Parameter(ParameterSetName="Add")]
+    [SecureString] $Pkcs12DecryptionPassword,
+
+    [Parameter(Mandatory, ParameterSetName="Remove")]
+    [Switch] $Remove,
+
+    [Parameter(Mandatory, ParameterSetName="GetInstalledCerts")]
+    [Switch] $GetInstalledCerts,
+
+    [Parameter(Mandatory, ParameterSetName="SaveCerts")]
+    [Switch] $SaveCerts,
+
+    [Parameter(ParameterSetName="SaveCerts")]
+    [string] $OutputDirectory = "$PWD"
+)
+
+$ErrorActionPreference = "Stop"
+
+$VpnServerAddress = "{{ IP_subject_alt_name }}"
+$VpnName = "Algo VPN {{ IP_subject_alt_name }} IKEv2"
+$VpnUser = "{{ item.0 }}"
+$CaCertificateBase64 = "{{ PayloadContentCA }}"
+$UserPkcs12Base64 = "{{ item.1.stdout }}"
+
+if ($PsCmdlet.ParameterSetName -eq "Add" -and -not $Pkcs12DecryptionPassword) {
+    $Pkcs12DecryptionPassword = Read-Host -AsSecureString -Prompt "Pkcs12DecryptionPassword"
 }
 
-function RemoveAlgoVPN {
-  Get-ChildItem cert:LocalMachine/Root | Where-Object { $_.Subject -match '^CN={{ IP_subject_alt_name }}$' -and $_.Issuer -match '^CN={{ IP_subject_alt_name }}$' } | Remove-Item
-  Get-ChildItem cert:LocalMachine/My | Where-Object { $_.Subject -match '^CN={{ item }}$' -and $_.Issuer -match '^CN={{ IP_subject_alt_name }}$' } | Remove-Item
-  Remove-VpnConnection -name "Algo VPN {{ IP_subject_alt_name }} IKEv2" -Force
+<#
+.SYNOPSIS
+Create a temporary directory
+#>
+function New-TemporaryDirectory {
+    [CmdletBinding()] Param()
+    do {
+        $guid = New-Guid | Select-Object -ExpandProperty Guid
+        $newTempDirPath = Join-Path -Path $env:TEMP -ChildPath $guid
+    } while (Test-Path -Path $newTempDirPath)
+    New-Item -ItemType Directory -Path $newTempDirPath
 }
 
-switch ($args[0]) {
-  "Add" { AddAlgoVPN }
-  "Remove" { RemoveAlgoVPN }
-  default { Write-Host Usage: $MyInvocation.MyCommand.Name "(Add|Remove)" }
+<#
+.SYNOPSIS
+Retrieve any installed Algo VPN certificates
+#>
+function Get-InstalledAlgoVpnCertificates {
+    [CmdletBinding()] Param()
+    Get-ChildItem -LiteralPath Cert:\LocalMachine\Root |
+        Where-Object {
+            $_.Subject -match "^CN=${VpnServerAddress}$" -and $_.Issuer -match "^CN=${VpnServerAddress}$"
+        }
+    Get-ChildItem -LiteralPath Cert:\LocalMachine\My |
+        Where-Object {
+            $_.Subject -match "^CN=${VpnUser}$" -and $_.Issuer -match "^CN=${VpnServerAddress}$"
+        }
+}
+
+function Save-AlgoVpnCertificates {
+    [CmdletBinding()] Param(
+        [String] $OutputDirectory = $PWD
+    )
+    $caCertPath = Join-Path -Path $OutputDirectory -ChildPath "cacert.pem"
+    $userP12Path = Join-Path -Path $OutputDirectory -ChildPath "$VpnUser.p12"
+    # NOTE: We cannot use ConvertFrom-Base64 here because it is not designed for binary data
+    [IO.File]::WriteAllBytes(
+        $caCertPath,
+        [Convert]::FromBase64String($CaCertificateBase64))
+    [IO.File]::WriteAllBytes(
+        $userP12Path,
+        [Convert]::FromBase64String($UserPkcs12Base64))
+    return New-Object -TypeName PSObject -Property @{
+        CaPem = $caCertPath
+        UserPkcs12 = $userP12Path
+    }
+}
+
+function Add-AlgoVPN {
+    [Cmdletbinding()] Param()
+
+    $workDir = New-TemporaryDirectory
+
+    try {
+        $certs = Save-AlgoVpnCertificates -OutputDirectory $workDir
+        $importPfxCertParams = @{
+            Password = $Pkcs12DecryptionPassword
+            FilePath = $certs.UserPkcs12
+            CertStoreLocation = "Cert:\LocalMachine\My"
+        }
+        Import-PfxCertificate @importPfxCertParams
+        $importCertParams = @{
+            FilePath =  $certs.CaPem
+            CertStoreLocation = "Cert:\LocalMachine\Root"
+        }
+        Import-Certificate @importCertParams
+    } finally {
+        Remove-Item -Recurse -Force -LiteralPath $workDir
+    }
+
+    $addVpnParams = @{
+        Name = $VpnName
+        ServerAddress = $VpnServerAddress
+        TunnelType = "IKEv2"
+        AuthenticationMethod = "MachineCertificate"
+        EncryptionLevel = "Required"
+    }
+    Add-VpnConnection @addVpnParams
+
+    $setVpnParams = @{
+        ConnectionName = $VpnName
+        AuthenticationTransformConstants = "GCMAES256"
+        CipherTransformConstants = "GCMAES256"
+        EncryptionMethod = "AES256"
+        IntegrityCheckMethod = "SHA384"
+        DHGroup = "ECP384"
+        PfsGroup = "ECP384"
+        Force = $true
+    }
+    Set-VpnConnectionIPsecConfiguration @setVpnParams
+}
+
+function Remove-AlgoVPN {
+    [CmdletBinding()] Param()
+    Get-InstalledAlgoVpnCertificates | Remove-Item -Force
+    Remove-VpnConnection -Name $VpnName -Force
+}
+
+switch ($PsCmdlet.ParameterSetName) {
+    "Add" { Add-AlgoVPN }
+    "Remove" { Remove-AlgoVPN }
+    "GetInstalledCerts" { Get-InstalledAlgoVpnCertificates }
+    "SaveCerts" {
+        $certs = Save-AlgoVpnCertificates -OutputDirectory $OutputDirectory
+        Get-Item -LiteralPath $certs.UserPkcs12, $certs.CaPem
+    }
+    default { throw "Unknown parameter set: '$($PsCmdlet.ParameterSetName)'" }
 }

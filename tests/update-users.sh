@@ -2,15 +2,16 @@
 
 set -ex
 
-CAPW=`cat /tmp/ca_password`
+USER_ARGS="{ 'server': '$LXC_IP', 'users': ['user1', 'user2'] }"
 
-sed -i 's/- jack$/- jack_test/' config.cfg
+if [ "${LXC_NAME}" == "docker" ]
+then
+  docker run -it -v $(pwd)/config.cfg:/algo/config.cfg -v ~/.ssh:/root/.ssh -v $(pwd)/configs:/algo/configs -e "USER_ARGS=${USER_ARGS}" travis/algo /bin/sh -c "chown -R 0:0 /root/.ssh && source env/bin/activate && ansible-playbook users.yml -e \"${USER_ARGS}\" -t update-users"
+else
+  ansible-playbook users.yml -e "${USER_ARGS}" -t update-users
+fi
 
-ansible-playbook users.yml -e "server_ip=$LXC_IP server_user=root ssh_tunneling_enabled=y IP_subject=$LXC_IP easyrsa_CA_password=$CAPW"
-
-cd configs/$LXC_IP/pki/
-
-if openssl crl -inform pem -noout -text -in crl/jack.crt | grep CRL
+if sudo openssl crl -inform pem -noout -text -in configs/$LXC_IP/pki/crl/jack.crt | grep CRL
   then
     echo "The CRL check passed"
   else
@@ -18,7 +19,7 @@ if openssl crl -inform pem -noout -text -in crl/jack.crt | grep CRL
     exit 1
 fi
 
-if openssl x509 -inform pem -noout -text -in certs/jack_test.crt | grep CN=jack_test
+if sudo openssl x509 -inform pem -noout -text -in configs/$LXC_IP/pki/certs/user1.crt | grep CN=user1
   then
     echo "The new user exists"
   else

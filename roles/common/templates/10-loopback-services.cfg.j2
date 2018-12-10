@@ -1,9 +1,0 @@
-auto lo:100
-iface lo:100 inet static
-	address {{ local_service_ip }}
-	netmask 255.255.255.255
-
-iface lo:100 inet6 static
-        address FCAA::1
-        netmask 64
-        autoconf 0

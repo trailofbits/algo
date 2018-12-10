@@ -55,7 +55,7 @@
 # If you don't want dnsmasq to read /etc/resolv.conf or any other
 # file, getting its servers from this file instead (see below), then
 # uncomment this.
-#no-resolv
+no-resolv
 
 # If you don't want dnsmasq to poll /etc/resolv.conf or other resolv
 # files for changes and re-read them then uncomment this.
@@ -88,8 +88,14 @@
 # You can control how dnsmasq talks to a server: this forces
 # queries to 10.1.2.3 to be routed via eth1
 # server=10.1.2.3@eth1
-server=8.8.8.8
-server=8.8.4.4
+{% if dns_encryption %}
+server={{ local_service_ip }}#5353
+{% else %}
+{% for host in dns_servers.ipv4 %}
+server={{ host }}
+{% endfor %}
+stop-dns-rebind
+{% endif %}
 
 # and this sets the source (ie local) address used to talk to
 # 10.1.2.3 to 192.168.1.1 port 55 (there must be a interface with that
@@ -98,7 +104,7 @@ server=8.8.4.4
 
 # If you want dnsmasq to change uid and gid to something other
 # than the default, edit the following lines.
-user=nobody
+user=dnsmasq
 group=nogroup
 
 # If you want dnsmasq to listen for DHCP and DNS requests only on
@@ -659,7 +665,7 @@ bind-interfaces
 
 # Include another lot of configuration options.
 #conf-file=/etc/dnsmasq.more.conf
-conf-dir=/etc/dnsmasq.d
+conf-dir={{ config_prefix|default('/') }}etc/dnsmasq.d/,*.conf
 
 # Include all the files in a directory except those ending in .bak
 #conf-dir=/etc/dnsmasq.d,.bak

@@ -1,0 +1,70 @@
+---
+- pause:
+    prompt: |
+      Enter your azure secret id (https://github.com/trailofbits/algo/blob/master/docs/cloud-azure.md)
+      You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
+    echo: false
+  register: _azure_secret
+  when:
+    - azure_secret is undefined
+    - lookup('env','AZURE_SECRET')|length <= 0
+
+- pause:
+    prompt: |
+      Enter your azure tenant id (https://github.com/trailofbits/algo/blob/master/docs/cloud-azure.md)
+      You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
+    echo: false
+  register: _azure_tenant
+  when:
+    - azure_tenant is undefined
+    - lookup('env','AZURE_TENANT')|length <= 0
+
+- pause:
+    prompt: |
+      Enter your azure client id (application id) (https://github.com/trailofbits/algo/blob/master/docs/cloud-azure.md)
+      You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
+    echo: false
+  register: _azure_client_id
+  when:
+    - azure_client_id is undefined
+    - lookup('env','AZURE_CLIENT_ID')|length <= 0
+
+- pause:
+    prompt: |
+      Enter your azure subscription id (https://github.com/trailofbits/algo/blob/master/docs/cloud-azure.md)
+      You can skip this step if you want to use your defaults credentials from ~/.azure/credentials
+    echo: false
+  register: _azure_subscription_id
+  when:
+    - azure_subscription_id is undefined
+    - lookup('env','AZURE_SUBSCRIPTION_ID')|length <= 0
+
+- set_fact:
+    secret: "{{ azure_secret | default(_azure_secret.user_input|default(None)) | default(lookup('env','AZURE_SECRET'), true) }}"
+    tenant: "{{ azure_tenant | default(_azure_tenant.user_input|default(None)) | default(lookup('env','AZURE_TENANT'), true) }}"
+    client_id: "{{ azure_client_id | default(_azure_client_id.user_input|default(None)) | default(lookup('env','AZURE_CLIENT_ID'), true) }}"
+    subscription_id: "{{ azure_subscription_id | default(_azure_subscription_id.user_input|default(None)) | default(lookup('env','AZURE_SUBSCRIPTION_ID'), true) }}"
+
+- block:
+  - name: Set facts about the regions
+    set_fact:
+      azure_regions: "{{ _azure_regions|from_json | sort(attribute='name') }}"
+
+  - name: Set the default region
+    set_fact:
+      default_region: >-
+        {% for r in azure_regions %}
+        {%- if r['name'] == "eastus" %}{{ loop.index }}{% endif %}
+        {%- endfor %}
+
+  - pause:
+      prompt: |
+        What region should the server be located in?
+          {% for r in azure_regions %}
+          {{ loop.index }}. {{ r['displayName'] }}
+          {% endfor %}
+
+        Enter the number of your desired region
+        [{{ default_region }}]
+    register: _algo_region
+  when: region is undefined

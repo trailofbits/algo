@@ -10,16 +10,17 @@ charon {
 		include strongswan.d/charon/*.conf
 	}
 	user = strongswan
-	group = strongswan
+	group = nogroup
 {% if ansible_distribution == 'FreeBSD' %}
 	filelog {
-	  /var/log/charon.log {
-	      time_format = %b %e %T
-	      ike_name = yes
-	      append = no
-	      default = 1
-	      flush_line = yes
-	  }
+		charon {
+			path = /var/log/charon.log
+			time_format = %b %e %T
+			ike_name = yes
+			append = no
+			default = 1
+			flush_line = yes
+		}
 	}
 {% endif %}
 }

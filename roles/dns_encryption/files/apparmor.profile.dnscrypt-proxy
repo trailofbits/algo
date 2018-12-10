@@ -1,0 +1,29 @@
+#include <tunables/global>
+
+/usr/bin/dnscrypt-proxy {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/openssl>
+
+  capability chown,
+  capability dac_override,
+  capability net_bind_service,
+  capability setgid,
+  capability setuid,
+  capability sys_resource,
+
+  /etc/dnscrypt-proxy/** r,
+  /usr/bin/dnscrypt-proxy mr,
+  /tmp/public-resolvers.md* rw,
+
+  /tmp/*.tmp w,
+  owner /tmp/*.tmp r,
+
+  /run/systemd/notify rw,
+  /lib/x86_64-linux-gnu/ld-*.so mr,
+  @{PROC}/sys/kernel/hostname r,
+  @{PROC}/sys/net/core/somaxconn r,
+  /etc/ld.so.cache r,
+  /usr/local/lib/{@{multiarch}/,}libldns.so* mr,
+  /usr/local/lib/{@{multiarch}/,}libsodium.so* mr,
+}
