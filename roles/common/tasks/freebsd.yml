@@ -21,7 +21,7 @@
     sysctl:
       - item: net.inet.ip.forwarding
         value: 1
-      - item: net.inet6.ip6.forwarding
+      - item: "{{ 'net.inet6.ip6.forwarding' if ipv6_support else none }}"
         value: 1
   tags:
     - always

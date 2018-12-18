@@ -114,7 +114,7 @@
         value: 1
       - item: net.ipv4.conf.all.forwarding
         value: 1
-      - item: net.ipv6.conf.all.forwarding
+      - item: "{{ 'net.ipv6.conf.all.forwarding' if ipv6_support else none }}"
         value: 1
   tags:
     - always
