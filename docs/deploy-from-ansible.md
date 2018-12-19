@@ -34,7 +34,7 @@ See below for more information about providers and extra variables
 - `ondemand_wifi_exclude` (Required if `ondemand_wifi` set) - WiFi networks to exclude from using the VPN. Comma-separated values
 - `local_dns` - (Optional) Enable a DNS resolver. Default: false
 - `ssh_tunneling` - (Optional) Enable SSH tunneling for each user. Default: false
-- `windows` - (Optional) Enables compatible ciphers and key exchange to support Windows clietns, less secure. Default: false
+- `windows` - (Optional) Enables compatible ciphers and key exchange to support Windows clients, less secure. Default: false
 - `store_cakey` - (Optional) Whether or not keep the CA key (required to add users in the future, but less secure). Default: false
 
 If any of those unspecified ansible will ask the user to input
