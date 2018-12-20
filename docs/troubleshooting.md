@@ -320,22 +320,76 @@ You're trying to connect Ubuntu or Debian to the Algo server through the Network
 
 ### Various websites appear to be offline through the VPN
 
-This issue appears intermittently due to issues with MTU size. Different networks may require the MTU within a specific range to correctly pass traffic. We made an effort to set the MTU to the most conservative, most compatible size by default but problems may still occur.
+This issue appears occasionally due to issues with [MTU](https://en.wikipedia.org/wiki/Maximum_transmission_unit) size. Different networks may require the MTU to be within a specific range to correctly pass traffic. We made an effort to set the MTU to the most conservative, most compatible size by default but problems may still occur.
 
-Advanced users can troubleshoot the correct MTU size by retrying `ping` with the "don't fragment" bit set, then decreasing packet size until it works. This will determine the correct MTU size for your network, which you then need to update on your network adapter.
+If either your Internet service provider or your chosen cloud service provider use an MTU smaller than the normal value of 1500 you can use the `reduce_mtu` option in the file `config.cfg` to correspondingly reduce the size of the VPN tunnels created by Algo. Algo will attempt to automatically set `reduce_mtu` based on the MTU found on the server at the time of deployment, but it cannot detect if the MTU is smaller on the client side of the connection.
 
-E.g., On Linux (client -- Ubuntu 18.04), connect to your IPsec tunnel then use the following commands to determine the correct MTU size:
-```
-$ ping -M do -s 1500 www.google.com
-PING www.google.com (74.125.22.147) 1500(1528) bytes of data.
-ping: local error: Message too long, mtu=1438
-```
-Then, set the MTU size on your network adapter (wlan0 or eth0):
-```
-$ sudo ifconfig wlan0 mtu 1438
-```
+If you change `reduce_mtu` you'll need to deploy a new Algo VPN.
 
-You can also set the `max_mss` variable to a new value in config.cfg, and then redeploy your server rather than reconfigure the current one in-place.
+To determine the value for `reduce_mtu` you should examine the MTU on your Algo VPN server's primary network interface (see below). You might algo want to run tests using `ping`, both on a local client *when not connected to the VPN* and also on your Algo VPN server (see below). Then take the smallest MTU you find (local or server side), subtract it from 1500, and use that for `reduce_mtu`. An exception to this is if you find the smallest MTU is your local MTU at 1492, typical for PPPoE connections, then no MTU reduction should be necessary.
+
+#### Check the MTU on the Algo VPN server
+
+To check the MTU on your server, SSH in to it, run the command `ifconfig`, and look for the MTU of the main network interface. For example:
+```
+ens4: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1460
+```
+The MTU shown here is 1460 instead of 1500. Therefore set `reduce_mtu: 40` in `config.cfg`. Algo should do this automatically.
+
+#### Determine the MTU using `ping`
+
+When using `ping` you increase the payload size with the "Don't Fragment" option set until it fails. The largest payload size that works, plus the `ping` overhead of 28, is the MTU of the connection.
+
+##### Example: Test on your Algo VPN server (Ubuntu)
+```
+$ ping -4 -s 1432 -c 1 -M do github.com
+PING github.com (192.30.253.112) 1432(1460) bytes of data.
+1440 bytes from lb-192-30-253-112-iad.github.com (192.30.253.112): icmp_seq=1 ttl=53 time=13.1 ms
+
+--- github.com ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 13.135/13.135/13.135/0.000 ms
+
+$ ping -4 -s 1433 -c 1 -M do github.com
+PING github.com (192.30.253.113) 1433(1461) bytes of data.
+ping: local error: Message too long, mtu=1460
+
+--- github.com ping statistics ---
+1 packets transmitted, 0 received, +1 errors, 100% packet loss, time 0ms
+```
+In this example the largest payload size that works is 1432. The `ping` overhead is 28 so the MTU is 1432 + 28 = 1460, which is 40 lower than the normal MTU of 1500. Therefore set `reduce_mtu: 40` in `config.cfg`.
+
+##### Example: Test on a macOS client *not connected to your Algo VPN*
+```
+$ ping -c 1 -D -s 1464 github.com
+PING github.com (192.30.253.113): 1464 data bytes
+1472 bytes from 192.30.253.113: icmp_seq=0 ttl=50 time=169.606 ms
+
+--- github.com ping statistics ---
+1 packets transmitted, 1 packets received, 0.0% packet loss
+round-trip min/avg/max/stddev = 169.606/169.606/169.606/0.000 ms
+
+$ ping -c 1 -D -s 1465 github.com
+PING github.com (192.30.253.113): 1465 data bytes
+
+--- github.com ping statistics ---
+1 packets transmitted, 0 packets received, 100.0% packet loss
+```
+In this example the largest payload size that works is 1464. The `ping` overhead is 28 so the MTU is 1464 + 28 = 1492, which is typical for a PPPoE Internet connection and does not require an MTU adjustment. Therefore use the default of `reduce_mtu: 0` in `config.cfg`.
+
+#### Change the client MTU without redeploying the Algo VPN
+
+If you don't wish to deploy a new Algo VPN (which is required to incorporate a change to `reduce_mtu`) you can change the client side MTU of WireGuard clients and Linux IPsec clients without needing to make changes to your Algo VPN.
+
+For WireGuard on Linux, or macOS (when installed with `brew`), you can specify the MTU yourself in the client configuration file (typically `wg0.conf`). Refer to the documentation (see `man wg-quick`).
+
+For WireGuard on iOS and Android you can change the MTU in the app.
+
+For IPsec on Linux you can change the MTU of your network interface to match the required MTU. For example:
+```
+sudo ifconfig eth0 mtu 1440
+```
+To make the change take affect after a reboot, on Ubuntu 18.04 and later edit the relevant file in the `/etc/netplan` directory (see `man netplan`).
 
 ### Clients appear stuck in a reconnection loop
 

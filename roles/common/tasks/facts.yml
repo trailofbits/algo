@@ -28,3 +28,8 @@
   set_fact:
     ipv6_support: "{% if ansible_default_ipv6['gateway'] is defined %}true{% else %}false{% endif %}"
   tags: always
+
+- name: Check size of MTU
+  set_fact:
+    reduce_mtu: "{% if reduce_mtu|int == 0 and ansible_default_ipv4['mtu']|int < 1500 %}{{ 1500 - ansible_default_ipv4['mtu']|int }}{% else %}{{ reduce_mtu|int }}{% endif %}"
+  tags: always
