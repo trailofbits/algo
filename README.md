@@ -89,11 +89,27 @@ Certificates and configuration files that users will need are placed in the `con
 
 ### Apple Devices
 
-**Send users their Apple Profile.** Find the corresponding mobileconfig (Apple Profile) for each user and send it to them over AirDrop or other secure means. Apple Configuration Profiles are all-in-one configuration files for iOS and macOS devices. On macOS, double-clicking a profile to install it will fully configure the VPN. On iOS, users are prompted to install the profile as soon as the AirDrop is accepted.
+Apple devices can connect to an Algo VPN via IPsec using their built-in IPsec support or via WireGuard by installing WireGuard client software.
 
-**Turn on the VPN.** On iOS, connect to the VPN by opening Settings and clicking the toggle next to "VPN" near the top of the list. On macOS, connect to the VPN by opening System Preferences -> Network, finding Algo VPN in the left column and clicking "Connect." On macOS, check "Show VPN status in menu bar" to easily connect and disconnect from the menu bar.
+#### Install WireGuard
 
-**Managing On-Demand VPNs.** If you enabled "On Demand", the VPN will connect automatically whenever it is able. On iOS, you can turn off "On Demand" by clicking the (i) next to the entry for Algo VPN and toggling off "Connect On Demand." On macOS, you can turn off "On Demand" by opening the Network Preferences, finding Algo VPN in the left column, and unchecking the box for "Connect on demand."
+On iOS, install the [WireGuard](https://itunes.apple.com/us/app/wireguard/id1441195209?mt=8) app from the App Store. For each user you defined, Algo generated a WireGuard configuration file `wireguard/<name>.conf` and a corresponding QR code image `wireguard/<name>.png`. Either AirDrop the configuration file to the iOS device or use the WireGuard app to scan the QR code. To use "Connect On Demand" with WireGuard enable it by editing the configuration in the WireGuard app.
+
+Until the WireGuard app for macOS is ready, installing WireGuard on macOS is a little more complicated. See [Using MacOS as a Client with WireGuard](docs/client-macos-wireguard.md).
+
+#### Configure IPsec
+
+Find the corresponding `mobileconfig` (Apple Profile) for each user and send it to them over AirDrop or other secure means. Apple Configuration Profiles are all-in-one configuration files for iOS and macOS devices. On macOS, double-clicking a profile to install it will fully configure the VPN. On iOS, users are prompted to install the profile as soon as the AirDrop is accepted.
+
+#### Enable the VPN
+
+On iOS, connect to the VPN by opening **Settings** and clicking the toggle next to "VPN" near the top of the list. If using WireGuard you can also enable the VPN from the WireGuard app. On macOS, connect to the VPN by opening **System Preferences** -> **Network**, finding the Algo VPN in the left column, and clicking "Connect." Check "Show VPN status in menu bar" to easily connect and disconnect from the menu bar.
+
+#### Managing "Connect On Demand"
+
+If you enabled "Connect On Demand" the VPN will connect automatically whenever it is able. Most Apple users will want to enable "Connect On Demand", but if you do then simply disabling the VPN will not cause it to stay disabled; it will just "Connect On Demand" again. To disable the VPN you'll need to disable "Connect On Demand".
+
+On iOS, you can turn off "Connect On Demand" in **Settings** by clicking the (i) next to the entry for your Algo VPN and toggling off "Connect On Demand." On macOS, you can turn off "Connect On Demand" by opening **System Preferences** -> **Network**, finding the Algo VPN in the left column, unchecking the box for "Connect on demand", and clicking Apply.
 
 ### Android Devices
 
