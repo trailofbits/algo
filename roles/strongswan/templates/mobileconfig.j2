@@ -1,3 +1,4 @@
+#jinja2:lstrip_blocks: True
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -7,7 +8,7 @@
         <dict>
             <key>IKEv2</key>
             <dict>
-{%- if algo_ondemand_wifi or algo_ondemand_cellular %}
+{% if algo_ondemand_wifi or algo_ondemand_cellular %}
               <key>OnDemandEnabled</key>
                 <integer>1</integer>
               <key>OnDemandRules</key>
@@ -21,19 +22,19 @@
                       <string>WiFi</string>
                       <key>SSIDMatch</key>
                       <array>
-    {%- for network_name in WIFI_EXCLUDE_LIST %}
+    {% for network_name in WIFI_EXCLUDE_LIST %}
                           <string>{{ network_name|e }}</string>
-    {%- endfor %}
+    {% endfor %}
                       </array>
                   </dict>
-  {%- endif %}
+  {% endif %}
                   <dict>
                     <key>Action</key>
-  {%- if algo_ondemand_wifi %}
+  {% if algo_ondemand_wifi %}
                       <string>Connect</string>
-  {%- else %}
+  {% else %}
                       <string>Disconnect</string>
-  {%- endif %}
+  {% endif %}
                     <key>InterfaceTypeMatch</key>
                       <string>WiFi</string>
                     <key>URLStringProbe</key>
@@ -41,11 +42,11 @@
                   </dict>
                   <dict>
                     <key>Action</key>
-  {%- if algo_ondemand_cellular %}
+  {% if algo_ondemand_cellular %}
                       <string>Connect</string>
-  {%- else %}
+  {% else %}
                       <string>Disconnect</string>
-  {%- endif %}
+  {% endif %}
                     <key>InterfaceTypeMatch</key>
                       <string>Cellular</string>
                     <key>URLStringProbe</key>
@@ -56,7 +57,7 @@
                       <string>Disconnect</string>
                   </dict>
                 </array>
-{%- endif %}
+{% endif %}
                 <key>AuthenticationMethod</key>
                 <string>Certificate</string>
                 <key>ChildSecurityAssociationParameters</key>
