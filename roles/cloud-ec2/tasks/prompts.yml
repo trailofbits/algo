@@ -56,7 +56,7 @@
 
 - block:
   - name: Get existing available Elastic IPs
-    ec2_eip_facts:
+    ec2_elasticip_facts:
     register: raw_eip_addresses
 
   - set_fact:
