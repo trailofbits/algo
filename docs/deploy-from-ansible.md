@@ -179,7 +179,7 @@ Required variables:
 
 Required variables:
 
-- [vultr_config](https://github.com/trailofbits/algo/docs/cloud-vultr.md)
+- [vultr_config](https://trailofbits.github.io/algo/cloud-vultr.html)
 - [region](https://api.vultr.com/v1/regions/list)
 
 ### Azure
