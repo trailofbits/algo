@@ -85,7 +85,7 @@ $CaCertificateBase64 = "{{ PayloadContentCA }}"
 $UserPkcs12Base64 = "{{ item.1.stdout }}"
 
 if ($PsCmdlet.ParameterSetName -eq "Add" -and -not $Pkcs12DecryptionPassword) {
-    $Pkcs12DecryptionPassword = Read-Host -AsSecureString -Prompt "Pkcs12DecryptionPassword"
+    $Pkcs12DecryptionPassword = ConvertTo-SecureString '{{ p12_export_password }}' -asplaintext -force
 }
 
 <#
