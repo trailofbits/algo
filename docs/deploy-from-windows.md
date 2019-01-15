@@ -1,11 +1,8 @@
-# Windows client prerequisites
+# Windows client prerequisite
 
-Before run Algo, you have to have:
+* 64-bit Windows 10 (Anniversary update or later version)
 
-* Windows 10 (Anniversary update or later version)
-* 64-bit installation (can't run on 32-bit systems)
-
-Once you verify your system is 64-bit and up to date, you have to do a few manual steps to enable the 'Windows Subsystem for Linux':
+Once you verify your system is 64-bit (32-bit is not supported) and up to date, you have to do a few manual steps to enable the 'Windows Subsystem for Linux':
 
 1. Open 'Settings'
 2. Click 'Update & Security', then click the 'For developers' option on the left.
@@ -15,22 +12,16 @@ Wait a minute for Windows to install a few things in the background (it will eve
 
 1. Click on 'Programs'
 2. Click on 'Turn Windows features on or off'
-3. Scroll down and check 'Windows Subsystem for Linux (Beta)', and then click OK.
+3. Scroll down and check 'Windows Subsystem for Linux', and then click OK.
+4. The subsystem will be installed, then Windows will require a restart.
+5. Restart Windows and then [install Ubuntu from the Windows Store](https://www.microsoft.com/p/ubuntu/9nblggh4msv6).
+6. Run Ubuntu from the Start menu. It will take a few minutes to install. It will have you create a separate user account for the Linux subsystem. Once that's done, you will finally have Ubuntu running somewhat integrated with Windows.
 
-The subsystem will be installed, then Windows will require a reboot. Reboot, then open up the start menu and enter 'bash' (to open up 'Bash' installation in a new command prompt). Fill out all the questions (it will have you create a separate user account for the Linux subsystem), and once that's all done (it takes a few minutes to install), you will finally have Ubuntu running on your Windows laptop, somewhat integrated with Windows.
 
 Install additional packages:
 
 ```shell
-sudo apt-get update && sudo apt-get install \
-    git \
-    build-essential \
-    libssl-dev \
-    libffi-dev \
-    python-dev \
-    python-pip \
-    python-setuptools \
-    python-virtualenv -y
+sudo apt-get update && sudo apt-get install git build-essential libssl-dev libffi-dev python-dev python-pip python-setuptools python-virtualenv -y
 ```
 
 Clone the Algo repository:
