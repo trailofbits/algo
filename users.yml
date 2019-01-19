@@ -62,6 +62,7 @@
     - block:
       - name: Local pre-tasks
         import_tasks: playbooks/cloud-pre.yml
+        become: false
       rescue:
         - debug: var=fail_hint
           tags: always
