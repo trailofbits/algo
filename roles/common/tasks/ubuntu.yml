@@ -71,8 +71,6 @@
     dest: /etc/systemd/network/10-algo-lo100.network
   notify:
     - restart systemd-networkd
-  tags:
-    - always
 
 - name: systemd services enabled and started
   systemd:
@@ -83,12 +81,8 @@
   with_items:
     - systemd-networkd
     - systemd-resolved
-  tags:
-    - always
 
 - meta: flush_handlers
-  tags:
-    - always
 
 - name: Check apparmor support
   shell: apparmor_status
@@ -98,6 +92,9 @@
 - set_fact:
     apparmor_enabled: true
   when: '"profiles are in enforce mode" in apparmor_status.stdout'
+
+- name: Gather additional facts
+  import_tasks: facts.yml
 
 - set_fact:
     tools:
@@ -116,15 +113,11 @@
         value: 1
       - item: "{{ 'net.ipv6.conf.all.forwarding' if ipv6_support else none }}"
         value: 1
-  tags:
-    - always
 
 - name: Install tools
   package: name="{{ item }}" state=present
   with_items:
     - "{{ tools|default([]) }}"
-  tags:
-    - always
 
 - name: Install headers
   apt:
