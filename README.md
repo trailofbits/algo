@@ -162,7 +162,6 @@ Depending on the platform, you may need one or multiple of the following files.
 * cacert.pem: CA Certificate
 * user.mobileconfig: Apple Profile
 * user.p12: User Certificate and Private Key (in PKCS#12 format)
-* user.sswan: Android strongSwan Profile
 * ipsec_user.conf: strongSwan client configuration
 * ipsec_user.secrets: strongSwan client configuration
 * windows_user.ps1: Powershell script to help setup a VPN connection on Windows
