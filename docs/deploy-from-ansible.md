@@ -202,6 +202,28 @@ Required variables:
 
 Possible options can be gathered via cli `aws lightsail get-regions`
 
+#### Minimum required IAM permissions for deployment:
+
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "LightsailDeployment",
+            "Effect": "Allow",
+            "Action": [
+                "lightsail:GetInstance",
+                "lightsail:CreateInstances",
+                "lightsail:OpenInstancePublicPorts"
+            ],
+            "Resource": [
+                "*"
+            ]
+        }
+    ]
+}
+```
+
 ### Scaleway
 
 Required variables:
