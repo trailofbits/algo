@@ -10,6 +10,13 @@ To install automatically, use the generated user Powershell script.
 ```powershell
 powershell -ExecutionPolicy ByPass -File C:\path\to\windows_USER.ps1 -Add
 ```
+
+If you have more than one account on your Windows 10 machine (e.g. one with administrator privileges and one without) and would like to have the VPN connection available to all users, pass the parameter `-AllUsers`
+
+```powershell
+powershell -ExecutionPolicy ByPass -File C:\path\to\windows_USER.ps1 -Add -AllUsers
+```
+
 4. The command has help information available. To view its full help, run this from Powershell:
 ```powershell
 Get-Help -Name .\windows_USER.ps1 -Full | more
