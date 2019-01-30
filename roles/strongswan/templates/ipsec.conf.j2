@@ -27,7 +27,7 @@ conn %default
 
     right=%any
     rightauth=pubkey
-    rightsourceip={{ vpn_network }},{{ vpn_network_ipv6 }}
+    rightsourceip={{ strongswan_network }},{{ strongswan_network_ipv6 }}
 {% if algo_local_dns or dns_encryption %}
     rightdns={{ local_service_ip }}
 {% else %}

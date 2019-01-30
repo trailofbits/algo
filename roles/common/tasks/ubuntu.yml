@@ -1,24 +1,4 @@
 ---
-- block:
-  - name: Ubuntu | Install prerequisites
-    apt:
-      name: "{{ item }}"
-      update_cache: true
-    with_items:
-      - python2.7
-      - sudo
-
-  - name: Ubuntu | Configure defaults
-    alternatives:
-      name: python
-      link: /usr/bin/python
-      path: /usr/bin/python2.7
-      priority: 1
-    tags:
-      - update-alternatives
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
-
 - name: Gather facts
   setup:
 
@@ -115,15 +95,20 @@
         value: 1
 
 - name: Install tools
-  package: name="{{ item }}" state=present
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
   with_items:
     - "{{ tools|default([]) }}"
 
 - name: Install headers
   apt:
-    name: "{{ item }}"
+    name:
+      - linux-headers-generic
+      - "linux-headers-{{ ansible_kernel }}"
     state: present
   when: install_headers
-  with_items:
-    - linux-headers-generic
-    - "linux-headers-{{ ansible_kernel }}"
+
+- include_tasks: iptables.yml
+  tags: iptables

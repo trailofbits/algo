@@ -11,7 +11,11 @@ else
   ansible-playbook users.yml -e "${USER_ARGS}" -t update-users
 fi
 
-if sudo openssl crl -inform pem -noout -text -in configs/$LXC_IP/pki/crl/phone.crt | grep CRL
+#
+# IPsec
+#
+
+if sudo openssl crl -inform pem -noout -text -in configs/$LXC_IP/ipsec/.pki/crl/phone.crt | grep CRL
   then
     echo "The CRL check passed"
   else
@@ -19,10 +23,34 @@ if sudo openssl crl -inform pem -noout -text -in configs/$LXC_IP/pki/crl/phone.c
     exit 1
 fi
 
-if sudo openssl x509 -inform pem -noout -text -in configs/$LXC_IP/pki/certs/user1.crt | grep CN=user1
+if sudo openssl x509 -inform pem -noout -text -in configs/$LXC_IP/ipsec/.pki/certs/user1.crt | grep CN=user1
   then
     echo "The new user exists"
   else
     echo "The new user does not exist"
+    exit 1
+fi
+
+#
+# WireGuard
+#
+
+if sudo test -f configs/$LXC_IP/wireguard/user1.conf
+  then
+    echo "WireGuard: The new user exists"
+  else
+    echo "WireGuard: The new user does not exist"
+    exit 1
+fi
+
+#
+# SSH tunneling
+#
+
+if sudo test -f configs/$LXC_IP/ssh-tunnel/user1.ssh_config
+  then
+    echo "SSH Tunneling: The new user exists"
+  else
+    echo "SSH Tunneling: The new user does not exist"
     exit 1
 fi
