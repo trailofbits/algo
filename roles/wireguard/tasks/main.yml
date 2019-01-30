@@ -1,7 +1,7 @@
 ---
 - name: Ensure the required directories exist
   file:
-    dest: "{{ wireguard_config_path }}/{{ item }}"
+    dest: "{{ wireguard_pki_path }}/{{ item }}"
     state: directory
     recurse: true
   with_items:
@@ -28,7 +28,7 @@
   - block:
     - name: WireGuard user list updated
       lineinfile:
-        dest: "{{ wireguard_config_path }}/index.txt"
+        dest: "{{ wireguard_pki_path }}/index.txt"
         create: true
         mode: "0600"
         insertafter: EOF
@@ -37,7 +37,7 @@
       with_items: "{{ users }}"
 
     - set_fact:
-        wireguard_users: "{{ (lookup('file', wireguard_config_path + 'index.txt')).split('\n') }}"
+        wireguard_users: "{{ (lookup('file', wireguard_pki_path + 'index.txt')).split('\n') }}"
 
     - name: WireGuard users config generated
       template:

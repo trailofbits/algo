@@ -19,8 +19,9 @@
     - role: wireguard
       when: wireguard_enabled
       tags: wireguard
-    - role: vpn
-      tags: vpn
+    - role: strongswan
+      when: ipsec_enabled
+      tags: ipsec
     - role: ssh_tunneling
       when: algo_ssh_tunneling
       tags: ssh_tunneling
@@ -30,15 +31,17 @@
       - name: Delete the CA key
         local_action:
           module: file
-          path: "configs/{{ IP_subject_alt_name }}/pki/private/cakey.pem"
+          path: "{{ ipsec_pki_path }}/private/cakey.pem"
           state: absent
         become: false
-        when: not algo_store_cakey
+        when:
+          - ipsec_enabled
+          - not algo_store_cakey
 
       - name: Dump the configuration
         local_action:
           module: copy
-          dest: "configs/{{ IP_subject_alt_name }}/config.yml"
+          dest: "configs/{{ IP_subject_alt_name }}/.config.yml"
           content: |
             server: {{ 'localhost' if inventory_hostname == 'localhost' else inventory_hostname }}
             server_user: {{ ansible_ssh_user }}
@@ -55,6 +58,8 @@
             algo_windows: {{ algo_windows }}
             algo_store_cakey: {{ algo_store_cakey }}
             IP_subject_alt_name: {{ IP_subject_alt_name }}
+            ipsec_enabled: {{ ipsec_enabled }}
+            wireguard_enabled: {{ wireguard_enabled }}
             {% if tests|default(false)|bool %}ca_password: {{ CA_password }}{% endif %}
         become: false
 
@@ -69,9 +74,9 @@
       - debug:
           msg:
             - "{{ congrats.common.split('\n') }}"
-            - "    {{ congrats.p12_pass }}"
-            - "    {% if algo_store_cakey %}{{ congrats.ca_key_pass }}{% endif %}"
-            - "    {% if algo_provider != 'local' %}{{ congrats.ssh_access }}{% endif %}"
+            - "    {{ congrats.p12_pass if algo_ssh_tunneling or ipsec_enabled else '' }}"
+            - "    {{ congrats.ca_key_pass if algo_store_cakey and ipsec_enabled else '' }}"
+            - "    {{ congrats.ssh_access if algo_provider != 'local' else ''}}"
       tags: always
       rescue:
         - debug: var=fail_hint

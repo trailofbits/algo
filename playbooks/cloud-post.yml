@@ -9,7 +9,7 @@
     groups: vpn-host
     ansible_connection: "{% if cloud_instance_ip == 'localhost' %}local{% else %}ssh{% endif %}"
     ansible_ssh_user: "{{ ansible_ssh_user }}"
-    ansible_python_interpreter: "/usr/bin/python2.7"
+    ansible_python_interpreter: "/usr/bin/python3"
     algo_provider: "{{ algo_provider }}"
     algo_server_name: "{{ algo_server_name }}"
     algo_ondemand_cellular: "{{ algo_ondemand_cellular }}"

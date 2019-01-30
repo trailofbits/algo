@@ -11,7 +11,7 @@
 :POSTROUTING ACCEPT [0:0]
 
 {% if reduce_mtu|int > 0 %}
--A FORWARD -s {{ vpn_network_ipv6 }} -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss {{ 1340 - reduce_mtu|int }}
+-A FORWARD -s {{ strongswan_network_ipv6 }} -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss {{ 1340 - reduce_mtu|int }}
 {% endif %}
 
 COMMIT
@@ -26,7 +26,7 @@ COMMIT
 :POSTROUTING ACCEPT [0:0]
 
 # Allow traffic from the VPN network to the outside world, and replies
--A POSTROUTING -s {{ vpn_network_ipv6 }}{% if wireguard_enabled %},{{ wireguard_vpn_network_ipv6 }}{% endif %} -m policy --pol none --dir out -j MASQUERADE
+-A POSTROUTING -s {{ strongswan_network_ipv6 }}{% if wireguard_enabled %},{{ wireguard_network_ipv6 }}{% endif %} -m policy --pol none --dir out -j MASQUERADE
 
 COMMIT
 
@@ -86,16 +86,16 @@ COMMIT
 {% if BetweenClients_DROP %}
 {% set BetweenClientsPolicy = "DROP" %}
 {% endif %}
--A FORWARD -s {{ vpn_network_ipv6 }}{% if wireguard_enabled %},{{ wireguard_vpn_network_ipv6 }}{% endif %} -d {{ vpn_network_ipv6 }}{% if wireguard_enabled %},{{ wireguard_vpn_network_ipv6 }}{% endif %} -j {{ BetweenClientsPolicy | default("ACCEPT") }}
+-A FORWARD -s {{ strongswan_network_ipv6 }}{% if wireguard_enabled %},{{ wireguard_network_ipv6 }}{% endif %} -d {{ strongswan_network_ipv6 }}{% if wireguard_enabled %},{{ wireguard_network_ipv6 }}{% endif %} -j {{ BetweenClientsPolicy | default("ACCEPT") }}
 
 -A FORWARD -j ICMPV6-CHECK
 -A FORWARD -p tcp --dport 445 -j DROP
 -A FORWARD -p udp -m multiport --ports 137,138 -j DROP
 -A FORWARD -p tcp -m multiport --ports 137,139 -j DROP
 -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
--A FORWARD -m conntrack --ctstate NEW -s {{ vpn_network_ipv6 }} -m policy --pol ipsec --dir in -j ACCEPT
+-A FORWARD -m conntrack --ctstate NEW -s {{ strongswan_network_ipv6 }} -m policy --pol ipsec --dir in -j ACCEPT
 {% if wireguard_enabled %}
--A FORWARD -m conntrack --ctstate NEW -s {{ wireguard_vpn_network_ipv6 }} -m policy --pol none --dir in -j ACCEPT
+-A FORWARD -m conntrack --ctstate NEW -s {{ wireguard_network_ipv6 }} -m policy --pol none --dir in -j ACCEPT
 {% endif %}
 
 # Use the ICMPV6-CHECK chain, described above

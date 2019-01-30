@@ -1,11 +1,5 @@
 ---
 - block:
-    - name: Include WireGuard role
-      include_role:
-        name: wireguard
-      tags: wireguard
-      when: wireguard_enabled and ansible_distribution == 'Ubuntu'
-
     - include_tasks: ubuntu.yml
       when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
