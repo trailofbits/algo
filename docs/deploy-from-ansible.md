@@ -60,6 +60,7 @@ Server roles:
 - role: dns_encryption
 - role: ssh_tunneling
 - role: wireguard
+- role: go_audit
 
 Note: The `vpn` role generates Apple profiles with On-Demand Wifi and Cellular if you pass the following variables:
 

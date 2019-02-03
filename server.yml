@@ -24,6 +24,9 @@
     - role: ssh_tunneling
       when: algo_ssh_tunneling
       tags: ssh_tunneling
+    - role: go_audit
+      when: monitoring_enabled
+      tags: monitoring
 
   post_tasks:
     - block:

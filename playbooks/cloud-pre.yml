@@ -12,6 +12,7 @@
         'algo_windows "{{ algo_windows }}"' \
         'wireguard_enabled "{{ wireguard_enabled }}"' \
         'dns_encryption "{{ dns_encryption }}"' \
+        'monitoring_enabled "{{ monitoring_enabled }}"' \
         > /dev/tty
 
 - name: Install the requirements
