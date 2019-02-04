@@ -49,7 +49,7 @@
             algo_server_name: {{ algo_server_name }}
             algo_ondemand_cellular: {{ algo_ondemand_cellular }}
             algo_ondemand_wifi: {{ algo_ondemand_wifi }}
-            algo_ondemand_wifi_exclude: {{ algo_ondemand_wifi_exclude | b64encode }}
+            algo_ondemand_wifi_exclude: {{ algo_ondemand_wifi_exclude }}
             algo_local_dns: {{ algo_local_dns }}
             algo_ssh_tunneling: {{ algo_ssh_tunneling }}
             algo_windows: {{ algo_windows }}
