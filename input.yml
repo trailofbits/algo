@@ -116,10 +116,10 @@
           {% if ondemand_wifi is defined %}{{ ondemand_wifi | bool }}
           {%- elif _ondemand_wifi.user_input is defined and _ondemand_wifi.user_input != "" %}{{ booleans_map[_ondemand_wifi.user_input] | default(defaults['ondemand_wifi']) }}
           {%- else %}false{% endif %}
-        algo_ondemand_wifi_exclude:  >-
-          {% if ondemand_wifi_exclude is defined %}{{ ondemand_wifi_exclude }}
-          {%- elif _ondemand_wifi_exclude.user_input is defined and _ondemand_wifi_exclude.user_input != "" %}{{ _ondemand_wifi_exclude.user_input }}
-          {%- else %}_null{% endif %}
+        algo_ondemand_wifi_exclude: >-
+          {% if ondemand_wifi_exclude is defined %}{{ ondemand_wifi_exclude | b64encode }}
+          {%- elif _ondemand_wifi_exclude.user_input is defined and _ondemand_wifi_exclude.user_input != "" %}{{ _ondemand_wifi_exclude.user_input | b64encode }}
+          {%- else %}{{ '_null' | b64encode }}{% endif %}
         algo_local_dns: >-
           {% if local_dns is defined %}{{ local_dns | bool }}
           {%- elif _local_dns.user_input is defined and _local_dns.user_input != "" %}{{ booleans_map[_local_dns.user_input] | default(defaults['local_dns']) }}
