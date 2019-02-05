@@ -8,7 +8,7 @@
 | 4. Fill out the forms and click **Create** | [![step4-thumb]][step4-screen]  |
 | 5. Click on the app name | [![step5-thumb]][step5-screen]  |
 | 6. Copy and save somewhere the **Application ID** and click on **Keys**. | [![step6-thumb]][step6-screen]  |
-| 7. Fill out the forms and click **Save**. Copy and save somewhere the **Secret ID** (the value) | [![step7-thumb]][step7-screen]  |
+| 7. Fill out the forms and click **Save**. Copy and save somewhere the **Secret ID** (the value). NOTE: This needs to be urlencoded, so replace '+' with '%2B', '=' with '%3D'. | [![step7-thumb]][step7-screen]  |
 | 8. Go to the **Main menu**, **Azure Active Directory** and click on **Properties**. Copy and save somewhere the **Directory ID**  | [![step8-thumb]][step8-screen]  |
 | 9. Go to the **Main menu**, **Subscriptions** and click on the subscription you want you use in Algo. Copy and save the subscription id from the **Overview** tab | [![step9-thumb]][step9-screen]  |
 | 10. Go to the **Access control (IAM)** tab and click to **Add** | [![step10-thumb]][step10-screen]  |
