@@ -212,6 +212,7 @@ Possible options can be gathered via cli `aws lightsail get-regions`
             "Sid": "LightsailDeployment",
             "Effect": "Allow",
             "Action": [
+                "lightsail:GetRegions",
                 "lightsail:GetInstance",
                 "lightsail:CreateInstances",
                 "lightsail:OpenInstancePublicPorts"
