@@ -89,13 +89,19 @@ Certificates and configuration files that users will need are placed in the `con
 
 ### Apple Devices
 
-Apple devices can connect to an Algo VPN via IPsec using their built-in IPsec support or via WireGuard by installing WireGuard client software.
+Apple devices can connect to an Algo VPN via IPsec using their built-in IPsec support or via WireGuard by installing the WireGuard app.
 
 #### Install WireGuard
 
-On iOS, install the [WireGuard](https://itunes.apple.com/us/app/wireguard/id1441195209?mt=8) app from the App Store. For each user you defined, Algo generated a WireGuard configuration file `wireguard/<name>.conf` and a corresponding QR code image `wireguard/<name>.png`. Either AirDrop the configuration file to the iOS device or use the WireGuard app to scan the QR code. To use "Connect On Demand" with WireGuard enable it by editing the configuration in the WireGuard app.
+For each user you defined in `config.cfg` Algo generated a WireGuard tunnel configuration file `wireguard/<username>.conf` and a corresponding QR code image `wireguard/<username>.png`.
 
-Until the WireGuard app for macOS is ready, installing WireGuard on macOS is a little more complicated. See [Using MacOS as a Client with WireGuard](docs/client-macos-wireguard.md).
+On iOS, install the [WireGuard](https://itunes.apple.com/us/app/wireguard/id1441195209?mt=8) app from the App Store. Either AirDrop the configuration file to the iOS device or use the WireGuard app to scan the QR code.
+
+On macOS Mojave or later, install the [WireGuard](https://itunes.apple.com/us/app/wireguard/id1451685025?mt=12) app from the Mac App Store. Once you run the app the WireGuard icon will appear in the menu bar. Click on the icon and choose **Manage tunnels** to import the tunnel configuration file.
+
+To use "Connect On Demand" enable it by editing the tunnel configuration in the WireGuard app.
+
+For versions of macOS older than Mojave, installing WireGuard is a little more complicated. See [Using MacOS as a Client with WireGuard](docs/client-macos-wireguard.md).
 
 #### Configure IPsec
 
