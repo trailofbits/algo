@@ -11,7 +11,7 @@ else
   ansible-playbook users.yml -e "${USER_ARGS}" -t update-users
 fi
 
-if sudo openssl crl -inform pem -noout -text -in configs/$LXC_IP/pki/crl/jack.crt | grep CRL
+if sudo openssl crl -inform pem -noout -text -in configs/$LXC_IP/pki/crl/phone.crt | grep CRL
   then
     echo "The CRL check passed"
   else
