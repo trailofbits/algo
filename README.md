@@ -93,13 +93,13 @@ Apple devices can connect to an Algo VPN via IPsec using their built-in IPsec su
 
 #### Install WireGuard
 
-For each user you defined in `config.cfg` Algo generated a WireGuard tunnel configuration file `wireguard/<username>.conf` and a corresponding QR code image `wireguard/<username>.png`.
+Algo generates a WireGuard configuration file, `wireguard/<username>.conf`, and a QR code, `wireguard/<username>.png`, for each user defined in `config.cfg`.
 
-On iOS, install the [WireGuard](https://itunes.apple.com/us/app/wireguard/id1441195209?mt=8) app from the App Store. Either AirDrop the configuration file to the iOS device or use the WireGuard app to scan the QR code.
+On iOS, install the [WireGuard](https://itunes.apple.com/us/app/wireguard/id1441195209?mt=8) app from the iOS App Store. Then, use the WireGuard app to scan the QR code or AirDrop the configuration file to the device.
 
-On macOS Mojave or later, install the [WireGuard](https://itunes.apple.com/us/app/wireguard/id1451685025?mt=12) app from the Mac App Store. Once you run the app the WireGuard icon will appear in the menu bar. Click on the icon and choose **Manage tunnels** to import the tunnel configuration file.
+On macOS Mojave or later, install the [WireGuard](https://itunes.apple.com/us/app/wireguard/id1451685025?mt=12) app from the Mac App Store. WireGuard will appear in the menu bar once you run the app. Click on the WireGuard icon, choose **Import tunnel(s) from file...**, then select the appropriate WireGuard configuration file.
 
-To use "Connect On Demand" enable it by editing the tunnel configuration in the WireGuard app.
+Enable "Connect on Demand" by editing the tunnel configuration in the WireGuard app.
 
 For versions of macOS older than Mojave, installing WireGuard is a little more complicated. See [Using MacOS as a Client with WireGuard](docs/client-macos-wireguard.md).
 
