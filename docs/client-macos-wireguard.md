@@ -1,31 +1,34 @@
-# Using MacOS as a Client with WireGuard
+# MacOS WireGuard Client Setup
+
+The WireGuard macOS app is unavailable for older operating systems. Please update your operating system if you can. If you are on a macOS High Sierra (10.13) or earlier, then you can still use WireGuard via their userspace drivers via the process detailed below.
 
 ## Install WireGuard
 
-To connect to your Algo VPN using [WireGuard](https://www.wireguard.com) from MacOS
+Install the wireguard-go userspace driver:
 
 ```
-# Install the wireguard-go userspace driver
 brew install wireguard-tools
 ```
 
 ## Locate the Config File
 
-The Algo-generated config files for WireGuard are named `configs/<ip_address>/wireguard/<username>.conf` on the system where you ran `./algo`. One file was generated for each of the users you added to `config.cfg` before you ran `./algo`. Each Linux and Android client you connect to your Algo VPN must use a different WireGuard config file. Choose one of these files and copy it to your device.
+Algo generates a WireGuard configuration file, `wireguard/<username>.conf`, and a QR code, `wireguard/<username>.png`, for each user defined in `config.cfg`. Find the configuration file and copy it to your device if you don't already have it.
+
+Note that each client you use to connect to Algo VPN must have a unique WireGuard config.
 
 ## Configure WireGuard
 
-Finally, install the config file on your client as `/usr/local/etc/wireguard/wg0.conf` and start WireGuard:
+You'll need to copy the appropriate WireGuard configuration file into a location where the userspace driver can find it. After it is in the right place, start the VPN, and verify connectivity.
 
 ```
-# Install the config file to the WireGuard configuration directory on your MacOS device
+# Copy the config file to the WireGuard configuration directory on your macOS device
 mkdir /usr/local/etc/wireguard/
 cp <username>.conf /usr/local/etc/wireguard/wg0.conf
 
-# Start the WireGuard VPN:
+# Start the WireGuard VPN
 sudo wg-quick up wg0
 
-# Verify the connection to the Algo VPN:
+# Verify the connection to the Algo VPN
 wg
 
 # See that your client is using the IP address of your Algo VPN:
