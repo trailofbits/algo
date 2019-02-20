@@ -17,7 +17,7 @@
       when: algo_local_dns
       tags: dns_adblocking
     - role: wireguard
-      when: wireguard_enabled
+      when: wireguard_enabled and ansible_distribution != 'Ubuntu'
       tags: wireguard
     - role: vpn
       tags: vpn
