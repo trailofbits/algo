@@ -51,21 +51,21 @@
 
     - pause:
         prompt: |
-          Do you want macOS/iOS clients to enable "VPN On Demand" when connected to cellular networks?
+          Do you want macOS/iOS IPsec clients to enable "Connect On Demand" when connected to cellular networks?
           [y/N]
       register: _ondemand_cellular
       when: ondemand_cellular is undefined
 
     - pause:
         prompt: |
-          Do you want macOS/iOS clients to enable "VPN On Demand" when connected to Wi-Fi?
+          Do you want macOS/iOS IPsec clients to enable "Connect On Demand" when connected to Wi-Fi?
           [y/N]
       register: _ondemand_wifi
       when: ondemand_wifi is undefined
 
     - pause:
         prompt: |
-          List the names of trusted Wi-Fi networks (if any) that macOS/iOS clients exclude from using the VPN
+          List the names of any trusted Wi-Fi networks where macOS/iOS IPsec clients should not use "Connect On Demand"
           (e.g., your home network. Comma-separated value, e.g., HomeNet,OfficeWifi,AlgoWiFi)
       register: _ondemand_wifi_exclude
       when:
@@ -75,7 +75,7 @@
 
     - pause:
         prompt: |
-          Do you want to install a DNS resolver on this VPN server, to block ads while surfing?
+          Do you want to install an ad blocking DNS resolver on this VPN server?
           [y/N]
       register: _local_dns
       when: local_dns is undefined
