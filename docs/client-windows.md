@@ -29,7 +29,7 @@ Get-Help -Name .\windows_USER.ps1 -Full | more
 3. If you haven't already, you will need to change the Execution Policy to allow unsigned scripts to run.
 
 ```powershell
-Set-ExecutionPolicy Unrestricted -Scope CurrentUser
+Set-ExecutionPolicy Unrestricted -Scope Process
 ```
 
 4. In the same window, run the necessary commands to install the certificates and create the VPN configuration. Note the lines at the top defining the VPN address, USER.p12 file location, and CA certificate location - change those lines to the IP address of your Algo server and the location you saved those two files. Also note that it will prompt for the "User p12 password", which is printed at the end of a successful Algo deployment.
@@ -67,12 +67,6 @@ $setVpnParams = @{
 }
 Set-VpnConnectionIPsecConfiguration @setVpnParams
 
-```
-
-5. After you execute the user script, set the Execution Policy back before you close the PowerShell window.
-
-```powershell
-Set-ExecutionPolicy Restricted -Scope CurrentUser
 ```
 
 Your VPN is now installed and ready to use.
