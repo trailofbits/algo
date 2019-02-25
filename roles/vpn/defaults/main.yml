@@ -35,7 +35,7 @@ algo_local_dns: false
 ipv6_support: false
 dns_encryption: true
 domain: false
-subjectAltName_IP: "IP:{{ IP_subject_alt_name }}"
+subjectAltName_IP: "{{ 'DNS:' if IP_subject_alt_name|regex_search('[a-z]') else 'IP:' }}{{ IP_subject_alt_name }}"
 subjectAltName_USER: "{% if '@' in item %}email:{{ item }}{% else %}DNS:{{ item }}{% endif %}"
 openssl_bin: openssl
 strongswan_enabled_plugins:
