@@ -248,7 +248,7 @@ You need to source the rc file prior to run Algo. Download it from the OpenStack
 Required variables:
 
 - server - IP or hostname to access the server via SSH
-- endpoint - Public IP address of your server
+- endpoint - Public IP address or domain name of your server
 - ssh_user
 
 
