@@ -116,7 +116,7 @@
             <key>PayloadDescription</key>
             <string>Configures VPN settings</string>
             <key>PayloadDisplayName</key>
-            <string>VPN</string>
+            <string>{{ algo_server_name }}</string>
             <key>PayloadIdentifier</key>
             <string>com.apple.vpn.managed.{{ VPN_PayloadIdentifier }}</string>
             <key>PayloadType</key>
@@ -133,7 +133,7 @@
                 <integer>0</integer>
             </dict>
             <key>UserDefinedName</key>
-            <string>Algo VPN {{ IP_subject_alt_name }} IKEv2</string>
+            <string>AlgoVPN {{ algo_server_name }} IKEv2</string>
             <key>VPNType</key>
             <string>IKEv2</string>
         </dict>
@@ -149,7 +149,7 @@
             <key>PayloadDescription</key>
             <string>Adds a PKCS#12-formatted certificate</string>
             <key>PayloadDisplayName</key>
-            <string>{{ item.0 }}.p12</string>
+            <string>{{ algo_server_name }}</string>
             <key>PayloadIdentifier</key>
             <string>com.apple.security.pkcs12.{{ pkcs12_PayloadCertificateUUID }}</string>
             <key>PayloadType</key>
@@ -169,7 +169,7 @@
             <key>PayloadDescription</key>
             <string>Adds a CA root certificate</string>
             <key>PayloadDisplayName</key>
-            <string>{{ IP_subject_alt_name }}</string>
+            <string>{{ algo_server_name }}</string>
             <key>PayloadIdentifier</key>
             <string>com.apple.security.root.{{ CA_PayloadIdentifier }}</string>
             <key>PayloadType</key>
@@ -181,11 +181,11 @@
         </dict>
     </array>
     <key>PayloadDisplayName</key>
-    <string>{{ IP_subject_alt_name }} IKEv2</string>
+    <string>AlgoVPN {{ algo_server_name }} IKEv2</string>
     <key>PayloadIdentifier</key>
     <string>donut.local.{{ 500000 | random | to_uuid | upper }}</string>
     <key>PayloadOrganization</key>
-	<string>Algo VPN</string>
+	<string>AlgoVPN</string>
     <key>PayloadRemovalDisallowed</key>
     <false/>
     <key>PayloadType</key>
