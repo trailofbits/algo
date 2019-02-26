@@ -3,6 +3,8 @@
   - name: Check the system
     raw: uname -a
     register: OS
+    tags:
+      - update-users
 
   - include_tasks: ubuntu.yml
     when: '"Ubuntu" in OS.stdout or "Linux" in OS.stdout'
