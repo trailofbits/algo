@@ -32,7 +32,7 @@
         local_action:
           module: cs_sshkeypair
           name: "{{ SSH_keys.comment|regex_replace('@', '_') }}"
-          public_key: "{{ SSH_keys.public }}"
+          public_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
         register: cs_keypair
 
       - name: Set facts
@@ -47,10 +47,10 @@
           module: cs_instance
           name: "{{ algo_server_name }}"
           root_disk_size: "{{ disk }}"
-          image: "{{ image_id }}"
+          template: "{{ image_id }}"
           ssh_key: "{{ keypair_name }}"
           security_groups: "{{ cs_security_group.name }}"
-          zone: "{{ _algo_region }}"
+          zone: "{{ _algo_region.user_input }}"
         register: cs_server
 
       - set_fact:
