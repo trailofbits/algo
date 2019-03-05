@@ -1,0 +1,7 @@
+---
+- block:
+  - pause:
+      prompt: |
+        What region should the server be located in?
+    register: _algo_region
+  when: region is undefined
