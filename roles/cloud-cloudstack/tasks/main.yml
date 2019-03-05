@@ -6,7 +6,7 @@
     - block:
       - name: Include prompts
         import_tasks: prompts.yml
-        
+
       - name: Security group created
         local_action:
           module: cs_securitygroup
@@ -16,11 +16,11 @@
 
       - name: Security rules created
         local_action:
-          module: cs_security_group_rule
+          module: cs_securitygroup_rule
           security_group: "{{ cs_security_group.name }}"
           protocol: "{{ item.proto }}"
-          start_port: "{{ item.port_min }}"
-          end_port: "{{ item.port_max }}"
+          start_port: "{{ item.start_port }}"
+          end_port: "{{ item.end_port }}"
           cidr: "{{ item.range }}"
         with_items:
           - { proto: tcp, start_port: 22, end_port: 22, range: 0.0.0.0/0 }

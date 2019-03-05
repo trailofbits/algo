@@ -7,7 +7,9 @@
 
 - name: Install requirements
   pip:
-    name: cs
-    version: 2.5.8
+    name:
+      - cs
+      - sshpubkeys
+    state: latest
     virtualenv: "{{ cloudstack_venv }}"
     virtualenv_python: python2.7
