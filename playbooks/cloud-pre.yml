@@ -13,6 +13,7 @@
         'wireguard_enabled "{{ wireguard_enabled }}"' \
         'dns_encryption "{{ dns_encryption }}"' \
         > /dev/tty
+  tags: debug
 
 - name: Install the requirements
   local_action:
