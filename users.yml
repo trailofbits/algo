@@ -21,13 +21,15 @@
 
         - name: Import host specific variables
           include_vars:
-            file: "configs/{{ algo_server }}/config.yml"
+            file: "configs/{{ algo_server }}/.config.yml"
 
         - pause:
             prompt: Enter the password for the private CA key
             echo: false
           register: _ca_password
-          when: ca_password is undefined
+          when:
+            - ca_password is undefined
+            - ipsec_enabled
 
         - name: Set facts based on the input
           set_fact:
@@ -42,7 +44,7 @@
             groups: vpn-host
             ansible_ssh_user: "{{ server_user|default('root') }}"
             ansible_connection: "{% if algo_server == 'localhost' %}local{% else %}ssh{% endif %}"
-            ansible_python_interpreter: "/usr/bin/python2.7"
+            ansible_python_interpreter: "/usr/bin/python3"
             CA_password: "{{ CA_password }}"
       rescue:
         - debug: var=fail_hint
@@ -56,7 +58,7 @@
   become: true
   vars_files:
     - config.cfg
-    - "configs/{{ inventory_hostname }}/config.yml"
+    - "configs/{{ inventory_hostname }}/.config.yml"
 
   pre_tasks:
     - block:
@@ -74,8 +76,9 @@
     - role: wireguard
       tags: [ 'vpn', 'wireguard' ]
       when: wireguard_enabled
-    - role: vpn
-      tags: vpn
+    - role: strongswan
+      when: ipsec_enabled
+      tags: ipsec
     - role: ssh_tunneling
       when: algo_ssh_tunneling
 
