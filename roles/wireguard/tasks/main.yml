@@ -1,4 +1,9 @@
 ---
+- pause:
+    minutes: 1
+    prompt: "Pausing for one minute to ensure CPU is ready."
+    when: algo_provider == "vultr"
+
 - name: Ensure the required directories exist
   file:
     dest: "{{ wireguard_pki_path }}/{{ item }}"
