@@ -1,4 +1,16 @@
 ---
+- name: FreeBSD | Install prerequisites
+  package:
+    name:
+      - python3
+      - sudo
+  vars:
+    ansible_python_interpreter: /usr/local/bin/python2.7
+
+- name: Set python3 as the interpreter to use
+  set_fact:
+    ansible_python_interpreter: /usr/local/bin/python3
+
 - name: Gather facts
   setup:
 
@@ -15,7 +27,6 @@
     strongswan_additional_plugins:
       - kernel-pfroute
       - kernel-pfkey
-    ansible_python_interpreter: /usr/local/bin/python2.7
     tools:
       - git
       - subversion

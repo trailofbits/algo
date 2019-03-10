@@ -7,11 +7,5 @@
 - name: restart apparmor
   service: name=apparmor state=restarted
 
-- name: save iptables
-  shell: service netfilter-persistent save
-
-- name: restart iptables
-  service: name=netfilter-persistent state=restarted
-
 - name: rereadcrls
   shell: ipsec rereadcrls; ipsec purgecrls
