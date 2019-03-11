@@ -1,7 +1,30 @@
 ---
 - block:
+  - name: List zones on configured cloud provider
+    local_action: shell "{{ cloudstack_venv }}/bin/cs" listZones
+    register: cs_zones_list
+
+  - name: Parse zones from output
+    set_fact:
+      cs_zones: "{{cs_zones_list.stdout | from_json | json_query('zone[*].name')}}"
+  
+  - name: Set the default zone
+    set_fact:
+      default_zone: >-
+        {% for z in cs_zones %}
+        {%- if z == "ch-gva-2" %}{{ loop.index }}{% endif %}
+        {%- endfor %}
+
   - pause:
       prompt: |
-        What region should the server be located in?
+        What zone should the server be located in?
+          {% for z in cs_zones %}
+            {{ loop.index }}. {{ z }}
+            {% endfor %}
+
+          Enter the number of your desired zone
+          [{{ default_zone }}]
     register: _algo_region
   when: region is undefined
+  environment:
+        PYTHONPATH: "{{ cloudstack_venv }}/lib/python2.7/site-packages/"

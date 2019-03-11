@@ -6,6 +6,12 @@
     - block:
       - name: Include prompts
         import_tasks: prompts.yml
+        
+      - set_fact:
+          algo_region: >-
+            {% if region is defined %}{{ region }}
+            {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ cs_zones[_algo_region.user_input | int -1 ] }}
+            {%- else %}{{ cs_zones[default_region | int - 1] }}{% endif %}
 
       - name: Security group created
         local_action:
@@ -50,7 +56,7 @@
           template: "{{ image_id }}"
           ssh_key: "{{ keypair_name }}"
           security_groups: "{{ cs_security_group.name }}"
-          zone: "{{ _algo_region.user_input }}"
+          zone: "{{ algo_region }}"
         register: cs_server
 
       - set_fact:
