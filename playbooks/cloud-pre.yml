@@ -31,9 +31,11 @@
     size: 2048
     mode: "0600"
     type: RSA
+  when: algo_provider != "local"
 
 - name: Generate the SSH public key
   openssl_publickey:
     path: "{{ SSH_keys.public }}"
     privatekey_path: "{{ SSH_keys.private }}"
     format: OpenSSH
+  when: algo_provider != "local"
