@@ -14,15 +14,13 @@
             {%- else %}{{ cs_zones[default_region | int - 1] }}{% endif %}
 
       - name: Security group created
-        local_action:
-          module: cs_securitygroup
+        cs_securitygroup:
           name: "{{ algo_server_name }}-security_group"
           description: AlgoVPN security group
         register: cs_security_group
 
       - name: Security rules created
-        local_action:
-          module: cs_securitygroup_rule
+        cs_securitygroup_rule:
           security_group: "{{ cs_security_group.name }}"
           protocol: "{{ item.proto }}"
           start_port: "{{ item.start_port }}"
@@ -35,8 +33,7 @@
           - { proto: udp, start_port: "{{ wireguard_port }}", end_port: "{{ wireguard_port }}", range: 0.0.0.0/0 }
 
       - name: Keypair created
-        local_action:
-          module: cs_sshkeypair
+        cs_sshkeypair:
           name: "{{ SSH_keys.comment|regex_replace('@', '_') }}"
           public_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
         register: cs_keypair
@@ -49,8 +46,7 @@
           keypair_name: "{{ cs_keypair.name }}"
 
       - name: Server created
-        local_action:
-          module: cs_instance
+        cs_instance:
           name: "{{ algo_server_name }}"
           root_disk_size: "{{ disk }}"
           template: "{{ image_id }}"
