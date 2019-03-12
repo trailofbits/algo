@@ -215,7 +215,7 @@ The error is caused because Digital Ocean changed its API to treat the tag argum
 1. Download [doctl](https://github.com/digitalocean/doctl)
 2. Run `doctl auth init`; it will ask you for your token which you can get (or generate) on the API tab at DigitalOcean
 3. Once you are authorized on DO, you can run `doctl compute tag list` to see the list of tags
-4. Run `doctl compute tag delete enivronment:algo --force` to delete the environment:algo tag
+4. Run `doctl compute tag delete environment:algo --force` to delete the environment:algo tag
 5. Finally run `doctl compute tag list` to make sure that the tag has been deleted
 6. Run algo as directed
 
