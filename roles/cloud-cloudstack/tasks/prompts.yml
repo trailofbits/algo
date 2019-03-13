@@ -6,20 +6,24 @@
 
   - name: Parse zones from output
     set_fact:
-      cs_zones: "{{cs_zones_list.stdout | from_json | json_query('zone[*].name')}}"
+      _cs_zones: "{{cs_zones_list.stdout | from_json }}"
   
+  - name: Extract zones from output
+    set_fact:
+      cs_zones: "{{ _cs_zones.zone | sort(attribute='name') }}"
+
   - name: Set the default zone
     set_fact:
       default_zone: >-
         {% for z in cs_zones %}
-        {%- if z == "ch-gva-2" %}{{ loop.index }}{% endif %}
+        {%- if z['name'] == "ch-gva-2" %}{{ loop.index }}{% endif %}
         {%- endfor %}
 
   - pause:
       prompt: |
         What zone should the server be located in?
           {% for z in cs_zones %}
-            {{ loop.index }}. {{ z }}
+            {{ loop.index }}. {{ z['name'] }}
             {% endfor %}
 
           Enter the number of your desired zone

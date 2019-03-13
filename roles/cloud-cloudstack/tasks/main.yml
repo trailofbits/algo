@@ -10,8 +10,8 @@
       - set_fact:
           algo_region: >-
             {% if region is defined %}{{ region }}
-            {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ cs_zones[_algo_region.user_input | int -1 ] }}
-            {%- else %}{{ cs_zones[default_region | int - 1] }}{% endif %}
+            {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ cs_zones[_algo_region.user_input | int -1 ]['name'] }}
+            {%- else %}{{ cs_zones[default_region | int - 1]['name'] }}{% endif %}
 
       - name: Security group created
         cs_securitygroup:
