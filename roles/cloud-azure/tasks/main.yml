@@ -16,20 +16,17 @@
       - name: Create AlgoVPN Server
         azure_rm_deployment:
           state: present
-          deployment_name: "AlgoVPN-{{ algo_server_name }}"
+          deployment_name: "{{ algo_server_name }}"
           template: "{{ lookup('file', 'deployment.json') }}"
           secret: "{{ secret }}"
           tenant: "{{ tenant }}"
           client_id: "{{ client_id }}"
           subscription_id: "{{ subscription_id }}"
-          resource_group_name: "AlgoVPN-{{ algo_server_name }}"
+          resource_group_name: "{{ algo_server_name }}"
+          location: "{{ algo_region }}"
           parameters:
-            AlgoServerName:
-              value: "{{ algo_server_name }}"
             sshKeyData:
               value: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
-            location:
-              value: "{{ algo_region }}"
             WireGuardPort:
               value: "{{ wireguard_port }}"
             vmSize:
