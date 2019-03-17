@@ -1,16 +1,12 @@
 ---
 - block:
-  - name: List zones on configured cloud provider
-    local_action: shell "{{ cloudstack_venv }}/bin/cs" listZones
-    register: cs_zones_list
-
   - name: Parse zones from output
     set_fact:
-      _cs_zones: "{{cs_zones_list.stdout | from_json }}"
+      _cs_zones: "{{ _cloudstack_zones | from_json }}"
   
   - name: Extract zones from output
     set_fact:
-      cs_zones: "{{ _cs_zones.zone | sort(attribute='name') }}"
+      cs_zones: "{{ _cs_zones | sort(attribute='name') }}"
 
   - name: Set the default zone
     set_fact:
