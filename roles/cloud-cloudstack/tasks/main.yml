@@ -53,6 +53,7 @@
           ssh_key: "{{ keypair_name }}"
           security_groups: "{{ cs_security_group.name }}"
           zone: "{{ algo_region }}"
+          service_offering: "{{ size }}"
         register: cs_server
 
       - set_fact:
