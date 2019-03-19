@@ -1,5 +1,28 @@
 ---
 - block:
+  - set_fact:
+      _cs_config: "{{ lookup('env', 'CLOUDSTACK_CONFIG') }}"
+
+  - pause:
+      prompt: |
+        Enter path for cloudstack.ini file
+        [~/.cloudstack.ini]
+    register: _cs_config_input
+    when: _cs_config == ""
+
+  - set_fact:
+      _cs_config_input: "{% if _cs_config_input.user_input == ''%}{{ '~/.cloudstack.ini' }}{% else %}{{ _cs_config_input.user_input }}{% endif %}"
+    when: _cs_config == ""
+
+  - set_fact:
+      _cs_config: "{% if _cs_config == '' %}{{ _cs_config_input }}{% else %}{{ _cs_config }}{% endif %}"
+
+  - pause:
+      prompt: |
+        Specify region to use in cloudstack.ini_file
+        [default]
+    register: _cs_region
+
   - name: Parse zones from output
     set_fact:
       _cs_zones: "{{ _cloudstack_zones | from_json }}"
@@ -19,8 +42,8 @@
       prompt: |
         What zone should the server be located in?
           {% for z in cs_zones %}
-            {{ loop.index }}. {{ z['name'] }}
-            {% endfor %}
+          {{ loop.index }}. {{ z['name'] }}
+          {% endfor %}
 
           Enter the number of your desired zone
           [{{ default_zone }}]

@@ -61,6 +61,8 @@
           ansible_ssh_user: ubuntu
       environment:
         PYTHONPATH: "{{ cloudstack_venv }}/lib/python2.7/site-packages/"
+        CLOUDSTACK_CONFIG: "{{ _cs_config }}"
+        CLOUDSTACK_REGION: "{{ _cs_region.user_input }}"
 
       rescue:
       - debug: var=fail_hint
