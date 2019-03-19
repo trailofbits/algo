@@ -1,47 +1,41 @@
 ---
+- name: Build python virtual environment
+  import_tasks: venv.yml
+
 - block:
-    - name: Build python virtual environment
-      import_tasks: venv.yml
+  - name: Include prompts
+    import_tasks: prompts.yml
 
-    - block:
-      - name: Include prompts
-        import_tasks: prompts.yml
+  - set_fact:
+      algo_region: >-
+        {% if region is defined %}{{ region }}
+        {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ azure_regions[_algo_region.user_input | int -1 ]['name'] }}
+        {%- else %}{{ azure_regions[default_region | int - 1]['name'] }}{% endif %}
 
-      - set_fact:
-          algo_region: >-
-            {% if region is defined %}{{ region }}
-            {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ azure_regions[_algo_region.user_input | int -1 ]['name'] }}
-            {%- else %}{{ azure_regions[default_region | int - 1]['name'] }}{% endif %}
+  - name: Create AlgoVPN Server
+    azure_rm_deployment:
+      state: present
+      deployment_name: "{{ algo_server_name }}"
+      template: "{{ lookup('file', 'deployment.json') }}"
+      secret: "{{ secret }}"
+      tenant: "{{ tenant }}"
+      client_id: "{{ client_id }}"
+      subscription_id: "{{ subscription_id }}"
+      resource_group_name: "{{ algo_server_name }}"
+      location: "{{ algo_region }}"
+      parameters:
+        sshKeyData:
+          value: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
+        WireGuardPort:
+          value: "{{ wireguard_port }}"
+        vmSize:
+          value: "{{ cloud_providers.azure.size }}"
+        imageReferenceSku:
+          value: "{{ cloud_providers.azure.image }}"
+    register: azure_rm_deployment
 
-      - name: Create AlgoVPN Server
-        azure_rm_deployment:
-          state: present
-          deployment_name: "{{ algo_server_name }}"
-          template: "{{ lookup('file', 'deployment.json') }}"
-          secret: "{{ secret }}"
-          tenant: "{{ tenant }}"
-          client_id: "{{ client_id }}"
-          subscription_id: "{{ subscription_id }}"
-          resource_group_name: "{{ algo_server_name }}"
-          location: "{{ algo_region }}"
-          parameters:
-            sshKeyData:
-              value: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
-            WireGuardPort:
-              value: "{{ wireguard_port }}"
-            vmSize:
-              value: "{{ cloud_providers.azure.size }}"
-            imageReferenceSku:
-              value: "{{ cloud_providers.azure.image }}"
-        register: azure_rm_deployment
-
-      - set_fact:
-          cloud_instance_ip: "{{ azure_rm_deployment.deployment.outputs.publicIPAddresses.value }}"
-          ansible_ssh_user: ubuntu
-      environment:
-        PYTHONPATH: "{{ azure_venv }}/lib/python2.7/site-packages/"
-  rescue:
-    - debug: var=fail_hint
-      tags: always
-    - fail:
-      tags: always
+  - set_fact:
+      cloud_instance_ip: "{{ azure_rm_deployment.deployment.outputs.publicIPAddresses.value }}"
+      ansible_ssh_user: ubuntu
+  environment:
+    PYTHONPATH: "{{ azure_venv }}/lib/python2.7/site-packages/"

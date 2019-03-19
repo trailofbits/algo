@@ -1,110 +1,105 @@
+---
+- name: Build python virtual environment
+  import_tasks: venv.yml
+
 - block:
-    - name: Build python virtual environment
-      import_tasks: venv.yml
+  - name: Include prompts
+    import_tasks: prompts.yml
 
-    - block:
-      - name: Include prompts
-        import_tasks: prompts.yml
+  - name: Set additional facts
+    set_fact:
+      algo_do_region: >-
+        {% if region is defined %}{{ region }}
+        {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ do_regions[_algo_region.user_input | int -1 ]['slug'] }}
+        {%- else %}{{ do_regions[default_region | int - 1]['slug'] }}{% endif %}
+      public_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
 
-      - name: Set additional facts
-        set_fact:
-          algo_do_region: >-
-            {% if region is defined %}{{ region }}
-            {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ do_regions[_algo_region.user_input | int -1 ]['slug'] }}
-            {%- else %}{{ do_regions[default_region | int - 1]['slug'] }}{% endif %}
-          public_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
-
-      - block:
-          - name: "Delete the existing Algo SSH keys"
-            digital_ocean:
-              state: absent
-              command: ssh
-              api_token: "{{ algo_do_token }}"
-              name: "{{ SSH_keys.comment }}"
-            register: ssh_keys
-            until: ssh_keys.changed != true
-            retries: 10
-            delay: 1
-
-        rescue:
-          - name: Collect the fail error
-            digital_ocean:
-              state: absent
-              command: ssh
-              api_token: "{{ algo_do_token }}"
-              name: "{{ SSH_keys.comment }}"
-            register: ssh_keys
-            ignore_errors: yes
-
-          - debug: var=ssh_keys
-
-          - fail:
-              msg: "Please, ensure that your API token is not read-only."
-
-      - name: "Upload the SSH key"
+  - block:
+      - name: "Delete the existing Algo SSH keys"
         digital_ocean:
-          state: present
+          state: absent
           command: ssh
-          ssh_pub_key: "{{ public_key }}"
           api_token: "{{ algo_do_token }}"
           name: "{{ SSH_keys.comment }}"
-        register: do_ssh_key
+        register: ssh_keys
+        until: ssh_keys.changed != true
+        retries: 10
+        delay: 1
 
-      - name: "Creating a droplet..."
+    rescue:
+      - name: Collect the fail error
         digital_ocean:
-          state: present
-          command: droplet
-          name: "{{ algo_server_name }}"
-          region_id: "{{ algo_do_region }}"
-          size_id: "{{ cloud_providers.digitalocean.size }}"
-          image_id: "{{ cloud_providers.digitalocean.image }}"
-          ssh_key_ids: "{{ do_ssh_key.ssh_key.id }}"
-          unique_name: yes
+          state: absent
+          command: ssh
           api_token: "{{ algo_do_token }}"
-          ipv6: yes
-        register: do
+          name: "{{ SSH_keys.comment }}"
+        register: ssh_keys
+        ignore_errors: yes
 
-      - set_fact:
-          cloud_instance_ip: "{{ do.droplet.ip_address }}"
-          ansible_ssh_user: root
+      - debug: var=ssh_keys
 
-      - name: Tag the droplet
-        digital_ocean_tag:
-          name: "Environment:Algo"
-          resource_id: "{{ do.droplet.id }}"
+      - fail:
+          msg: "Please, ensure that your API token is not read-only."
+
+  - name: "Upload the SSH key"
+    digital_ocean:
+      state: present
+      command: ssh
+      ssh_pub_key: "{{ public_key }}"
+      api_token: "{{ algo_do_token }}"
+      name: "{{ SSH_keys.comment }}"
+    register: do_ssh_key
+
+  - name: "Creating a droplet..."
+    digital_ocean:
+      state: present
+      command: droplet
+      name: "{{ algo_server_name }}"
+      region_id: "{{ algo_do_region }}"
+      size_id: "{{ cloud_providers.digitalocean.size }}"
+      image_id: "{{ cloud_providers.digitalocean.image }}"
+      ssh_key_ids: "{{ do_ssh_key.ssh_key.id }}"
+      unique_name: yes
+      api_token: "{{ algo_do_token }}"
+      ipv6: yes
+    register: do
+
+  - set_fact:
+      cloud_instance_ip: "{{ do.droplet.ip_address }}"
+      ansible_ssh_user: root
+
+  - name: Tag the droplet
+    digital_ocean_tag:
+      name: "Environment:Algo"
+      resource_id: "{{ do.droplet.id }}"
+      api_token: "{{ algo_do_token }}"
+      state: present
+
+  - block:
+      - name: "Delete the new Algo SSH key"
+        digital_ocean:
+          state: absent
+          command: ssh
           api_token: "{{ algo_do_token }}"
-          state: present
+          name: "{{ SSH_keys.comment }}"
+        register: ssh_keys
+        until: ssh_keys.changed != true
+        retries: 10
+        delay: 1
 
-      - block:
-          - name: "Delete the new Algo SSH key"
-            digital_ocean:
-              state: absent
-              command: ssh
-              api_token: "{{ algo_do_token }}"
-              name: "{{ SSH_keys.comment }}"
-            register: ssh_keys
-            until: ssh_keys.changed != true
-            retries: 10
-            delay: 1
+    rescue:
+      - name: Collect the fail error
+        digital_ocean:
+          state: absent
+          command: ssh
+          api_token: "{{ algo_do_token }}"
+          name: "{{ SSH_keys.comment }}"
+        register: ssh_keys
+        ignore_errors: yes
 
-        rescue:
-          - name: Collect the fail error
-            digital_ocean:
-              state: absent
-              command: ssh
-              api_token: "{{ algo_do_token }}"
-              name: "{{ SSH_keys.comment }}"
-            register: ssh_keys
-            ignore_errors: yes
+      - debug: var=ssh_keys
 
-          - debug: var=ssh_keys
-
-          - fail:
-              msg: "Please, ensure that your API token is not read-only."
-      environment:
-        PYTHONPATH: "{{ digitalocean_venv }}/lib/python2.7/site-packages/"
-  rescue:
-    - debug: var=fail_hint
-      tags: always
-    - fail:
-      tags: always
+      - fail:
+          msg: "Please, ensure that your API token is not read-only."
+  environment:
+    PYTHONPATH: "{{ digitalocean_venv }}/lib/python2.7/site-packages/"

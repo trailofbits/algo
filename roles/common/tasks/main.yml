@@ -1,32 +1,26 @@
 ---
-- block:
-  - name: Check the system
-    raw: uname -a
-    register: OS
-    tags:
-      - update-users
+- name: Check the system
+  raw: uname -a
+  register: OS
+  tags:
+    - update-users
 
-  - include_tasks: ubuntu.yml
-    when: '"Ubuntu" in OS.stdout or "Linux" in OS.stdout'
-    tags:
-      - update-users
+- include_tasks: ubuntu.yml
+  when: '"Ubuntu" in OS.stdout or "Linux" in OS.stdout'
+  tags:
+    - update-users
 
-  - include_tasks: freebsd.yml
-    when: '"FreeBSD" in OS.stdout'
-    tags:
-      - update-users
+- include_tasks: freebsd.yml
+  when: '"FreeBSD" in OS.stdout'
+  tags:
+    - update-users
 
-  - name: Sysctl tuning
-    sysctl: name="{{ item.item }}" value="{{ item.value }}"
-    when: item.item != ""
-    with_items:
-      - "{{ sysctl|default([]) }}"
-    tags:
-      - always
+- name: Sysctl tuning
+  sysctl: name="{{ item.item }}" value="{{ item.value }}"
+  when: item.item != ""
+  with_items:
+    - "{{ sysctl|default([]) }}"
+  tags:
+    - always
 
-  - meta: flush_handlers
-  rescue:
-    - debug: var=fail_hint
-      tags: always
-    - fail:
-      tags: always
+- meta: flush_handlers

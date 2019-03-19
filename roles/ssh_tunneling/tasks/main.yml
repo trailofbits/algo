@@ -1,120 +1,114 @@
 ---
+- name: Ensure that the sshd_config file has desired options
+  blockinfile:
+    dest: /etc/ssh/sshd_config
+    marker: '# {mark} ANSIBLE MANAGED BLOCK ssh_tunneling_role'
+    block: |
+      Match Group algo
+          AllowTcpForwarding local
+          AllowAgentForwarding no
+          AllowStreamLocalForwarding no
+          PermitTunnel no
+          X11Forwarding no
+  notify:
+    - restart ssh
+
+- name: Ensure that the algo group exist
+  group: name=algo state=present
+
+- name: Ensure that the jail directory exist
+  file:
+    path: /var/jail/
+    state: directory
+    mode: 0755
+    owner: root
+    group: "{{ root_group|default('root') }}"
+
 - block:
-    - name: Ensure that the sshd_config file has desired options
-      blockinfile:
-        dest: /etc/ssh/sshd_config
-        marker: '# {mark} ANSIBLE MANAGED BLOCK ssh_tunneling_role'
-        block: |
-          Match Group algo
-              AllowTcpForwarding local
-              AllowAgentForwarding no
-              AllowStreamLocalForwarding no
-              PermitTunnel no
-              X11Forwarding no
-      notify:
-        - restart ssh
+  - name: Ensure that the SSH users exist
+    user:
+      name: "{{ item }}"
+      groups: algo
+      home: '/var/jail/{{ item }}'
+      createhome: yes
+      generate_ssh_key: false
+      shell: /bin/false
+      state: present
+      append: yes
+    with_items: "{{ users }}"
 
-    - name: Ensure that the algo group exist
-      group: name=algo state=present
-
-    - name: Ensure that the jail directory exist
+  - block:
+    - name: Clean up the ssh-tunnel directory
       file:
-        path: /var/jail/
+        dest: "{{ ssh_tunnels_config_path }}"
+        state: absent
+      when: keys_clean_all|bool == True
+
+    - name: Ensure the config directories exist
+      file:
+        dest: "{{ ssh_tunnels_config_path }}"
         state: directory
-        mode: 0755
-        owner: root
-        group: "{{ root_group|default('root') }}"
+        recurse: yes
+        mode: '0700'
 
-    - block:
-      - name: Ensure that the SSH users exist
-        user:
-          name: "{{ item }}"
-          groups: algo
-          home: '/var/jail/{{ item }}'
-          createhome: yes
-          generate_ssh_key: false
-          shell: /bin/false
-          state: present
-          append: yes
-        with_items: "{{ users }}"
+    - name: Check if the private keys exist
+      stat:
+        path: "{{ ssh_tunnels_config_path }}/{{ item }}.pem"
+      register: privatekey
+      with_items: "{{ users }}"
 
-      - block:
-        - name: Clean up the ssh-tunnel directory
-          file:
-            dest: "{{ ssh_tunnels_config_path }}"
-            state: absent
-          when: keys_clean_all|bool == True
+    - name: Build ssh private keys
+      openssl_privatekey:
+        path: "{{ ssh_tunnels_config_path }}/{{ item.item }}.pem"
+        passphrase: "{{ p12_export_password }}"
+        cipher: aes256
+        force: false
+      no_log: true
+      when: not item.stat.exists
+      with_items: "{{ privatekey.results }}"
+      register: openssl_privatekey
 
-        - name: Ensure the config directories exist
-          file:
-            dest: "{{ ssh_tunnels_config_path }}"
-            state: directory
-            recurse: yes
-            mode: '0700'
+    - name: Build ssh public keys
+      openssl_publickey:
+        path: "{{ ssh_tunnels_config_path }}/{{ item.item.item }}.pub"
+        privatekey_path: "{{ ssh_tunnels_config_path }}/{{ item.item.item }}.pem"
+        privatekey_passphrase: "{{ p12_export_password }}"
+        format: OpenSSH
+        force: true
+      no_log: true
+      when: item.changed
+      with_items: "{{ openssl_privatekey.results }}"
 
-        - name: Check if the private keys exist
-          stat:
-            path: "{{ ssh_tunnels_config_path }}/{{ item }}.pem"
-          register: privatekey
-          with_items: "{{ users }}"
+    - name: Build the client ssh config
+      template:
+        src: ssh_config.j2
+        dest: "{{ ssh_tunnels_config_path }}/{{ item }}.ssh_config"
+        mode: 0700
+      with_items: "{{ users }}"
+    delegate_to: localhost
+    become: false
 
-        - name: Build ssh private keys
-          openssl_privatekey:
-            path: "{{ ssh_tunnels_config_path }}/{{ item.item }}.pem"
-            passphrase: "{{ p12_export_password }}"
-            cipher: aes256
-            force: false
-          no_log: true
-          when: not item.stat.exists
-          with_items: "{{ privatekey.results }}"
-          register: openssl_privatekey
+  - name: The authorized keys file created
+    authorized_key:
+      user: "{{ item }}"
+      key: "{{ lookup('file', ssh_tunnels_config_path + '/' + item + '.pub') }}"
+      state: present
+      manage_dir: true
+      exclusive: true
+    with_items: "{{ users }}"
 
-        - name: Build ssh public keys
-          openssl_publickey:
-            path: "{{ ssh_tunnels_config_path }}/{{ item.item.item }}.pub"
-            privatekey_path: "{{ ssh_tunnels_config_path }}/{{ item.item.item }}.pem"
-            privatekey_passphrase: "{{ p12_export_password }}"
-            format: OpenSSH
-            force: true
-          no_log: true
-          when: item.changed
-          with_items: "{{ openssl_privatekey.results }}"
+  - name: Get active users
+    getent:
+      database: group
+      key: algo
+      split: ':'
 
-        - name: Build the client ssh config
-          template:
-            src: ssh_config.j2
-            dest: "{{ ssh_tunnels_config_path }}/{{ item }}.ssh_config"
-            mode: 0700
-          with_items: "{{ users }}"
-        delegate_to: localhost
-        become: false
-
-      - name: The authorized keys file created
-        authorized_key:
-          user: "{{ item }}"
-          key: "{{ lookup('file', ssh_tunnels_config_path + '/' + item + '.pub') }}"
-          state: present
-          manage_dir: true
-          exclusive: true
-        with_items: "{{ users }}"
-
-      - name: Get active users
-        getent:
-          database: group
-          key: algo
-          split: ':'
-
-      - name: Delete non-existing users
-        user:
-          name: "{{ item }}"
-          state: absent
-          remove: yes
-          force: yes
-        when: item not in users
-        with_items: "{{ getent_group['algo'][2].split(',') }}"
-      tags: update-users
-  rescue:
-    - debug: var=fail_hint
-      tags: always
-    - fail:
-      tags: always
+  - name: Delete non-existing users
+    user:
+      name: "{{ item }}"
+      state: absent
+      remove: yes
+      force: yes
+    when: item not in users
+    with_items: "{{ getent_group['algo'][2].split(',') }}"
+  tags: update-users

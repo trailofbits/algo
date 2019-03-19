@@ -75,7 +75,6 @@
     notify: restart wireguard
   tags: update-users
 
-
 - name: WireGuard enabled and started
   service:
     name: "{{ service_name }}"

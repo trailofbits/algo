@@ -1,52 +1,46 @@
 ---
-- block:
-    - name: Dnsmasq installed
-      package: name=dnsmasq
+- name: Dnsmasq installed
+  package: name=dnsmasq
 
-    - name: The dnsmasq directory created
-      file: dest=/var/lib/dnsmasq state=directory mode=0755 owner=dnsmasq group=nogroup
+- name: The dnsmasq directory created
+  file: dest=/var/lib/dnsmasq state=directory mode=0755 owner=dnsmasq group=nogroup
 
-    - include_tasks: ubuntu.yml
-      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+- include_tasks: ubuntu.yml
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
-    - include_tasks: freebsd.yml
-      when: ansible_distribution == 'FreeBSD'
+- include_tasks: freebsd.yml
+  when: ansible_distribution == 'FreeBSD'
 
-    - name: Dnsmasq configured
-      template:
-        src: dnsmasq.conf.j2
-        dest: "{{ config_prefix|default('/') }}etc/dnsmasq.conf"
-      notify:
-        - restart dnsmasq
+- name: Dnsmasq configured
+  template:
+    src: dnsmasq.conf.j2
+    dest: "{{ config_prefix|default('/') }}etc/dnsmasq.conf"
+  notify:
+    - restart dnsmasq
 
-    - name: Adblock script created
-      template:
-        src: adblock.sh.j2
-        dest: /usr/local/sbin/adblock.sh
-        owner: root
-        group: "{{ root_group|default('root') }}"
-        mode: 0755
+- name: Adblock script created
+  template:
+    src: adblock.sh.j2
+    dest: /usr/local/sbin/adblock.sh
+    owner: root
+    group: "{{ root_group|default('root') }}"
+    mode: 0755
 
-    - name: Adblock script added to cron
-      cron:
-        name: Adblock hosts update
-        minute: "{{ range(0, 60) | random }}"
-        hour: "{{ range(0, 24) | random }}"
-        job: /usr/local/sbin/adblock.sh
-        user: root
+- name: Adblock script added to cron
+  cron:
+    name: Adblock hosts update
+    minute: "{{ range(0, 60) | random }}"
+    hour: "{{ range(0, 24) | random }}"
+    job: /usr/local/sbin/adblock.sh
+    user: root
 
-    - name: Update adblock hosts
-      command: /usr/local/sbin/adblock.sh
+- name: Update adblock hosts
+  command: /usr/local/sbin/adblock.sh
 
-    - meta: flush_handlers
+- meta: flush_handlers
 
-    - name: Dnsmasq enabled and started
-      service:
-        name: dnsmasq
-        state: started
-        enabled: yes
-  rescue:
-    - debug: var=fail_hint
-      tags: always
-    - fail:
-      tags: always
+- name: Dnsmasq enabled and started
+  service:
+    name: dnsmasq
+    state: started
+    enabled: yes

@@ -2,48 +2,20 @@
 - name: Provision the server
   hosts: localhost
   tags: always
+  become: false
   vars_files:
     - config.cfg
 
-  pre_tasks:
+  tasks:
     - block:
       - name: Local pre-tasks
         import_tasks: playbooks/cloud-pre.yml
-        tags: always
-      rescue:
-        - debug: var=fail_hint
-          tags: always
-        - fail:
-          tags: always
 
-  roles:
-    - role: cloud-digitalocean
-      when: algo_provider == "digitalocean"
-    - role: cloud-ec2
-      when: algo_provider == "ec2"
-    - role: cloud-vultr
-      when: algo_provider == "vultr"
-    - role: cloud-gce
-      when: algo_provider == "gce"
-    - role: cloud-azure
-      when: algo_provider == "azure"
-    - role: cloud-lightsail
-      when: algo_provider == "lightsail"
-    - role: cloud-scaleway
-      when: algo_provider == "scaleway"
-    - role: cloud-openstack
-      when: algo_provider == "openstack"
-    - role: local
-      when: algo_provider == "local"
+      - name: Include a provisioning role
+        include_role:
+          name: "{{ 'local' if algo_provider == 'local' else 'cloud-' + algo_provider }}"
 
-  post_tasks:
-    - block:
       - name: Local post-tasks
         import_tasks: playbooks/cloud-post.yml
-        become: false
-        tags: cloud
       rescue:
-        - debug: var=fail_hint
-          tags: always
-        - fail:
-          tags: always
+        - include_tasks: playbooks/rescue.yml

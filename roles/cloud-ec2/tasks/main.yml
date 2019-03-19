@@ -1,48 +1,43 @@
+---
+- name: Build python virtual environment
+  import_tasks: venv.yml
+
 - block:
-    - name: Build python virtual environment
-      import_tasks: venv.yml
+  - name: Include prompts
+    import_tasks: prompts.yml
 
-    - block:
-      - name: Include prompts
-        import_tasks: prompts.yml
+  - set_fact:
+      algo_region: >-
+        {% if region is defined %}{{ region }}
+        {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ aws_regions[_algo_region.user_input | int -1 ]['region_name'] }}
+        {%- else %}{{ aws_regions[default_region | int - 1]['region_name'] }}{% endif %}
+      stack_name: "{{ algo_server_name | replace('.', '-') }}"
 
-      - set_fact:
-          algo_region: >-
-            {% if region is defined %}{{ region }}
-            {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ aws_regions[_algo_region.user_input | int -1 ]['region_name'] }}
-            {%- else %}{{ aws_regions[default_region | int - 1]['region_name'] }}{% endif %}
-          stack_name: "{{ algo_server_name | replace('.', '-') }}"
+  - name: Locate official AMI for region
+    ec2_ami_facts:
+      aws_access_key: "{{ access_key }}"
+      aws_secret_key: "{{ secret_key }}"
+      owners: "{{ cloud_providers.ec2.image.owner }}"
+      region: "{{ algo_region }}"
+      filters:
+        name: "ubuntu/images/hvm-ssd/{{ cloud_providers.ec2.image.name }}-amd64-server-*"
+    register: ami_search
 
-      - name: Locate official AMI for region
-        ec2_ami_facts:
-          aws_access_key: "{{ access_key }}"
-          aws_secret_key: "{{ secret_key }}"
-          owners: "{{ cloud_providers.ec2.image.owner }}"
-          region: "{{ algo_region }}"
-          filters:
-            name: "ubuntu/images/hvm-ssd/{{ cloud_providers.ec2.image.name }}-amd64-server-*"
-        register: ami_search
+  - import_tasks: encrypt_image.yml
+    when: encrypted
 
-      - import_tasks: encrypt_image.yml
-        when: encrypted
+  - name: Set the ami id as a fact
+    set_fact:
+      ami_image: >-
+        {% if ami_search_encrypted.image_id is defined %}{{ ami_search_encrypted.image_id }}
+        {%- elif search_crypt.images is defined and search_crypt.images|length >= 1 %}{{ (search_crypt.images | sort(attribute='creation_date') | last)['image_id'] }}
+        {%- else %}{{ (ami_search.images | sort(attribute='creation_date') | last)['image_id'] }}{% endif %}
 
-      - name: Set the ami id as a fact
-        set_fact:
-          ami_image: >-
-            {% if ami_search_encrypted.image_id is defined %}{{ ami_search_encrypted.image_id }}
-            {%- elif search_crypt.images is defined and search_crypt.images|length >= 1 %}{{ (search_crypt.images | sort(attribute='creation_date') | last)['image_id'] }}
-            {%- else %}{{ (ami_search.images | sort(attribute='creation_date') | last)['image_id'] }}{% endif %}
+  - name: Deploy the stack
+    import_tasks: cloudformation.yml
 
-      - name: Deploy the stack
-        import_tasks: cloudformation.yml
-
-      - set_fact:
-          cloud_instance_ip: "{{ stack.stack_outputs.ElasticIP }}"
-          ansible_ssh_user: ubuntu
-      environment:
-        PYTHONPATH: "{{ ec2_venv }}/lib/python2.7/site-packages/"
-  rescue:
-    - debug: var=fail_hint
-      tags: always
-    - fail:
-      tags: always
+  - set_fact:
+      cloud_instance_ip: "{{ stack.stack_outputs.ElasticIP }}"
+      ansible_ssh_user: ubuntu
+  environment:
+    PYTHONPATH: "{{ ec2_venv }}/lib/python2.7/site-packages/"
