@@ -1,3 +1,4 @@
+#jinja2:lstrip_blocks: True
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -12,8 +13,8 @@
                 <integer>1</integer>
               <key>OnDemandRules</key>
               <array>
-{% if algo_ondemand_wifi_exclude|b64decode != '_null' %}
-{% set WIFI_EXCLUDE_LIST = (algo_ondemand_wifi_exclude|b64decode|string).split(',') %}
+  {% if algo_ondemand_wifi_exclude|b64decode != '_null' %}
+    {% set WIFI_EXCLUDE_LIST = (algo_ondemand_wifi_exclude|b64decode|string).split(',') %}
                   <dict>
                       <key>Action</key>
                       <string>Disconnect</string>
@@ -21,20 +22,19 @@
                       <string>WiFi</string>
                       <key>SSIDMatch</key>
                       <array>
-{% for network_name in WIFI_EXCLUDE_LIST %}
+    {% for network_name in WIFI_EXCLUDE_LIST %}
                           <string>{{ network_name|e }}</string>
-{% endfor %}
+    {% endfor %}
                       </array>
                   </dict>
-{% else %}
-{% endif %}
+  {% endif %}
                   <dict>
                     <key>Action</key>
-{% if algo_ondemand_wifi %}
+  {% if algo_ondemand_wifi %}
                       <string>Connect</string>
   {% else %}
                       <string>Disconnect</string>
-{% endif %}
+  {% endif %}
                     <key>InterfaceTypeMatch</key>
                       <string>WiFi</string>
                     <key>URLStringProbe</key>
@@ -42,11 +42,11 @@
                   </dict>
                   <dict>
                     <key>Action</key>
-{% if algo_ondemand_cellular %}
+  {% if algo_ondemand_cellular %}
                       <string>Connect</string>
   {% else %}
                       <string>Disconnect</string>
-{% endif %}
+  {% endif %}
                     <key>InterfaceTypeMatch</key>
                       <string>Cellular</string>
                     <key>URLStringProbe</key>
@@ -57,7 +57,6 @@
                       <string>Disconnect</string>
                   </dict>
                 </array>
-{% else %}
 {% endif %}
                 <key>AuthenticationMethod</key>
                 <string>Certificate</string>
