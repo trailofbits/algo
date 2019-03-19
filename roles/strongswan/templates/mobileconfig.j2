@@ -13,8 +13,8 @@
                 <integer>1</integer>
               <key>OnDemandRules</key>
               <array>
-  {%- if algo_ondemand_wifi_exclude|b64decode != '_null' %}
-    {%- set WIFI_EXCLUDE_LIST = (algo_ondemand_wifi_exclude|b64decode|string).split(',') %}
+  {% if algo_ondemand_wifi_exclude|b64decode != '_null' %}
+    {% set WIFI_EXCLUDE_LIST = (algo_ondemand_wifi_exclude|b64decode|string).split(',') %}
                   <dict>
                       <key>Action</key>
                       <string>Disconnect</string>
