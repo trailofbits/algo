@@ -20,7 +20,7 @@
   - pause:
       prompt: |
         Specify region to use in cloudstack.ini_file
-        [default]
+        [exoscale]
     register: _cs_region
 
   - name: Parse zones from output
@@ -48,6 +48,6 @@
           Enter the number of your desired zone
           [{{ default_zone }}]
     register: _algo_region
-  when: region is undefined
+    when: region is undefined
   environment:
         PYTHONPATH: "{{ cloudstack_venv }}/lib/python2.7/site-packages/"

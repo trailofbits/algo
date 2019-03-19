@@ -11,7 +11,7 @@
           algo_region: >-
             {% if region is defined %}{{ region }}
             {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ cs_zones[_algo_region.user_input | int -1 ]['name'] }}
-            {%- else %}{{ cs_zones[default_region | int - 1]['name'] }}{% endif %}
+            {%- else %}{{ cs_zones[default_zone | int - 1]['name'] }}{% endif %}
 
       - name: Security group created
         cs_securitygroup:
@@ -62,7 +62,7 @@
       environment:
         PYTHONPATH: "{{ cloudstack_venv }}/lib/python2.7/site-packages/"
         CLOUDSTACK_CONFIG: "{{ _cs_config }}"
-        CLOUDSTACK_REGION: "{{ _cs_region.user_input }}"
+        CLOUDSTACK_REGION: "{% if _cs_region.user_input == '' %}{{ 'exoscale' }}{% else %}{{ _cs_region.user_input }}{% endif %}"
 
       rescue:
       - debug: var=fail_hint
