@@ -1,14 +1,10 @@
 ---
 language: python
 python: "2.7"
-sudo: required
-dist: trusty
+dist: xenial
 
 services:
   - docker
-
-matrix:
-  fast_finish: true
 
 addons:
   apt:
@@ -41,35 +37,52 @@ before_cache:
   - sudo tar cf $HOME/lxc/cache.tar /var/lib/lxd/images/
   - sudo chown $USER. $HOME/lxc/cache.tar
 
-env:
-  - LXC_NAME=docker LXC_DISTRO=ubuntu LXC_RELEASE=18.04
+matrix:
+  fast_finish: true
+  include:
+    - stage: Test
+      name: local deployment from docker
+      script:
+        - docker build -t travis/algo .
+        - sudo tar xf $HOME/lxc/cache.tar -C / || echo "Didn't extract cache."
+        - sudo cp -f tests/lxd-bridge /etc/default/lxd-bridge
+        - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
+        - echo -e "#cloud-config\nssh_authorized_keys:\n - $(cat ~/.ssh/id_rsa.pub)" | sudo lxc profile set default user.user-data -
+        - sudo service lxd restart
+        - sudo lxc launch ubuntu:18.04 algo
+        - until host algo.lxd 10.0.8.1 -t A; do sleep 3; done
+        - export LXC_IP="$(dig algo.lxd @10.0.8.1 +short)"
+        - pip install -r requirements.txt
+        - pip install ansible-lint
+        - gem install awesome_bot
+        - ansible-playbook --version
+        - tree . -L 2
+        - ansible-playbook main.yml --syntax-check
+        - ./tests/local-deploy.sh
+        - ./tests/update-users.sh
 
-before_install:
-  - test "${LXC_NAME}" != "docker" && sudo modprobe wireguard || docker build -t travis/algo .
+    - stage: Test
+      name: cloud-init deployment
+      script:
+        - sudo tar xf $HOME/lxc/cache.tar -C / || echo "Didn't extract cache."
+        - sudo cp -f tests/lxd-bridge /etc/default/lxd-bridge
+        - sudo service lxd restart
+        - bash tests/cloud-init.sh | sudo lxc profile set default user.user-data -
+        - sudo lxc profile show default
+        - sudo lxc launch ubuntu:18.04 algo
+        - until sudo lxc exec algo -- test -f /var/log/cloud-init-output.log; do echo 'Log file not found, Sleep for 3 seconds'; sleep 3; done
+        - ( sudo lxc exec algo -- tail -f /var/log/cloud-init-output.log & )
+        - |
+          until sudo lxc exec algo -- test -f /var/lib/cloud/data/result.json; do
+            echo 'Cloud init is not finished. Sleep for 30 seconds';
+            sleep 30;
+          done
+        - sudo lxc exec algo -- test -f /opt/algo/configs/localhost/.config.yml
 
-install:
-  - sudo tar xf $HOME/lxc/cache.tar -C / || echo "Didn't extract cache."
-  - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
-  - chmod 0644 ~/.ssh/config
-  - echo -e "#cloud-config\nssh_authorized_keys:\n - $(cat ~/.ssh/id_rsa.pub)" | sudo lxc profile set default user.user-data -
-  - sudo cp -f tests/lxd-bridge /etc/default/lxd-bridge
-  - sudo service lxd restart
-  - sudo lxc launch ${LXC_DISTRO}:${LXC_RELEASE} ${LXC_NAME}
-  - until host ${LXC_NAME}.lxd 10.0.8.1 -t A; do sleep 3; done
-  - export LXC_IP="$(dig ${LXC_NAME}.lxd @10.0.8.1 +short)"
-  - pip install -r requirements.txt
-  - pip install ansible-lint
-  - gem install awesome_bot
-  - ansible-playbook --version
-  - tree . -L 2
-
-script:
+# script:
   # - awesome_bot --allow-dupe --skip-save-results *.md docs/*.md --white-list paypal.com,do.co,microsoft.com,https://github.com/trailofbits/algo/archive/master.zip,https://github.com/trailofbits/algo/issues/new
 # - shellcheck algo
 # - ansible-lint main.yml users.yml deploy_client.yml
-  - ansible-playbook main.yml --syntax-check
-  - ./tests/local-deploy.sh
-  - ./tests/update-users.sh
 
 notifications:
   email: false

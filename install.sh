@@ -12,6 +12,10 @@ LOCAL_DNS="${7:-${LOCAL_DNS:-false}}"
 SSH_TUNNELING="${8:-${SSH_TUNNELING:-false}}"
 ENDPOINT="${9:-${ENDPOINT:-localhost}}"
 USERS="${10:-${USERS:-user1}}"
+REPO_SLUG="${11:-${REPO_SLUG:-trailofbits/algo}}"
+REPO_BRANCH="${12:-${REPO_BRANCH:-master}}"
+EXTRA_VARS="${13:-${EXTRA_VARS:-placeholder=null}}"
+ANSIBLE_EXTRA_ARGS="${14:-${ANSIBLE_EXTRA_ARGS}}"
 
 cd /opt/
 
@@ -32,8 +36,10 @@ installRequirements() {
 }
 
 getAlgo() {
-  [ ! -d "algo" ] && git clone https://github.com/trailofbits/algo algo
+  [ ! -d "algo" ] && git clone https://github.com/${REPO_SLUG} algo
   cd algo
+
+  git checkout ${REPO_BRANCH}
 
   python -m virtualenv --python=`which python2` .venv
   . .venv/bin/activate
@@ -95,7 +101,8 @@ deployAlgo() {
     -e users=$(echo "$USERS" | jq -Rc 'split(",")') \
     -e server=localhost \
     -e ssh_user=root \
-    --skip-tags debug |
+    -e "${EXTRA_VARS}" \
+    --skip-tags debug ${ANSIBLE_EXTRA_ARGS} |
       tee /var/log/algo.log
 }
 
