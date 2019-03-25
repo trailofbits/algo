@@ -24,7 +24,10 @@ The command will prepare the environment and install AlgoVPN with default parame
 `SSH_TUNNELING` -  Enable SSH tunneling for each user. Default: false  
 `ENDPOINT` - The public IP address or domain name of your server: (IMPORTANT! This is used to verify the certificate). It will be gathered automatically for DigitalOcean, AWS, GCE or Azure if the `METHOD` is cloud. Otherwise you need to define this variable according to your public IP address.  
 `USERS` - list of VPN users. Comma-separated list.
-
+`REPO_SLUG` - Owner and repository that used to get the installation scripts from. Default: trailofbits/algo
+`REPO_BRANCH` - Branch for `REPO_SLUG`. Default: master
+`EXTRA_VARS` - Additional extra variables.
+`ANSIBLE_EXTRA_ARGS` - Any available ansible parameters. ie: `--skip-tags apparmor`
 
 ## Examples
 
