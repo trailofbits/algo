@@ -3,23 +3,23 @@
 - name: Setup the config files from our templates
   template:
     src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
+    dest: "{{ config_prefix|default('/') }}etc/{{ item.dest }}"
     owner: "{{ item.owner }}"
     group: "{{ item.group }}"
     mode: "{{ item.mode }}"
   with_items:
     - src: strongswan.conf.j2
-      dest: "{{ config_prefix|default('/') }}etc/strongswan.conf"
+      dest: "strongswan.conf"
       owner: root
       group: "{{ root_group|default('root') }}"
       mode: "0644"
     - src: ipsec.conf.j2
-      dest: "{{ config_prefix|default('/') }}etc/ipsec.conf"
+      dest: "ipsec.conf"
       owner: root
       group: "{{ root_group|default('root') }}"
       mode: "0644"
     - src: ipsec.secrets.j2
-      dest: "{{ config_prefix|default('/') }}etc/ipsec.secrets"
+      dest: "ipsec.secrets"
       owner: strongswan
       group: "{{ root_group|default('root') }}"
       mode: "0600"

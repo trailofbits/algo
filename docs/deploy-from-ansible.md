@@ -34,7 +34,7 @@ See below for more information about providers and extra variables
 - `ondemand_wifi_exclude` (Required if `ondemand_wifi` set) - WiFi networks to exclude from using the VPN. Comma-separated values
 - `local_dns` - (Optional) Enable a DNS resolver. Default: false
 - `ssh_tunneling` - (Optional) Enable SSH tunneling for each user. Default: false
-- `windows` - (Optional) Enables compatible ciphers and key exchange to support Windows clietns, less secure. Default: false
+- `windows` - (Optional) Enables compatible ciphers and key exchange to support Windows clients, less secure. Default: false
 - `store_cakey` - (Optional) Whether or not keep the CA key (required to add users in the future, but less secure). Default: false
 
 If any of those unspecified ansible will ask the user to input
@@ -179,7 +179,7 @@ Required variables:
 
 Required variables:
 
-- [vultr_config](https://github.com/trailofbits/algo/docs/cloud-vultr.md)
+- [vultr_config](https://trailofbits.github.io/algo/cloud-vultr.html)
 - [region](https://api.vultr.com/v1/regions/list)
 
 ### Azure
@@ -201,6 +201,29 @@ Required variables:
 - region
 
 Possible options can be gathered via cli `aws lightsail get-regions`
+
+#### Minimum required IAM permissions for deployment:
+
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "LightsailDeployment",
+            "Effect": "Allow",
+            "Action": [
+                "lightsail:GetRegions",
+                "lightsail:GetInstance",
+                "lightsail:CreateInstances",
+                "lightsail:OpenInstancePublicPorts"
+            ],
+            "Resource": [
+                "*"
+            ]
+        }
+    ]
+}
+```
 
 ### Scaleway
 
@@ -225,7 +248,7 @@ You need to source the rc file prior to run Algo. Download it from the OpenStack
 Required variables:
 
 - server - IP or hostname to access the server via SSH
-- endpoint - Public IP address of your server
+- endpoint - Public IP address or domain name of your server
 - ssh_user
 
 

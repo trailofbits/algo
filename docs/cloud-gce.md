@@ -1,12 +1,12 @@
 # Google Cloud Platform setup
 
-Follow the [installation instructions](https://cloud.google.com/sdk/) to have the CLI commands to interact with Google.
+* Follow the [`gcloud` installation instructions](https://cloud.google.com/sdk/)
 
-After creating an account and installing, login in on your account using `gcloud init`
+* Log into your account using `gcloud init`
 
 ### Creating a project
 
-The recommendation on GCP is to group resources on **Projets**, so we will create one project to put our VPN server and service account restricted to it.
+The recommendation on GCP is to group resources into **Projects**, so we will create a new project for our VPN server and use a service account restricted to it.
 
 ```bash
 ## Create the project to group the resources
@@ -38,4 +38,4 @@ gcloud services enable compute.googleapis.com
 **Attention:** take care of the `configs/gce.json` file, which contains the credentials to manage your Google Cloud account, including create and delete servers on this project.
 
 
-There are more advanced arguments available for deploynment [using ansible](deploy-from-ansible.md)
+There are more advanced arguments available for deploynment [using ansible](deploy-from-ansible.md).
