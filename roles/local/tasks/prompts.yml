@@ -31,7 +31,7 @@
 
 - pause:
     prompt: |
-      Enter the public IP address of your server: (IMPORTANT! This IP is used to verify the certificate)
+      Enter the public IP address or domain name of your server: (IMPORTANT! This is used to verify the certificate)
       [{{ cloud_instance_ip }}]
   register: _endpoint
   when: endpoint is undefined

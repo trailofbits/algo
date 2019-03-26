@@ -48,34 +48,49 @@
       when:
         - server_name is undefined
         - algo_provider != "local"
+    - block:
+      - pause:
+          prompt: |
+            Do you want macOS/iOS IPsec clients to enable "Connect On Demand" when connected to cellular networks?
+            [y/N]
+        register: _ondemand_cellular
+        when: ondemand_cellular is undefined
+
+      - pause:
+          prompt: |
+            Do you want macOS/iOS IPsec clients to enable "Connect On Demand" when connected to Wi-Fi?
+            [y/N]
+        register: _ondemand_wifi
+        when: ondemand_wifi is undefined
+
+      - pause:
+          prompt: |
+            List the names of any trusted Wi-Fi networks where macOS/iOS IPsec clients should not use "Connect On Demand"
+            (e.g., your home network. Comma-separated value, e.g., HomeNet,OfficeWifi,AlgoWiFi)
+        register: _ondemand_wifi_exclude
+        when:
+          - ondemand_wifi_exclude is undefined
+          - (ondemand_wifi|default(false)|bool) or
+            (booleans_map[_ondemand_wifi.user_input|default(omit)]|default(false))
+
+      - pause:
+          prompt: |
+            Do you want the VPN to support Windows 10 or Linux Desktop clients? (enables compatible ciphers and key exchange, less secure)
+            [y/N]
+        register: _windows
+        when: windows is undefined
+
+      - pause:
+          prompt: |
+            Do you want to retain the CA key? (required to add users in the future, but less secure)
+            [y/N]
+        register: _store_cakey
+        when: store_cakey is undefined
+      when: ipsec_enabled
 
     - pause:
         prompt: |
-          Do you want macOS/iOS clients to enable "VPN On Demand" when connected to cellular networks?
-          [y/N]
-      register: _ondemand_cellular
-      when: ondemand_cellular is undefined
-
-    - pause:
-        prompt: |
-          Do you want macOS/iOS clients to enable "VPN On Demand" when connected to Wi-Fi?
-          [y/N]
-      register: _ondemand_wifi
-      when: ondemand_wifi is undefined
-
-    - pause:
-        prompt: |
-          List the names of trusted Wi-Fi networks (if any) that macOS/iOS clients exclude from using the VPN
-          (e.g., your home network. Comma-separated value, e.g., HomeNet,OfficeWifi,AlgoWiFi)
-      register: _ondemand_wifi_exclude
-      when:
-        - ondemand_wifi_exclude is undefined
-        - (ondemand_wifi|default(false)|bool) or
-          (booleans_map[_ondemand_wifi.user_input|default(omit)]|default(false))
-
-    - pause:
-        prompt: |
-          Do you want to install a DNS resolver on this VPN server, to block ads while surfing?
+          Do you want to install an ad blocking DNS resolver on this VPN server?
           [y/N]
       register: _local_dns
       when: local_dns is undefined
@@ -86,20 +101,6 @@
           [y/N]
       register: _ssh_tunneling
       when: ssh_tunneling is undefined
-
-    - pause:
-        prompt: |
-          Do you want the VPN to support Windows 10 or Linux Desktop clients? (enables compatible ciphers and key exchange, less secure)
-          [y/N]
-      register: _windows
-      when: windows is undefined
-
-    - pause:
-        prompt: |
-          Do you want to retain the CA key? (required to add users in the future, but less secure)
-          [y/N]
-      register: _store_cakey
-      when: store_cakey is undefined
 
     - name: Set facts based on the input
       set_fact:
@@ -116,10 +117,10 @@
           {% if ondemand_wifi is defined %}{{ ondemand_wifi | bool }}
           {%- elif _ondemand_wifi.user_input is defined and _ondemand_wifi.user_input != "" %}{{ booleans_map[_ondemand_wifi.user_input] | default(defaults['ondemand_wifi']) }}
           {%- else %}false{% endif %}
-        algo_ondemand_wifi_exclude:  >-
-          {% if ondemand_wifi_exclude is defined %}{{ ondemand_wifi_exclude }}
-          {%- elif _ondemand_wifi_exclude.user_input is defined and _ondemand_wifi_exclude.user_input != "" %}{{ _ondemand_wifi_exclude.user_input }}
-          {%- else %}_null{% endif %}
+        algo_ondemand_wifi_exclude: >-
+          {% if ondemand_wifi_exclude is defined %}{{ ondemand_wifi_exclude | b64encode }}
+          {%- elif _ondemand_wifi_exclude.user_input is defined and _ondemand_wifi_exclude.user_input != "" %}{{ _ondemand_wifi_exclude.user_input | b64encode }}
+          {%- else %}{{ '_null' | b64encode }}{% endif %}
         algo_local_dns: >-
           {% if local_dns is defined %}{{ local_dns | bool }}
           {%- elif _local_dns.user_input is defined and _local_dns.user_input != "" %}{{ booleans_map[_local_dns.user_input] | default(defaults['local_dns']) }}

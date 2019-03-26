@@ -30,8 +30,8 @@
     - name: Adblock script added to cron
       cron:
         name: Adblock hosts update
-        minute: 10
-        hour: 2
+        minute: "{{ range(0, 60) | random }}"
+        hour: "{{ range(0, 24) | random }}"
         job: /usr/local/sbin/adblock.sh
         user: root
 

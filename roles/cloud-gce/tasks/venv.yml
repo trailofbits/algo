@@ -1,0 +1,15 @@
+---
+- name: Clean up the environment
+  file:
+    dest: "{{ gce_venv }}"
+    state: absent
+  when: clean_environment
+
+- name: Install requirements
+  pip:
+    name:
+      - apache-libcloud
+      - pycrypto
+    state: latest
+    virtualenv: "{{ gce_venv }}"
+    virtualenv_python: python2.7
