@@ -25,65 +25,93 @@
         owner: root
         group: "{{ root_group|default('root') }}"
 
-    - name: Ensure that the SSH users exist
-      user:
-        name: "{{ item }}"
-        groups: algo
-        home: '/var/jail/{{ item }}'
-        createhome: yes
-        generate_ssh_key: false
-        shell: /bin/false
-        state: present
-        append: yes
-      with_items: "{{ users }}"
-      tags: update-users
+    - block:
+      - name: Ensure that the SSH users exist
+        user:
+          name: "{{ item }}"
+          groups: algo
+          home: '/var/jail/{{ item }}'
+          createhome: yes
+          generate_ssh_key: false
+          shell: /bin/false
+          state: present
+          append: yes
+        with_items: "{{ users }}"
 
-    - name: The authorized keys file created
-      authorized_key:
-        user: "{{ item }}"
-        key: "{{ lookup('file', 'configs/' + IP_subject_alt_name + '/pki/public/' + item + '.pub') }}"
-        state: present
-        manage_dir: true
-        exclusive: true
-      with_items: "{{ users }}"
-      tags: update-users
+      - block:
+        - name: Clean up the ssh-tunnel directory
+          file:
+            dest: "{{ ssh_tunnels_config_path }}"
+            state: absent
+          when: keys_clean_all|bool == True
 
-    - name: Generate SSH fingerprints
-      shell: ssh-keyscan {{ IP_subject_alt_name }} 2>/dev/null
-      register: ssh_fingerprints
+        - name: Ensure the config directories exist
+          file:
+            dest: "{{ ssh_tunnels_config_path }}"
+            state: directory
+            recurse: yes
+            mode: '0700'
 
-    - name: Fetch the known_hosts file
-      local_action:
-        module: template
-        src: known_hosts.j2
-        dest: configs/{{ IP_subject_alt_name }}/known_hosts
-      become: no
+        - name: Check if the private keys exist
+          stat:
+            path: "{{ ssh_tunnels_config_path }}/{{ item }}.pem"
+          register: privatekey
+          with_items: "{{ users }}"
 
-    - name: Build the client ssh config
-      local_action:
-        module: template
-        src: ssh_config.j2
-        dest: configs/{{ IP_subject_alt_name }}/{{ item }}.ssh_config
-        mode: 0600
-      become: false
-      tags: update-users
-      with_items: "{{ users }}"
+        - name: Build ssh private keys
+          openssl_privatekey:
+            path: "{{ ssh_tunnels_config_path }}/{{ item.item }}.pem"
+            passphrase: "{{ p12_export_password }}"
+            cipher: aes256
+            force: false
+          no_log: true
+          when: not item.stat.exists
+          with_items: "{{ privatekey.results }}"
+          register: openssl_privatekey
 
-    - name: Get active users
-      getent:
-        database: group
-        key: algo
-        split: ':'
-      tags: update-users
+        - name: Build ssh public keys
+          openssl_publickey:
+            path: "{{ ssh_tunnels_config_path }}/{{ item.item.item }}.pub"
+            privatekey_path: "{{ ssh_tunnels_config_path }}/{{ item.item.item }}.pem"
+            privatekey_passphrase: "{{ p12_export_password }}"
+            format: OpenSSH
+            force: true
+          no_log: true
+          when: item.changed
+          with_items: "{{ openssl_privatekey.results }}"
 
-    - name: Delete non-existing users
-      user:
-        name: "{{ item }}"
-        state: absent
-        remove: yes
-        force: yes
-      when: item not in users
-      with_items: "{{ getent_group['algo'][2].split(',') }}"
+        - name: Build the client ssh config
+          template:
+            src: ssh_config.j2
+            dest: "{{ ssh_tunnels_config_path }}/{{ item }}.ssh_config"
+            mode: 0700
+          with_items: "{{ users }}"
+        delegate_to: localhost
+        become: false
+
+      - name: The authorized keys file created
+        authorized_key:
+          user: "{{ item }}"
+          key: "{{ lookup('file', ssh_tunnels_config_path + '/' + item + '.pub') }}"
+          state: present
+          manage_dir: true
+          exclusive: true
+        with_items: "{{ users }}"
+
+      - name: Get active users
+        getent:
+          database: group
+          key: algo
+          split: ':'
+
+      - name: Delete non-existing users
+        user:
+          name: "{{ item }}"
+          state: absent
+          remove: yes
+          force: yes
+        when: item not in users
+        with_items: "{{ getent_group['algo'][2].split(',') }}"
       tags: update-users
   rescue:
     - debug: var=fail_hint

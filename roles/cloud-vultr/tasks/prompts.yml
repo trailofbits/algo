@@ -2,7 +2,7 @@
 - pause:
     prompt: |
       Enter the local path to your configuration INI file
-      (https://github.com/trailofbits/algo/docs/cloud-vultr.md):
+      (https://trailofbits.github.io/algo/cloud-vultr.html):
   register: _vultr_config
   when: vultr_config is undefined
 

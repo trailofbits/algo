@@ -1,0 +1,13 @@
+---
+- name: Clean up the environment
+  file:
+    dest: "{{ digitalocean_venv }}"
+    state: absent
+  when: clean_environment
+
+- name: Install requirements
+  pip:
+    name: dopy
+    version: 0.3.5
+    virtualenv: "{{ digitalocean_venv }}"
+    virtualenv_python: python2.7
