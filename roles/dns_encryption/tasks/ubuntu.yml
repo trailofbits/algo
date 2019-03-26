@@ -27,14 +27,14 @@
   - name: Ubuntu | Unbound profile for apparmor configured
     copy:
       src: apparmor.profile.dnscrypt-proxy
-      dest: /etc/apparmor.d/usr.sbin.dnscrypt-proxy
+      dest: /etc/apparmor.d/usr.bin.dnscrypt-proxy
       owner: root
       group: root
       mode: 0600
     notify: restart dnscrypt-proxy
 
   - name: Ubuntu | Enforce the dnscrypt-proxy AppArmor policy
-    command: aa-enforce usr.sbin.dnscrypt-proxy
+    command: aa-enforce usr.bin.dnscrypt-proxy
     changed_when: false
   tags: apparmor
   when: apparmor_enabled|default(false)|bool == true
@@ -47,10 +47,14 @@
     owner: root
     group: root
 
-- name: Ubuntu | Add capabilities to bind ports
+- name: Ubuntu | Add custom requirements to successfully start the unit
   copy:
-    dest: /etc/systemd/system/dnscrypt-proxy.service.d/99-capabilities.conf
+    dest: /etc/systemd/system/dnscrypt-proxy.service.d/99-algo.conf
     content: |
+      [Unit]
+      After=systemd-resolved.service
+      Requires=systemd-resolved.service
+
       [Service]
       AmbientCapabilities=CAP_NET_BIND_SERVICE
   notify:

@@ -7,13 +7,13 @@
 
   - name: Ensure the pki directory does not exist
     file:
-      dest: configs/{{ IP_subject_alt_name }}/pki
+      dest: "{{ ipsec_pki_path }}"
       state: absent
     when: keys_clean_all|bool == True
 
   - name: Ensure the pki directories exist
     file:
-      dest: "configs/{{ IP_subject_alt_name }}/pki/{{ item }}"
+      dest: "{{ ipsec_pki_path }}/{{ item }}"
       state: directory
       recurse: yes
       mode: '0700'
@@ -26,9 +26,20 @@
       - public
       - reqs
 
+  - name: Ensure the config directories exist
+    file:
+      dest: "{{ ipsec_config_path }}/{{ item }}"
+      state: directory
+      recurse: yes
+      mode: '0700'
+    with_items:
+      - apple
+      - windows
+      - manual
+
   - name: Ensure the files exist
     file:
-      dest: "configs/{{ IP_subject_alt_name }}/pki/{{ item }}"
+      dest: "{{ ipsec_pki_path }}/{{ item }}"
       state: touch
     with_items:
       - ".rnd"
@@ -40,7 +51,7 @@
   - name: Generate the openssl server configs
     template:
       src: openssl.cnf.j2
-      dest: "configs/{{ IP_subject_alt_name }}/pki/openssl.cnf"
+      dest: "{{ ipsec_pki_path }}/openssl.cnf"
 
   - name: Build the CA pair
     shell: >
@@ -55,20 +66,19 @@
       -passout pass:"{{ CA_password }}" &&
       touch {{ IP_subject_alt_name }}_ca_generated
     args:
-      chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+      chdir: "{{ ipsec_pki_path }}"
       creates: "{{ IP_subject_alt_name }}_ca_generated"
       executable: bash
 
   - name: Copy the CA certificate
     copy:
-      src: "configs/{{ IP_subject_alt_name }}/pki/cacert.pem"
-      dest: "configs/{{ IP_subject_alt_name }}/cacert.pem"
-      mode: 0600
+      src: "{{ ipsec_pki_path }}/cacert.pem"
+      dest: "{{ ipsec_config_path }}/manual/cacert.pem"
 
   - name: Generate the serial number
     shell: echo 01 > serial && touch serial_generated
     args:
-      chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+      chdir: "{{ ipsec_pki_path }}"
       creates: serial_generated
 
   - name: Build the server pair
@@ -90,7 +100,7 @@
       -subj "/CN={{ IP_subject_alt_name }}" &&
       touch certs/{{ IP_subject_alt_name }}_crt_generated
     args:
-      chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+      chdir: "{{ ipsec_pki_path }}"
       creates: certs/{{ IP_subject_alt_name }}_crt_generated
       executable: bash
 
@@ -113,23 +123,15 @@
       -subj "/CN={{ item }}" &&
       touch certs/{{ item }}_crt_generated
     args:
-      chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+      chdir: "{{ ipsec_pki_path }}"
       creates: certs/{{ item }}_crt_generated
       executable: bash
     with_items: "{{ users }}"
 
-  - name: Create links for the private keys
-    file:
-      src: "pki/private/{{ item }}.key"
-      dest: "configs/{{ IP_subject_alt_name }}/{{ item }}.ssh.pem"
-      state: link
-      force: true
-    with_items: "{{ users }}"
-
   - name: Build openssh public keys
     openssl_publickey:
-      path:  "configs/{{ IP_subject_alt_name }}/pki/public/{{ item }}.pub"
-      privatekey_path: "configs/{{ IP_subject_alt_name }}/pki/private/{{ item }}.key"
+      path:  "{{ ipsec_pki_path }}/public/{{ item }}.pub"
+      privatekey_path: "{{ ipsec_pki_path }}/private/{{ item }}.key"
       format: OpenSSH
     with_items: "{{ users }}"
 
@@ -144,16 +146,15 @@
       -out private/{{ item }}.p12
       -passout pass:"{{ p12_export_password }}"
     args:
-      chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+      chdir: "{{ ipsec_pki_path }}"
       executable: bash
     with_items: "{{ users }}"
     register: p12
 
   - name: Copy the p12 certificates
     copy:
-      src: "configs/{{ IP_subject_alt_name }}/pki/private/{{ item }}.p12"
-      dest: "configs/{{ IP_subject_alt_name }}/{{ item }}.p12"
-      mode: 0600
+      src: "{{ ipsec_pki_path }}/private/{{ item }}.p12"
+      dest: "{{ ipsec_config_path }}/manual/{{ item }}.p12"
     with_items:
       - "{{ users }}"
 
@@ -164,7 +165,7 @@
       awk '{print $5}' |
       sed 's/\/CN=//g'
     args:
-      chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+      chdir: "{{ ipsec_pki_path}}"
     register: valid_certs
 
   - name: Revoke non-existing users
@@ -176,7 +177,7 @@
       -out crl/{{ item }}.crt
     register: gencrl
     args:
-      chdir: configs/{{ IP_subject_alt_name }}/pki/
+      chdir: "{{ ipsec_pki_path }}"
       creates: crl/{{ item }}.crt
       executable: bash
     when: item not in users
@@ -192,7 +193,7 @@
       - gencrl is defined
       - gencrl.changed
     args:
-      chdir: configs/{{ IP_subject_alt_name }}/pki/
+      chdir: "{{ ipsec_pki_path }}"
       executable: bash
   delegate_to: localhost
   become: no
@@ -201,7 +202,7 @@
 
 - name: Copy the CRL to the vpn server
   copy:
-    src: configs/{{ IP_subject_alt_name }}/pki/crl/algo.root.pem
+    src: "{{ ipsec_pki_path }}/crl/algo.root.pem"
     dest: "{{ config_prefix|default('/') }}etc/ipsec.d/crls/algo.root.pem"
   when:
     - gencrl is defined

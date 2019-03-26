@@ -9,7 +9,7 @@
   - name: Generate p12 export password
     local_action:
       module: shell
-        openssl rand 8 | python -c 'import sys,string; chars=string.ascii_letters + string.digits + "_@"; print "".join([chars[ord(c) % 64] for c in list(sys.stdin.read())])'
+        openssl rand 8 | python -c 'import sys,string; chars=string.ascii_letters + string.digits + "_@"; print("".join([chars[ord(c) % 64] for c in list(sys.stdin.read())]))'
     register: p12_password_generated
     when: p12_password is not defined
     tags: update-users
@@ -27,4 +27,9 @@
 - name: Set IPv6 support as a fact
   set_fact:
     ipv6_support: "{% if ansible_default_ipv6['gateway'] is defined %}true{% else %}false{% endif %}"
+  tags: always
+
+- name: Check size of MTU
+  set_fact:
+    reduce_mtu: "{% if reduce_mtu|int == 0 and ansible_default_ipv4['mtu']|int < 1500 %}{{ 1500 - ansible_default_ipv4['mtu']|int }}{% else %}{{ reduce_mtu|int }}{% endif %}"
   tags: always

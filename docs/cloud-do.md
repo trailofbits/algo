@@ -18,70 +18,94 @@ You will be returned to the **Tokens/Keys** tab, and your new key will be shown 
 
 Copy or note down the hash that shows below the name you entered, as this will be necessary for the steps below. This value will disappear if you leave this page, and you'll need to regenerate it if you forget it.
 
-## Using DigitalOcean with Algo (command)
+## Using DigitalOcean with Algo (interactive)
 
-These steps are for people who run Algo using Docker or using the "algo" command.
+These steps are for those who run Algo using Docker or using the `./algo` command.
 
-First you will be asked which server type to setup. You would want to enter "1" to use DigitalOcean.
+Choose DigitalOcean as your provider:
 
 ```
-  What provider would you like to use?
+What provider would you like to use?
     1. DigitalOcean
     2. Amazon Lightsail
     3. Amazon EC2
-    4. Microsoft Azure
-    5. Google Compute Engine
-    6. Scaleway
-    7. OpenStack (DreamCompute optimised)
-    8. Install to existing Ubuntu 18.04 server
-
+    4. Vultr
+    5. Microsoft Azure
+    6. Google Compute Engine
+    7. Scaleway
+    8. OpenStack (DreamCompute optimised)
+    9. Install to existing Ubuntu 18.04 server (Advanced)
+  
 Enter the number of your desired provider
-: 1
-```
-
-Next you will be asked for the API Token value. Paste the API Token value you copied when following the steps in [API Token creation](#api-token-creation) (don't worry if don't see any output, as the key input is hidden by Algo).
-
-```
-Enter your API token. The token must have read and write permissions (https://cloud.digitalocean.com/settings/api/tokens):
-[pasted values will not be displayed]
 :
+1
 ```
 
-You will be prompted for the server name to enter. Feel free to leave this as the default ("algo.local") if you are not certain how this will affect your setup.
+Enter a name for your server. Leave this as the default if you are not certain how this will affect your setup:
 
 ```
 Name the vpn server:
-[algo.local]:
+[algo]:
 ```
 
-After entering the server name the script ask which region you wish to setup your new Algo instance in. Enter the number next to name of the region.
+After several prompts related to Algo features you will be asked for the API Token value. Paste the API Token value you copied when following the steps in [API Token creation](#api-token-creation) (you won't see any output as the key is not echoed by Algo):
 
 ```
-  What region should the server be located in?
-    1.  Amsterdam        (Datacenter 2)
-    2.  Amsterdam        (Datacenter 3)
-    3.  Frankfurt
-    4.  London
-    5.  New York         (Datacenter 1)
-    6.  New York         (Datacenter 2)
-    7.  New York         (Datacenter 3)
-    8.  San Francisco    (Datacenter 1)
-    9.  San Francisco    (Datacenter 2)
-    10. Singapore
-    11. Toronto
-    12. Bangalore
-Enter the number of your desired region:
-[7]: 11
+Enter your API token. The token must have read and write permissions (https://cloud.digitalocean.com/settings/api/tokens):
+ (output is hidden):
 ```
 
-You will then be asked the remainder of the setup questions.
+Finally you will be asked the region in which you wish to setup your new Algo server. This list is dynamic and can change based on availability of resources. Enter the number next to name of the region:
 
-## Using DigitalOcean with Algo (via Ansible)
+```
+What region should the server be located in?
+    1. ams3     Amsterdam 3
+    2. blr1     Bangalore 1
+    3. fra1     Frankfurt 1
+    4. lon1     London 1
+    5. nyc1     New York 1
+    6. nyc3     New York 3
+    7. sfo2     San Francisco 2
+    8. sgp1     Singapore 1
+    9. tor1     Toronto 1
+  
+Enter the number of your desired region
+[6]
+:
+9
+```
 
-If you are using Ansible to deploy to DigitalOcean, you will need to pass the API Token to Ansible as `do_token`.
+## Using DigitalOcean with Algo (scripted)
 
-For example,
+If you are using Ansible directly to run Algo you will need to pass the API Token as `do_token`. For example:
 
-    ansible-playbook deploy.yml -e 'provider=digitalocean do_token=my_secret_token'
+```shell
+ansible-playbook main.yml -e "provider=digitalocean
+                                server_name=algo
+                                ondemand_cellular=true
+                                ondemand_wifi=true
+                                local_dns=false
+                                ssh_tunneling=false
+                                windows=false
+                                store_cakey=true
+                                region=nyc3
+                                do_token=token"
+```
 
-Where "my_secret_token" is your API Token. For more references see [deploy-from-ansible](deploy-from-ansible.md)
+For more, see [Scripted Deployment](deploy-from-ansible.md).
+
+## Using the DigitalOcean firewall with Algo
+
+Many cloud providers include the option to configure an external firewall between the Internet and your cloud server. For some providers this is mandatory and Algo will configure it for you, but for DigitalOcean the external firewall is optional.
+
+An Algo VPN runs its own firewall and doesn't require an external firewall, but you might wish to use the DigitalOcean firewall for example to limit the addresses which can connect to your Algo VPN over SSH, or perhaps to block SSH altogether.
+
+To configure the DigitalOcean firewall, go to **Networking**, **Firewalls**, and choose **Create Firewall**.
+
+Configure your **Inbound Rules** as follows:
+
+![Inbound Rules](/docs/images/do-firewall.png)
+
+Leave the **Outbound Rules** at their defaults.
+
+Under **Apply to Droplets** enter the tag `Environment:Algo` to apply this firewall to all current and future Algo VPNs you create.

@@ -1,20 +1,11 @@
 # Local deployment
 
-It is possible to download the Algo scripts to your own Ubuntu 18.04 server and run the scripts locally.
+You can use Algo to configure a local server as an Algo VPN rather than create and configure a new server on a cloud provider.
 
-In order to start, you need to install Ansible. Installing Ansible via pip requires pulling in a lot of dependencies, including a full compiler suite. It would be easier to use apt, however, Ubuntu 18.04 only comes with Ansible 2.0.0.2. The easiest solution is to install the Ansible PPA for a newer version of Ansible via apt, however, using a PPA requires installing `software-properties-common`.
-
-tl;dr:
-
-```shell
-sudo apt-get install software-properties-common && sudo apt-add-repository ppa:ansible/ansible
-sudo apt-get update && sudo apt-get install ansible python-pip build-essential python-dev libssl-dev libffi-dev
-pip install virtualenv
-pip install --upgrade pip
-git clone https://github.com/trailofbits/algo
-cd algo
-python -m virtualenv env && source env/bin/activate && python -m pip install -U pip && python -m pip install -r requirements.txt
-./algo
+Install the Algo scripts on your server and follow the normal installation instructions, then choose:
 ```
+Install to existing Ubuntu 18.04 server (Advanced)
+```
+Make sure your server is running the operating system specified.
 
-**Warning**: Algo is intended to be run on a standalone server. If you run Algo on your existing server, the iptables rules will be overwritten. If you don't want to overwrite the rules, you must deploy via `ansible-playbook` and skip the `iptables` tag as described in [deploy-from-ansible.md](deploy-from-ansible.md). Other changes are also made, which can break other services running on your server (web, mail, etc.).
+**PLEASE NOTE**: Algo is intended for use as a _dedicated_ VPN server. If you install Algo on an existing server, then any existing services might break. In particular, the firewall rules will be overwritten. If you don't want to overwrite the rules you must deploy via `ansible-playbook` and skip the `iptables` tag as described in [deploy-from-ansible.md](deploy-from-ansible.md), after which you'll need to implement the necessary rules yourself.

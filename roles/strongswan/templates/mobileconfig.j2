@@ -1,3 +1,4 @@
+#jinja2:lstrip_blocks: True
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -12,8 +13,8 @@
                 <integer>1</integer>
               <key>OnDemandRules</key>
               <array>
-{% if algo_ondemand_wifi_exclude != '_null' %}
-{% set WIFI_EXCLUDE_LIST = (algo_ondemand_wifi_exclude|string).split(',') %}
+  {% if algo_ondemand_wifi_exclude|b64decode != '_null' %}
+    {% set WIFI_EXCLUDE_LIST = (algo_ondemand_wifi_exclude|b64decode|string).split(',') %}
                   <dict>
                       <key>Action</key>
                       <string>Disconnect</string>
@@ -21,20 +22,19 @@
                       <string>WiFi</string>
                       <key>SSIDMatch</key>
                       <array>
-{% for network_name in WIFI_EXCLUDE_LIST %}
+    {% for network_name in WIFI_EXCLUDE_LIST %}
                           <string>{{ network_name|e }}</string>
-{% endfor %}
+    {% endfor %}
                       </array>
                   </dict>
-{% else %}
-{% endif %}
+  {% endif %}
                   <dict>
                     <key>Action</key>
-{% if algo_ondemand_wifi %}
+  {% if algo_ondemand_wifi %}
                       <string>Connect</string>
   {% else %}
                       <string>Disconnect</string>
-{% endif %}
+  {% endif %}
                     <key>InterfaceTypeMatch</key>
                       <string>WiFi</string>
                     <key>URLStringProbe</key>
@@ -42,18 +42,21 @@
                   </dict>
                   <dict>
                     <key>Action</key>
-{% if algo_ondemand_cellular %}
+  {% if algo_ondemand_cellular %}
                       <string>Connect</string>
   {% else %}
                       <string>Disconnect</string>
-{% endif %}
+  {% endif %}
                     <key>InterfaceTypeMatch</key>
                       <string>Cellular</string>
                     <key>URLStringProbe</key>
                       <string>http://captive.apple.com/hotspot-detect.html</string>
                   </dict>
+                  <dict>
+                    <key>Action</key>
+                      <string>Disconnect</string>
+                  </dict>
                 </array>
-{% else %}
 {% endif %}
                 <key>AuthenticationMethod</key>
                 <string>Certificate</string>
@@ -112,7 +115,7 @@
             <key>PayloadDescription</key>
             <string>Configures VPN settings</string>
             <key>PayloadDisplayName</key>
-            <string>VPN</string>
+            <string>{{ algo_server_name }}</string>
             <key>PayloadIdentifier</key>
             <string>com.apple.vpn.managed.{{ VPN_PayloadIdentifier }}</string>
             <key>PayloadType</key>
@@ -129,11 +132,13 @@
                 <integer>0</integer>
             </dict>
             <key>UserDefinedName</key>
-            <string>Algo VPN {{ IP_subject_alt_name }} IKEv2</string>
+            <string>AlgoVPN {{ algo_server_name }} IKEv2</string>
             <key>VPNType</key>
             <string>IKEv2</string>
         </dict>
         <dict>
+            <key>Password</key>
+            <string>{{ p12_export_password }}</string>
             <key>PayloadCertificateFileName</key>
             <string>{{ item.0 }}.p12</string>
             <key>PayloadContent</key>
@@ -143,7 +148,7 @@
             <key>PayloadDescription</key>
             <string>Adds a PKCS#12-formatted certificate</string>
             <key>PayloadDisplayName</key>
-            <string>{{ item.0 }}.p12</string>
+            <string>{{ algo_server_name }}</string>
             <key>PayloadIdentifier</key>
             <string>com.apple.security.pkcs12.{{ pkcs12_PayloadCertificateUUID }}</string>
             <key>PayloadType</key>
@@ -163,7 +168,7 @@
             <key>PayloadDescription</key>
             <string>Adds a CA root certificate</string>
             <key>PayloadDisplayName</key>
-            <string>{{ IP_subject_alt_name }}</string>
+            <string>{{ algo_server_name }}</string>
             <key>PayloadIdentifier</key>
             <string>com.apple.security.root.{{ CA_PayloadIdentifier }}</string>
             <key>PayloadType</key>
@@ -175,11 +180,11 @@
         </dict>
     </array>
     <key>PayloadDisplayName</key>
-    <string>{{ IP_subject_alt_name }} IKEv2</string>
+    <string>AlgoVPN {{ algo_server_name }} IKEv2</string>
     <key>PayloadIdentifier</key>
     <string>donut.local.{{ 500000 | random | to_uuid | upper }}</string>
     <key>PayloadOrganization</key>
-	<string>Algo VPN</string>
+	<string>AlgoVPN</string>
     <key>PayloadRemovalDisallowed</key>
     <false/>
     <key>PayloadType</key>
