@@ -1,20 +1,19 @@
 ---
-
 - name: Register p12 PayloadContent
   shell: cat private/{{ item }}.p12 | base64
   register:  PayloadContent
   args:
-    chdir: "configs/{{ IP_subject_alt_name }}/pki/"
+    chdir: "{{ ipsec_pki_path }}"
   with_items: "{{ users }}"
 
 - name: Set facts for mobileconfigs
   set_fact:
-    PayloadContentCA: "{{ lookup('file' , 'configs/{{ IP_subject_alt_name }}/pki/cacert.pem')|b64encode }}"
+    PayloadContentCA: "{{ lookup('file' , '{{ ipsec_pki_path }}/cacert.pem')|b64encode }}"
 
 - name: Build the mobileconfigs
   template:
     src: mobileconfig.j2
-    dest: configs/{{ IP_subject_alt_name }}/{{ item.0 }}.mobileconfig
+    dest: "{{ ipsec_config_path }}/apple/{{ item.0 }}.mobileconfig"
     mode: 0600
   with_together:
     - "{{ users }}"
@@ -24,7 +23,7 @@
 - name: Build the client ipsec config file
   template:
     src: client_ipsec.conf.j2
-    dest: configs/{{ IP_subject_alt_name }}/ipsec_{{ item }}.conf
+    dest: "{{ ipsec_config_path }}/manual/{{ item }}.conf"
     mode: 0600
   with_items:
     - "{{ users }}"
@@ -32,7 +31,7 @@
 - name: Build the client ipsec secret file
   template:
     src: client_ipsec.secrets.j2
-    dest: configs/{{ IP_subject_alt_name }}/ipsec_{{ item }}.secrets
+    dest: "{{ ipsec_config_path }}/manual/{{ item }}.secrets"
     mode: 0600
   with_items:
     - "{{ users }}"
@@ -40,7 +39,7 @@
 - name: Build the windows client powershell script
   template:
     src: client_windows.ps1.j2
-    dest: configs/{{ IP_subject_alt_name }}/windows_{{ item.0 }}.ps1
+    dest: "{{ ipsec_config_path }}/windows/{{ item.0 }}.ps1"
     mode: 0600
   when: algo_windows
   with_together:
@@ -49,8 +48,6 @@
 
 - name: Restrict permissions for the local private directories
   file:
-    path: "{{ item }}"
+    path: "{{ ipsec_config_path }}"
     state: directory
     mode: 0700
-  with_items:
-    - configs/{{ IP_subject_alt_name }}

@@ -1,3 +1,24 @@
+## 1.1 (Unreleased)
+
+### Added
+
+### Fixed
+
+## 1.0 (Mar 19, 2019)
+
+### Added 
+- Tagged releases and changelog [\#724](https://github.com/trailofbits/algo/issues/724)
+- Add support for custom domain names [\#759](https://github.com/trailofbits/algo/issues/759)
+
+### Fixed
+- Set the name shown to the user \(client\) to be the server name specified in the install script [\#491](https://github.com/trailofbits/algo/issues/491)
+- AGPLv3 change [\#1351](https://github.com/trailofbits/algo/pull/1351)
+- Migrate to python3 [\#1024](https://github.com/trailofbits/algo/issues/1024)
+- Reorganize the project around ipsec + wireguard [\#1330](https://github.com/trailofbits/algo/issues/1330)
+- Configuration folder reorganization [\#1330](https://github.com/trailofbits/algo/issues/1330)
+- Remove WireGuard KeepAlive and include as an option in config [\#1251](https://github.com/trailofbits/algo/issues/1251)
+- Dnscrypt-proxy no longer works after reboot [\#1356](https://github.com/trailofbits/algo/issues/1356)
+
 ## 20 Oct 2018
 ### Added
 - AWS Lightsail

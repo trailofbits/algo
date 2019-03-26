@@ -1,6 +1,6 @@
 #include <tunables/global>
 
-/usr/sbin/dnscrypt-proxy {
+/usr/bin/dnscrypt-proxy flags=(attach_disconnected) {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/openssl>
@@ -12,12 +12,18 @@
   capability setuid,
   capability sys_resource,
 
-  /etc/dnscrypt-proxy.toml r,
+  /etc/dnscrypt-proxy/** r,
+  /usr/bin/dnscrypt-proxy mr,
+  /tmp/public-resolvers.md* rw,
+
+  /tmp/*.tmp w,
+  owner /tmp/*.tmp r,
+
+  /run/systemd/notify rw,
+  /lib/x86_64-linux-gnu/ld-*.so mr,
+  @{PROC}/sys/kernel/hostname r,
+  @{PROC}/sys/net/core/somaxconn r,
   /etc/ld.so.cache r,
-  /usr/sbin/dnscrypt-proxy mr,
-  /usr/share/dnscrypt-proxy/dnscrypt-resolvers.csv r,
   /usr/local/lib/{@{multiarch}/,}libldns.so* mr,
   /usr/local/lib/{@{multiarch}/,}libsodium.so* mr,
-  /run/dnscrypt-proxy.pid rw,
-  /run/systemd/notify rw,
 }

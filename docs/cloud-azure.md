@@ -1,58 +1,60 @@
 # Azure cloud setup
 
-| Instruction | Screenshot(s) |
-| ----------- | ---------- |
-| 1. Go to https://portal.azure.com/ | |
-| 2. Go to **Azure Active Directory**  | [![step2-thumb]][step2-screen] |
-| 3. Go to **App registrations** and click to **Add**  | [![step3-thumb]][step3-screen]  |
-| 4. Fill out the forms and click **Create** | [![step4-thumb]][step4-screen]  |
-| 5. Click on the app name | [![step5-thumb]][step5-screen]  |
-| 6. Copy and save somewhere the **Application ID** and click on **Keys**. | [![step6-thumb]][step6-screen]  |
-| 7. Fill out the forms and click **Save**. Copy and save somewhere the **Secret ID** (the value) | [![step7-thumb]][step7-screen]  |
-| 8. Go to the **Main menu**, **Azure Active Directory** and click on **Properties**. Copy and save somewhere the **Directory ID**  | [![step8-thumb]][step8-screen]  |
-| 9. Go to the **Main menu**, **Subscriptions** and click on the subscription you want you use in Algo. Copy and save the subscription id from the **Overview** tab | [![step9-thumb]][step9-screen]  |
-| 10. Go to the **Access control (IAM)** tab and click to **Add** | [![step10-thumb]][step10-screen]  |
-| 11. Select a role (Contributor will be sufficient)| [![step11-thumb]][step11-screen] |
-| 12. Next, switch to **Add users** and search by the **App name** (the name from the 4th step) and select it. | [![step12-thumb]][step12-screen]  |
+The easiest way to get started with the Azure CLI is by running it in an Azure Cloud Shell environment through your browser.  
 
-Now you can use Environment Variables:
+Here you can find some information from [the official doc](https://docs.microsoft.com/en-us/cli/azure/get-started-with-azure-cli?view=azure-cli-latest). We put the essential commands together for simplest usage.
 
-* AZURE_CLIENT_ID - from the 6th step
-* AZURE_SECRET - from the 7th step
-* AZURE_TENANT - from the 8th step
-* AZURE_SUBSCRIPTION_ID - from the 9th step
+## Install azure-cli
 
-or create the credentials file ``~/.azure/credentials`:
+- macOS ([link](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-macos?view=azure-cli-latest)):
+  ```bash
+  $ brew update && brew install azure-cli
+  ```
 
-```
-[default]
-client_id=
-secret=
-tenant=
-subscription_id=
-```
-or just pass those values to the Algo script
+- Linux (deb-based) ([link](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-apt?view=azure-cli-latest)):
+  ```bash
+  $ sudo apt-get update && sudo apt-get install \
+      apt-transport-https \
+      lsb-release \
+      software-properties-common \
+      dirmngr -y
+  $ AZ_REPO=$(lsb_release -cs)
+  $ echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | \
+      sudo tee /etc/apt/sources.list.d/azure-cli.list
+  $ sudo apt-key --keyring /etc/apt/trusted.gpg.d/Microsoft.gpg adv \
+      --keyserver packages.microsoft.com \
+      --recv-keys BC528686B50D79E339D3721CEB3E94ADBE1229CF
+  $ sudo apt-get update
+  $ sudo apt-get install azure-cli
+  ```
 
-[step2-screen]: http://i.imgur.com/ENvSupE.png
-[step3-screen]: http://i.imgur.com/sPLQaQe.jpg
-[step4-screen]: http://i.imgur.com/di3xFCM.jpg
-[step5-screen]: http://i.imgur.com/SipQyRA.jpg
-[step6-screen]: http://i.imgur.com/RRTqV7C.jpg
-[step7-screen]: http://i.imgur.com/ZnqJeVv.jpg
-[step8-screen]: http://i.imgur.com/WAS8Ovl.png
-[step9-screen]: http://i.imgur.com/IvTN7o1.jpg
-[step10-screen]: http://i.imgur.com/j6dgo75.png
-[step11-screen]: http://i.imgur.com/NUJ6k7i.jpg
-[step12-screen]: http://i.imgur.com/VZv5qwb.jpg
+- Linux (rpm-based) ([link](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-yum?view=azure-cli-latest)):
+  ```bash
+  $ sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+  $ sudo sh -c 'echo -e "[azure-cli]\nname=Azure CLI\nbaseurl=https://packages.microsoft.com/yumrepos/azure-cli\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/azure-cli.repo'
+  $ sudo yum install azure-cli
+  ```
 
-[step2-thumb]: https://i.imgur.com/ENvSupEm.png
-[step3-thumb]: https://i.imgur.com/sPLQaQem.jpg
-[step4-thumb]: https://i.imgur.com/di3xFCMm.jpg
-[step5-thumb]: https://i.imgur.com/SipQyRAm.jpg
-[step6-thumb]: https://i.imgur.com/RRTqV7Cm.jpg
-[step7-thumb]: https://i.imgur.com/ZnqJeVvm.jpg
-[step8-thumb]: https://i.imgur.com/WAS8Ovlm.png
-[step9-thumb]: https://i.imgur.com/IvTN7o1m.jpg
-[step10-thumb]: https://i.imgur.com/j6dgo75m.png
-[step11-thumb]: https://i.imgur.com/NUJ6k7im.jpg
-[step12-thumb]: https://i.imgur.com/VZv5qwbm.jpg
+- Windows ([link](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-windows?view=azure-cli-latest)):  
+  For Windows the Azure CLI is installed via an MSI, which gives you access to the CLI through the Windows Command Prompt (CMD) or PowerShell. When installing for Windows Subsystem for Linux (WSL), packages are available for your Linux distribution. [Download the MSI installer](https://aka.ms/installazurecliwindows)
+
+If your OS is missing or to get more information see [the official doc](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
+
+
+## Sign in
+
+1. Run the `login` command:
+```bash
+az login
+```  
+
+  If the CLI can open your default browser, it will do so and load a sign-in page.
+
+  Otherwise, you need to open a browser page and follow the instructions on the command line to enter an authorization code after navigating to https://aka.ms/devicelogin in your browser.
+
+2. Sign in with your account credentials in the browser.
+
+There are ways to sign in non-interactively, which are covered in detail in [Sign in with Azure CLI](https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli?view=azure-cli-latest).
+
+
+**Now you are able to deploy an AlgoVPN instance without hassle**
