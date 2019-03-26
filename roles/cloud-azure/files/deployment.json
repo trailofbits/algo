@@ -2,13 +2,7 @@
   "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "AlgoServerName": {
-      "type": "string"
-    },
     "sshKeyData": {
-      "type": "string"
-    },
-    "location": {
       "type": "string"
     },
     "WireGuardPort": {
@@ -22,15 +16,15 @@
     }
   },
   "variables": {
-    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', parameters('AlgoServerName'))]",
-    "subnet1Ref": "[concat(variables('vnetID'),'/subnets/', parameters('AlgoServerName'))]"
+    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', resourceGroup().name)]",
+    "subnet1Ref": "[concat(variables('vnetID'),'/subnets/', resourceGroup().name)]"
   },
   "resources": [
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[parameters('AlgoServerName')]",
-      "location": "[parameters('location')]",
+      "name": "[resourceGroup().name]",
+      "location": "[resourceGroup().location]",
       "properties": {
         "securityRules": [
           {
@@ -95,8 +89,8 @@
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Network/publicIPAddresses",
-      "name": "[parameters('AlgoServerName')]",
-      "location": "[parameters('location')]",
+      "name": "[resourceGroup().name]",
+      "location": "[resourceGroup().location]",
       "properties": {
         "publicIPAllocationMethod": "Static"
       }
@@ -104,8 +98,8 @@
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Network/virtualNetworks",
-      "name": "[parameters('AlgoServerName')]",
-      "location": "[parameters('location')]",
+      "name": "[resourceGroup().name]",
+      "location": "[resourceGroup().location]",
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
@@ -114,7 +108,7 @@
         },
         "subnets": [
           {
-            "name": "[parameters('AlgoServerName')]",
+            "name": "[resourceGroup().name]",
             "properties": {
               "addressPrefix": "10.10.0.0/24"
             }
@@ -125,16 +119,16 @@
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Network/networkInterfaces",
-      "name": "[parameters('AlgoServerName')]",
-      "location": "[parameters('location')]",
+      "name": "[resourceGroup().name]",
+      "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[concat('Microsoft.Network/networkSecurityGroups/', parameters('AlgoServerName'))]",
-        "[concat('Microsoft.Network/publicIPAddresses/', parameters('AlgoServerName'))]",
-        "[concat('Microsoft.Network/virtualNetworks/', parameters('AlgoServerName'))]"
+        "[concat('Microsoft.Network/networkSecurityGroups/', resourceGroup().name)]",
+        "[concat('Microsoft.Network/publicIPAddresses/', resourceGroup().name)]",
+        "[concat('Microsoft.Network/virtualNetworks/', resourceGroup().name)]"
       ],
       "properties": {
         "networkSecurityGroup": {
-          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('AlgoServerName'))]"
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', resourceGroup().name)]"
         },
         "ipConfigurations": [
           {
@@ -142,7 +136,7 @@
             "properties": {
               "privateIPAllocationMethod": "Dynamic",
               "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('AlgoServerName'))]"
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', resourceGroup().name)]"
               },
               "subnet": {
                 "id": "[variables('subnet1Ref')]"
@@ -155,17 +149,17 @@
     {
       "apiVersion": "2016-04-30-preview",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[parameters('AlgoServerName')]",
-      "location": "[parameters('location')]",
+      "name": "[resourceGroup().name]",
+      "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[concat('Microsoft.Network/networkInterfaces/', parameters('AlgoServerName'))]"
+        "[concat('Microsoft.Network/networkInterfaces/', resourceGroup().name)]"
       ],
       "properties": {
         "hardwareProfile": {
           "vmSize": "[parameters('vmSize')]"
         },
         "osProfile": {
-          "computerName": "[parameters('AlgoServerName')]",
+          "computerName": "[resourceGroup().name]",
           "adminUsername": "ubuntu",
           "linuxConfiguration": {
             "disablePasswordAuthentication": true,
@@ -193,7 +187,7 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('AlgoServerName'))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', resourceGroup().name)]"
             }
           ]
         }
@@ -203,7 +197,7 @@
   "outputs": {
     "publicIPAddresses": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses',parameters('AlgoServerName')),providers('Microsoft.Network', 'publicIPAddresses').apiVersions[0]).ipAddress]",
+      "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses',resourceGroup().name),providers('Microsoft.Network', 'publicIPAddresses').apiVersions[0]).ipAddress]",
     }
   }
 }

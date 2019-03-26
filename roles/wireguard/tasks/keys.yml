@@ -20,7 +20,7 @@
 - block:
   - name: Save private keys
     copy:
-      dest: "{{ wireguard_config_path }}/private/{{ item['item'] }}"
+      dest: "{{ wireguard_pki_path }}/private/{{ item['item'] }}"
       content: "{{ item['stdout'] }}"
       mode: "0600"
     no_log: true
@@ -39,7 +39,7 @@
   when: wg_genkey.changed
 
 - name: Generate public keys
-  shell: echo "{{ lookup('file', wireguard_config_path + '/private/' + item) }}" | wg pubkey
+  shell: echo "{{ lookup('file', wireguard_pki_path + '/private/' + item) }}" | wg pubkey
   register: wg_pubkey
   changed_when: false
   args:
@@ -50,7 +50,7 @@
 
 - name: Save public keys
   copy:
-    dest: "{{ wireguard_config_path }}/public/{{ item['item'] }}"
+    dest: "{{ wireguard_pki_path }}/public/{{ item['item'] }}"
     content: "{{ item['stdout'] }}"
     mode: "0600"
   no_log: true

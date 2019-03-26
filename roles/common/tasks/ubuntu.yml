@@ -1,24 +1,4 @@
 ---
-- block:
-  - name: Ubuntu | Install prerequisites
-    apt:
-      name: "{{ item }}"
-      update_cache: true
-    with_items:
-      - python2.7
-      - sudo
-
-  - name: Ubuntu | Configure defaults
-    alternatives:
-      name: python
-      link: /usr/bin/python
-      path: /usr/bin/python2.7
-      priority: 1
-    tags:
-      - update-alternatives
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
-
 - name: Gather facts
   setup:
 
@@ -71,8 +51,6 @@
     dest: /etc/systemd/network/10-algo-lo100.network
   notify:
     - restart systemd-networkd
-  tags:
-    - always
 
 - name: systemd services enabled and started
   systemd:
@@ -83,12 +61,8 @@
   with_items:
     - systemd-networkd
     - systemd-resolved
-  tags:
-    - always
 
 - meta: flush_handlers
-  tags:
-    - always
 
 - name: Check apparmor support
   shell: apparmor_status
@@ -98,6 +72,9 @@
 - set_fact:
     apparmor_enabled: true
   when: '"profiles are in enforce mode" in apparmor_status.stdout'
+
+- name: Gather additional facts
+  import_tasks: facts.yml
 
 - set_fact:
     tools:
@@ -114,23 +91,24 @@
         value: 1
       - item: net.ipv4.conf.all.forwarding
         value: 1
-      - item: net.ipv6.conf.all.forwarding
+      - item: "{{ 'net.ipv6.conf.all.forwarding' if ipv6_support else none }}"
         value: 1
-  tags:
-    - always
 
 - name: Install tools
-  package: name="{{ item }}" state=present
-  with_items:
-    - "{{ tools|default([]) }}"
-  tags:
-    - always
-
-- name: Install headers
   apt:
     name: "{{ item }}"
     state: present
-  when: install_headers
+    update_cache: true
   with_items:
-    - linux-headers-generic
-    - "linux-headers-{{ ansible_kernel }}"
+    - "{{ tools|default([]) }}"
+
+- name: Install headers
+  apt:
+    name:
+      - linux-headers-generic
+      - "linux-headers-{{ ansible_kernel }}"
+    state: present
+  when: install_headers
+
+- include_tasks: iptables.yml
+  tags: iptables
