@@ -23,6 +23,11 @@
       owner: strongswan
       group: "{{ root_group|default('root') }}"
       mode: "0600"
+    - src: charon.conf.j2
+      dest: "strongswan.d/charon.conf"
+      owner: root
+      group: "{{ root_group|default('root') }}"
+      mode: "0644"
   notify:
     - restart strongswan
 
