@@ -77,4 +77,4 @@
         {% if _use_existing_eip.user_input is defined and _algo_region.user_input != "" %}
         {{ available_eip_addresses[_use_existing_eip.user_input | int -1 ]['allocation_id'] }}
         {%- else %}{% endif %}
-  when: use_existing_eip is undefined
+  when: use_existing_eip
