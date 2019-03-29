@@ -1,10 +1,10 @@
 # Deploy from script or cloud-init
 
-You can use `install.sh` to prepare the environment and deploy AlgoVPN on the local Ubuntu server in one shot using cloud-init or run the script directly on the server.
+You can use `install.sh` to prepare the environment and deploy AlgoVPN on the local Ubuntu server in one shot using cloud-init or run the script directly on the server. The script doesn't configure any parameters in your cloud, so it's on your own to configure related [firewall rules](faq.md#what-inbound-ports-are-used), a floating ip address and other resources you may need.
 
 ## Cloud init deployment
 
-You can copy-paste the snippet bellow to the user data (cloud-init or startup script) field when you creating a new server. For now it is only possible for [DigitalOcean](https://www.digitalocean.com/docs/droplets/resources/metadata/), Amazon [EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) and [Lightsail](https://lightsail.aws.amazon.com/ls/docs/en/articles/lightsail-how-to-configure-server-additional-data-shell-script), [Google Cloud](https://cloud.google.com/compute/docs/startupscript) and [Azure](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/using-cloud-init).
+You can copy-paste the snippet below to the user data (cloud-init or startup script) field when creating a new server. For now it is only possible for [DigitalOcean](https://www.digitalocean.com/docs/droplets/resources/metadata/), Amazon [EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) and [Lightsail](https://lightsail.aws.amazon.com/ls/docs/en/articles/lightsail-how-to-configure-server-additional-data-shell-script), [Google Cloud](https://cloud.google.com/compute/docs/startupscript) and [Azure](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/using-cloud-init).
 
 ```
 #!/bin/bash
