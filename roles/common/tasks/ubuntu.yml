@@ -86,6 +86,7 @@
       - iptables-persistent
       - cgroup-tools
       - openssl
+      - gnupg2
     sysctl:
       - item: net.ipv4.ip_forward
         value: 1
