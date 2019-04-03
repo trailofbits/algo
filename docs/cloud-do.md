@@ -96,9 +96,7 @@ For more, see [Scripted Deployment](deploy-from-ansible.md).
 
 ## Using the DigitalOcean firewall with Algo
 
-Many cloud providers include the option to configure an external firewall between the Internet and your cloud server. For some providers this is mandatory and Algo will configure it for you, but for DigitalOcean the external firewall is optional.
-
-An Algo VPN runs its own firewall and doesn't require an external firewall, but you might wish to use the DigitalOcean firewall for example to limit the addresses which can connect to your Algo VPN over SSH, or perhaps to block SSH altogether.
+Many cloud providers include the option to configure an external firewall between the Internet and your cloud server. For some providers this is mandatory and Algo will configure it for you, but for DigitalOcean the external firewall is optional. See [AlgoVPN and Firewalls](/docs/firewalls.md) for more information.
 
 To configure the DigitalOcean firewall, go to **Networking**, **Firewalls**, and choose **Create Firewall**.
 
