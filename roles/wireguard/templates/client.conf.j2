@@ -7,6 +7,6 @@ DNS = {{ wireguard_dns_servers }}
 
 [Peer]
 PublicKey = {{ lookup('file', wireguard_pki_path + '/public/' + IP_subject_alt_name) }}
-AllowedIPs = 0.0.0.0/0, ::/0
+AllowedIPs = 0.0.0.0/0{{ ', ::/0'  if ipv6_support else '' }}
 Endpoint = {{ IP_subject_alt_name }}:{{ wireguard_port }}
 {{ 'PersistentKeepalive = ' + wireguard_PersistentKeepalive|string if wireguard_PersistentKeepalive > 0 else '' }}
