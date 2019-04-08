@@ -97,11 +97,9 @@
 
 - name: Install tools
   apt:
-    name: "{{ item }}"
+    name: "{{ tools|default([]) }}"
     state: present
     update_cache: true
-  with_items:
-    - "{{ tools|default([]) }}"
 
 - name: Install headers
   apt:

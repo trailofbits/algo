@@ -1,8 +1,6 @@
 ---
 ipsec_config_path: "configs/{{ IP_subject_alt_name }}/ipsec/"
 ipsec_pki_path: "{{ ipsec_config_path }}/.pki/"
-strongswan_network: 10.19.48.0/24
-strongswan_network_ipv6: 'fd9d:bc11:4020::/48'
 strongswan_shell: /usr/sbin/nologin
 strongswan_home: /var/lib/strongswan
 BetweenClients_DROP: true

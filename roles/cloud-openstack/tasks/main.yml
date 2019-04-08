@@ -3,87 +3,80 @@
     msg: "OpenStack credentials are not set. Download it from the OpenStack dashboard->Compute->API Access and source it in the shell (eg: source /tmp/dhc-openrc.sh)"
   when: lookup('env', 'OS_AUTH_URL') == ""
 
+- name: Build python virtual environment
+  import_tasks: venv.yml
+
 - block:
-  - name: Build python virtual environment
-    import_tasks: venv.yml
+  - name: Security group created
+    os_security_group:
+      state: "{{ state|default('present') }}"
+      name: "{{ algo_server_name }}-security_group"
+      description: AlgoVPN security group
+    register: os_security_group
 
-  - block:
-    - name: Security group created
-      os_security_group:
-        state: "{{ state|default('present') }}"
-        name: "{{ algo_server_name }}-security_group"
-        description: AlgoVPN security group
-      register: os_security_group
+  - name: Security rules created
+    os_security_group_rule:
+      state: "{{ state|default('present') }}"
+      security_group: "{{ os_security_group.id }}"
+      protocol: "{{ item.proto }}"
+      port_range_min: "{{ item.port_min }}"
+      port_range_max: "{{ item.port_max }}"
+      remote_ip_prefix: "{{ item.range }}"
+    with_items:
+      - { proto: tcp, port_min: 22, port_max: 22, range: 0.0.0.0/0 }
+      - { proto: icmp, port_min: -1, port_max: -1, range: 0.0.0.0/0 }
+      - { proto: udp, port_min: 4500, port_max: 4500, range: 0.0.0.0/0 }
+      - { proto: udp, port_min: 500, port_max: 500, range: 0.0.0.0/0 }
+      - { proto: udp, port_min: "{{ wireguard_port }}", port_max: "{{ wireguard_port }}", range: 0.0.0.0/0 }
 
-    - name: Security rules created
-      os_security_group_rule:
-        state: "{{ state|default('present') }}"
-        security_group: "{{ os_security_group.id }}"
-        protocol: "{{ item.proto }}"
-        port_range_min: "{{ item.port_min }}"
-        port_range_max: "{{ item.port_max }}"
-        remote_ip_prefix: "{{ item.range }}"
-      with_items:
-        - { proto: tcp, port_min: 22, port_max: 22, range: 0.0.0.0/0 }
-        - { proto: icmp, port_min: -1, port_max: -1, range: 0.0.0.0/0 }
-        - { proto: udp, port_min: 4500, port_max: 4500, range: 0.0.0.0/0 }
-        - { proto: udp, port_min: 500, port_max: 500, range: 0.0.0.0/0 }
-        - { proto: udp, port_min: "{{ wireguard_port }}", port_max: "{{ wireguard_port }}", range: 0.0.0.0/0 }
+  - name: Keypair created
+    os_keypair:
+      state: "{{ state|default('present') }}"
+      name: "{{ SSH_keys.comment|regex_replace('@', '_') }}"
+      public_key_file: "{{ SSH_keys.public }}"
+    register: os_keypair
 
-    - name: Keypair created
-      os_keypair:
-        state: "{{ state|default('present') }}"
-        name: "{{ SSH_keys.comment|regex_replace('@', '_') }}"
-        public_key_file: "{{ SSH_keys.public }}"
-      register: os_keypair
+  - name: Gather facts about flavors
+    os_flavor_facts:
+      ram: "{{ cloud_providers.openstack.flavor_ram }}"
 
-    - name: Gather facts about flavors
-      os_flavor_facts:
-        ram: "{{ cloud_providers.openstack.flavor_ram }}"
+  - name: Gather facts about images
+    os_image_facts:
+      image: "{{ cloud_providers.openstack.image }}"
 
-    - name: Gather facts about images
-      os_image_facts:
-        image: "{{ cloud_providers.openstack.image }}"
+  - name: Gather facts about public networks
+    os_networks_facts:
 
-    - name: Gather facts about public networks
-      os_networks_facts:
+  - name: Set the network as a fact
+    set_fact:
+      public_network_id: "{{ item.id }}"
+    when:
+      - item['router:external']|default(omit)
+      - item['admin_state_up']|default(omit)
+      - item['status'] == 'ACTIVE'
+    with_items: "{{ openstack_networks }}"
 
-    - name: Set the network as a fact
-      set_fact:
-        public_network_id: "{{ item.id }}"
-      when:
-        - item['router:external']|default(omit)
-        - item['admin_state_up']|default(omit)
-        - item['status'] == 'ACTIVE'
-      with_items: "{{ openstack_networks }}"
+  - name: Set facts
+    set_fact:
+      flavor_id: "{{ (openstack_flavors | sort(attribute='ram'))[0]['id'] }}"
+      image_id: "{{ openstack_image['id'] }}"
+      keypair_name: "{{ os_keypair.key.name }}"
+      security_group_name: "{{ os_security_group['secgroup']['name'] }}"
 
-    - name: Set facts
-      set_fact:
-        flavor_id: "{{ (openstack_flavors | sort(attribute='ram'))[0]['id'] }}"
-        image_id: "{{ openstack_image['id'] }}"
-        keypair_name: "{{ os_keypair.key.name }}"
-        security_group_name: "{{ os_security_group['secgroup']['name'] }}"
+  - name: Server created
+    os_server:
+      state: "{{ state|default('present') }}"
+      name: "{{ algo_server_name }}"
+      image: "{{ image_id }}"
+      flavor: "{{ flavor_id }}"
+      key_name: "{{ keypair_name }}"
+      security_groups: "{{ security_group_name }}"
+      nics:
+        - net-id: "{{ public_network_id }}"
+    register: os_server
 
-    - name: Server created
-      os_server:
-        state: "{{ state|default('present') }}"
-        name: "{{ algo_server_name }}"
-        image: "{{ image_id }}"
-        flavor: "{{ flavor_id }}"
-        key_name: "{{ keypair_name }}"
-        security_groups: "{{ security_group_name }}"
-        nics:
-          - net-id: "{{ public_network_id }}"
-      register: os_server
-
-    - set_fact:
-        cloud_instance_ip: "{{ os_server['openstack']['public_v4'] }}"
-        ansible_ssh_user: ubuntu
-    environment:
-      PYTHONPATH: "{{ openstack_venv }}/lib/python2.7/site-packages/"
-
-  rescue:
-  - debug: var=fail_hint
-    tags: always
-  - fail:
-    tags: always
+  - set_fact:
+      cloud_instance_ip: "{{ os_server['openstack']['public_v4'] }}"
+      ansible_ssh_user: ubuntu
+  environment:
+    PYTHONPATH: "{{ openstack_venv }}/lib/python2.7/site-packages/"

@@ -1,3 +1,4 @@
+---
 - block:
   - name: Include prompts
     import_tasks: prompts.yml
@@ -29,8 +30,3 @@
 
   environment:
     VULTR_API_CONFIG: "{{ algo_vultr_config }}"
-  rescue:
-    - debug: var=fail_hint
-      tags: always
-    - fail:
-      tags: always
