@@ -1,6 +1,6 @@
 # Deploy from script or cloud-init
 
-You can use `install.sh` to prepare the environment and deploy AlgoVPN on the local Ubuntu server in one shot using cloud-init or run the script directly on the server. The script doesn't configure any parameters in your cloud, so it's on your own to configure related [firewall rules](faq.md#what-inbound-ports-are-used), a floating ip address and other resources you may need.
+You can use `install.sh` to prepare the environment and deploy AlgoVPN on the local Ubuntu server in one shot using cloud-init or run the script directly on the server. The script doesn't configure any parameters in your cloud, so it's on your own to configure related [firewall rules](/docs/firewalls.md), a floating ip address and other resources you may need.
 
 ## Cloud init deployment
 
