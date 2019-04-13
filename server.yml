@@ -38,8 +38,7 @@
 
       - block:
         - name: Dump the configuration
-          local_action:
-            module: copy
+          copy:
             dest: "configs/{{ IP_subject_alt_name }}/.config.yml"
             content: |
               server: {{ 'localhost' if inventory_hostname == 'localhost' else inventory_hostname }}
@@ -59,8 +58,12 @@
               IP_subject_alt_name: {{ IP_subject_alt_name }}
               ipsec_enabled: {{ ipsec_enabled }}
               wireguard_enabled: {{ wireguard_enabled }}
-              {% if tests|default(false)|bool %}ca_password: {{ CA_password }}{% endif %}
+              {% if tests|default(false)|bool %}
+              ca_password: {{ CA_password }}
+              p12_password: {{ p12_export_password }}
+              {% endif %}
           become: false
+          delegate_to: localhost
 
         - name: Create a symlink if deploying to localhost
           file:

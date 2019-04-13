@@ -8,13 +8,21 @@
   package: name="{{ item }}" state=present
   with_items:
     - "{{ prerequisites }}"
+  register: result
+  until: result is succeeded
+  retries: 10
+  delay: 3
 
 - name: Install strongSwan
   package: name=strongswan state=present
+  register: result
+  until: result is succeeded
+  retries: 10
+  delay: 3
 
 - name: Setup the ipsec config
   template:
-    src: "roles/vpn/templates/client_ipsec.conf.j2"
+    src: "roles/strongswan/templates/client_ipsec.conf.j2"
     dest: "{{ configs_prefix }}/ipsec.{{ IP_subject_alt_name }}.conf"
     mode: '0644'
   with_items:
@@ -24,7 +32,7 @@
 
 - name: Setup the ipsec secrets
   template:
-    src: "roles/vpn/templates/client_ipsec.secrets.j2"
+    src: "roles/strongswan/templates/client_ipsec.secrets.j2"
     dest: "{{ configs_prefix }}/ipsec.{{ IP_subject_alt_name }}.secrets"
     mode: '0600'
   with_items:

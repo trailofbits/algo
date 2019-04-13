@@ -1,7 +1,7 @@
 ---
-- name: Display the invocation environment
-  local_action:
-    module: shell
+- block:
+  - name: Display the invocation environment
+    shell: >
       ./algo-showenv.sh \
         'algo_provider "{{ algo_provider }}"' \
         'algo_ondemand_cellular "{{ algo_ondemand_cellular }}"' \
@@ -13,17 +13,20 @@
         'wireguard_enabled "{{ wireguard_enabled }}"' \
         'dns_encryption "{{ dns_encryption }}"' \
         > /dev/tty
-  tags: debug
+    tags: debug
 
-- name: Install the requirements
-  local_action:
-    module: pip
-    state: latest
-    name:
-      - pyOpenSSL
-      - jinja2==2.8
-      - segno
-  tags: always
+  - name: Install the requirements
+    pip:
+      state: latest
+      name:
+        - pyOpenSSL
+        - jinja2==2.8
+        - segno
+    tags:
+      - always
+      - skip_ansible_lint
+  delegate_to: localhost
+  become: false
 
 - name: Generate the SSH private key
   openssl_privatekey:
