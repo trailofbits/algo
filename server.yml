@@ -37,16 +37,6 @@
         tags: ssh_tunneling
 
       - block:
-        - name: Delete the CA key
-          local_action:
-            module: file
-            path: "{{ ipsec_pki_path }}/private/cakey.pem"
-            state: absent
-          become: false
-          when:
-            - ipsec_enabled
-            - not algo_store_cakey
-
         - name: Dump the configuration
           local_action:
             module: copy
