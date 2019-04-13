@@ -209,3 +209,13 @@
     - gencrl.changed
   notify:
     - rereadcrls
+
+- name: Delete the CA key
+  local_action:
+    module: file
+    path: "{{ ipsec_pki_path }}/private/cakey.pem"
+    state: absent
+  become: false
+  when:
+    - ipsec_enabled
+    - not algo_store_cakey
