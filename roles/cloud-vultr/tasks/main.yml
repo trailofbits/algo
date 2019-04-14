@@ -9,6 +9,24 @@
       ssh_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
     register: ssh_key
 
+  - name: Creating a firewall group
+    vr_firewall_group:
+      name: "{{ algo_server_name }}"
+ 
+  - name: Creating firewall rules
+    vr_firewall_rule:
+      group: "{{ algo_server_name }}"
+      protocol: udp
+      port: 500
+    vr_firewall_rule:
+      group: "{{ algo_server_name }}"
+      protocol: udp
+      port: 4500
+    vr_firewall_rule:
+      group: "{{ algo_server_name }}"
+      protocol: udp
+      port: 51820
+ 
   - name: Creating a server
     vultr_server:
       name: "{{ algo_server_name }}"
@@ -16,6 +34,7 @@
       os: "{{ cloud_providers.vultr.os }}"
       plan: "{{ cloud_providers.vultr.size }}"
       region: "{{ algo_vultr_region }}"
+      firewall_group: "{{ algo_server_name }}"
       state: started
       tag: Environment:Algo
       ssh_key: "{{ ssh_key.vultr_ssh_key.name }}"
@@ -23,7 +42,7 @@
       auto_backup_enabled: false
       notify_activate: false
     register: vultr_server
-
+    
   - set_fact:
       cloud_instance_ip: "{{ vultr_server.vultr_server.v4_main_ip }}"
       ansible_ssh_user: root
