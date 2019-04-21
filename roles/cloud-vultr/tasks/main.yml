@@ -4,17 +4,17 @@
 
 - block:
   - name: Upload the SSH key
-    vultr_ssh_key:
+    vr_ssh_key:
       name: "{{ SSH_keys.comment }}"
       ssh_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
     register: ssh_key
 
   - name: Creating a firewall group
-    vultr_firewall_group:
+    vr_firewall_group:
       name: "{{ algo_server_name }}"
  
   - name: Creating firewall rules
-    vultr_firewall_rule:
+    vr_firewall_rule:
       group: "{{ algo_server_name }}"
       protocol: udp
       port: "{{ item.port }}"
@@ -28,7 +28,7 @@
     - { port: 51820, cidr: "::/0" }
      
   - name: Creating a server
-    vultr_server:
+    vr_server:
       name: "{{ algo_server_name }}"
       hostname: "{{ algo_server_name }}"
       os: "{{ cloud_providers.vultr.os }}"
