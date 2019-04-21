@@ -54,17 +54,17 @@ custom_scripts:
 matrix:
   fast_finish: true
   include:
-    # - stage: Tests
-    #   name: code checks and linters
-    #   addons:
-    #     apt:
-    #       packages:
-    #         - shellcheck
-    #   script:
-    #     - pip install ansible-lint
-    #     - shellcheck algo install.sh
-    #     - ansible-playbook main.yml --syntax-check
-    #     - ansible-lint -v *.yml
+    - stage: Tests
+      name: code checks and linters
+      addons:
+        apt:
+          packages:
+            - shellcheck
+      script:
+        - pip install ansible-lint
+        - shellcheck algo install.sh
+        - ansible-playbook main.yml --syntax-check
+        - ansible-lint -v *.yml
 
     - stage: Deploy
       name: local deployment from docker
