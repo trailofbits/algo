@@ -27,8 +27,8 @@
     - { protocol: udp, port: 500, ip: v6, cidr: "::/0" }
     - { protocol: udp, port: 4500, ip: v4, cidr: "0.0.0.0/0" }
     - { protocol: udp, port: 4500, ip: v6, cidr: "::/0" }
-    - { protocol: udp, port: 51820, ip: v4, cidr: "0.0.0.0/0" }
-    - { protocol: udp, port: 51820, ip: v6, cidr: "::/0" }
+    - { protocol: udp, port: "{{ wireguard_port }}", ip: v4, cidr: "0.0.0.0/0" }
+    - { protocol: udp, port: "{{ wireguard_port }}", ip: v6, cidr: "::/0" }
      
   - name: Creating a server
     vr_server:
