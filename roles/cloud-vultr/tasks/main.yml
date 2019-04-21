@@ -10,23 +10,23 @@
     register: ssh_key
 
   - name: Creating a firewall group
-    vr_firewall_group:
+    vultr_firewall_group:
       name: "{{ algo_server_name }}"
  
   - name: Creating firewall rules
-    vr_firewall_rule:
+    vultr_firewall_rule:
       group: "{{ algo_server_name }}"
       protocol: udp
-      port: 500
-    vr_firewall_rule:
-      group: "{{ algo_server_name }}"
-      protocol: udp
-      port: 4500
-    vr_firewall_rule:
-      group: "{{ algo_server_name }}"
-      protocol: udp
-      port: 51820
- 
+      port: "{{ item.port }}"
+      cidr: "{{ item.cidr }}"
+    with_items:
+    - { port: 500, cidr: "0.0.0.0/0" }
+    - { port: 500, cidr: "::/0" }
+    - { port: 4500, cidr: "0.0.0.0/0" }
+    - { port: 4500, cidr: "::/0" }
+    - { port: 51820, cidr: "0.0.0.0/0" }
+    - { port: 51820, cidr: "::/0" }
+     
   - name: Creating a server
     vultr_server:
       name: "{{ algo_server_name }}"
