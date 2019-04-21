@@ -18,14 +18,15 @@
       group: "{{ algo_server_name }}"
       protocol: udp
       port: "{{ item.port }}"
+      ip_version: "{{ item.ip }}"
       cidr: "{{ item.cidr }}"
     with_items:
-    - { port: 500, cidr: "0.0.0.0/0" }
-    - { port: 500, cidr: "::/0" }
-    - { port: 4500, cidr: "0.0.0.0/0" }
-    - { port: 4500, cidr: "::/0" }
-    - { port: 51820, cidr: "0.0.0.0/0" }
-    - { port: 51820, cidr: "::/0" }
+    - { port: 500, ip: v4, cidr: "0.0.0.0/0" }
+    - { port: 500, ip: v6, cidr: "::/0" }
+    - { port: 4500, ip: v4, cidr: "0.0.0.0/0" }
+    - { port: 4500, ip: v6, cidr: "::/0" }
+    - { port: 51820, ip: v4, cidr: "0.0.0.0/0" }
+    - { port: 51820, ip: v6, cidr: "::/0" }
      
   - name: Creating a server
     vr_server:
