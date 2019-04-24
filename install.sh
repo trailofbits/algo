@@ -36,11 +36,9 @@ installRequirements() {
 }
 
 getAlgo() {
-  [ ! -d "algo" ] && git clone "https://github.com/${REPO_SLUG}" algo
+  [ ! -d "algo" ] && git clone "https://github.com/${REPO_SLUG}" -b "${REPO_BRANCH}" algo
   cd algo
-
-  git checkout "${REPO_BRANCH}"
-
+  
   python -m virtualenv --python="$(command -v python2)" .venv
   # shellcheck source=/dev/null
   . .venv/bin/activate
