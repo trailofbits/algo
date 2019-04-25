@@ -20,7 +20,7 @@
       - { name: Google Compute Engine, alias: gce }
       - { name: Scaleway, alias: scaleway}
       - { name: OpenStack (DreamCompute optimised), alias: openstack }
-      - { name: Install to existing Ubuntu 18.04 server (Advanced), alias: local }
+      - { name: Install to existing Ubuntu 18.04 or 19.04 server (Advanced), alias: local }
   vars_files:
     - config.cfg
 

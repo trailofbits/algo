@@ -4,7 +4,7 @@ You can use Algo to configure a local server as an AlgoVPN rather than create an
 
 Install the Algo scripts on your server and follow the normal installation instructions, then choose:
 ```
-Install to existing Ubuntu 18.04 server (Advanced)
+Install to existing Ubuntu 18.04 or 19.04 server (Advanced)
 ```
 Make sure your server is running the operating system specified.
 
