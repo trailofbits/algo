@@ -1,0 +1,3 @@
+skip_list:
+  - '204'
+verbosity: 1
