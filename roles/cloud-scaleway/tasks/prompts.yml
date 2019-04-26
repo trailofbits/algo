@@ -30,5 +30,5 @@
     algo_scaleway_org: "{{ scaleway_org | default(_scaleway_org.user_input|default(omit)) }}"
     algo_region: >-
       {% if region is defined %}{{ region }}
-      {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ scaleway_regions[_algo_region.user_input | int -1 ]['alias'] }}
+      {%- elif _algo_region.user_input %}{{ scaleway_regions[_algo_region.user_input | int -1 ]['alias'] }}
       {%- else %}{{ scaleway_regions.0.alias }}{% endif %}

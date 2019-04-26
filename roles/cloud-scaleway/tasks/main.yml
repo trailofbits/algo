@@ -84,7 +84,7 @@
         organization: "{{ organization_id }}"
         name: "{{ algo_server_name }}"
         image: "{{ image_id }}"
-        commercial_type: "{{cloud_providers.scaleway.size }}"
+        commercial_type: "{{ cloud_providers.scaleway.size }}"
         enable_ipv6: true
         boot_type: local
         tags:

@@ -2,4 +2,5 @@
 - debug:
     var: fail_hint
 
-- fail:
+- name: Fail the installation
+  fail:

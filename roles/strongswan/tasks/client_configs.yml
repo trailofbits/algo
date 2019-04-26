@@ -1,8 +1,13 @@
 ---
 - name: Register p12 PayloadContent
-  shell: cat private/{{ item }}.p12 | base64
+  shell: |
+    set -o pipefail
+    cat private/{{ item }}.p12 |
+    base64
   register:  PayloadContent
+  changed_when: false
   args:
+    executable: bash
     chdir: "{{ ipsec_pki_path }}"
   with_items: "{{ users }}"
 

@@ -2,6 +2,7 @@
 - name: Check the system
   raw: uname -a
   register: OS
+  changed_when: false
   tags:
     - update-users
 
@@ -17,7 +18,7 @@
 
 - name: Sysctl tuning
   sysctl: name="{{ item.item }}" value="{{ item.value }}"
-  when: item.item != ""
+  when: item.item
   with_items:
     - "{{ sysctl|default([]) }}"
   tags:

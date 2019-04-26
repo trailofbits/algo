@@ -2,7 +2,7 @@
   service: name=strongswan state=restarted
 
 - name: daemon-reload
-  shell: systemctl daemon-reload
+  systemd: daemon_reload=true
 
 - name: restart apparmor
   service: name=apparmor state=restarted

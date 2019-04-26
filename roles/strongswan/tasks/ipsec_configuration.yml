@@ -32,8 +32,13 @@
     - restart strongswan
 
 - name: Get loaded plugins
-  shell: >
-    find {{ config_prefix|default('/') }}etc/strongswan.d/charon/ -type f -name '*.conf' -exec basename {} \; | cut -f1 -d.
+  shell: |
+    set -o pipefail
+    find {{ config_prefix|default('/') }}etc/strongswan.d/charon/ -type f -name '*.conf' -exec basename {} \; |
+    cut -f1 -d.
+  changed_when: false
+  args:
+    executable: bash
   register: strongswan_plugins
 
 - name: Disable unneeded plugins

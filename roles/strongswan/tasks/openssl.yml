@@ -2,14 +2,19 @@
 - block:
   - name: Set subjectAltName as a fact
     set_fact:
-      subjectAltName: "{{ subjectAltName_IP }}{% if ipv6_support %},IP:{{ ansible_default_ipv6['address'] }}{% endif %}{% if domain and subjectAltName_DNS %},DNS:{{ subjectAltName_DNS }}{% endif %}"
+      subjectAltName: >-
+        {{ subjectAltName_IP }}
+        {%- if ipv6_support -%},IP:{{ ansible_default_ipv6['address'] }}{%- endif -%}
+        {%- if domain and subjectAltName_DNS -%},DNS:{{ subjectAltName_DNS }}{%- endif -%}
     tags: always
+
+  - debug: var=subjectAltName
 
   - name: Ensure the pki directory does not exist
     file:
       dest: "{{ ipsec_pki_path }}"
       state: absent
-    when: keys_clean_all|bool == True
+    when: keys_clean_all|bool
 
   - name: Ensure the pki directories exist
     file:
@@ -182,7 +187,7 @@
       awk '{print $5}' |
       sed 's/\/CN=//g'
     args:
-      chdir: "{{ ipsec_pki_path}}"
+      chdir: "{{ ipsec_pki_path }}"
     register: valid_certs
 
   - name: Revoke non-existing users
@@ -228,11 +233,11 @@
     - rereadcrls
 
 - name: Delete the CA key
-  local_action:
-    module: file
+  file:
     path: "{{ ipsec_pki_path }}/private/cakey.pem"
     state: absent
   become: false
+  delegate_to: localhost
   when:
     - ipsec_enabled
     - not algo_store_cakey

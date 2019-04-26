@@ -9,14 +9,14 @@
   - set_fact:
       algo_region: >-
         {% if region is defined %}{{ region }}
-        {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ azure_regions[_algo_region.user_input | int -1 ]['name'] }}
+        {%- elif _algo_region.user_input %}{{ azure_regions[_algo_region.user_input | int -1 ]['name'] }}
         {%- else %}{{ azure_regions[default_region | int - 1]['name'] }}{% endif %}
 
   - name: Create AlgoVPN Server
     azure_rm_deployment:
       state: present
       deployment_name: "{{ algo_server_name }}"
-      template: "{{ lookup('file', 'deployment.json') }}"
+      template: "{{ lookup('file', role_path + '/files/deployment.json') }}"
       secret: "{{ secret }}"
       tenant: "{{ tenant }}"
       client_id: "{{ client_id }}"

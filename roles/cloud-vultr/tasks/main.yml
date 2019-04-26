@@ -1,16 +1,16 @@
 ---
-- block:
-  - name: Include prompts
-    import_tasks: prompts.yml
+- name: Include prompts
+  import_tasks: prompts.yml
 
+- block:
   - name: Upload the SSH key
-    vr_ssh_key:
+    vultr_ssh_key:
       name: "{{ SSH_keys.comment }}"
       ssh_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
     register: ssh_key
 
   - name: Creating a server
-    vr_server:
+    vultr_server:
       name: "{{ algo_server_name }}"
       hostname: "{{ algo_server_name }}"
       os: "{{ cloud_providers.vultr.os }}"

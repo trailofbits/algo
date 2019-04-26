@@ -17,7 +17,8 @@
 - name: Gather additional facts
   import_tasks: facts.yml
 
-- set_fact:
+- name: Set OS specific facts
+  set_fact:
     config_prefix: "/usr/local/"
     strongswan_shell: /usr/sbin/nologin
     strongswan_home: /var/empty
@@ -73,5 +74,6 @@
   shell: >
     kldstat -n ipfw.ko || kldload ipfw ; sysctl net.inet.ip.fw.enable=0 &&
     bash /etc/rc.firewall && sysctl net.inet.ip.fw.enable=1
+  changed_when: false
 
 - meta: flush_handlers
