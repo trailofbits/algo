@@ -10,7 +10,7 @@
     set_fact:
       algo_do_region: >-
         {% if region is defined %}{{ region }}
-        {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ do_regions[_algo_region.user_input | int -1 ]['slug'] }}
+        {%- elif _algo_region.user_input %}{{ do_regions[_algo_region.user_input | int -1 ]['slug'] }}
         {%- else %}{{ do_regions[default_region | int - 1]['slug'] }}{% endif %}
       public_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
 
@@ -22,7 +22,7 @@
           api_token: "{{ algo_do_token }}"
           name: "{{ SSH_keys.comment }}"
         register: ssh_keys
-        until: ssh_keys.changed != true
+        until: not ssh_keys.changed
         retries: 10
         delay: 1
 
@@ -83,7 +83,7 @@
           api_token: "{{ algo_do_token }}"
           name: "{{ SSH_keys.comment }}"
         register: ssh_keys
-        until: ssh_keys.changed != true
+        until: not ssh_keys.changed
         retries: 10
         delay: 1
 
