@@ -64,7 +64,7 @@ matrix:
         - pip install ansible-lint
         - shellcheck algo install.sh
         - ansible-playbook main.yml --syntax-check
-        - ansible-lint -v *.yml
+        - ansible-lint -v roles/*/*/*.yml playbooks/*.yml *.yml
 
     - stage: Deploy
       name: local deployment from docker
