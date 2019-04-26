@@ -12,7 +12,7 @@
   - name: Creating a firewall group
     vultr_firewall_group:
       name: "{{ algo_server_name }}"
-      
+
   - name: Creating firewall rules
     vultr_firewall_rule:
       group: "{{ algo_server_name }}"
@@ -29,7 +29,7 @@
     - { protocol: udp, port: 4500, ip: v6, cidr: "::/0" }
     - { protocol: udp, port: "{{ wireguard_port }}", ip: v4, cidr: "0.0.0.0/0" }
     - { protocol: udp, port: "{{ wireguard_port }}", ip: v6, cidr: "::/0" }
-    
+
   - name: Creating a server
     vultr_server:
       name: "{{ algo_server_name }}"
@@ -45,7 +45,7 @@
       auto_backup_enabled: false
       notify_activate: false
     register: vultr_server
-    
+
   - set_fact:
       cloud_instance_ip: "{{ vultr_server.vultr_server.v4_main_ip }}"
       ansible_ssh_user: root
