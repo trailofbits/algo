@@ -75,7 +75,7 @@ matrix:
       env: DEPLOY=docker
       before_install: *provisioning
       before_script:
-        - docker build -t travis/algo .
+        - make docker-build
         - ./tests/local-deploy.sh
         - ./tests/update-users.sh
       script: *tests

@@ -50,6 +50,15 @@ $ docker run --cap-drop=all -it \
 
 You can use the Dockerfile provided in this repository as-is, or modify it to suit your needs. Further instructions on building an image can be found in the [Docker engine](https://docs.docker.com/engine/) documents.
 
+## Deploying an Algo Server with a Docker Makefile
+
+A `Makefile` is included as a convenience for Docker users which aims to simplify some of the command syntax. 
+**This has not been tested in a Windows environment.**
+
+1. From the project's root run `make docker-build`. This builds a Docker image labeled `trailofbits/algo:latest`. These values can be changed in the `Makefile` itself.
+2. Run `make docker-deploy`. By default this will use the given copy of `config.cfg` and populate the project's root `~/configs/` directory with your client configuration data. If you would rather use a local directory and `config.cfg` file, then follow steps 2 and 3 before changing the `CONFIGURATIONS` variable in the `Makefile`.
+3. If desired, `make docker-clean` will remove the image.
+
 ## Security Considerations
 
 Using Docker is largely no different from running Algo yourself, with a couple of notable exceptions: we run as root within the container, and you're retrieving your content from Docker Hub.
