@@ -8,15 +8,14 @@ services:
 
 addons:
   apt:
-    sources:
+    sources: &default_sources
       - sourceline: 'ppa:ubuntu-lxc/stable'
       - sourceline: 'ppa:wireguard/wireguard'
-    packages:
+    packages: &default_packages
       - python-pip
       - lxd
       - expect-dev
       - debootstrap
-      - shellcheck
       - tree
       - bridge-utils
       - dnsutils
@@ -25,7 +24,12 @@ addons:
       - libffi-dev
       - python-dev
       - linux-headers-$(uname -r)
-      - wireguard-dkms
+      - wireguard
+      - libxml2-utils
+      - crudini
+      - fping
+      - strongswan
+      - libstrongswan-standard-plugins
 
 cache:
   directories:
@@ -37,39 +41,54 @@ before_cache:
   - sudo tar cf $HOME/lxc/cache.tar /var/lib/lxd/images/
   - sudo chown $USER. $HOME/lxc/cache.tar
 
+custom_scripts:
+  provisioning: &provisioning
+    - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
+    - sudo ./tests/pre-deploy.sh
+    - 'sed -i "s/^reduce_mtu:\s0$/reduce_mtu: 20/" config.cfg'
+  tests: &tests
+    - sudo ./tests/wireguard-client.sh
+    - sudo env "PATH=$PATH" ./tests/ipsec-client.sh
+    - sudo ./tests/ssh-tunnel.sh
+
 matrix:
   fast_finish: true
   include:
-    - stage: Test
-      name: local deployment from docker
+    - stage: Tests
+      name: code checks and linters
+      addons:
+        apt:
+          packages:
+            - shellcheck
       script:
-        - docker build -t travis/algo .
-        - sudo tar xf $HOME/lxc/cache.tar -C / || echo "Didn't extract cache."
-        - sudo cp -f tests/lxd-bridge /etc/default/lxd-bridge
-        - ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
-        - echo -e "#cloud-config\nssh_authorized_keys:\n - $(cat ~/.ssh/id_rsa.pub)" | sudo lxc profile set default user.user-data -
-        - sudo service lxd restart
-        - sudo lxc launch ubuntu:18.04 algo
-        - until host algo.lxd 10.0.8.1 -t A; do sleep 3; done
-        - export LXC_IP="$(dig algo.lxd @10.0.8.1 +short)"
-        - pip install -r requirements.txt
         - pip install ansible-lint
-        - gem install awesome_bot
-        - ansible-playbook --version
-        - tree . -L 2
+        - shellcheck algo install.sh
         - ansible-playbook main.yml --syntax-check
+        - ansible-lint -v roles/*/*/*.yml playbooks/*.yml *.yml
+
+    - stage: Deploy
+      name: local deployment from docker
+      addons:
+        apt:
+          sources: *default_sources
+          packages: *default_packages
+      env: DEPLOY=docker
+      before_install: *provisioning
+      before_script:
+        - docker build -t travis/algo .
         - ./tests/local-deploy.sh
         - ./tests/update-users.sh
+      script: *tests
 
-    - stage: Test
+    - stage: Deploy
       name: cloud-init deployment
-      script:
-        - sudo tar xf $HOME/lxc/cache.tar -C / || echo "Didn't extract cache."
-        - sudo cp -f tests/lxd-bridge /etc/default/lxd-bridge
-        - sudo service lxd restart
-        - bash tests/cloud-init.sh | sudo lxc profile set default user.user-data -
-        - sudo lxc profile show default
-        - sudo lxc launch ubuntu:18.04 algo
+      addons:
+        apt:
+          sources: *default_sources
+          packages: *default_packages
+      env: DEPLOY=cloud-init
+      before_install: *provisioning
+      before_script:
         - until sudo lxc exec algo -- test -f /var/log/cloud-init-output.log; do echo 'Log file not found, Sleep for 3 seconds'; sleep 3; done
         - ( sudo lxc exec algo -- tail -f /var/log/cloud-init-output.log & )
         - |
@@ -78,11 +97,10 @@ matrix:
             sleep 30;
           done
         - sudo lxc exec algo -- test -f /opt/algo/configs/localhost/.config.yml
-
-# script:
-  # - awesome_bot --allow-dupe --skip-save-results *.md docs/*.md --white-list paypal.com,do.co,microsoft.com,https://github.com/trailofbits/algo/archive/master.zip,https://github.com/trailofbits/algo/issues/new
-# - shellcheck algo
-# - ansible-lint main.yml users.yml deploy_client.yml
+        - sudo lxc exec algo -- tar zcf /root/algo-configs.tar -C /opt/algo/configs/ .
+        - sudo lxc file pull algo/root/algo-configs.tar ./
+        - sudo tar -C ./configs -zxf algo-configs.tar
+      script: *tests
 
 notifications:
   email: false

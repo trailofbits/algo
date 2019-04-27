@@ -6,7 +6,7 @@
     stack_name: "{{ stack_name }}"
     state: "present"
     region: "{{ algo_region }}"
-    template: roles/cloud-ec2/files/stack.yml
+    template: roles/cloud-ec2/files/stack.yaml
     template_parameters:
       InstanceTypeParameter: "{{ cloud_providers.ec2.size }}"
       PublicSSHKeyParameter: "{{ lookup('file', SSH_keys.public) }}"

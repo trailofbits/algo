@@ -36,6 +36,7 @@
 
 - name: Update adblock hosts
   command: /usr/local/sbin/adblock.sh
+  changed_when: false
 
 - meta: flush_handlers
 

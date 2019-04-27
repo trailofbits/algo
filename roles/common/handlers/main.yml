@@ -20,8 +20,5 @@
     ifconfig lo100 inet {{ local_service_ip }} netmask 255.255.255.255 &&
     ifconfig lo100 inet6 FCAA::1/64; echo $?
 
-- name: save iptables
-  shell: service netfilter-persistent save
-
 - name: restart iptables
   service: name=netfilter-persistent state=restarted

@@ -1,21 +1,43 @@
 ---
-- block:
-  - name: Include prompts
-    import_tasks: prompts.yml
+- name: Include prompts
+  import_tasks: prompts.yml
 
+- block:
   - name: Upload the SSH key
-    vr_ssh_key:
+    vultr_ssh_key:
       name: "{{ SSH_keys.comment }}"
       ssh_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
     register: ssh_key
 
+  - name: Creating a firewall group
+    vultr_firewall_group:
+      name: "{{ algo_server_name }}"
+
+  - name: Creating firewall rules
+    vultr_firewall_rule:
+      group: "{{ algo_server_name }}"
+      protocol: "{{ item.protocol }}"
+      port: "{{ item.port }}"
+      ip_version: "{{ item.ip }}"
+      cidr: "{{ item.cidr }}"
+    with_items:
+    - { protocol: tcp, port: 22, ip: v4, cidr: "0.0.0.0/0" }
+    - { protocol: tcp, port: 22, ip: v6, cidr: "::/0" }
+    - { protocol: udp, port: 500, ip: v4, cidr: "0.0.0.0/0" }
+    - { protocol: udp, port: 500, ip: v6, cidr: "::/0" }
+    - { protocol: udp, port: 4500, ip: v4, cidr: "0.0.0.0/0" }
+    - { protocol: udp, port: 4500, ip: v6, cidr: "::/0" }
+    - { protocol: udp, port: "{{ wireguard_port }}", ip: v4, cidr: "0.0.0.0/0" }
+    - { protocol: udp, port: "{{ wireguard_port }}", ip: v6, cidr: "::/0" }
+
   - name: Creating a server
-    vr_server:
+    vultr_server:
       name: "{{ algo_server_name }}"
       hostname: "{{ algo_server_name }}"
       os: "{{ cloud_providers.vultr.os }}"
       plan: "{{ cloud_providers.vultr.size }}"
       region: "{{ algo_vultr_region }}"
+      firewall_group: "{{ algo_server_name }}"
       state: started
       tag: Environment:Algo
       ssh_key: "{{ ssh_key.vultr_ssh_key.name }}"
