@@ -146,8 +146,8 @@
             {%- elif _windows.user_input %}{{ booleans_map[_windows.user_input] | default(defaults['windows']) }}
             {%- else %}false{% endif %}
           algo_store_cakey: >-
-            {% if store_cakey is defined %}{{ store_cakey | bool }}
+            {% if ipsec_enabled %}{%- if store_cakey is defined %}{{ store_cakey | bool }}
             {%- elif _store_cakey.user_input %}{{ booleans_map[_store_cakey.user_input] | default(defaults['store_cakey']) }}
-            {%- else %}false{% endif %}
+            {%- else %}false{% endif %}{% endif %}
       rescue:
         - include_tasks: playbooks/rescue.yml
