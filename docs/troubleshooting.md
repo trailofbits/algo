@@ -18,7 +18,7 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
      * [Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid](#windows-the-value-of-parameter-linuxconfigurationsshpublickeyskeydata-is-invalid)
      * [Docker: Failed to connect to the host via ssh](#docker-failed-to-connect-to-the-host-via-ssh)
      * [Wireguard: Unable to find 'configs/...' in expected paths](#wireguard-unable-to-find-configs-in-expected-paths)
-     * [Ubuntu Error: "unable to write 'random state" when generating CA password](#ubuntu-error-unable-to-write-random-state-when-generating-ca-password")
+     * [Ubuntu Error: "unable to write 'random state'" when generating CA password](#ubuntu-error-unable-to-write-random-state-when-generating-ca-password)
   * [Connection Problems](#connection-problems)
      * [I'm blocked or get CAPTCHAs when I access certain websites](#im-blocked-or-get-captchas-when-i-access-certain-websites)
      * [I want to change the list of trusted Wifi networks on my Apple device](#i-want-to-change-the-list-of-trusted-wifi-networks-on-my-apple-device)
@@ -153,7 +153,9 @@ You need to reset the permissions on your `.ssh` directory. Run `chmod 700 /home
 
 ### The region you want is not available
 
-You want to install Algo to a specific region in a cloud provider, but that region is not available in the list given by the installer. In that case, you should [file an issue](https://github.com/trailofbits/algo/issues/new). Cloud providers add new regions on a regular basis and we don't always keep up. File an issue and give us information about what region is missing and we'll add it.
+Algo downloads the regions from the supported cloud providers (other than Microsoft Azure) listed in the first menu using APIs. If the region you want isn't available, the cloud provider has probably taken it offline for some reason. You should investigate further with your cloud provider.
+
+If there's a specific region you want to install to in Microsoft Azure that isn't available, you should [file an issue](https://github.com/trailofbits/algo/issues/new), give us information about what region is missing, and we'll add it.
 
 ### AWS: SSH permission denied with an ECDSA key
 
@@ -269,7 +271,7 @@ sudo rm -rf /etc/wireguard/*.lock
 ```
 Then immediately re-run `./algo`.
 
-### Ubuntu Error: "unable to write 'random state" when generating CA password
+### Ubuntu Error: "unable to write 'random state'" when generating CA password
 
 When running Algo, you received an error like this:
 
