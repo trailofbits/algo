@@ -26,7 +26,7 @@
 
   tasks:
     - block:
-      - name: Region prompt
+      - name: Cloud prompt
         pause:
           prompt: |
             What provider would you like to use?
@@ -120,6 +120,17 @@
             {%- set _server = _algo_server_name.user_input -%}
             {%- else %}{% set _server = defaults['server_name'] %}{% endif -%}
             {{ _server | regex_replace('(?!\.)(\W|_)', '-') }}
+          algo_local_dns: >-
+            {% if local_dns is defined %}{{ local_dns | bool }}
+            {%- elif _local_dns.user_input %}{{ booleans_map[_local_dns.user_input] | default(defaults['local_dns']) }}
+            {%- else %}false{% endif %}
+          algo_ssh_tunneling: >-
+            {% if ssh_tunneling is defined %}{{ ssh_tunneling | bool }}
+            {%- elif _ssh_tunneling.user_input %}{{ booleans_map[_ssh_tunneling.user_input] | default(defaults['ssh_tunneling']) }}
+            {%- else %}false{% endif %}
+
+      - name: Set IPsec facts based on the input
+        set_fact:
           algo_ondemand_cellular: >-
             {% if ondemand_cellular is defined %}{{ ondemand_cellular | bool }}
             {%- elif _ondemand_cellular.user_input %}{{ booleans_map[_ondemand_cellular.user_input] | default(defaults['ondemand_cellular']) }}
@@ -133,21 +144,14 @@
             {%- elif _ondemand_wifi_exclude.user_input is defined and _ondemand_wifi_exclude.user_input|length > 0 -%}
             {{ _ondemand_wifi_exclude.user_input | b64encode }}
             {%- else %}{{ '_null' | b64encode }}{% endif %}
-          algo_local_dns: >-
-            {% if local_dns is defined %}{{ local_dns | bool }}
-            {%- elif _local_dns.user_input %}{{ booleans_map[_local_dns.user_input] | default(defaults['local_dns']) }}
-            {%- else %}false{% endif %}
-          algo_ssh_tunneling: >-
-            {% if ssh_tunneling is defined %}{{ ssh_tunneling | bool }}
-            {%- elif _ssh_tunneling.user_input %}{{ booleans_map[_ssh_tunneling.user_input] | default(defaults['ssh_tunneling']) }}
+          algo_store_cakey: >-
+            {%- if store_cakey is defined %}{{ store_cakey | bool }}
+            {%- elif _store_cakey.user_input %}{{ booleans_map[_store_cakey.user_input] | default(defaults['store_cakey']) }}
             {%- else %}false{% endif %}
           algo_windows: >-
             {% if windows is defined %}{{ windows | bool }}
             {%- elif _windows.user_input %}{{ booleans_map[_windows.user_input] | default(defaults['windows']) }}
             {%- else %}false{% endif %}
-          algo_store_cakey: >-
-            {% if ipsec_enabled %}{%- if store_cakey is defined %}{{ store_cakey | bool }}
-            {%- elif _store_cakey.user_input %}{{ booleans_map[_store_cakey.user_input] | default(defaults['store_cakey']) }}
-            {%- else %}false{% endif %}{% endif %}
+        when: ipsec_enabled
       rescue:
         - include_tasks: playbooks/rescue.yml
