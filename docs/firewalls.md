@@ -14,6 +14,11 @@ Your AlgoVPN requires properly configured firewalls. The key points to know are:
 
 During installation Algo configures the Linux [Netfilter](https://en.wikipedia.org/wiki/Netfilter) firewall on the server. The rules added are required for AlgoVPN to work properly. The package `netfilter-persistent` is used to load the IPv4 and IPv6 rules files that Algo generates and stores in `/etc/iptables`. The rules for IPv6 are only generated if the server appears to be properly configured for IPv6. The use of conflicting firewall packages on the server such as `ufw` will likely break AlgoVPN.
 
+If you ever break the Firewall or need to reconfigure it (in Advanced Usage) you can use
+https://pastebin.com/65v6siUK for IPv4
+https://pastebin.com/r3S9ZRWN for IPv6
+And Place the Content to /etc/iptables/rules.v4 (IPv4) and /etc/iptables/rules.v6 (IPv6).
+On RHEL/CentOS the paths are /etc/sysconfig/iptables (IPv4) and /etc/sysconfig/ip6tables (IPv6)
 ### External Firewall
 
 Most cloud service providers offer a firewall that sits between the Internet and your AlgoVPN. With some providers (such as EC2, Lightsail, and GCE) this firewall is required and is configured by Algo during a **cloud** deployment. If the firewall is not required by the provider then Algo does not configure it.
