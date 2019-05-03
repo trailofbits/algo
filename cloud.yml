@@ -33,6 +33,8 @@
       when: algo_provider == "scaleway"
     - role: cloud-openstack
       when: algo_provider == "openstack"
+    - role: cloud-cloudstack
+      when: algo_provider == "cloudstack"
     - role: local
       when: algo_provider == "local"
 

@@ -1,0 +1,53 @@
+---
+- block:
+  - set_fact:
+      _cs_config: "{{ lookup('env', 'CLOUDSTACK_CONFIG') }}"
+
+  - pause:
+      prompt: |
+        Enter path for cloudstack.ini file
+        [~/.cloudstack.ini]
+    register: _cs_config_input
+    when: _cs_config == ""
+
+  - set_fact:
+      _cs_config_input: "{% if _cs_config_input.user_input == ''%}{{ '~/.cloudstack.ini' }}{% else %}{{ _cs_config_input.user_input }}{% endif %}"
+    when: _cs_config == ""
+
+  - set_fact:
+      _cs_config: "{% if _cs_config == '' %}{{ _cs_config_input }}{% else %}{{ _cs_config }}{% endif %}"
+
+  - pause:
+      prompt: |
+        Specify region to use in cloudstack.ini_file
+        [exoscale]
+    register: _cs_region
+
+  - name: Parse zones from output
+    set_fact:
+      _cs_zones: "{{ _cloudstack_zones | from_json }}"
+  
+  - name: Extract zones from output
+    set_fact:
+      cs_zones: "{{ _cs_zones | sort(attribute='name') }}"
+
+  - name: Set the default zone
+    set_fact:
+      default_zone: >-
+        {% for z in cs_zones %}
+        {%- if z['name'] == "ch-gva-2" %}{{ loop.index }}{% endif %}
+        {%- endfor %}
+
+  - pause:
+      prompt: |
+        What zone should the server be located in?
+          {% for z in cs_zones %}
+          {{ loop.index }}. {{ z['name'] }}
+          {% endfor %}
+
+          Enter the number of your desired zone
+          [{{ default_zone }}]
+    register: _algo_region
+    when: region is undefined
+  environment:
+        PYTHONPATH: "{{ cloudstack_venv }}/lib/python2.7/site-packages/"
