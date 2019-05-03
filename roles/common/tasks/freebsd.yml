@@ -1,11 +1,24 @@
 ---
+- name: FreeBSD | Install prerequisites
+  package:
+    name:
+      - python3
+      - sudo
+  vars:
+    ansible_python_interpreter: /usr/local/bin/python2.7
+
+- name: Set python3 as the interpreter to use
+  set_fact:
+    ansible_python_interpreter: /usr/local/bin/python3
+
 - name: Gather facts
   setup:
 
 - name: Gather additional facts
   import_tasks: facts.yml
 
-- set_fact:
+- name: Set OS specific facts
+  set_fact:
     config_prefix: "/usr/local/"
     strongswan_shell: /usr/sbin/nologin
     strongswan_home: /var/empty
@@ -15,7 +28,6 @@
     strongswan_additional_plugins:
       - kernel-pfroute
       - kernel-pfkey
-    ansible_python_interpreter: /usr/local/bin/python2.7
     tools:
       - git
       - subversion
@@ -62,5 +74,6 @@
   shell: >
     kldstat -n ipfw.ko || kldload ipfw ; sysctl net.inet.ip.fw.enable=0 &&
     bash /etc/rc.firewall && sysctl net.inet.ip.fw.enable=1
+  changed_when: false
 
 - meta: flush_handlers

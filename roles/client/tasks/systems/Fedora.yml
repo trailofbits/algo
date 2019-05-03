@@ -1,6 +1,6 @@
 ---
-
-- set_fact:
+- name: Set OS specific facts
+  set_fact:
     prerequisites:
       - libselinux-python
     configs_prefix: /etc/strongswan

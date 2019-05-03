@@ -1,4 +1,15 @@
 ---
+- hosts: localhost
+  become: false
+  tasks:
+    - name: Verify Ansible meets Drupal VM's version requirements.
+      assert:
+        that: "ansible_version.full is version('2.7.10', '==')"
+        msg: >
+          Ansible version is {{ ansible_version.full }}.
+          You must update the requirements to use this version of Algo.
+          Try to run python -m pip install -U -r requirements.txt
+
 - name: Include prompts playbook
   import_playbook: input.yml
 

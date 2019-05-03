@@ -57,5 +57,5 @@
 - set_fact:
     algo_region: >-
       {% if region is defined %}{{ region }}
-      {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ lightsail_regions[_algo_region.user_input | int -1 ]['name'] }}
+      {%- elif _algo_region.user_input %}{{ lightsail_regions[_algo_region.user_input | int -1 ]['name'] }}
       {%- else %}{{ lightsail_regions[default_region | int - 1]['name'] }}{% endif %}
