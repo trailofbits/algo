@@ -3,14 +3,14 @@
     - name: Build python virtual environment
       import_tasks: venv.yml
 
+    - name: Include prompts
+      import_tasks: prompts.yml
+
     - block:
-      - name: Include prompts
-        import_tasks: prompts.yml
-        
       - set_fact:
           algo_region: >-
             {% if region is defined %}{{ region }}
-            {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ cs_zones[_algo_region.user_input | int -1 ]['name'] }}
+            {%- elif _algo_region.user_input is defined and _algo_region.user_input | length > 0 %}{{ cs_zones[_algo_region.user_input | int -1 ]['name'] }}
             {%- else %}{{ cs_zones[default_zone | int - 1]['name'] }}{% endif %}
 
       - name: Security group created
@@ -62,7 +62,7 @@
       environment:
         PYTHONPATH: "{{ cloudstack_venv }}/lib/python2.7/site-packages/"
         CLOUDSTACK_CONFIG: "{{ _cs_config }}"
-        CLOUDSTACK_REGION: "{% if _cs_region.user_input == '' %}{{ 'exoscale' }}{% else %}{{ _cs_region.user_input }}{% endif %}"
+        CLOUDSTACK_REGION: "{% if _cs_region.user_input | length <= 0 %}{{ 'exoscale' }}{% else %}{{ _cs_region.user_input }}{% endif %}"
 
       rescue:
       - debug: var=fail_hint
