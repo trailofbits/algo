@@ -21,3 +21,5 @@ fping -t 900 -c3 -r3 -Dse 10.0.8.100 172.16.0.1
 host google.com 172.16.0.1
 
 echo "IPsec tests passed"
+
+ipsec down algovpn-10.0.8.100
