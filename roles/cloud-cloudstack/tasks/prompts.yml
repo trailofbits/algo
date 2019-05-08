@@ -13,7 +13,7 @@
 
   - pause:
       prompt: |
-        Specify region to use in cloudstack.ini_file
+        Specify region to use in cloudstack.ini file
         [exoscale]
     register: _cs_region
 
