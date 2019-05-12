@@ -166,7 +166,7 @@ Use the example command below to start an SSH tunnel by replacing `user` and `ip
 
 ## SSH into Algo Server
 
-To SSH into the Algo server for administrative purposes you can log into Terminal, go to the algo directory, and then use the command listed on the success message:
+Your Algo server is configured for key-only SSH access for administrative purposes. Open the Terminal app, `cd` into the `algo-master` directory where you originally downloaded Algo, and then use the command listed on the success message:
 
  `ssh -i configs/algo.pem user@ip`
 
