@@ -40,6 +40,10 @@
               {%- elif _ca_password.user_input %}{{ _ca_password.user_input }}
               {%- else %}omit{% endif %}
 
+        - name: Local pre-tasks
+          import_tasks: playbooks/cloud-pre.yml
+          become: false
+
         - name: Add the server to the vpn-host group
           add_host:
             name: "{{ algo_server }}"
@@ -61,10 +65,6 @@
 
   tasks:
     - block:
-      - name: Local pre-tasks
-        import_tasks: playbooks/cloud-pre.yml
-        become: false
-
       - import_role:
           name: common
 
