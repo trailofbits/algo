@@ -204,6 +204,7 @@ After this process completes, the Algo VPN server will contain only the users li
   - Configure [Azure](docs/cloud-azure.md)
   - Configure [DigitalOcean](docs/cloud-do.md)
   - Configure [Google Cloud Platform](docs/cloud-gce.md)
+  - Configure [Scaleway](docs/cloud-scaleway.md)
   - Configure [Vultr](docs/cloud-vultr.md)
 * Advanced Deployment
   - Deploy to your own [FreeBSD](docs/deploy-to-freebsd.md) server

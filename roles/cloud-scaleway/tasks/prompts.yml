@@ -1,7 +1,7 @@
 ---
 - pause:
     prompt: |
-      Enter your auth token (https://www.scaleway.com/docs/generate-an-api-token/)
+      Enter your auth token (https://trailofbits.github.io/algo/cloud-scaleway.html)
     echo: false
   register: _scaleway_token
   when:
