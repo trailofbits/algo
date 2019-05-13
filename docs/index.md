@@ -1,12 +1,11 @@
 # Algo VPN documentation
 
 * Deployment instructions
-  - Documentation for available [Ansible roles](setup-roles.md)
   - Deploy from [Fedora Workstation (26)](deploy-from-fedora-workstation.md)
   - Deploy from [RedHat/CentOS 6.x](deploy-from-redhat-centos6.md)
   - Deploy from [Windows](deploy-from-windows.md)
   - Deploy from a [Docker container](deploy-from-docker.md)
-  - Deploy from [Ansible](deploy-from-ansible.md) directly
+  - Deploy from [Ansible](deploy-from-ansible.md) non-interactively
   - Deploy onto a [cloud server at time of creation](deploy-from-script-or-cloud-init-to-localhost.md)
 * Client setup
   - Setup [Android](client-android.md) clients
