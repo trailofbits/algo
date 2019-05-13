@@ -4,7 +4,7 @@ Before you begin, make sure you have installed all the dependencies necessary fo
 
 You can deploy Algo non-interactively by running the Ansible playbooks directly with `ansible-playbook`.
 
-`ansible-playbook` accepts "tags" via the `-t` or `TAGS` options. You can pass tags as a list of comma separated values. Ansible will only run plays (install roles) with the specified tags.
+`ansible-playbook` accepts "tags" via the `-t` or `TAGS` options. You can pass tags as a list of comma separated values. Ansible will only run plays (install roles) with the specified tags. You can also use the `--skip-tags` option to skip certain parts of the install, such as `iptables` (overwrite iptables rules), `ipsec` (install strongSwan), `wireguard` (install Wireguard).
 
 `ansible-playbook` accepts variables via the `-e` or `--extra-vars` option. You can pass variables as space separated key=value pairs. Algo requires certain variables that are listed below.
 
@@ -29,15 +29,15 @@ See below for more information about variables and roles.
 
 - `provider` - (Required) The provider to use. See possible values below
 - `server_name` - (Required) Server name. Default: algo
-- `ondemand_cellular` (Optional) VPN On Demand when connected to cellular networks. Default: false
-- `ondemand_wifi` - (Optional. See `ondemand_wifi_exclude`) VPN On Demand when connected to WiFi networks. Default: false
+- `ondemand_cellular` (Optional) VPN On Demand when connected to cellular networks with IPsec. Default: false
+- `ondemand_wifi` - (Optional. See `ondemand_wifi_exclude`) VPN On Demand when connected to WiFi networks with IPsec. Default: false
 - `ondemand_wifi_exclude` (Required if `ondemand_wifi` set) - WiFi networks to exclude from using the VPN. Comma-separated values
 - `local_dns` - (Optional) Enable a DNS resolver. Default: false
 - `ssh_tunneling` - (Optional) Enable SSH tunneling for each user. Default: false
 - `windows` - (Optional) Enables compatible ciphers and key exchange to support Windows clients, less secure. Default: false
 - `store_cakey` - (Optional) Whether or not keep the CA key (required to add users in the future, but less secure). Default: false
 
-If any of these are unspecified, ansible will ask the user to input them.
+If any of the required variables are unspecified, ansible will ask the user to input them.
 
 ### Ansible roles
 
@@ -103,7 +103,7 @@ Possible options can be gathered calling to https://api.digitalocean.com/v2/regi
 
 Required variables:
 
-- aws_access_key
+- aws_access_key: `AKIA...`
 - aws_secret_key
 - region
 
@@ -191,8 +191,8 @@ Required variables:
 
 Required variables:
 
-- [vultr_config](https://trailofbits.github.io/algo/cloud-vultr.html)
-- [region](https://api.vultr.com/v1/regions/list)
+- [vultr_config](https://trailofbits.github.io/algo/cloud-vultr.html): /path/to/.vultr.ini
+- [region](https://api.vultr.com/v1/regions/list): e.g. `Chicago`, `'New Jersey'`
 
 ### Azure
 
@@ -208,7 +208,7 @@ Required variables:
 
 Required variables:
 
-- aws_access_key
+- aws_access_key: `AKIA...`
 - aws_secret_key
 - region
 
@@ -242,12 +242,7 @@ Possible options can be gathered via cli `aws lightsail get-regions`
 Required variables:
 
 - [scaleway_token](https://www.scaleway.com/docs/generate-an-api-token/)
-- region
-
-Possible regions:
-
-- ams1
-- par1
+- region: e.g. ams1, par1
 
 ### OpenStack
 
