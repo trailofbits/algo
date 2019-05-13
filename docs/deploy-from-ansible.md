@@ -1,4 +1,4 @@
-# Scripted Deployment
+# Deployment from Ansible
 
 Before you begin, make sure you have installed all the dependencies necessary for your operating system as described in the [README](../README.md).
 
@@ -37,11 +37,11 @@ See below for more information about providers and extra variables
 - `windows` - (Optional) Enables compatible ciphers and key exchange to support Windows clients, less secure. Default: false
 - `store_cakey` - (Optional) Whether or not keep the CA key (required to add users in the future, but less secure). Default: false
 
-If any of those unspecified ansible will ask the user to input
+If any of these are unspecified, ansible will ask the user to input them.
 
 ### Ansible roles
 
-Roles can be activated by specifying an extra variable `provider`
+Could roles can be activated by specifying an extra variable `provider`
 
 Cloud roles:
 
@@ -55,13 +55,25 @@ Cloud roles:
 
 Server roles:
 
-- role: vpn
+- role: strongswan
+  * Installs [strongSwan](https://www.strongswan.org/)
+  * Enables AppArmor, limits CPU and memory access, and drops user privileges
+  * Builds a Certificate Authority (CA) with [easy-rsa-ipsec](https://github.com/ValdikSS/easy-rsa-ipsec) and creates one client certificate per user
+  * Bundles the appropriate certificates into Apple mobileconfig profiles and Powershell scripts for each user
 - role: dns_adblocking
+  * Installs the [dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html) local resolver with a blacklist for advertising domains
+  * Constrains dnsmasq with AppArmor and cgroups CPU and memory limitations
 - role: dns_encryption
+  * Installs [dnscrypt-proxy](https://github.com/jedisct1/dnscrypt-proxy)
+  * Constrains dnscrypt-proxy with AppArmor and cgroups CPU and memory limitations
 - role: ssh_tunneling
+  * Adds a restricted `algo` group with no shell access and limited SSH forwarding options
+  * Creates one limited, local account and an SSH public key for each user
 - role: wireguard
+  * Installs a [Wireguard](https://www.wireguard.com/) server, with a startup script, and automatic checks for upgrades
+  * Creates wireguard.conf files for Linux clients as well as QR codes for Apple/Android clients
 
-Note: The `vpn` role generates Apple profiles with On-Demand Wifi and Cellular if you pass the following variables:
+Note: The `strongswan` role generates Apple profiles with On-Demand Wifi and Cellular if you pass the following variables:
 
 - ondemand_wifi: true
 - ondemand_wifi_exclude: HomeNet,OfficeWifi
