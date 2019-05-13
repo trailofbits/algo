@@ -37,7 +37,7 @@ See below for more information about variables and roles.
 - `windows` - (Optional) Enables compatible ciphers and key exchange to support Windows clients, less secure. Default: false
 - `store_cakey` - (Optional) Whether or not keep the CA key (required to add users in the future, but less secure). Default: false
 
-If any of the required variables are unspecified, ansible will ask the user to input them.
+If any of the above variables are unspecified, ansible will ask the user to input them.
 
 ### Ansible roles
 
@@ -105,7 +105,7 @@ Required variables:
 
 - aws_access_key: `AKIA...`
 - aws_secret_key
-- region
+- region: e.g. `us-east-1`
 
 Possible options can be gathered via cli `aws ec2 describe-regions`
 
@@ -210,7 +210,7 @@ Required variables:
 
 - aws_access_key: `AKIA...`
 - aws_secret_key
-- region
+- region: e.g. `us-east-1`
 
 Possible options can be gathered via cli `aws lightsail get-regions`
 
