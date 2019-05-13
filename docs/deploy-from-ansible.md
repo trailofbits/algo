@@ -23,7 +23,7 @@ ansible-playbook main.yml -e "provider=digitalocean
                                 do_token=token"
 ```
 
-See below for more information about providers and extra variables
+See below for more information about variables and roles.
 
 ### Variables
 
@@ -41,7 +41,7 @@ If any of these are unspecified, ansible will ask the user to input them.
 
 ### Ansible roles
 
-Could roles can be activated by specifying an extra variable `provider`
+Cloud roles can be activated by specifying an extra variable `provider`.
 
 Cloud roles:
 
