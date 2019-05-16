@@ -114,7 +114,8 @@ Additional variables:
                 "ec2:DescribeImages",
                 "ec2:DescribeKeyPairs",
                 "ec2:DescribeRegions",
-                "ec2:ImportKeyPair"
+                "ec2:ImportKeyPair",
+                "ec2:CopyImage"
             ],
             "Resource": [
                 "*"
