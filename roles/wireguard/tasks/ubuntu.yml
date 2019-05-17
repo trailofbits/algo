@@ -27,6 +27,7 @@
     group: root
     mode: 0644
 
-- set_fact:
+- name: Set OS specific facts
+  set_fact:
     service_name: "wg-quick@{{ wireguard_interface }}"
   tags: always

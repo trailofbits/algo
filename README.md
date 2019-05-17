@@ -72,15 +72,15 @@ That's it! You will get the message below when the server deployment process com
 You can now setup clients to connect it, e.g. your iPhone or laptop. Proceed to [Configure the VPN Clients](#configure-the-vpn-clients) below.
 
 ```
-        "\"#----------------------------------------------------------------------#\"",
-        "\"#                          Congratulations!                            #\"",
-        "\"#                     Your Algo server is running.                     #\"",
-        "\"#    Config files and certificates are in the ./configs/ directory.    #\"",
-        "\"#              Go to https://whoer.net/ after connecting               #\"",
-        "\"#        and ensure that all your traffic passes through the VPN.      #\"",
-        "\"#                    Local DNS resolver 172.16.0.1                     #\"",
-        "\"#                The p12 and SSH keys password is XXXXXXXX             #\"",
-        "\"#----------------------------------------------------------------------#\"",
+    "#                          Congratulations!                            #"
+    "#                     Your Algo server is running.                     #"
+    "#    Config files and certificates are in the ./configs/ directory.    #"
+    "#              Go to https://whoer.net/ after connecting               #"
+    "#        and ensure that all your traffic passes through the VPN.      #"
+    "#                     Local DNS resolver 172.16.0.1                    #"
+    "#        The p12 and SSH keys password for new users is XXXXXXXX       #"
+    "#        The CA key password is XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       #"
+    "#      Shell access: ssh -i configs/algo.pem root@xxx.xxx.xx.xx        #"
 ```
 
 ## Configure the VPN Clients
@@ -93,11 +93,13 @@ WireGuard is used to provide VPN services on Apple devices. Algo generates a Wir
 
 On iOS, install the [WireGuard](https://itunes.apple.com/us/app/wireguard/id1441195209?mt=8) app from the iOS App Store. Then, use the WireGuard app to scan the QR code or AirDrop the configuration file to the device.
 
-On macOS Mojave or later, install the [WireGuard](https://itunes.apple.com/us/app/wireguard/id1451685025?mt=12) app from the Mac App Store. WireGuard will appear in the menu bar once you run the app. Click on the WireGuard icon, choose **Import tunnel(s) from file...**, then select the appropriate WireGuard configuration file. Enable "Connect on Demand" by editing the tunnel configuration in the WireGuard app.
+On macOS Mojave or later, install the [WireGuard](https://itunes.apple.com/us/app/wireguard/id1451685025?mt=12) app from the Mac App Store. WireGuard will appear in the menu bar once you run the app. Click on the WireGuard icon, choose **Import tunnel(s) from file...**, then select the appropriate WireGuard configuration file. 
+
+On either iOS or macOS, you can enable "Connect on Demand" and/or exclude certain trusted Wi-Fi networks (such as your home or work) by editing the tunnel configuration in the WireGuard app. (Algo can't do this automatically for you.) 
 
 Installing WireGuard is a little more complicated on older version of macOS. See [Using macOS as a Client with WireGuard](docs/client-macos-wireguard.md).
 
-If you prefer to use the built-in IPSEC VPN on Apple devices, then see [Using Apple Devices as a Client with IPSEC](docs/client-apple-ipsec.md).
+If you prefer to use the built-in IPSEC VPN on Apple devices, or need "Connect on Demand" or excluded Wi-Fi networks automatically configured, then see [Using Apple Devices as a Client with IPSEC](docs/client-apple-ipsec.md).
 
 ### Android Devices
 
@@ -164,15 +166,13 @@ Use the example command below to start an SSH tunnel by replacing `user` and `ip
 
 ## SSH into Algo Server
 
-To SSH into the Algo server for administrative purposes you can use the example command below by replacing `ip` with your own:
+Your Algo server is configured for key-only SSH access for administrative purposes. Open the Terminal app, `cd` into the `algo-master` directory where you originally downloaded Algo, and then use the command listed on the success message:
 
- `ssh root@ip -i ~/.ssh/algo.pem`
+ `ssh -i configs/algo.pem user@ip`
 
-If you find yourself regularly logging into Algo then it will be useful to load your Algo ssh key automatically. Add the following snippet to the bottom of `~/.bash_profile` to add it to your shell environment permanently.
+where `user` is either `root` or `ubuntu` as listed on the success message, and `ip` is the IP address of your Algo server. If you find yourself regularly logging into the server then it will be useful to load your Algo ssh key automatically. Add the following snippet to the bottom of `~/.bash_profile` to add it to your shell environment permanently.
 
  `ssh-add ~/.ssh/algo > /dev/null 2>&1`
-
-Note the admin username is `ubuntu` instead of `root` on providers other than Digital Ocean.
 
 ## Adding or Removing Users
 
@@ -185,27 +185,7 @@ If you chose to save the CA certificate during the deploy process, then Algo's o
 After this process completes, the Algo VPN server will contain only the users listed in the `config.cfg` file.
 
 ## Additional Documentation
-
-* Setup instructions
-  - Documentation for available [Ansible roles](docs/setup-roles.md)
-  - Deploy from [Fedora Workstation (26)](docs/deploy-from-fedora-workstation.md)
-  - Deploy from [RedHat/CentOS 6.x](docs/deploy-from-redhat-centos6.md)
-  - Deploy from [Windows](docs/deploy-from-windows.md)
-  - Deploy from [Ansible](docs/deploy-from-ansible.md) directly
-* Client setup
-  - Setup [Android](docs/client-android.md) clients
-  - Setup [Generic/Linux](docs/client-linux.md) clients with Ansible
-  - Setup Ubuntu clients to use [WireGuard](docs/client-linux-wireguard.md)
-  - Setup Apple devices to use [IPSEC](docs/client-apple-ipsec.md)
-* Cloud setup
-  - Configure [Amazon EC2](docs/cloud-amazon-ec2.md)
-  - Configure [Azure](docs/cloud-azure.md)
-  - Configure [DigitalOcean](docs/cloud-do.md)
-  - Configure [Google Cloud Platform](docs/cloud-gce.md)
-* Advanced Deployment
-  - Deploy to your own [FreeBSD](docs/deploy-to-freebsd.md) server
-  - Deploy to your own [Ubuntu 18.04](docs/deploy-to-ubuntu.md) server
-  - Deploy to an [unsupported cloud provider](docs/deploy-to-unsupported-cloud.md)
+* [Deployment instructions, cloud provider setup instructions, and further client setup instructions available here.](docs/index.md)
 * [FAQ](docs/faq.md)
 * [Troubleshooting](docs/troubleshooting.md)
 

@@ -50,7 +50,7 @@ Algo is short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhe
 
 ## Can DNS filtering be disabled?
 
-There is no official way to disable DNS filtering, but there is a workaround: SSH to your Algo server (using the 'shell access' command printed upon a successful deployment), edit `/etc/ipsec.conf`, and change `rightdns=172.16.0.1` to `rightdns=8.8.8.8`. Then run `ipsec restart`. If all else fails, we recommend deploying a new Algo server without the adblocking feature enabled.
+You can temporarily disable DNS filtering for all IPsec clients at once with the following workaround: SSH to your Algo server (using the 'shell access' command printed upon a successful deployment), edit `/etc/ipsec.conf`, and change `rightdns=<random_ip>` to `rightdns=8.8.8.8`. Then run `sudo systemctl restart strongswan`. DNS filtering for Wireguard clients has to be disabled on each client device separately by modifying the settings in the app, or by directly modifying the `DNS` setting on the `clientname.conf` file. If all else fails, we recommend deploying a new Algo server without the adblocking feature enabled.
 
 ## Wasn't IPSEC backdoored by the US government?
 
@@ -74,4 +74,4 @@ No.
 
 ## What inbound ports are used?
 
-You should only need 22/TCP, 500/UDP, 4500/UDP, and 51820/UDP opened on any firewall that sits between your clients and your Algo server.
+You should only need 22/TCP, 500/UDP, 4500/UDP, and 51820/UDP opened on any firewall that sits between your clients and your Algo server. See [AlgoVPN and Firewalls](/docs/firewalls.md) for more information.

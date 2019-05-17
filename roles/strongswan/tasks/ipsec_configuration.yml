@@ -23,12 +23,22 @@
       owner: strongswan
       group: "{{ root_group|default('root') }}"
       mode: "0600"
+    - src: charon.conf.j2
+      dest: "strongswan.d/charon.conf"
+      owner: root
+      group: "{{ root_group|default('root') }}"
+      mode: "0644"
   notify:
     - restart strongswan
 
 - name: Get loaded plugins
-  shell: >
-    find {{ config_prefix|default('/') }}etc/strongswan.d/charon/ -type f -name '*.conf' -exec basename {} \; | cut -f1 -d.
+  shell: |
+    set -o pipefail
+    find {{ config_prefix|default('/') }}etc/strongswan.d/charon/ -type f -name '*.conf' -exec basename {} \; |
+    cut -f1 -d.
+  changed_when: false
+  args:
+    executable: bash
   register: strongswan_plugins
 
 - name: Disable unneeded plugins

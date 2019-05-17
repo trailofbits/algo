@@ -7,13 +7,13 @@
     owner: root
     group: root
     mode: 0600
-  when: apparmor_enabled|default(false)|bool == true
+  when: apparmor_enabled|default(false)|bool
   notify:
     - restart dnsmasq
 
 - name: Ubuntu | Enforce the dnsmasq AppArmor policy
-  shell: aa-enforce usr.sbin.dnsmasq
-  when: apparmor_enabled|default(false)|bool == true
+  command: aa-enforce usr.sbin.dnsmasq
+  when: apparmor_enabled|default(false)|bool
   tags: ['apparmor']
 
 - name: Ubuntu | Ensure that the dnsmasq service directory exist

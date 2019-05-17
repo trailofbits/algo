@@ -24,7 +24,7 @@
       when: reboot_required is defined and reboot_required.stdout == 'required'
       ignore_errors: true
 
-    - name: Wait until SSH becomes ready...
+    - name: Wait until the server becomes ready...
       wait_for_connection:
         delay: 20
         timeout: 320
@@ -61,18 +61,21 @@
 - meta: flush_handlers
 
 - name: Check apparmor support
-  shell: apparmor_status
+  command: apparmor_status
   ignore_errors: yes
+  changed_when: false
   register: apparmor_status
 
-- set_fact:
+- name: Set fact if apparmor enabled
+  set_fact:
     apparmor_enabled: true
   when: '"profiles are in enforce mode" in apparmor_status.stdout'
 
 - name: Gather additional facts
   import_tasks: facts.yml
 
-- set_fact:
+- name: Set OS specific facts
+  set_fact:
     tools:
       - git
       - screen
@@ -82,6 +85,7 @@
       - iptables-persistent
       - cgroup-tools
       - openssl
+      - gnupg2
     sysctl:
       - item: net.ipv4.ip_forward
         value: 1
@@ -92,11 +96,9 @@
 
 - name: Install tools
   apt:
-    name: "{{ item }}"
+    name: "{{ tools|default([]) }}"
     state: present
     update_cache: true
-  with_items:
-    - "{{ tools|default([]) }}"
 
 - name: Install headers
   apt:

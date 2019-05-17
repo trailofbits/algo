@@ -17,7 +17,8 @@
 - name: Gather additional facts
   import_tasks: facts.yml
 
-- set_fact:
+- name: Set OS specific facts
+  set_fact:
     config_prefix: "/usr/local/"
     strongswan_shell: /usr/sbin/nologin
     strongswan_home: /var/empty
@@ -53,7 +54,7 @@
     block: |
       cloned_interfaces="lo100"
       ifconfig_lo100="inet {{ local_service_ip }} netmask 255.255.255.255"
-      ifconfig_lo100_ipv6="inet6 FCAA::1/64"
+      ifconfig_lo100_ipv6="inet6 {{ local_service_ipv6 }}/128"
   notify:
     - restart loopback bsd
 
@@ -73,5 +74,6 @@
   shell: >
     kldstat -n ipfw.ko || kldload ipfw ; sysctl net.inet.ip.fw.enable=0 &&
     bash /etc/rc.firewall && sysctl net.inet.ip.fw.enable=1
+  changed_when: false
 
 - meta: flush_handlers

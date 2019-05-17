@@ -1,29 +1,34 @@
 ---
-- name: Display the invocation environment
-  local_action:
-    module: shell
+- block:
+  - name: Display the invocation environment
+    shell: >
       ./algo-showenv.sh \
         'algo_provider "{{ algo_provider }}"' \
+        {% if ipsec_enabled %}
         'algo_ondemand_cellular "{{ algo_ondemand_cellular }}"' \
         'algo_ondemand_wifi "{{ algo_ondemand_wifi }}"' \
         'algo_ondemand_wifi_exclude "{{ algo_ondemand_wifi_exclude }}"' \
+        'algo_windows "{{ algo_windows }}"' \
+        {% endif %}
         'algo_local_dns "{{ algo_local_dns }}"' \
         'algo_ssh_tunneling "{{ algo_ssh_tunneling }}"' \
-        'algo_windows "{{ algo_windows }}"' \
         'wireguard_enabled "{{ wireguard_enabled }}"' \
         'dns_encryption "{{ dns_encryption }}"' \
         > /dev/tty
-  tags: debug
+    tags: debug
 
-- name: Install the requirements
-  local_action:
-    module: pip
-    state: latest
-    name:
-      - pyOpenSSL
-      - jinja2==2.8
-      - segno
-  tags: always
+  - name: Install the requirements
+    pip:
+      state: latest
+      name:
+        - pyOpenSSL
+        - jinja2==2.8
+        - segno
+    tags:
+      - always
+      - skip_ansible_lint
+  delegate_to: localhost
+  become: false
 
 - name: Generate the SSH private key
   openssl_privatekey:

@@ -2,14 +2,19 @@
 - block:
   - name: Set subjectAltName as a fact
     set_fact:
-      subjectAltName: "{{ subjectAltName_IP }}{% if ipv6_support %},IP:{{ ansible_default_ipv6['address'] }}{% endif %}{% if domain and subjectAltName_DNS %},DNS:{{ subjectAltName_DNS }}{% endif %}"
+      subjectAltName: >-
+        {{ subjectAltName_IP }}
+        {%- if ipv6_support -%},IP:{{ ansible_default_ipv6['address'] }}{%- endif -%}
+        {%- if domain and subjectAltName_DNS -%},DNS:{{ subjectAltName_DNS }}{%- endif -%}
     tags: always
+
+  - debug: var=subjectAltName
 
   - name: Ensure the pki directory does not exist
     file:
       dest: "{{ ipsec_pki_path }}"
       state: absent
-    when: keys_clean_all|bool == True
+    when: keys_clean_all|bool
 
   - name: Ensure the pki directories exist
     file:
@@ -151,6 +156,23 @@
     with_items: "{{ users }}"
     register: p12
 
+  - name: Build the client's p12 with the CA cert included
+    shell: >
+      umask 077;
+      {{ openssl_bin }} pkcs12
+      -in certs/{{ item }}.crt
+      -inkey private/{{ item }}.key
+      -export
+      -name {{ item }}
+      -out private/{{ item }}_ca.p12
+      -certfile cacert.pem
+      -passout pass:"{{ p12_export_password }}"
+    args:
+      chdir: "{{ ipsec_pki_path }}"
+      executable: bash
+    with_items: "{{ users }}"
+    register: p12
+
   - name: Copy the p12 certificates
     copy:
       src: "{{ ipsec_pki_path }}/private/{{ item }}.p12"
@@ -165,7 +187,7 @@
       awk '{print $5}' |
       sed 's/\/CN=//g'
     args:
-      chdir: "{{ ipsec_pki_path}}"
+      chdir: "{{ ipsec_pki_path }}"
     register: valid_certs
 
   - name: Revoke non-existing users
@@ -209,3 +231,13 @@
     - gencrl.changed
   notify:
     - rereadcrls
+
+- name: Delete the CA key
+  file:
+    path: "{{ ipsec_pki_path }}/private/cakey.pem"
+    state: absent
+  become: false
+  delegate_to: localhost
+  when:
+    - ipsec_enabled
+    - not algo_store_cakey

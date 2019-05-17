@@ -1,37 +1,31 @@
 ---
-- block:
-    - include_tasks: ubuntu.yml
-      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+- include_tasks: ubuntu.yml
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
-    - name: Ensure that the strongswan user exist
-      user:
-        name: strongswan
-        group: nogroup
-        shell: "{{ strongswan_shell }}"
-        home: "{{ strongswan_home }}"
-        state: present
+- name: Ensure that the strongswan user exist
+  user:
+    name: strongswan
+    group: nogroup
+    shell: "{{ strongswan_shell }}"
+    home: "{{ strongswan_home }}"
+    state: present
 
-    - name: Install strongSwan
-      package: name=strongswan state=present
+- name: Install strongSwan
+  package: name=strongswan state=present
 
-    - import_tasks: ipsec_configuration.yml
-    - import_tasks: openssl.yml
-      tags: update-users
-    - import_tasks: distribute_keys.yml
-    - import_tasks: client_configs.yml
-      delegate_to: localhost
-      become: no
-      tags: update-users
+- import_tasks: ipsec_configuration.yml
+- import_tasks: openssl.yml
+  tags: update-users
+- import_tasks: distribute_keys.yml
+- import_tasks: client_configs.yml
+  delegate_to: localhost
+  become: no
+  tags: update-users
 
-    - name: strongSwan started
-      service:
-        name: strongswan
-        state: started
-        enabled: true
+- name: strongSwan started
+  service:
+    name: strongswan
+    state: started
+    enabled: true
 
-    - meta: flush_handlers
-  rescue:
-    - debug: var=fail_hint
-      tags: always
-    - fail:
-      tags: always
+- meta: flush_handlers

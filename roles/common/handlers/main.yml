@@ -18,10 +18,7 @@
     ifconfig lo100 destroy || true &&
     ifconfig lo100 create &&
     ifconfig lo100 inet {{ local_service_ip }} netmask 255.255.255.255 &&
-    ifconfig lo100 inet6 FCAA::1/64; echo $?
-
-- name: save iptables
-  shell: service netfilter-persistent save
+    ifconfig lo100 inet6 {{ local_service_ipv6 }}/128; echo $?
 
 - name: restart iptables
   service: name=netfilter-persistent state=restarted

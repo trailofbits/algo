@@ -63,5 +63,5 @@
 - set_fact:
     algo_region: >-
       {% if region is defined %}{{ region }}
-      {%- elif _gce_region.user_input is defined and _gce_region.user_input != "" %}{{ gce_regions[_gce_region.user_input | int -1 ] }}
+      {%- elif _gce_region.user_input %}{{ gce_regions[_gce_region.user_input | int -1 ] }}
       {%- else %}{{ gce_regions[default_region | int - 1] }}{% endif %}

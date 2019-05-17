@@ -1,62 +1,57 @@
+---
+- name: Build python virtual environment
+  import_tasks: venv.yml
+
 - block:
-    - name: Build python virtual environment
-      import_tasks: venv.yml
+  - name: Include prompts
+    import_tasks: prompts.yml
 
-    - block:
-      - name: Include prompts
-        import_tasks: prompts.yml
+  - name: Network configured
+    gce_net:
+      name: "{{ algo_server_name }}"
+      fwname: "{{ algo_server_name }}-fw"
+      allowed: "udp:500,4500,{{ wireguard_port }};tcp:22"
+      state: "present"
+      mode: auto
+      src_range: 0.0.0.0/0
+      service_account_email: "{{ service_account_email }}"
+      credentials_file: "{{ credentials_file_path  }}"
+      project_id: "{{ project_id }}"
 
-      - name: Network configured
-        gce_net:
-          name: "{{ algo_server_name }}"
-          fwname: "{{ algo_server_name }}-fw"
-          allowed: "udp:500,4500,{{ wireguard_port }};tcp:22"
-          state: "present"
-          mode: auto
-          src_range: 0.0.0.0/0
-          service_account_email: "{{ service_account_email }}"
-          credentials_file: "{{ credentials_file_path  }}"
-          project_id: "{{ project_id }}"
+  - block:
+    - name: External IP allocated
+      gce_eip:
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file_path }}"
+        project_id: "{{ project_id }}"
+        name: "{{ algo_server_name }}"
+        region: "{{ algo_region.split('-')[0:2] | join('-') }}"
+        state: present
+      register: gce_eip
 
-      - block:
-        - name: External IP allocated
-          gce_eip:
-            service_account_email: "{{ service_account_email }}"
-            credentials_file: "{{ credentials_file_path }}"
-            project_id: "{{ project_id }}"
-            name: "{{ algo_server_name }}"
-            region: "{{ algo_region.split('-')[0:2] | join('-') }}"
-            state: present
-          register: gce_eip
+    - name: Set External IP as a fact
+      set_fact:
+        external_ip: "{{ gce_eip.address }}"
+    when: cloud_providers.gce.external_static_ip
 
-        - name: Set External IP as a fact
-          set_fact:
-            external_ip: "{{ gce_eip.address }}"
-        when: cloud_providers.gce.external_static_ip
+  - name: "Creating a new instance..."
+    gce:
+      instance_names: "{{ algo_server_name }}"
+      zone: "{{ algo_region }}"
+      external_ip: "{{ external_ip | default('ephemeral') }}"
+      machine_type: "{{ cloud_providers.gce.size }}"
+      image: "{{ cloud_providers.gce.image }}"
+      service_account_email: "{{ service_account_email }}"
+      credentials_file: "{{ credentials_file_path }}"
+      project_id: "{{ project_id }}"
+      metadata: '{"ssh-keys":"ubuntu:{{ ssh_public_key_lookup }}"}'
+      network: "{{ algo_server_name }}"
+      tags:
+        - "environment-algo"
+    register: google_vm
 
-      - name: "Creating a new instance..."
-        gce:
-          instance_names: "{{ algo_server_name }}"
-          zone: "{{ algo_region }}"
-          external_ip: "{{ external_ip | default('ephemeral') }}"
-          machine_type: "{{ cloud_providers.gce.size }}"
-          image: "{{ cloud_providers.gce.image }}"
-          service_account_email: "{{ service_account_email }}"
-          credentials_file: "{{ credentials_file_path }}"
-          project_id: "{{ project_id }}"
-          metadata: '{"ssh-keys":"ubuntu:{{ ssh_public_key_lookup }}"}'
-          network: "{{ algo_server_name }}"
-          tags:
-            - "environment-algo"
-        register: google_vm
-
-      - set_fact:
-          cloud_instance_ip: "{{ google_vm.instance_data[0].public_ip }}"
-          ansible_ssh_user: ubuntu
-      environment:
-        PYTHONPATH: "{{ gce_venv }}/lib/python2.7/site-packages/"
-  rescue:
-    - debug: var=fail_hint
-      tags: always
-    - fail:
-      tags: always
+  - set_fact:
+      cloud_instance_ip: "{{ google_vm.instance_data[0].public_ip }}"
+      ansible_ssh_user: ubuntu
+  environment:
+    PYTHONPATH: "{{ gce_venv }}/lib/python2.7/site-packages/"
