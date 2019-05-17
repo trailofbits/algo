@@ -4,7 +4,7 @@
 [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/fold_left.svg?style=social&label=Follow%20%40AlgoVPN)](https://twitter.com/AlgoVPN)
 [![TravisCI Status](https://api.travis-ci.org/trailofbits/algo.svg?branch=master)](https://travis-ci.org/trailofbits/algo)
 
-Algo VPN is a set of Ansible scripts that simplify the setup of a personal IPSEC VPN. It uses the most secure defaults available, works with common cloud providers, and does not require client software on most devices. See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo-the-vpn-that-works/) for more information.
+Algo VPN is a set of Ansible scripts that simplify the setup of a personal IPSEC and Wireguard VPN. It uses the most secure defaults available, works with common cloud providers, and does not require client software on most devices. See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo-the-vpn-that-works/) for more information.
 
 ## Features
 
@@ -14,7 +14,7 @@ Algo VPN is a set of Ansible scripts that simplify the setup of a personal IPSEC
 * Blocks ads with a local DNS resolver (optional)
 * Sets up limited SSH users for tunneling traffic (optional)
 * Based on current versions of Ubuntu and strongSwan
-* Installs to DigitalOcean, Amazon Lightsail, Amazon EC2, Vultr, Microsoft Azure, Google Compute Engine, Scaleway, OpenStack or your own Ubuntu 18.04 LTS server
+* Installs to DigitalOcean, Amazon Lightsail, Amazon EC2, Vultr, Microsoft Azure, Google Compute Engine, Scaleway, OpenStack, or your own Ubuntu 18.04 LTS server
 
 ## Anti-features
 
@@ -29,7 +29,7 @@ Algo VPN is a set of Ansible scripts that simplify the setup of a personal IPSEC
 
 The easiest way to get an Algo server running is to let it set up a _new_ virtual machine in the cloud for you.
 
-1. **Setup an account on a cloud hosting provider.** Algo supports [DigitalOcean](https://m.do.co/c/4d7f4ff9cfe4) (most user friendly), [Amazon EC2](https://aws.amazon.com/), [Vultr](https://www.vultr.com/), [Microsoft Azure](https://azure.microsoft.com/), [Google Compute Engine](https://cloud.google.com/compute/), [Scaleway](https://www.scaleway.com/) and [DreamCompute](https://www.dreamhost.com/cloud/computing/) or an OpenStack based cloud hosting.
+1. **Setup an account on a cloud hosting provider.** Algo supports [DigitalOcean](https://m.do.co/c/4d7f4ff9cfe4) (most user friendly), [Amazon Lightsail](https://aws.amazon.com/lightsail/), [Amazon EC2](https://aws.amazon.com/), [Vultr](https://www.vultr.com/), [Microsoft Azure](https://azure.microsoft.com/), [Google Compute Engine](https://cloud.google.com/compute/), [Scaleway](https://www.scaleway.com/), and [DreamCompute](https://www.dreamhost.com/cloud/computing/) or other OpenStack-based cloud hosting.
 
 2. **[Download Algo](https://github.com/trailofbits/algo/archive/master.zip).** Unzip it in a convenient location on your local machine.
 
@@ -72,15 +72,15 @@ That's it! You will get the message below when the server deployment process com
 You can now setup clients to connect it, e.g. your iPhone or laptop. Proceed to [Configure the VPN Clients](#configure-the-vpn-clients) below.
 
 ```
-        "\"#----------------------------------------------------------------------#\"",
-        "\"#                          Congratulations!                            #\"",
-        "\"#                     Your Algo server is running.                     #\"",
-        "\"#    Config files and certificates are in the ./configs/ directory.    #\"",
-        "\"#              Go to https://whoer.net/ after connecting               #\"",
-        "\"#        and ensure that all your traffic passes through the VPN.      #\"",
-        "\"#                    Local DNS resolver 172.16.0.1                     #\"",
-        "\"#                The p12 and SSH keys password is XXXXXXXX             #\"",
-        "\"#----------------------------------------------------------------------#\"",
+    "#                          Congratulations!                            #"
+    "#                     Your Algo server is running.                     #"
+    "#    Config files and certificates are in the ./configs/ directory.    #"
+    "#              Go to https://whoer.net/ after connecting               #"
+    "#        and ensure that all your traffic passes through the VPN.      #"
+    "#                     Local DNS resolver 172.16.0.1                    #"
+    "#        The p12 and SSH keys password for new users is XXXXXXXX       #"
+    "#        The CA key password is XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       #"
+    "#      Shell access: ssh -i configs/algo.pem root@xxx.xxx.xx.xx        #"
 ```
 
 ## Configure the VPN Clients
@@ -89,11 +89,17 @@ Certificates and configuration files that users will need are placed in the `con
 
 ### Apple Devices
 
-**Send users their Apple Profile.** Find the corresponding mobileconfig (Apple Profile) for each user and send it to them over AirDrop or other secure means. Apple Configuration Profiles are all-in-one configuration files for iOS and macOS devices. On macOS, double-clicking a profile to install it will fully configure the VPN. On iOS, users are prompted to install the profile as soon as the AirDrop is accepted.
+WireGuard is used to provide VPN services on Apple devices. Algo generates a WireGuard configuration file, `wireguard/<username>.conf`, and a QR code, `wireguard/<username>.png`, for each user defined in `config.cfg`.
 
-**Turn on the VPN.** On iOS, connect to the VPN by opening Settings and clicking the toggle next to "VPN" near the top of the list. On macOS, connect to the VPN by opening System Preferences -> Network, finding Algo VPN in the left column and clicking "Connect." On macOS, check "Show VPN status in menu bar" to easily connect and disconnect from the menu bar.
+On iOS, install the [WireGuard](https://itunes.apple.com/us/app/wireguard/id1441195209?mt=8) app from the iOS App Store. Then, use the WireGuard app to scan the QR code or AirDrop the configuration file to the device.
 
-**Managing On-Demand VPNs.** If you enabled "On Demand", the VPN will connect automatically whenever it is able. On iOS, you can turn off "On Demand" by clicking the (i) next to the entry for Algo VPN and toggling off "Connect On Demand." On macOS, you can turn off "On Demand" by opening the Network Preferences, finding Algo VPN in the left column, and unchecking the box for "Connect on demand."
+On macOS Mojave or later, install the [WireGuard](https://itunes.apple.com/us/app/wireguard/id1451685025?mt=12) app from the Mac App Store. WireGuard will appear in the menu bar once you run the app. Click on the WireGuard icon, choose **Import tunnel(s) from file...**, then select the appropriate WireGuard configuration file. 
+
+On either iOS or macOS, you can enable "Connect on Demand" and/or exclude certain trusted Wi-Fi networks (such as your home or work) by editing the tunnel configuration in the WireGuard app. (Algo can't do this automatically for you.) 
+
+Installing WireGuard is a little more complicated on older version of macOS. See [Using macOS as a Client with WireGuard](docs/client-macos-wireguard.md).
+
+If you prefer to use the built-in IPSEC VPN on Apple devices, or need "Connect on Demand" or excluded Wi-Fi networks automatically configured, then see [Using Apple Devices as a Client with IPSEC](docs/client-apple-ipsec.md).
 
 ### Android Devices
 
@@ -118,10 +124,10 @@ Install strongSwan, then copy the included ipsec_user.conf, ipsec_user.secrets, 
 
 #### Ubuntu Server 18.04 example
 
-1. `sudo apt-get install strongswan strongswan-plugin-openssl`: install strongSwan
-2. `/etc/ipsec.d/certs`: copy `<name>.crt` from `algo-master/configs/<server_ip>/pki/certs/<name>.crt`
-3. `/etc/ipsec.d/private`: copy `<name>.key` from `algo-master/configs/<server_ip>/pki/private/<name>.key`
-4. `/etc/ipsec.d/cacerts`: copy `cacert.pem` from `algo-master/configs/<server_ip>/pki/cacert.pem`
+1. `sudo apt-get install strongswan libstrongswan-standard-plugins`: install strongSwan
+2. `/etc/ipsec.d/certs`: copy `<name>.crt` from `algo-master/configs/<server_ip>/ipsec/manual/<name>.crt`
+3. `/etc/ipsec.d/private`: copy `<name>.key` from `algo-master/configs/<server_ip>/ipsec/manual/<name>.key`
+4. `/etc/ipsec.d/cacerts`: copy `cacert.pem` from `algo-master/configs/<server_ip>/ipsec/manual/cacert.pem`
 5. `/etc/ipsec.secrets`: add your `user.key` to the list, e.g. `<server_ip> : ECDSA <name>.key`
 6. `/etc/ipsec.conf`: add the connection from `ipsec_user.conf` and ensure `leftcert` matches the `<name>.crt` filename
 7. `sudo ipsec restart`: pick up config changes
@@ -146,7 +152,6 @@ Depending on the platform, you may need one or multiple of the following files.
 * cacert.pem: CA Certificate
 * user.mobileconfig: Apple Profile
 * user.p12: User Certificate and Private Key (in PKCS#12 format)
-* user.sswan: Android strongSwan Profile
 * ipsec_user.conf: strongSwan client configuration
 * ipsec_user.secrets: strongSwan client configuration
 * windows_user.ps1: Powershell script to help setup a VPN connection on Windows
@@ -157,19 +162,17 @@ If you turned on the optional SSH tunneling role, then local user accounts will 
 
 Use the example command below to start an SSH tunnel by replacing `user` and `ip` with your own. Once the tunnel is setup, you can configure a browser or other application to use 127.0.0.1:1080 as a SOCKS proxy to route traffic through the Algo server.
 
- `ssh -D 127.0.0.1:1080 -f -q -C -N user@ip -i configs/ip_user.ssh.pem`
+ `ssh -D 127.0.0.1:1080 -f -q -C -N user@ip -i configs/<server_ip>/ssh-tunnel/<user>.pem`
 
 ## SSH into Algo Server
 
-To SSH into the Algo server for administrative purposes you can use the example command below by replacing `ip` with your own:
+Your Algo server is configured for key-only SSH access for administrative purposes. Open the Terminal app, `cd` into the `algo-master` directory where you originally downloaded Algo, and then use the command listed on the success message:
 
- `ssh root@ip -i ~/.ssh/algo.pem`
+ `ssh -i configs/algo.pem user@ip`
 
-If you find yourself regularly logging into Algo then it will be useful to load your Algo ssh key automatically. Add the following snippet to the bottom of `~/.bash_profile` to add it to your shell environment permanently.
+where `user` is either `root` or `ubuntu` as listed on the success message, and `ip` is the IP address of your Algo server. If you find yourself regularly logging into the server then it will be useful to load your Algo ssh key automatically. Add the following snippet to the bottom of `~/.bash_profile` to add it to your shell environment permanently.
 
  `ssh-add ~/.ssh/algo > /dev/null 2>&1`
-
-Note the admin username is `ubuntu` instead of `root` on providers other than Digital Ocean.
 
 ## Adding or Removing Users
 
@@ -182,26 +185,7 @@ If you chose to save the CA certificate during the deploy process, then Algo's o
 After this process completes, the Algo VPN server will contain only the users listed in the `config.cfg` file.
 
 ## Additional Documentation
-
-* Setup instructions
-  - Documentation for available [Ansible roles](docs/setup-roles.md)
-  - Deploy from [Fedora Workstation (26)](docs/deploy-from-fedora-workstation.md)
-  - Deploy from [RedHat/CentOS 6.x](docs/deploy-from-redhat-centos6.md)
-  - Deploy from [Windows](docs/deploy-from-windows.md)
-  - Deploy from [Ansible](docs/deploy-from-ansible.md) directly
-* Client setup
-  - Setup [Android](docs/client-android.md) clients
-  - Setup [Generic/Linux](docs/client-linux.md) clients with Ansible
-  - Setup Ubuntu clients to use [WireGuard](docs/client-linux-wireguard.md)
-* Cloud setup
-  - Configure [Amazon EC2](docs/cloud-amazon-ec2.md)
-  - Configure [Azure](docs/cloud-azure.md)
-  - Configure [DigitalOcean](docs/cloud-do.md)
-  - Configure [Google Cloud Platform](docs/cloud-gce.md)
-* Advanced Deployment
-  - Deploy to your own [FreeBSD](docs/deploy-to-freebsd.md) server
-  - Deploy to your own [Ubuntu 18.04](docs/deploy-to-ubuntu.md) server
-  - Deploy to an [unsupported cloud provider](docs/deploy-to-unsupported-cloud.md)
+* [Deployment instructions, cloud provider setup instructions, and further client setup instructions available here.](docs/index.md)
 * [FAQ](docs/faq.md)
 * [Troubleshooting](docs/troubleshooting.md)
 
@@ -242,3 +226,5 @@ All donations support continued development. Thanks!
 * We accept donations via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CYZZD39GXUJ3E), [Patreon](https://www.patreon.com/algovpn), and [Flattr](https://flattr.com/submit/auto?fid=kxw60j&url=https%3A%2F%2Fgithub.com%2Ftrailofbits%2Falgo).
 * Use our [referral code](https://m.do.co/c/4d7f4ff9cfe4) when you sign up to Digital Ocean for a $10 credit.
 * We also accept and appreciate contributions of new code and bugfixes via Github Pull Requests.
+
+Algo is licensed and distributed under the AGPLv3. If you want to distribute a closed-source modification or service based on Algo, then please consider <a href="mailto:opensource@trailofbits.com">purchasing an exception</a> . As with the methods above, this will help support continued development.

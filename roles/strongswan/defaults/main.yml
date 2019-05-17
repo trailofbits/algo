@@ -1,0 +1,49 @@
+---
+ipsec_config_path: "configs/{{ IP_subject_alt_name }}/ipsec/"
+ipsec_pki_path: "{{ ipsec_config_path }}/.pki/"
+strongswan_shell: /usr/sbin/nologin
+strongswan_home: /var/lib/strongswan
+BetweenClients_DROP: true
+algo_ondemand_cellular: false
+algo_ondemand_wifi: false
+algo_ondemand_wifi_exclude: '_null'
+algo_windows: false
+algo_store_cakey: false
+algo_local_dns: false
+ipv6_support: false
+dns_encryption: true
+domain: false
+subjectAltName_IP: "{{ 'DNS:' if IP_subject_alt_name|regex_search('[a-z]') else 'IP:' }}{{ IP_subject_alt_name }}"
+subjectAltName_USER: "{% if '@' in item %}email:{{ item }}{% else %}DNS:{{ item }}{% endif %}"
+openssl_bin: openssl
+strongswan_enabled_plugins:
+  - aes
+  - gcm
+  - hmac
+  - kernel-netlink
+  - nonce
+  - openssl
+  - pem
+  - pgp
+  - pkcs12
+  - pkcs7
+  - pkcs8
+  - pubkey
+  - random
+  - revocation
+  - sha2
+  - socket-default
+  - stroke
+  - x509
+
+ciphers:
+  defaults:
+    ike: aes256gcm16-prfsha512-ecp384!
+    esp: aes256gcm16-ecp384!
+  compat:
+    ike: aes256gcm16-prfsha512-ecp384,aes256-sha2_512-prfsha512-ecp384,aes256-sha2_384-prfsha384-ecp384!
+    esp: aes256gcm16-ecp384,aes256-sha2_512-prfsha512-ecp384!
+
+pkcs12_PayloadCertificateUUID: "{{ 900000 | random | to_uuid | upper }}"
+VPN_PayloadIdentifier: "{{ 800000 | random | to_uuid | upper }}"
+CA_PayloadIdentifier: "{{ 700000 | random | to_uuid | upper }}"

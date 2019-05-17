@@ -1,3 +1,6 @@
+{% set subnets = ([strongswan_network] if ipsec_enabled else []) + ([wireguard_network_ipv4] if wireguard_enabled else []) %}
+{% set ports = (['500', '4500'] if ipsec_enabled else []) + ([wireguard_port] if wireguard_enabled else []) %}
+
 #### The mangle table
 # This table allows us to modify packet headers
 # Packets enter this table first
@@ -10,8 +13,8 @@
 :OUTPUT ACCEPT [0:0]
 :POSTROUTING ACCEPT [0:0]
 
-{% if reduce_mtu|int > 0 %}
--A FORWARD -s {{ vpn_network }} -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss {{ 1360 - reduce_mtu|int }}
+{% if reduce_mtu|int > 0 and ipsec_enabled %}
+-A FORWARD -s {{ strongswan_network }} -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss {{ 1360 - reduce_mtu|int }}
 {% endif %}
 
 COMMIT
@@ -27,7 +30,7 @@ COMMIT
 :POSTROUTING ACCEPT [0:0]
 
 # Allow traffic from the VPN network to the outside world, and replies
--A POSTROUTING -s {{ vpn_network }}{% if wireguard_enabled %},{{ wireguard_vpn_network }}{% endif %} -m policy --pol none --dir out -j MASQUERADE
+-A POSTROUTING -s {{ subnets|join(',') }} -m policy --pol none --dir out -j MASQUERADE
 
 
 COMMIT
@@ -54,12 +57,15 @@ COMMIT
 -A INPUT -p ah -j ACCEPT
 # rate limit ICMP traffic per source
 -A INPUT -p icmp --icmp-type echo-request -m hashlimit --hashlimit-upto 5/s --hashlimit-mode srcip --hashlimit-srcmask 32 --hashlimit-name icmp-echo-drop -j ACCEPT
-# Accept IPSEC traffic to ports 500 (IPSEC) and 4500 (MOBIKE aka IKE + NAT traversal)
--A INPUT -p udp -m multiport --dports 500,4500{% if wireguard_enabled %},{{ wireguard_port}}{% endif %} -j ACCEPT
+# Accept IPSEC/WireGuard traffic to ports {{ subnets|join(',') }}
+-A INPUT -p udp -m multiport --dports {{ ports|join(',') }} -j ACCEPT
 # Allow new traffic to port 22 (SSH)
 -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW -j ACCEPT
-# Allow any traffic from the VPN
+
+{% if ipsec_enabled %}
+# Allow any traffic from the IPsec VPN
 -A INPUT -p ipencap -m policy --dir in --pol ipsec --proto esp -j ACCEPT
+{% endif %}
 
 # TODO:
 # The IP of the resolver should be bound to a DUMMY interface.
@@ -70,10 +76,7 @@ COMMIT
 -A INPUT -d {{ local_service_ip }} -p udp --dport 53 -j ACCEPT
 
 # Drop traffic between VPN clients
-{% if BetweenClients_DROP %}
-{% set BetweenClientsPolicy = "DROP" %}
-{% endif %}
--A FORWARD -s {{ vpn_network }}{% if wireguard_enabled %},{{ wireguard_vpn_network }}{% endif %} -d {{ vpn_network }}{% if wireguard_enabled %},{{ wireguard_vpn_network }}{% endif %} -j {{ BetweenClientsPolicy | default("ACCEPT") }}
+-A FORWARD -s {{ subnets|join(',') }} -d {{ subnets|join(',') }} -j {{ "DROP" if BetweenClients_DROP else "ACCEPT" }}
 
 # Forward any packet that's part of an established connection
 -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
@@ -83,12 +86,14 @@ COMMIT
 -A FORWARD -p udp -m multiport --ports 137,138 -j DROP
 -A FORWARD -p tcp -m multiport --ports 137,139 -j DROP
 
+{% if ipsec_enabled %}
 # Forward any IPSEC traffic from the VPN network
--A FORWARD -m conntrack --ctstate NEW -s {{ vpn_network }} -m policy --pol ipsec --dir in -j ACCEPT
+-A FORWARD -m conntrack --ctstate NEW -s {{ strongswan_network }} -m policy --pol ipsec --dir in -j ACCEPT
+{% endif %}
 
-# Forward any traffic from the WireGuard VPN network
 {% if wireguard_enabled %}
--A FORWARD -m conntrack --ctstate NEW -s {{ wireguard_vpn_network }} -m policy --pol none --dir in -j ACCEPT
+# Forward any traffic from the WireGuard VPN network
+-A FORWARD -m conntrack --ctstate NEW -s {{ wireguard_network_ipv4 }} -m policy --pol none --dir in -j ACCEPT
 {% endif %}
 
 COMMIT

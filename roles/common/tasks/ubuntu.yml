@@ -1,24 +1,4 @@
 ---
-- block:
-  - name: Ubuntu | Install prerequisites
-    apt:
-      name: "{{ item }}"
-      update_cache: true
-    with_items:
-      - python2.7
-      - sudo
-
-  - name: Ubuntu | Configure defaults
-    alternatives:
-      name: python
-      link: /usr/bin/python
-      path: /usr/bin/python2.7
-      priority: 1
-    tags:
-      - update-alternatives
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
-
 - name: Gather facts
   setup:
 
@@ -45,8 +25,7 @@
       ignore_errors: true
 
     - name: Wait until SSH becomes ready...
-      local_action:
-        module: wait_for
+      wait_for:
         port: 22
         host: "{{ inventory_hostname }}"
         search_regex: OpenSSH
@@ -54,6 +33,7 @@
         timeout: 320
       when: reboot_required is defined and reboot_required.stdout == 'required'
       become: false
+      delegate_to: localhost
   when: algo_provider != "local"
 
 - name: Include unatteded upgrades configuration
@@ -71,8 +51,6 @@
     dest: /etc/systemd/network/10-algo-lo100.network
   notify:
     - restart systemd-networkd
-  tags:
-    - always
 
 - name: systemd services enabled and started
   systemd:
@@ -83,23 +61,25 @@
   with_items:
     - systemd-networkd
     - systemd-resolved
-  tags:
-    - always
 
 - meta: flush_handlers
-  tags:
-    - always
 
 - name: Check apparmor support
-  shell: apparmor_status
+  command: apparmor_status
   ignore_errors: yes
+  changed_when: false
   register: apparmor_status
 
-- set_fact:
+- name: Set fact if apparmor enabled
+  set_fact:
     apparmor_enabled: true
   when: '"profiles are in enforce mode" in apparmor_status.stdout'
 
-- set_fact:
+- name: Gather additional facts
+  import_tasks: facts.yml
+
+- name: Set OS specific facts
+  set_fact:
     tools:
       - git
       - screen
@@ -109,6 +89,7 @@
       - iptables-persistent
       - cgroup-tools
       - openssl
+      - gnupg2
     sysctl:
       - item: net.ipv4.ip_forward
         value: 1
@@ -116,21 +97,20 @@
         value: 1
       - item: "{{ 'net.ipv6.conf.all.forwarding' if ipv6_support else none }}"
         value: 1
-  tags:
-    - always
 
 - name: Install tools
-  package: name="{{ item }}" state=present
-  with_items:
-    - "{{ tools|default([]) }}"
-  tags:
-    - always
+  apt:
+    name: "{{ tools|default([]) }}"
+    state: present
+    update_cache: true
 
 - name: Install headers
   apt:
-    name: "{{ item }}"
+    name:
+      - linux-headers-generic
+      - "linux-headers-{{ ansible_kernel }}"
     state: present
   when: install_headers
-  with_items:
-    - linux-headers-generic
-    - "linux-headers-{{ ansible_kernel }}"
+
+- include_tasks: iptables.yml
+  tags: iptables

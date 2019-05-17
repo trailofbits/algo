@@ -8,13 +8,21 @@
   package: name="{{ item }}" state=present
   with_items:
     - "{{ prerequisites }}"
+  register: result
+  until: result is succeeded
+  retries: 10
+  delay: 3
 
 - name: Install strongSwan
   package: name=strongswan state=present
+  register: result
+  until: result is succeeded
+  retries: 10
+  delay: 3
 
 - name: Setup the ipsec config
   template:
-    src: "roles/vpn/templates/client_ipsec.conf.j2"
+    src: "roles/strongswan/templates/client_ipsec.conf.j2"
     dest: "{{ configs_prefix }}/ipsec.{{ IP_subject_alt_name }}.conf"
     mode: '0644'
   with_items:
@@ -24,7 +32,7 @@
 
 - name: Setup the ipsec secrets
   template:
-    src: "roles/vpn/templates/client_ipsec.secrets.j2"
+    src: "roles/strongswan/templates/client_ipsec.secrets.j2"
     dest: "{{ configs_prefix }}/ipsec.{{ IP_subject_alt_name }}.secrets"
     mode: '0600'
   with_items:
@@ -50,11 +58,11 @@
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   with_items:
-    - src: "configs/{{ IP_subject_alt_name }}/pki/certs/{{ vpn_user }}.crt"
+    - src: "configs/{{ IP_subject_alt_name }}/ipsec/.pki/certs/{{ vpn_user }}.crt"
       dest: "{{ configs_prefix }}/ipsec.d/certs/{{ vpn_user }}.crt"
-    - src: "configs/{{ IP_subject_alt_name }}/pki/cacert.pem"
+    - src: "configs/{{ IP_subject_alt_name }}/ipsec/.pki/cacert.pem"
       dest: "{{ configs_prefix }}/ipsec.d/cacerts/{{ IP_subject_alt_name }}.pem"
-    - src: "configs/{{ IP_subject_alt_name }}/pki/private/{{ vpn_user }}.key"
+    - src: "configs/{{ IP_subject_alt_name }}/ipsec/.pki/private/{{ vpn_user }}.key"
       dest: "{{ configs_prefix }}/ipsec.d/private/{{ vpn_user }}.key"
   notify:
     - restart strongswan

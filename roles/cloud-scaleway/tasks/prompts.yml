@@ -1,16 +1,12 @@
 ---
 - pause:
     prompt: |
-      Enter your auth token (https://www.scaleway.com/docs/generate-an-api-token/)
+      Enter your auth token (https://trailofbits.github.io/algo/cloud-scaleway.html)
     echo: false
   register: _scaleway_token
-  when: scaleway_token is undefined
-
-- pause:
-    prompt: |
-      Enter your organization name (https://cloud.scaleway.com/#/billing)
-  register: _scaleway_org
-  when: scaleway_org is undefined
+  when:
+    - scaleway_token is undefined
+    - lookup('env','SCW_TOKEN')|length <= 0
 
 - pause:
     prompt: |
@@ -26,9 +22,8 @@
 
 - name: Set scaleway facts
   set_fact:
-    algo_scaleway_token: "{{ scaleway_token | default(_scaleway_token.user_input) }}"
-    algo_scaleway_org: "{{ scaleway_org | default(_scaleway_org.user_input|default(omit)) }}"
+    algo_scaleway_token: "{{ scaleway_token | default(_scaleway_token.user_input) | default(lookup('env','SCW_TOKEN'), true) }}"
     algo_region: >-
       {% if region is defined %}{{ region }}
-      {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ scaleway_regions[_algo_region.user_input | int -1 ]['alias'] }}
+      {%- elif _algo_region.user_input %}{{ scaleway_regions[_algo_region.user_input | int -1 ]['alias'] }}
       {%- else %}{{ scaleway_regions.0.alias }}{% endif %}

@@ -4,7 +4,9 @@
       Enter the local path to your configuration INI file
       (https://trailofbits.github.io/algo/cloud-vultr.html):
   register: _vultr_config
-  when: vultr_config is undefined
+  when:
+    - vultr_config is undefined
+    - lookup('env','VULTR_API_CONFIG')|length <= 0
 
 - name: Set the token as a fact
   set_fact:
@@ -52,5 +54,5 @@
   set_fact:
     algo_vultr_region: >-
       {% if region is defined %}{{ region }}
-      {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ vultr_regions[_algo_region.user_input | int -1 ]['name'] }}
+      {%- elif _algo_region.user_input %}{{ vultr_regions[_algo_region.user_input | int -1 ]['name'] }}
       {%- else %}{{ vultr_regions[default_region | int - 1]['name'] }}{% endif %}

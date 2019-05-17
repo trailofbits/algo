@@ -1,10 +1,3 @@
 ---
-- block:
-  - name: Include prompts
-    import_tasks: prompts.yml
-
-  rescue:
-    - debug: var=fail_hint
-      tags: always
-    - fail:
-      tags: always
+- name: Include prompts
+  import_tasks: prompts.yml

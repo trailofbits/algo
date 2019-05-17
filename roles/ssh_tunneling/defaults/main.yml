@@ -1,0 +1,2 @@
+---
+ssh_tunnels_config_path: "configs/{{ IP_subject_alt_name }}/ssh-tunnel/"

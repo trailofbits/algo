@@ -1,10 +1,10 @@
-# Scripted Deployment
+# Deployment from Ansible
 
 Before you begin, make sure you have installed all the dependencies necessary for your operating system as described in the [README](../README.md).
 
 You can deploy Algo non-interactively by running the Ansible playbooks directly with `ansible-playbook`.
 
-`ansible-playbook` accepts "tags" via the `-t` or `TAGS` options. You can pass tags as a list of comma separated values. Ansible will only run plays (install roles) with the specified tags.
+`ansible-playbook` accepts "tags" via the `-t` or `TAGS` options. You can pass tags as a list of comma separated values. Ansible will only run plays (install roles) with the specified tags. You can also use the `--skip-tags` option to skip certain parts of the install, such as `iptables` (overwrite iptables rules), `ipsec` (install strongSwan), `wireguard` (install Wireguard).
 
 `ansible-playbook` accepts variables via the `-e` or `--extra-vars` option. You can pass variables as space separated key=value pairs. Algo requires certain variables that are listed below.
 
@@ -23,25 +23,25 @@ ansible-playbook main.yml -e "provider=digitalocean
                                 do_token=token"
 ```
 
-See below for more information about providers and extra variables
+See below for more information about variables and roles.
 
 ### Variables
 
 - `provider` - (Required) The provider to use. See possible values below
 - `server_name` - (Required) Server name. Default: algo
-- `ondemand_cellular` (Optional) VPN On Demand when connected to cellular networks. Default: false
-- `ondemand_wifi` - (Optional. See `ondemand_wifi_exclude`) VPN On Demand when connected to WiFi networks. Default: false
+- `ondemand_cellular` (Optional) VPN On Demand when connected to cellular networks with IPsec. Default: false
+- `ondemand_wifi` - (Optional. See `ondemand_wifi_exclude`) VPN On Demand when connected to WiFi networks with IPsec. Default: false
 - `ondemand_wifi_exclude` (Required if `ondemand_wifi` set) - WiFi networks to exclude from using the VPN. Comma-separated values
 - `local_dns` - (Optional) Enable a DNS resolver. Default: false
 - `ssh_tunneling` - (Optional) Enable SSH tunneling for each user. Default: false
 - `windows` - (Optional) Enables compatible ciphers and key exchange to support Windows clients, less secure. Default: false
 - `store_cakey` - (Optional) Whether or not keep the CA key (required to add users in the future, but less secure). Default: false
 
-If any of those unspecified ansible will ask the user to input
+If any of the above variables are unspecified, ansible will ask the user to input them.
 
 ### Ansible roles
 
-Roles can be activated by specifying an extra variable `provider`
+Cloud roles can be activated by specifying an extra variable `provider`.
 
 Cloud roles:
 
@@ -55,13 +55,25 @@ Cloud roles:
 
 Server roles:
 
-- role: vpn
+- role: strongswan
+  * Installs [strongSwan](https://www.strongswan.org/)
+  * Enables AppArmor, limits CPU and memory access, and drops user privileges
+  * Builds a Certificate Authority (CA) with [easy-rsa-ipsec](https://github.com/ValdikSS/easy-rsa-ipsec) and creates one client certificate per user
+  * Bundles the appropriate certificates into Apple mobileconfig profiles and Powershell scripts for each user
 - role: dns_adblocking
+  * Installs the [dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html) local resolver with a blacklist for advertising domains
+  * Constrains dnsmasq with AppArmor and cgroups CPU and memory limitations
 - role: dns_encryption
+  * Installs [dnscrypt-proxy](https://github.com/jedisct1/dnscrypt-proxy)
+  * Constrains dnscrypt-proxy with AppArmor and cgroups CPU and memory limitations
 - role: ssh_tunneling
+  * Adds a restricted `algo` group with no shell access and limited SSH forwarding options
+  * Creates one limited, local account and an SSH public key for each user
 - role: wireguard
+  * Installs a [Wireguard](https://www.wireguard.com/) server, with a startup script, and automatic checks for upgrades
+  * Creates wireguard.conf files for Linux clients as well as QR codes for Apple/Android clients
 
-Note: The `vpn` role generates Apple profiles with On-Demand Wifi and Cellular if you pass the following variables:
+Note: The `strongswan` role generates Apple profiles with On-Demand Wifi and Cellular if you pass the following variables:
 
 - ondemand_wifi: true
 - ondemand_wifi_exclude: HomeNet,OfficeWifi
@@ -91,9 +103,9 @@ Possible options can be gathered calling to https://api.digitalocean.com/v2/regi
 
 Required variables:
 
-- aws_access_key
+- aws_access_key: `AKIA...`
 - aws_secret_key
-- region
+- region: e.g. `us-east-1`
 
 Possible options can be gathered via cli `aws ec2 describe-regions`
 
@@ -114,7 +126,8 @@ Additional variables:
                 "ec2:DescribeImages",
                 "ec2:DescribeKeyPairs",
                 "ec2:DescribeRegions",
-                "ec2:ImportKeyPair"
+                "ec2:ImportKeyPair",
+                "ec2:CopyImage"
             ],
             "Resource": [
                 "*"
@@ -179,8 +192,8 @@ Required variables:
 
 Required variables:
 
-- [vultr_config](https://github.com/trailofbits/algo/docs/cloud-vultr.md)
-- [region](https://api.vultr.com/v1/regions/list)
+- [vultr_config](https://trailofbits.github.io/algo/cloud-vultr.html): /path/to/.vultr.ini
+- [region](https://api.vultr.com/v1/regions/list): e.g. `Chicago`, `'New Jersey'`
 
 ### Azure
 
@@ -196,24 +209,41 @@ Required variables:
 
 Required variables:
 
-- aws_access_key
+- aws_access_key: `AKIA...`
 - aws_secret_key
-- region
+- region: e.g. `us-east-1`
 
 Possible options can be gathered via cli `aws lightsail get-regions`
+
+#### Minimum required IAM permissions for deployment:
+
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "LightsailDeployment",
+            "Effect": "Allow",
+            "Action": [
+                "lightsail:GetRegions",
+                "lightsail:GetInstance",
+                "lightsail:CreateInstances",
+                "lightsail:OpenInstancePublicPorts"
+            ],
+            "Resource": [
+                "*"
+            ]
+        }
+    ]
+}
+```
 
 ### Scaleway
 
 Required variables:
 
 - [scaleway_token](https://www.scaleway.com/docs/generate-an-api-token/)
-- [scaleway_org](https://cloud.scaleway.com/#/billing)
-- region
-
-Possible regions:
-
-- ams1
-- par1
+- region: e.g. ams1, par1
 
 ### OpenStack
 
@@ -225,7 +255,7 @@ You need to source the rc file prior to run Algo. Download it from the OpenStack
 Required variables:
 
 - server - IP or hostname to access the server via SSH
-- endpoint - Public IP address of your server
+- endpoint - Public IP address or domain name of your server
 - ssh_user
 
 

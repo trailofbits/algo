@@ -29,6 +29,9 @@ Note that this must be passed in as a SecureString, not a regular string.
 You can create a secure string with the `Read-Host -AsSecureString` cmdlet.
 See the examples for more information.
 
+.PARAMETER AllUsers
+Allow all users to use the VPN
+
 .EXAMPLE
 client_USER.ps1 -Add
 
@@ -63,6 +66,9 @@ Save the embedded CA cert and encrypted user PKCS12 file.
     [Parameter(ParameterSetName="Add")]
     [SecureString] $Pkcs12DecryptionPassword,
 
+    [Parameter(ParameterSetName="Add")]
+    [Switch] $AllUsers = $false,
+
     [Parameter(Mandatory, ParameterSetName="Remove")]
     [Switch] $Remove,
 
@@ -79,13 +85,13 @@ Save the embedded CA cert and encrypted user PKCS12 file.
 $ErrorActionPreference = "Stop"
 
 $VpnServerAddress = "{{ IP_subject_alt_name }}"
-$VpnName = "Algo VPN {{ IP_subject_alt_name }} IKEv2"
+$VpnName = "AlgoVPN {{ algo_server_name }} IKEv2"
 $VpnUser = "{{ item.0 }}"
 $CaCertificateBase64 = "{{ PayloadContentCA }}"
 $UserPkcs12Base64 = "{{ item.1.stdout }}"
 
 if ($PsCmdlet.ParameterSetName -eq "Add" -and -not $Pkcs12DecryptionPassword) {
-    $Pkcs12DecryptionPassword = Read-Host -AsSecureString -Prompt "Pkcs12DecryptionPassword"
+    $Pkcs12DecryptionPassword = ConvertTo-SecureString '{{ p12_export_password }}' -asplaintext -force
 }
 
 <#
@@ -164,6 +170,7 @@ function Add-AlgoVPN {
         TunnelType = "IKEv2"
         AuthenticationMethod = "MachineCertificate"
         EncryptionLevel = "Required"
+        AllUserConnection = $AllUsers
     }
     Add-VpnConnection @addVpnParams
 

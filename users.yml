@@ -7,7 +7,8 @@
 
   tasks:
     - block:
-        - pause:
+        - name: Server address prompt
+          pause:
             prompt: "Enter the IP address of your server: (or use localhost for local installation)"
           register: _server
           when: server is undefined
@@ -16,25 +17,32 @@
           set_fact:
             algo_server: >-
               {% if server is defined %}{{ server }}
-              {%- elif _server.user_input is defined and _server.user_input != "" %}{{ _server.user_input }}
+              {%- elif _server.user_input %}{{ _server.user_input }}
               {%- else %}omit{% endif %}
 
         - name: Import host specific variables
           include_vars:
-            file: "configs/{{ algo_server }}/config.yml"
+            file: "configs/{{ algo_server }}/.config.yml"
 
-        - pause:
+        - name: CA password prompt
+          pause:
             prompt: Enter the password for the private CA key
             echo: false
           register: _ca_password
-          when: ca_password is undefined
+          when:
+            - ca_password is undefined
+            - ipsec_enabled
 
         - name: Set facts based on the input
           set_fact:
             CA_password: >-
               {% if ca_password is defined %}{{ ca_password }}
-              {%- elif _ca_password.user_input is defined and _ca_password.user_input != "" %}{{ _ca_password.user_input }}
+              {%- elif _ca_password.user_input %}{{ _ca_password.user_input }}
               {%- else %}omit{% endif %}
+
+        - name: Local pre-tasks
+          import_tasks: playbooks/cloud-pre.yml
+          become: false
 
         - name: Add the server to the vpn-host group
           add_host:
@@ -42,13 +50,10 @@
             groups: vpn-host
             ansible_ssh_user: "{{ server_user|default('root') }}"
             ansible_connection: "{% if algo_server == 'localhost' %}local{% else %}ssh{% endif %}"
-            ansible_python_interpreter: "/usr/bin/python2.7"
+            ansible_python_interpreter: "/usr/bin/python3"
             CA_password: "{{ CA_password }}"
       rescue:
-        - debug: var=fail_hint
-          tags: always
-        - fail:
-          tags: always
+        - include_tasks: playbooks/rescue.yml
 
 - name: User management
   hosts: vpn-host
@@ -56,37 +61,30 @@
   become: true
   vars_files:
     - config.cfg
-    - "configs/{{ inventory_hostname }}/config.yml"
+    - "configs/{{ inventory_hostname }}/.config.yml"
 
-  pre_tasks:
+  tasks:
     - block:
-      - name: Local pre-tasks
-        import_tasks: playbooks/cloud-pre.yml
-      rescue:
-        - debug: var=fail_hint
-          tags: always
-        - fail:
-          tags: always
+      - import_role:
+          name: common
 
-  roles:
-    - role: common
-    - role: wireguard
-      tags: [ 'vpn', 'wireguard' ]
-      when: wireguard_enabled
-    - role: vpn
-      tags: vpn
-    - role: ssh_tunneling
-      when: algo_ssh_tunneling
+      - import_role:
+          name: wireguard
+        when: wireguard_enabled
 
-  post_tasks:
-    - block:
-        - debug:
-            msg:
-              - "{{ congrats.common.split('\n') }}"
-              - "    {% if p12.changed %}{{ congrats.p12_pass }}{% endif %}"
-          tags: always
+      - import_role:
+          name: strongswan
+        when: ipsec_enabled
+        tags: ipsec
+
+      - import_role:
+          name: ssh_tunneling
+        when: algo_ssh_tunneling
+
+      - debug:
+          msg:
+            - "{{ congrats.common.split('\n') }}"
+            - "    {% if p12.changed %}{{ congrats.p12_pass }}{% endif %}"
+        tags: always
       rescue:
-        - debug: var=fail_hint
-          tags: always
-        - fail:
-          tags: always
+        - include_tasks: playbooks/rescue.yml
