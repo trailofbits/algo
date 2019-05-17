@@ -83,7 +83,7 @@ COMMIT
 # particular virtual (tun,tap,...) or physical (ethernet) interface.
 
 # Accept DNS traffic to the local DNS resolver
--A INPUT -d fcaa::1 -p udp --dport 53 -j ACCEPT
+-A INPUT -d {{ local_service_ipv6 }}/128 -p udp --dport 53 -j ACCEPT
 
 # Drop traffic between VPN clients
 -A FORWARD -s {{ subnets|join(',') }} -d {{ subnets|join(',') }} -j {{ "DROP" if BetweenClients_DROP else "ACCEPT" }}
