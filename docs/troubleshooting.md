@@ -28,7 +28,7 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
      * [I can't get Network Manager to connect to the Algo server](#i-cant-get-network-manager-to-connect-to-the-algo-server)
      * [Various websites appear to be offline through the VPN](#various-websites-appear-to-be-offline-through-the-vpn)
      * [Clients appear stuck in a reconnection loop](#clients-appear-stuck-in-a-reconnection-loop)
-     * [Wireguard: clients connecting on Wifi but not LTE](#wireguard-clients-connecting-on-wif-but-not-lte)
+     * [Wireguard: clients connecting on Wifi but not LTE](#wireguard-clients-connecting-on-wifi-but-not-lte)
      * ["Error 809" or IKE_AUTH requests that never make it to the server](#error-809-or-ike_auth-requests-that-never-make-it-to-the-server)
      * [Windows: Parameter is incorrect](#windows-parameter-is-incorrect)
   * [I have a problem not covered here](#i-have-a-problem-not-covered-here)
