@@ -8,7 +8,7 @@
   tasks:
     - block:
         - name: Get list of installed servers
-          shell: ls configs/
+          command: ls configs/
           register: _directory_list
 
         - name: Build list of installed servers
