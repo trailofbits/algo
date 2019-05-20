@@ -7,7 +7,7 @@
 
   tasks:
     - block:
-        - name: Get list of installed servers
+        - name: Get list of installed config files
           find:
             paths: configs/
             depth: 2
@@ -16,7 +16,7 @@
             patterns: ".config.yml"
           register: _configs_list
 
-        - name: Build list of installed servers
+        - name: Build string of installed servers
           set_fact:
             server_list: "{% if server_list is defined %}{{ server_list }},{% endif %}{{ item.path|replace('configs/','')|replace('/.config.yml','') }}"
           with_items: "{{ _configs_list.files }}"
