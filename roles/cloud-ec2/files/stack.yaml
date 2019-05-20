@@ -11,6 +11,12 @@ Parameters:
     Type: String
   WireGuardPort:
     Type: String
+  UseThisElasticIP:
+    Type: String
+    Default: ''
+Conditions:
+  AllocateNewEIP: !Equals [!Ref UseThisElasticIP, '']
+  AssociateExistingEIP: !Not [!Equals [!Ref UseThisElasticIP, '']]
 Resources:
   VPC:
     Type: AWS::EC2::VPC
@@ -175,6 +181,7 @@ Resources:
 
   ElasticIP:
     Type: AWS::EC2::EIP
+    Condition: AllocateNewEIP
     Properties:
       Domain: vpc
       InstanceId: !Ref EC2Instance
@@ -182,6 +189,14 @@ Resources:
       - EC2Instance
       - VPCGatewayAttachment
 
+  ElasticIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Condition: AssociateExistingEIP
+    Properties:
+      AllocationId: !Ref UseThisElasticIP
+      InstanceId: !Ref EC2Instance
+
+
 Outputs:
   ElasticIP:
-    Value: !Ref ElasticIP
+    Value: !GetAtt [EC2Instance, PublicIp]

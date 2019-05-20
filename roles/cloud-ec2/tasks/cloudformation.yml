@@ -12,6 +12,7 @@
       PublicSSHKeyParameter: "{{ lookup('file', SSH_keys.public) }}"
       ImageIdParameter: "{{ ami_image }}"
       WireGuardPort: "{{ wireguard_port }}"
+      UseThisElasticIP: "{{ existing_eip }}"
     tags:
       Environment: Algo
   register: stack

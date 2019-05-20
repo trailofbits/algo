@@ -53,3 +53,25 @@
         [{{ default_region }}]
     register: _algo_region
   when: region is undefined
+
+- block:
+  - name: Get existing available Elastic IPs
+    ec2_eip_facts:
+    register: raw_eip_addresses
+
+  - set_fact:
+      available_eip_addresses: "{{ raw_eip_addresses.addresses | selectattr('association_id', 'undefined') | list }}"
+
+  - pause:
+      prompt: >-
+        What Elastic IP would you like to use?
+          {% for eip in available_eip_addresses %}
+          {{ loop.index }}. {{ eip['public_ip'] }}
+          {% endfor %}
+
+        Enter the number of your desired Elastic IP
+    register: _use_existing_eip
+
+  - set_fact:
+      existing_eip: "{{ available_eip_addresses[_use_existing_eip.user_input | int -1 ]['allocation_id'] }}"
+  when: cloud_providers.ec2.use_existing_eip
