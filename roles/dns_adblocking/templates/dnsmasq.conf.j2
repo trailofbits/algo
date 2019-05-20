@@ -90,6 +90,9 @@ no-resolv
 # server=10.1.2.3@eth1
 {% if dns_encryption %}
 server={{ local_service_ip }}#5353
+{% if ipv6_support -%}
+server={{ local_service_ipv6 }}#5353
+{% endif %}
 {% else %}
 {% for host in dns_servers.ipv4 %}
 server={{ host }}

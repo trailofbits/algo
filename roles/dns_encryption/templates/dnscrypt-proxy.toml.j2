@@ -37,7 +37,7 @@
 ## List of local addresses and ports to listen to. Can be IPv4 and/or IPv6.
 ## Note: When using systemd socket activation, choose an empty set (i.e. [] ).
 
-listen_addresses  = ['{{ local_service_ip }}:{{ listen_port }}']
+listen_addresses  = ['{{ local_service_ip }}:{{ listen_port }}'{% if ipv6_support %}, '[{{ local_service_ipv6 }}]:{{ listen_port }}'{% endif %}]
 
 
 ## Maximum number of simultaneous client connections to accept
