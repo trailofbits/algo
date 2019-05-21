@@ -16,16 +16,24 @@
             patterns: ".config.yml"
           register: _configs_list
 
+        - name: Verify servers
+          assert:
+            that: _configs_list.matched > 0
+            msg: No servers found, nothing to update.
+
         - name: Build string of installed servers
           set_fact:
-            server_list: "{% if server_list is defined %}{{ server_list }},{% endif %}{{ item.path|replace('configs/','')|replace('/.config.yml','') }}"
-          with_items: "{{ _configs_list.files }}"
+            server_list: >-
+              [{% for i in _configs_list.files %}
+                '{{ i.path.split('/')[1] }}'
+                {{ ',' if not loop.last else '' }}
+              {% endfor %}]
 
         - name: Server address prompt
           pause:
             prompt: |
               Select the server to update user list below:
-                {% for r in server_list.split(',') %}
+                {% for r in server_list %}
                 {{ loop.index }}. {{ r }}
                 {% endfor %}
           register: _server
@@ -36,7 +44,7 @@
           set_fact:
             algo_server: >-
               {% if server is defined %}{{ server }}
-              {%- elif _server.user_input %}{{ server_list.split(',')[_server.user_input | int -1 ] }}
+              {%- elif _server.user_input %}{{ server_list[_server.user_input | int -1 ] }}
               {%- else %}omit{% endif %}
 
         - name: Import host specific variables
