@@ -7,17 +7,44 @@
 
   tasks:
     - block:
+        - name: Get list of installed config files
+          find:
+            paths: configs/
+            depth: 2
+            recurse: true
+            hidden: true
+            patterns: ".config.yml"
+          register: _configs_list
+
+        - name: Verify servers
+          assert:
+            that: _configs_list.matched > 0
+            msg: No servers found, nothing to update.
+
+        - name: Build list of installed servers
+          set_fact:
+            server_list: >-
+              [{% for i in _configs_list.files %}
+                '{{ i.path.split('/')[1] }}'
+                {{ ',' if not loop.last else '' }}
+              {% endfor %}]
+
         - name: Server address prompt
           pause:
-            prompt: "Enter the IP address of your server: (or use localhost for local installation)"
+            prompt: |
+              Select the server to update user list below:
+                {% for r in server_list %}
+                {{ loop.index }}. {{ r }}
+                {% endfor %}
           register: _server
-          when: server is undefined
+      when: server is undefined
 
+    - block:
         - name: Set facts based on the input
           set_fact:
             algo_server: >-
               {% if server is defined %}{{ server }}
-              {%- elif _server.user_input %}{{ _server.user_input }}
+              {%- elif _server.user_input %}{{ server_list[_server.user_input | int -1 ] }}
               {%- else %}omit{% endif %}
 
         - name: Import host specific variables
