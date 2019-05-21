@@ -21,7 +21,7 @@
             that: _configs_list.matched > 0
             msg: No servers found, nothing to update.
 
-        - name: Build string of installed servers
+        - name: Build list of installed servers
           set_fact:
             server_list: >-
               [{% for i in _configs_list.files %}
