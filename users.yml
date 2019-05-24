@@ -25,7 +25,8 @@
           set_fact:
             server_list: >-
               [{% for i in _configs_list.files %}
-                '{{ i.path.split('/')[1] }}'
+                {% set config  = lookup('file', i.path)|from_yaml %}
+                '{{ config.server }}'
                 {{ ',' if not loop.last else '' }}
               {% endfor %}]
 
@@ -111,7 +112,9 @@
       - debug:
           msg:
             - "{{ congrats.common.split('\n') }}"
-            - "    {% if p12.changed %}{{ congrats.p12_pass }}{% endif %}"
+            - "    {{ congrats.p12_pass if algo_ssh_tunneling or ipsec_enabled else '' }}"
+            - "    {{ congrats.ca_key_pass if algo_store_cakey and ipsec_enabled else '' }}"
+            - "    {{ congrats.ssh_access if algo_provider != 'local' else ''}}"
         tags: always
       rescue:
         - include_tasks: playbooks/rescue.yml
