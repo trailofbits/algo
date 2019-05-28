@@ -77,6 +77,13 @@ COMMIT
 
 # Drop traffic between VPN clients
 -A FORWARD -s {{ subnets|join(',') }} -d {{ subnets|join(',') }} -j {{ "DROP" if BetweenClients_DROP else "ACCEPT" }}
+# Drop traffic to VPN clients from SSH tunnels
+-A OUTPUT -d {{ subnets|join(',') }} -m owner --gid-owner 15000 -j {{ "DROP" if BetweenClients_DROP else "ACCEPT" }}
+
+# Drop traffic to the link-local network
+-A FORWARD -s {{ subnets|join(',') }} -d 169.254.0.0/16 -j DROP
+# Drop traffic to the link-local network from SSH tunnels
+-A OUTPUT -d 169.254.0.0/16 -m owner --gid-owner 15000 -j DROP
 
 # Forward any packet that's part of an established connection
 -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT

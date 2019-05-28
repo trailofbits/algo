@@ -14,7 +14,10 @@
     - restart ssh
 
 - name: Ensure that the algo group exist
-  group: name=algo state=present
+  group:
+    name: algo
+    state: present
+    gid: 15000
 
 - name: Ensure that the jail directory exist
   file:
@@ -28,7 +31,7 @@
   - name: Ensure that the SSH users exist
     user:
       name: "{{ item }}"
-      groups: algo
+      group: algo
       home: '/var/jail/{{ item }}'
       createhome: yes
       generate_ssh_key: false
