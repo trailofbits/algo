@@ -57,6 +57,8 @@
 - block:
   - name: Get existing available Elastic IPs
     ec2_eip_facts:
+      aws_access_key: "{{ access_key }}"
+      aws_secret_key: "{{ secret_key }}"
     register: raw_eip_addresses
 
   - set_fact:
