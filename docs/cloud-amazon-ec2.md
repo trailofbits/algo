@@ -89,26 +89,28 @@ Name the vpn server:
 After entering the server name, the script ask which region you wish to setup your new Algo instance in. Enter the number  next to name of the region.
 
 ```
-  What region should the server be located in?
-    1.   us-east-1           US East (N. Virginia)
-    2.   us-east-2           US East (Ohio)
-    3.   us-west-1           US West (N. California)
-    4.   us-west-2           US West (Oregon)
-    5.   ca-central-1        Canada (Central)
-    6.   eu-central-1        EU (Frankfurt)
-    7.   eu-west-1           EU (Ireland)
-    8.   eu-west-2           EU (London)
-    9.   eu-west-3           EU (Paris)
-    10.  ap-northeast-1      Asia Pacific (Tokyo)
-    11.  ap-northeast-2      Asia Pacific (Seoul)
-    12.  ap-northeast-3      Asia Pacific (Osaka-Local)
-    13.  ap-southeast-1      Asia Pacific (Singapore)
-    14.  ap-southeast-2      Asia Pacific (Sydney)
-    15.  ap-south-1          Asia Pacific (Mumbai)
-    16.  sa-east-1           South America (São Paulo)
-
-Enter the number of your desired region:
-[1]: 10
+What region should the server be located in?
+(https://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region)
+    1. ap-northeast-1
+    2. ap-northeast-2
+    3. ap-south-1
+    4. ap-southeast-1
+    5. ap-southeast-2
+    6. ca-central-1
+    7. eu-central-1
+    8. eu-north-1
+    9. eu-west-1
+    10. eu-west-2
+    11. eu-west-3
+    12. sa-east-1
+    13. us-east-1
+    14. us-east-2
+    15. us-west-1
+    16. us-west-2
+  
+Enter the number of your desired region
+[13]
+:
 ```
 
 You will then be asked the remainder of the standard Algo setup questions.
