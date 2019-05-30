@@ -1,8 +1,28 @@
-## 1.1 (Unreleased)
+## 1.1 [(Unreleased)](https://github.com/trailofbits/algo/tree/HEAD)
 
 ### Added
+- Support for Ubuntu 19.04 [\#1405](https://github.com/trailofbits/algo/pull/1405) ([jackivanov](https://github.com/jackivanov))
+- AWS support for existing EIP [\#1292](https://github.com/trailofbits/algo/pull/1292) ([statik](https://github.com/statik))
+- Script to support cloud-init and local easy deploy [\#1366](https://github.com/trailofbits/algo/pull/1366) ([jackivanov](https://github.com/jackivanov))
+- Automatically create cloud firewall rules for installs onto Vultr [\#1400](https://github.com/trailofbits/algo/pull/1400) ([TC1977](https://github.com/TC1977))
+- Randomly generated IP address for the local dns resolver [\#1429](https://github.com/trailofbits/algo/pull/1429) ([jackivanov](https://github.com/jackivanov))
+- Update users: add server pick-list [\#1441](https://github.com/trailofbits/algo/pull/1441) ([TC1977](https://github.com/TC1977))
+- Additional testing [\#213](https://github.com/trailofbits/algo/issues/213)
+- Add IPv6 support to DNS [\#1425](https://github.com/trailofbits/algo/pull/1425) ([shapiro125](https://github.com/shapiro125))
+- Additional p12 with the CA cert included [\#1403](https://github.com/trailofbits/algo/pull/1403) ([jackivanov](https://github.com/jackivanov))
 
 ### Fixed
+- Fixes error in 10-algo-lo100.network [\#1369](https://github.com/trailofbits/algo/pull/1369) ([adamluk](https://github.com/adamluk))
+- Error message is missing for some roles [\#1364](https://github.com/trailofbits/algo/issues/1364)
+- DNS leak in Linux/Wireguard when LAN gateway/DNS is 172.16.0.1 [\#1422](https://github.com/trailofbits/algo/issues/1422)
+- Installation error after \#1397 [\#1409](https://github.com/trailofbits/algo/issues/1409)
+
+### Changed
+- Refactoring, Linting and additional tests [\#1397](https://github.com/trailofbits/algo/pull/1397) ([jackivanov](https://github.com/jackivanov))
+- Scaleway modules [\#1410](https://github.com/trailofbits/algo/pull/1410) ([jackivanov](https://github.com/jackivanov))
+- Use VULTR_API_CONFIG variable if set [\#1374](https://github.com/trailofbits/algo/pull/1374) ([davidemyers](https://github.com/davidemyers))
+- Simplify Apple Profile Configuration Template [\#1033](https://github.com/trailofbits/algo/pull/1033) ([faf0](https://github.com/faf0))
+- Include roles as separate tasks [\#1365](https://github.com/trailofbits/algo/pull/1365) ([jackivanov](https://github.com/jackivanov))
 
 ## 1.0 (Mar 19, 2019)
 
