@@ -54,9 +54,20 @@
     register: _algo_region
   when: region is undefined
 
+- name: Set algo_region and stack_name facts
+  set_fact:
+    algo_region: >-
+      {% if region is defined %}{{ region }}
+      {%- elif _algo_region.user_input %}{{ aws_regions[_algo_region.user_input | int -1 ]['region_name'] }}
+      {%- else %}{{ aws_regions[default_region | int - 1]['region_name'] }}{% endif %}
+    stack_name: "{{ algo_server_name | replace('.', '-') }}"
+
 - block:
   - name: Get existing available Elastic IPs
     ec2_eip_facts:
+      aws_access_key: "{{ access_key }}"
+      aws_secret_key: "{{ secret_key }}"
+      region: "{{ algo_region }}"
     register: raw_eip_addresses
 
   - set_fact:
