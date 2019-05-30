@@ -176,7 +176,7 @@ where `user` is either `root` or `ubuntu` as listed on the success message, and 
 
 ## Adding or Removing Users
 
-_If you chose to save the CA certificate during the deploy process,_ then Algo's own scripts can easily add and remove users from the VPN server.
+_If you chose to save the CA key during the deploy process,_ then Algo's own scripts can easily add and remove users from the VPN server.
 
 1. Update the `users` list in your `config.cfg`
 2. Open a terminal, `cd` to the algo directory, and activate the virtual environment with `source env/bin/activate`
