@@ -25,7 +25,8 @@
           set_fact:
             server_list: >-
               [{% for i in _configs_list.files %}
-                '{{ i.path.split('/')[1] }}'
+                {% set config  = lookup('file', i.path)|from_yaml %}
+                '{{ config.server }}'
                 {{ ',' if not loop.last else '' }}
               {% endfor %}]
 
@@ -51,21 +52,21 @@
           include_vars:
             file: "configs/{{ algo_server }}/.config.yml"
 
-        - name: CA password prompt
-          pause:
-            prompt: Enter the password for the private CA key
-            echo: false
-          register: _ca_password
-          when:
-            - ca_password is undefined
-            - ipsec_enabled
+        - when: ipsec_enabled
+          block:
+          - name: CA password prompt
+            pause:
+              prompt: Enter the password for the private CA key
+              echo: false
+            register: _ca_password
+            when: ca_password is undefined
 
-        - name: Set facts based on the input
-          set_fact:
-            CA_password: >-
-              {% if ca_password is defined %}{{ ca_password }}
-              {%- elif _ca_password.user_input %}{{ _ca_password.user_input }}
-              {%- else %}omit{% endif %}
+          - name: Set facts based on the input
+            set_fact:
+              CA_password: >-
+                {% if ca_password is defined %}{{ ca_password }}
+                {%- elif _ca_password.user_input %}{{ _ca_password.user_input }}
+                {%- else %}omit{% endif %}
 
         - name: Local pre-tasks
           import_tasks: playbooks/cloud-pre.yml
@@ -78,7 +79,7 @@
             ansible_ssh_user: "{{ server_user|default('root') }}"
             ansible_connection: "{% if algo_server == 'localhost' %}local{% else %}ssh{% endif %}"
             ansible_python_interpreter: "/usr/bin/python3"
-            CA_password: "{{ CA_password }}"
+            CA_password: "{{ CA_password|default(omit) }}"
       rescue:
         - include_tasks: playbooks/rescue.yml
 
@@ -111,7 +112,9 @@
       - debug:
           msg:
             - "{{ congrats.common.split('\n') }}"
-            - "    {% if p12.changed %}{{ congrats.p12_pass }}{% endif %}"
+            - "    {{ congrats.p12_pass if algo_ssh_tunneling or ipsec_enabled else '' }}"
+            - "    {{ congrats.ca_key_pass if algo_store_cakey and ipsec_enabled else '' }}"
+            - "    {{ congrats.ssh_access if algo_provider != 'local' else ''}}"
         tags: always
       rescue:
         - include_tasks: playbooks/rescue.yml
