@@ -1,7 +1,16 @@
 ---
-- name: Delete the lock files
+- name: Delete the private lock files
   file:
     dest: "{{ config_prefix|default('/') }}etc/wireguard/private_{{ item }}.lock"
+    state: absent
+  when: keys_clean_all|bool
+  with_items:
+    - "{{ users }}"
+    - "{{ IP_subject_alt_name }}"
+    
+- name: Delete the preshared lock files
+  file:
+    dest: "{{ config_prefix|default('/') }}etc/wireguard/preshared_{{ item }}.lock"
     state: absent
   when: keys_clean_all|bool
   with_items:
@@ -16,16 +25,27 @@
   with_items:
     - "{{ users }}"
     - "{{ IP_subject_alt_name }}"
+    
+- name: Generate preshared keys
+  command: wg genpsk
+  register: wg_genpsk
+  args:
+    creates: "{{ config_prefix|default('/') }}etc/wireguard/preshared_{{ item }}.lock"
+  with_items:
+    - "{{ users }}"
+    - "{{ IP_subject_alt_name }}"
 
 - block:
-  - name: Save private keys
+  - name: Save keys
     copy:
       dest: "{{ wireguard_pki_path }}/private/{{ item['item'] }}"
       content: "{{ item['stdout'] }}"
       mode: "0600"
     no_log: true
     when: item.changed
-    with_items: "{{ wg_genkey['results'] }}"
+    with_items:
+      - "{{ wg_genkey['results'] }}"
+      - "{{ wg_genpsk['results'] }}"
     delegate_to: localhost
     become: false
 
@@ -37,6 +57,15 @@
       - "{{ users }}"
       - "{{ IP_subject_alt_name }}"
   when: wg_genkey.changed
+  
+  - name: Touch the lock file
+    file:
+      dest: "{{ config_prefix|default('/') }}etc/wireguard/preshared_{{ item }}.lock"
+      state: touch
+    with_items:
+      - "{{ users }}"
+      - "{{ IP_subject_alt_name }}"
+  when: wg_preshared.changed
 
 - name: Generate public keys
   shell: |
