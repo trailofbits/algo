@@ -57,7 +57,7 @@
     - "{{ IP_subject_alt_name }}"
 
 - block:
-  - name: Save private keys
+  - name: Save preshared keys
     copy:
       dest: "{{ wireguard_pki_path }}/preshared/{{ item['item'] }}"
       content: "{{ item['stdout'] }}"
