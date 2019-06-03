@@ -2,8 +2,9 @@
 - name: Add the repository
   apt_repository:
     state: present
-    codename: bionic
+    codename: "{{ ansible_distribution_release }}"
     repo: ppa:shevchuk/dnscrypt-proxy
+  when: ansible_distribution_version is version_compare('19.04', '<')
   register: result
   until: result is succeeded
   retries: 10

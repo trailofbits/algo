@@ -54,7 +54,7 @@
     block: |
       cloned_interfaces="lo100"
       ifconfig_lo100="inet {{ local_service_ip }} netmask 255.255.255.255"
-      ifconfig_lo100_ipv6="inet6 FCAA::1/64"
+      ifconfig_lo100_ipv6="inet6 {{ local_service_ipv6 }}/128"
   notify:
     - restart loopback bsd
 

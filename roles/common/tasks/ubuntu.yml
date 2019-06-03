@@ -24,16 +24,12 @@
       when: reboot_required is defined and reboot_required.stdout == 'required'
       ignore_errors: true
 
-    - name: Wait until SSH becomes ready...
-      wait_for:
-        port: 22
-        host: "{{ inventory_hostname }}"
-        search_regex: OpenSSH
-        delay: 10
+    - name: Wait until the server becomes ready...
+      wait_for_connection:
+        delay: 20
         timeout: 320
       when: reboot_required is defined and reboot_required.stdout == 'required'
       become: false
-      delegate_to: localhost
   when: algo_provider != "local"
 
 - name: Include unatteded upgrades configuration
