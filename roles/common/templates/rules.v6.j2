@@ -87,6 +87,8 @@ COMMIT
 
 # Drop traffic between VPN clients
 -A FORWARD -s {{ subnets|join(',') }} -d {{ subnets|join(',') }} -j {{ "DROP" if BetweenClients_DROP else "ACCEPT" }}
+# Drop traffic to VPN clients from SSH tunnels
+-A OUTPUT -d {{ subnets|join(',') }} -m owner --gid-owner 15000 -j {{ "DROP" if BetweenClients_DROP else "ACCEPT" }}
 
 -A FORWARD -j ICMPV6-CHECK
 -A FORWARD -p tcp --dport 445 -j DROP
