@@ -58,3 +58,7 @@ There are ways to sign in non-interactively, which are covered in detail in [Sig
 
 
 **Now you are able to deploy an AlgoVPN instance without hassle**
+
+## Performance Recommendations
+
+The provided config.cfg provisions a `Basic_A0` VM instance (the smallest Azure sells), which costs $13.19/mo on East US as of 6/5/2019. However, `Basic_A0` throughput may be limited to approximately 8 Mbps. For throughput of up to 100 Mbps, use `Standard_A0` instead. The cost for `Standard_A0` on East US is $14.65/mo as of 6/5/2019.
