@@ -4,7 +4,6 @@
     state: present
     codename: "{{ ansible_distribution_release }}"
     repo: ppa:shevchuk/dnscrypt-proxy
-  when: ansible_distribution_version is version_compare('19.04', '<')
   register: result
   until: result is succeeded
   retries: 10
@@ -25,7 +24,7 @@
     mode: 0644
 
 - block:
-  - name: Ubuntu | Unbound profile for apparmor configured
+  - name: Ubuntu | Configure AppArmor policy for dnscrypt-proxy
     copy:
       src: apparmor.profile.dnscrypt-proxy
       dest: /etc/apparmor.d/usr.bin.dnscrypt-proxy

@@ -15,7 +15,7 @@ ansible-playbook main.yml -e "provider=digitalocean
                                 server_name=algo
                                 ondemand_cellular=false
                                 ondemand_wifi=false
-                                local_dns=true
+                                dns_adblocking=true
                                 ssh_tunneling=true
                                 windows=false
                                 store_cakey=true
@@ -32,7 +32,7 @@ See below for more information about variables and roles.
 - `ondemand_cellular` (Optional) VPN On Demand when connected to cellular networks with IPsec. Default: false
 - `ondemand_wifi` - (Optional. See `ondemand_wifi_exclude`) VPN On Demand when connected to WiFi networks with IPsec. Default: false
 - `ondemand_wifi_exclude` (Required if `ondemand_wifi` set) - WiFi networks to exclude from using the VPN. Comma-separated values
-- `local_dns` - (Optional) Enable a DNS resolver. Default: false
+- `dns_adblocking` - (Optional) Enables dnscrypt-proxy adblocking. Default: false
 - `ssh_tunneling` - (Optional) Enable SSH tunneling for each user. Default: false
 - `windows` - (Optional) Enables compatible ciphers and key exchange to support Windows clients, less secure. Default: false
 - `store_cakey` - (Optional) Whether or not keep the CA key (required to add users in the future, but less secure). Default: false
@@ -61,10 +61,7 @@ Server roles:
   * Builds a Certificate Authority (CA) with [easy-rsa-ipsec](https://github.com/ValdikSS/easy-rsa-ipsec) and creates one client certificate per user
   * Bundles the appropriate certificates into Apple mobileconfig profiles and Powershell scripts for each user
 - role: dns_adblocking
-  * Installs the [dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html) local resolver with a blacklist for advertising domains
-  * Constrains dnsmasq with AppArmor and cgroups CPU and memory limitations
-- role: dns_encryption
-  * Installs [dnscrypt-proxy](https://github.com/jedisct1/dnscrypt-proxy)
+  * Installs DNS encryption through [dnscrypt-proxy](https://github.com/jedisct1/dnscrypt-proxy) with blacklists to be updated daily from `adblock_lists` in `config.cfg` - note this will occur even if `dns_encryption` in `config.cfg` is set to `false`
   * Constrains dnscrypt-proxy with AppArmor and cgroups CPU and memory limitations
 - role: ssh_tunneling
   * Adds a restricted `algo` group with no shell access and limited SSH forwarding options

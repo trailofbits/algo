@@ -15,7 +15,7 @@
     algo_ondemand_cellular: "{{ algo_ondemand_cellular }}"
     algo_ondemand_wifi: "{{ algo_ondemand_wifi }}"
     algo_ondemand_wifi_exclude: "{{ algo_ondemand_wifi_exclude }}"
-    algo_local_dns: "{{ algo_local_dns }}"
+    algo_dns_adblocking: "{{ algo_dns_adblocking }}"
     algo_ssh_tunneling: "{{ algo_ssh_tunneling }}"
     algo_windows: "{{ algo_windows }}"
     algo_store_cakey: "{{ algo_store_cakey }}"

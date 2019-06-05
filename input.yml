@@ -7,7 +7,7 @@
       server_name: algo
       ondemand_cellular: false
       ondemand_wifi: false
-      local_dns: false
+      dns_adblocking: false
       ssh_tunneling: false
       windows: false
       store_cakey: false
@@ -99,10 +99,10 @@
       - name: DNS adblocking prompt
         pause:
           prompt: |
-            Do you want to install an ad blocking DNS resolver on this VPN server?
+            Do you want to enable DNS ad blocking on this VPN server?
             [y/N]
-        register: _local_dns
-        when: local_dns is undefined
+        register: _dns_adblocking
+        when: dns_adblocking is undefined
 
       - name: SSH tunneling prompt
         pause:
@@ -133,9 +133,9 @@
             {%- elif _ondemand_wifi_exclude.user_input is defined and _ondemand_wifi_exclude.user_input|length > 0 -%}
             {{ _ondemand_wifi_exclude.user_input | b64encode }}
             {%- else %}{{ '_null' | b64encode }}{% endif %}
-          algo_local_dns: >-
-            {% if local_dns is defined %}{{ local_dns | bool }}
-            {%- elif _local_dns.user_input is defined %}{{ booleans_map[_local_dns.user_input] | default(defaults['local_dns']) }}
+          algo_dns_adblocking: >-
+            {% if dns_adblocking is defined %}{{ dns_adblocking | bool }}
+            {%- elif _dns_adblocking.user_input is defined %}{{ booleans_map[_dns_adblocking.user_input] | default(defaults['dns_adblocking']) }}
             {%- else %}false{% endif %}
           algo_ssh_tunneling: >-
             {% if ssh_tunneling is defined %}{{ ssh_tunneling | bool }}

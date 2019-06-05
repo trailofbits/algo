@@ -37,12 +37,23 @@
 ## List of local addresses and ports to listen to. Can be IPv4 and/or IPv6.
 ## Note: When using systemd socket activation, choose an empty set (i.e. [] ).
 
-listen_addresses  = ['{{ local_service_ip }}:{{ listen_port }}'{% if ipv6_support %}, '[{{ local_service_ipv6 }}]:{{ listen_port }}'{% endif %}]
+listen_addresses  = [
+  '{{ local_service_ip }}:53'{% if ipv6_support %},
+  '[{{ local_service_ipv6 }}]:53'{% endif %}
+  ]
 
 
 ## Maximum number of simultaneous client connections to accept
 
 max_clients = 250
+
+
+## Switch to a different system user after listening sockets have been created.
+## Note (1): this feature is currently unsupported on Windows.
+## Note (2): this feature is not compatible with systemd socket activation.
+## Note (3): when using -pidfile, the PID file directory must be writable by the new user
+
+# user_name = 'nobody'
 
 
 ## Require servers (from static + remote sources) to satisfy specific properties
@@ -71,11 +82,30 @@ require_nolog = true
 # Server must not enforce its own blacklist (for parental control, ads blocking...)
 require_nofilter = true
 
+# Server names to avoid even if they match all criteria
+disabled_server_names = []
 
 
-## Always use TCP to connect to upstream servers
+## Always use TCP to connect to upstream servers.
+## This can be useful if you need to route everything through Tor.
+## Otherwise, leave this to `false`, as it doesn't improve security
+## (dnscrypt-proxy will always encrypt everything even using UDP), and can
+## only increase latency.
 
 force_tcp = false
+
+
+## SOCKS proxy
+## Uncomment the following line to route all TCP connections to a local Tor node
+## Tor doesn't support UDP, so set `force_tcp` to `true` as well.
+
+# proxy = "socks5://127.0.0.1:9050"
+
+
+## HTTP/HTTPS proxy
+## Only for DoH servers
+
+# http_proxy = "http://127.0.0.1:8888"
 
 
 ## How long a DNS query will wait for a response, in milliseconds
@@ -88,9 +118,21 @@ timeout = 2500
 keepalive = 30
 
 
-## Load-balancing strategy: 'p2' (default), 'ph', 'fastest' or 'random'
+## Use the REFUSED return code for blocked responses
+## Setting this to `false` means that some responses will be lies.
+## Unfortunately, `false` appears to be required for Android 8+
+
+refused_code_in_responses = false
+
+
+## Load-balancing strategy: 'p2' (default), 'ph', 'first' or 'random'
 
 lb_strategy = 'p2'
+
+## Set to `true` to constantly try to estimate the latency of all the resolvers
+## and adjust the load-balancing parameters accordingly, or to `false` to disable.
+
+# lb_estimator = true
 
 
 ## Log level (0-6, default: 2 - 0 is very verbose, 6 only contains fatal errors)
@@ -130,6 +172,8 @@ tls_disable_session_tickets = true
 ## 49195 = TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
 ## 52392 = TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
 ## 52393 = TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+##  4865 = TLS_AES_128_GCM_SHA256
+##  4867 = TLS_CHACHA20_POLY1305_SHA256
 ##
 ## On non-Intel CPUs such as MIPS routers and ARM systems (Android, Raspberry Pi...),
 ## the following suite improves performance.
@@ -138,7 +182,7 @@ tls_disable_session_tickets = true
 ## Keep tls_cipher_suite empty if you have issues fetching sources or
 ## connecting to some DoH servers. Google and Cloudflare are fine with it.
 
-# tls_cipher_suite = [49195]
+# tls_cipher_suite = [52392, 49199]
 
 
 ## Fallback resolver
@@ -158,10 +202,38 @@ tls_disable_session_tickets = true
 fallback_resolver = '{% if ansible_distribution == "FreeBSD" %}{{ ansible_dns.nameservers.0 }}:53{% else %}127.0.0.53:53{% endif %}'
 
 
-## Never try to use the system DNS settings; unconditionally use the
-## fallback resolver.
+## Never let dnscrypt-proxy try to use the system DNS settings;
+## unconditionally use the fallback resolver.
 
 ignore_system_dns = true
+
+
+## Maximum time (in seconds) to wait for network connectivity before
+## initializing the proxy.
+## Useful if the proxy is automatically started at boot, and network
+## connectivity is not guaranteed to be immediately available.
+## Use 0 to not test for connectivity at all (not recommended),
+## and -1 to wait as much as possible.
+
+netprobe_timeout = 60
+
+## Address and port to try initializing a connection to, just to check
+## if the network is up. It can be any address and any port, even if
+## there is nothing answering these on the other side. Just don't use
+## a local address, as the goal is to check for Internet connectivity.
+## On Windows, a datagram with a single, nul byte will be sent, only
+## when the system starts.
+## On other operating systems, the connection will be initialized
+## but nothing will be sent at all.
+
+netprobe_address = "1.1.1.1:53"
+
+
+## Offline mode - Do not use any remote encrypted servers.
+## The proxy will remain fully functional to respond to queries that
+## plugins can handle directly (forwarding, cloaking, ...)
+
+# offline_mode = false
 
 
 ## Automatic log files rotation
@@ -183,8 +255,9 @@ log_files_max_backups = 1
 
 ## Immediately respond to IPv6-related queries with an empty response
 ## This makes things faster when there is no IPv6 connectivity, but can
-## also cause reliability issues with some stub resolvers. In
-## particular, enabling this on macOS is not recommended.
+## also cause reliability issues with some stub resolvers.
+## Do not enable if you added a validating resolver such as dnsmasq in front
+## of the proxy.
 
 block_ipv6 = false
 
@@ -319,7 +392,7 @@ cache_neg_max_ttl = 600
 
   ## Path to the file of blocking rules (absolute, or relative to the same directory as the executable file)
 
-  # blacklist_file = 'blacklist.txt'
+  {{ "blacklist_file = 'blacklist.txt'" if algo_dns_adblocking else "" }}
 
 
   ## Optional path to a file logging blocked queries
@@ -452,8 +525,15 @@ cache_neg_max_ttl = 600
   urls = ['https://raw.githubusercontent.com/DNSCrypt/dnscrypt-resolvers/master/v2/public-resolvers.md', 'https://download.dnscrypt.info/resolvers-list/v2/public-resolvers.md']
   cache_file = '/tmp/public-resolvers.md'
   minisign_key = 'RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3'
-  refresh_delay = 72
   prefix = ''
+
+  ## Quad9 over DNSCrypt - https://quad9.net/
+
+  # [sources.quad9-resolvers]
+  # urls = ["https://www.quad9.net/quad9-resolvers.md"]
+  # minisign_key = "RWQBphd2+f6eiAqBsvDZEBXBGHQBJfeG6G+wJPPKxCZMoEQYpmoysKUN"
+  # cache_file = "quad9-resolvers.md"
+  # prefix = "quad9-"
 
   ## Another example source, with resolvers censoring some websites not appropriate for children
   ## This is a subset of the `public-resolvers` list, so enabling both is useless
@@ -470,5 +550,5 @@ cache_neg_max_ttl = 600
 
 [static]
 
-  # [static.'google']
-  # stamp = 'sdns://AgUAAAAAAAAAAAAOZG5zLmdvb2dsZS5jb20NL2V4cGVyaW1lbnRhbA'
+  # [static.'myserver']
+  # stamp = 'sdns:AQcAAAAAAAAAAAAQMi5kbnNjcnlwdC1jZXJ0Lg'
