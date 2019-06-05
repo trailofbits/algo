@@ -18,7 +18,7 @@ WORKDIR /algo
 COPY requirements.txt .
 RUN apk --no-cache add ${BUILD_PACKAGES} && \
     python -m pip --no-cache-dir install -U pip && \
-    python -m pip --no-cache-dir install -r requirements.txt --no-use-pep51 && \
+    python -m pip --no-cache-dir install -r requirements.txt && \
     apk del ${BUILD_PACKAGES}
 COPY . .
 RUN chmod 0755 /algo/algo-docker.sh
