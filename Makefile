@@ -15,12 +15,13 @@ docker-build:
 ## docker-deploy: Mount config directory and deploy Algo
 .PHONY: docker-deploy
 
-# Set VIRTUAL_ENV for algo.
+# Set DOCKER_BUILD flag for main algo script.
 docker-deploy:
 	docker run \
 	--cap-drop=all \
 	--rm \
 	-it \
+	-e "DOCKER_BUILD=true" \
 	-v $(CONFIGURATIONS):/data \
 	$(IMAGE):$(TAG)
 
