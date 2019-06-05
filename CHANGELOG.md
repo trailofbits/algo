@@ -1,6 +1,7 @@
 ## 1.1 [(Unreleased)](https://github.com/trailofbits/algo/tree/HEAD)
 
 ### Added
+- Randomly generated pre-shared keys for WireGuard [\#1465](https://github.com/trailofbits/algo/pull/1465) ([elreydetoda](https://github.com/elreydetoda))
 - Support for Ubuntu 19.04 [\#1405](https://github.com/trailofbits/algo/pull/1405) ([jackivanov](https://github.com/jackivanov))
 - AWS support for existing EIP [\#1292](https://github.com/trailofbits/algo/pull/1292) ([statik](https://github.com/statik))
 - Script to support cloud-init and local easy deploy [\#1366](https://github.com/trailofbits/algo/pull/1366) ([jackivanov](https://github.com/jackivanov))
