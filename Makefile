@@ -58,6 +58,7 @@ USER_ARGS := '{ 'server': '10.0.8.100', 'users': ['desktop', 'user1', 'user2'] }
 
 docker-ci-user-update:
 	docker run \
+	-it \
 	-v $(shell pwd)/config.cfg:/algo/config.cfg \
 	-v $(shell echo ${HOME})/.ssh:/root/.ssh \
 	-v $(shell pwd)/configs:/algo/configs \
