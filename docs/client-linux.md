@@ -58,6 +58,6 @@ In this example we'll assume the IP of our Algo VPN server is `1.2.3.4` and the 
     * For the later 2 options, hover to option in the settings to see a description
   * Cipher proposal:
     * Check *Enable custom proposals*
-    * IKE: `aes256gcm16-prfsha512-ecp384,aes256-sha2_512-prfsha512-ecp384,aes256-sha2_384-prfsha384-ecp384`
-    * ESP: `aes256gcm16-ecp384,aes256-sha2_512-prfsha512-ecp384`
+    * IKE: `aes256gcm16-prfsha512-ecp384`
+    * ESP: `aes256gcm16-ecp384`
 * Apply and turn the connection on, you should now be connected
