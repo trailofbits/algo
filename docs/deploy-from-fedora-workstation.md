@@ -1,6 +1,6 @@
 # Deploy from Fedora Workstation
 
-These docs were written based on experience on Fedora Workstation 26.
+These docs were written based on experience on Fedora Workstation 30.
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ Using `python2-*` in favour of `python3-*` as per [declared dependency](https://
 | `build-essential` | `make automake gcc gcc-c++ kernel-devel` |
 | `libssl-dev` | `openssl-devel` |
 | `libffi-dev` | `libffi-devel` |
-| `python-dev` | `python-devel` |  
+| `python-dev` | `python2-devel` |
 | `python-pip` | `python2-pip` |
 | `python-setuptools` | `python2-setuptools` |
 | `python-virtualenv` | `python2-virtualenv` |
@@ -39,10 +39,14 @@ dnf install -y \
   openssl-devel \
   libffi-devel \
   libselinux-python \
-  python-devel \
+  python2-devel \
   python2-pip \
   python2-setuptools \
   python2-virtualenv \
+  python2-crypto \
+  python2-pyyaml \
+  python2-pyOpenSSL \
+  python2-libselinux \
   make
 ````
 
@@ -70,29 +74,15 @@ Run `pip -v` and check the python version it is using:
  
 ````
 $ pip -V
-pip 9.0.1 from /usr/lib/python2.7/site-packages (python 2.7)
+pip 19.0.3 from /usr/lib/python2.7/site-packages (python 2.7)
 ````
 
 `python 2.7` is what we're looking for.
 
-### `pip` upgrade and installs
-
-````
-# Upgrade pip itself
-pip -q install --upgrade pip
-# python-devel needed to prevent setup.py crash
-pip -q install pycrypto       
-# pycrypto 2.7.1 needed for latest security patch
-# This may need to run with sudo to complete without permission violations
-pip -q install setuptools --upgrade
-# virtualenv to make installing dependencies easier
-pip -q install virtualenv
-````
-
 ### Setup virtualenv and install requirements
 
 ````
-virtualenv --system-site-packages env
+python2 -m virtualenv --system-site-packages env
 source env/bin/activate
 pip -q install --user -r requirements.txt
 ````
@@ -110,7 +100,7 @@ We can now deploy our server by running:
 ````
 
 Ensure to allow Windows / Linux clients when going through the config options.
-Note the IP and password of the newly created Alfo VPN server and store it safely.
+Note the IP and password of the newly created Algo VPN server and store it safely.
 
 If you want to setup client config on your Fedora Workstation, refer to [the Linux Client docs](client-linux.md).
 
