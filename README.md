@@ -63,11 +63,11 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
     ```
     On macOS, you may be prompted to install `cc`. You should press accept if so.
 
-5. **List the users to create.** Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list.
+5. **List the users to create.** Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list. If you want to be able to add or delete users later, you **must** select `yes` for the `Do you want to retain the CA key?` prompt during the deployment.
 
 6. **Start the deployment.** Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [deploy-from-ansible.md](docs/deploy-from-ansible.md).
 
-That's it! You will get the message below when the server deployment process completes. You now have an Algo server on the internet. Take note of the p12 (user certificate) password in case you need it later, **it will only be displayed this time**.
+That's it! You will get the message below when the server deployment process completes. You now have an Algo server on the internet. Take note of the p12 (user certificate) password and the CA key in case you need them later, **they will only be displayed this time**.
 
 You can now setup clients to connect it, e.g. your iPhone or laptop. Proceed to [Configure the VPN Clients](#configure-the-vpn-clients) below.
 
@@ -176,7 +176,7 @@ where `user` is either `root` or `ubuntu` as listed on the success message, and 
 
 ## Adding or Removing Users
 
-If you chose to save the CA certificate during the deploy process, then Algo's own scripts can easily add and remove users from the VPN server.
+_If you chose to save the CA key during the deploy process,_ then Algo's own scripts can easily add and remove users from the VPN server.
 
 1. Update the `users` list in your `config.cfg`
 2. Open a terminal, `cd` to the algo directory, and activate the virtual environment with `source env/bin/activate`
