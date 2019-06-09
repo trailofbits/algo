@@ -25,7 +25,7 @@ then
 fi
 
 #Sort the download/black lists
-awk '/^[^#]/ { print "local=/" $1 "/" }' "$TEMP" | sort -u > "$TEMP_SORTED"
+awk '/^[^#]/ { print "server=/" $1 "/" }' "$TEMP" | sort -u > "$TEMP_SORTED"
 
 #Filter (if applicable)
 if [ -s "$DNSMASQ_WHITELIST" ]
