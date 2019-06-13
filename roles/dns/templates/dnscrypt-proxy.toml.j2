@@ -37,7 +37,10 @@
 ## List of local addresses and ports to listen to. Can be IPv4 and/or IPv6.
 ## Note: When using systemd socket activation, choose an empty set (i.e. [] ).
 
-listen_addresses  = ['{{ local_service_ip }}:{{ listen_port }}'{% if ipv6_support %}, '[{{ local_service_ipv6 }}]:{{ listen_port }}'{% endif %}]
+listen_addresses  = [
+  '{{ local_service_ip }}:53'{% if ipv6_support %},
+  '[{{ local_service_ipv6 }}]:53'{% endif %}
+  ]
 
 
 ## Maximum number of simultaneous client connections to accept
@@ -319,7 +322,7 @@ cache_neg_max_ttl = 600
 
   ## Path to the file of blocking rules (absolute, or relative to the same directory as the executable file)
 
-  # blacklist_file = 'blacklist.txt'
+  {{ "blacklist_file = 'blacklist.txt'" if algo_dns_adblocking else "" }}
 
 
   ## Optional path to a file logging blocked queries
