@@ -20,6 +20,7 @@ ANSIBLE_EXTRA_ARGS="${14:-${ANSIBLE_EXTRA_ARGS}}"
 cd /opt/
 
 installRequirements() {
+  export DEBIAN_FRONTEND=noninteractive
   apt-get update
   apt-get install \
     software-properties-common \
