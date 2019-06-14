@@ -1,7 +1,5 @@
 ---
 algo_dns_adblocking: false
-# the version used if the latest unavailable (in case of Github API rate limited)
-dnscrypt_proxy_version: 2.0.10
 apparmor_enabled: true
 dns_encryption: true
 ipv6_support: false
