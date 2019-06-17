@@ -99,7 +99,7 @@
       - name: DNS adblocking prompt
         pause:
           prompt: |
-            Do you want to configure the DNS ad blocking on this VPN server?
+            Do you want to enable DNS ad blocking on this VPN server?
             [y/N]
         register: _dns_adblocking
         when: dns_adblocking is undefined
