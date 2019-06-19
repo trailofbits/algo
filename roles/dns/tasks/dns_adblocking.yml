@@ -1,0 +1,20 @@
+---
+- name: Adblock script created
+  template:
+    src: adblock.sh.j2
+    dest: /usr/local/sbin/adblock.sh
+    owner: root
+    group: "{{ root_group|default('root') }}"
+    mode: 0755
+
+- name: Adblock script added to cron
+  cron:
+    name: Adblock hosts update
+    minute: "{{ range(0, 60) | random }}"
+    hour: "{{ range(0, 24) | random }}"
+    job: /usr/local/sbin/adblock.sh
+    user: root
+
+- name: Update adblock hosts
+  command: /usr/local/sbin/adblock.sh
+  changed_when: false

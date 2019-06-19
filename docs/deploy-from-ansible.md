@@ -15,7 +15,7 @@ ansible-playbook main.yml -e "provider=digitalocean
                                 server_name=algo
                                 ondemand_cellular=false
                                 ondemand_wifi=false
-                                local_dns=true
+                                dns_adblocking=true
                                 ssh_tunneling=true
                                 windows=false
                                 store_cakey=true
@@ -32,7 +32,7 @@ See below for more information about variables and roles.
 - `ondemand_cellular` (Optional) VPN On Demand when connected to cellular networks with IPsec. Default: false
 - `ondemand_wifi` - (Optional. See `ondemand_wifi_exclude`) VPN On Demand when connected to WiFi networks with IPsec. Default: false
 - `ondemand_wifi_exclude` (Required if `ondemand_wifi` set) - WiFi networks to exclude from using the VPN. Comma-separated values
-- `local_dns` - (Optional) Enable a DNS resolver. Default: false
+- `dns_adblocking` - (Optional) Enable a DNS resolver. Default: false
 - `ssh_tunneling` - (Optional) Enable SSH tunneling for each user. Default: false
 - `windows` - (Optional) Enables compatible ciphers and key exchange to support Windows clients, less secure. Default: false
 - `store_cakey` - (Optional) Whether or not keep the CA key (required to add users in the future, but less secure). Default: false

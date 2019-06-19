@@ -8,7 +8,7 @@ ONDEMAND_WIFI="${3:-${ONDEMAND_WIFI:-false}}"
 ONDEMAND_WIFI_EXCLUDE="${4:-${ONDEMAND_WIFI_EXCLUDE:-_null}}"
 WINDOWS="${5:-${WINDOWS:-false}}"
 STORE_CAKEY="${6:-${STORE_CAKEY:-false}}"
-LOCAL_DNS="${7:-${LOCAL_DNS:-false}}"
+DNS_ADBLOCKING="${7:-${DNS_ADBLOCKING:-false}}"
 SSH_TUNNELING="${8:-${SSH_TUNNELING:-false}}"
 ENDPOINT="${9:-${ENDPOINT:-localhost}}"
 USERS="${10:-${USERS:-user1}}"
@@ -20,6 +20,7 @@ ANSIBLE_EXTRA_ARGS="${14:-${ANSIBLE_EXTRA_ARGS}}"
 cd /opt/
 
 installRequirements() {
+  export DEBIAN_FRONTEND=noninteractive
   apt-get update
   apt-get install \
     software-properties-common \
@@ -38,7 +39,7 @@ installRequirements() {
 getAlgo() {
   [ ! -d "algo" ] && git clone "https://github.com/${REPO_SLUG}" -b "${REPO_BRANCH}" algo
   cd algo
-  
+
   python -m virtualenv --python="$(command -v python2)" .venv
   # shellcheck source=/dev/null
   . .venv/bin/activate
@@ -92,7 +93,7 @@ deployAlgo() {
     -e "ondemand_wifi_exclude=${ONDEMAND_WIFI_EXCLUDE}" \
     -e "windows=${WINDOWS}" \
     -e "store_cakey=${STORE_CAKEY}" \
-    -e "local_dns=${LOCAL_DNS}" \
+    -e "dns_adblocking=${DNS_ADBLOCKING}" \
     -e "ssh_tunneling=${SSH_TUNNELING}" \
     -e "endpoint=$ENDPOINT" \
     -e "users=$(echo "$USERS" | jq -Rc 'split(",")')" \

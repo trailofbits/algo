@@ -1,0 +1,10 @@
+---
+algo_dns_adblocking: false
+apparmor_enabled: true
+dns_encryption: true
+ipv6_support: false
+dnscrypt_servers:
+  ipv4:
+    - cloudflare
+  ipv6:
+    - cloudflare-ipv6
