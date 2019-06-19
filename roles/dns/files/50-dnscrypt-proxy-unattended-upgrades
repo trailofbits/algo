@@ -2,8 +2,3 @@
 Unattended-Upgrade::Allowed-Origins {
     "LP-PPA-shevchuk-dnscrypt-proxy:${distro_codename}";
 };
-// Keep the custom conffile when upgrading
-Dpkg::Options {
-   "--force-confdef";
-   "--force-confold";
-};
