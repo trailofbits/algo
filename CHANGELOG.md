@@ -19,6 +19,8 @@
 - Installation error after \#1397 [\#1409](https://github.com/trailofbits/algo/issues/1409)
 
 ### Changed
+- DNSmasq removed, and the DNS adblocking functionality has been moved to the dnscrypt-proxy
+- Azure: moved to the Standard_B1S image size
 - Refactoring, Linting and additional tests [\#1397](https://github.com/trailofbits/algo/pull/1397) ([jackivanov](https://github.com/jackivanov))
 - Scaleway modules [\#1410](https://github.com/trailofbits/algo/pull/1410) ([jackivanov](https://github.com/jackivanov))
 - Use VULTR_API_CONFIG variable if set [\#1374](https://github.com/trailofbits/algo/pull/1374) ([davidemyers](https://github.com/davidemyers))
