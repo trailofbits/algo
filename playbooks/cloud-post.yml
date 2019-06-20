@@ -18,7 +18,7 @@
     algo_dns_adblocking: "{{ algo_dns_adblocking }}"
     algo_ssh_tunneling: "{{ algo_ssh_tunneling }}"
     algo_windows: "{{ algo_windows }}"
-    algo_store_cakey: "{{ algo_store_cakey }}"
+    algo_store_pki: "{{ algo_store_pki }}"
     IP_subject_alt_name: "{{ IP_subject_alt_name }}"
 
 - name: Additional variables for the server
@@ -36,6 +36,14 @@
     timeout: 320
     state: present
   when: cloud_instance_ip != "localhost"
+
+- name: Mount tmpfs
+  import_tasks: tmpfs/main.yml
+  when:
+    - pki_in_tmpfs
+    - not algo_store_pki
+    - ansible_system == "Darwin" or
+      ansible_system == "Linux"
 
 - debug:
     var: IP_subject_alt_name

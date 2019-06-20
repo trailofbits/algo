@@ -1,0 +1,12 @@
+---
+- name: MacOS | set OS specific facts
+  set_fact:
+    tmpfs_volume_name: "AlgoVPN-{{ IP_subject_alt_name }}"
+    tmpfs_volume_path: /Volumes
+
+- name: MacOS | mount a ram disk
+  shell:
+    diskutil info "/{{ tmpfs_volume_path }}/{{ tmpfs_volume_name }}/" ||
+    diskutil erasevolume HFS+ "{{ tmpfs_volume_name }}" $(hdiutil attach -nomount ram://64000)
+  args:
+    creates: "/{{ tmpfs_volume_path }}/{{ tmpfs_volume_name }}"

@@ -1,0 +1,19 @@
+---
+- name: Include tasks for MacOS
+  import_tasks: macos.yml
+  when: ansible_system == "Darwin"
+
+- name: Include tasks for Linux
+  import_tasks: linux.yml
+  when: ansible_system == "Linux"
+
+- name: Set config paths as facts
+  set_fact:
+    wireguard_pki_path: "/{{ tmpfs_volume_path }}/{{ tmpfs_volume_name }}/WireGuard/"
+    ipsec_pki_path: "/{{ tmpfs_volume_path }}/{{ tmpfs_volume_name }}/IPsec/"
+
+- name: Update config paths
+  add_host:
+    name: "{{ 'localhost' if cloud_instance_ip == 'localhost' else cloud_instance_ip }}"
+    wireguard_pki_path: "{{ wireguard_pki_path }}"
+    ipsec_pki_path: "{{ ipsec_pki_path }}"

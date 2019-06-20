@@ -113,7 +113,7 @@
           msg:
             - "{{ congrats.common.split('\n') }}"
             - "    {{ congrats.p12_pass if algo_ssh_tunneling or ipsec_enabled else '' }}"
-            - "    {{ congrats.ca_key_pass if algo_store_cakey and ipsec_enabled else '' }}"
+            - "    {{ congrats.ca_key_pass if algo_store_pki and ipsec_enabled else '' }}"
             - "    {{ congrats.ssh_access if algo_provider != 'local' else ''}}"
         tags: always
       rescue:
