@@ -9,7 +9,6 @@
   pip:
     name:
       - apache-libcloud
-      - pycrypto
     state: latest
     virtualenv: "{{ gce_venv }}"
     virtualenv_python: python2.7
