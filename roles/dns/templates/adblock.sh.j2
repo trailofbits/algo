@@ -5,6 +5,7 @@ TEMP="$(mktemp)"
 TEMP_SORTED="$(mktemp)"
 WHITELIST="/etc/dnscrypt-proxy/white.list"
 BLACKLIST="/etc/dnscrypt-proxy/black.list"
+WILDCARDS="{{ config_prefix|default('/') }}etc/dnscrypt-proxy/wildcard.list"
 BLOCKHOSTS="{{ config_prefix|default('/') }}etc/dnscrypt-proxy/blacklist.txt"
 BLOCKLIST_URLS="{% for url in adblock_lists %}{{ url }} {% endfor %}"
 
@@ -16,6 +17,13 @@ echo 'Downloading hosts lists...'
 for url in $BLOCKLIST_URLS; do
   wget --timeout=2 --tries=3 -qO- "$url" | grep -Ev "(localhost)" | grep -Ew "(0.0.0.0|127.0.0.1)" | awk '{sub(/\r$/,"");print $2}'  >> "$TEMP"
 done
+
+#Add wildcards, if non empty
+if [ -s "$WILDCARDS" ]
+then
+    echo 'Adding wildcards...'
+    cat $WILDCARDS >> "$TEMP"
+fi
 
 #Add black list, if non-empty
 if [ -s "$BLACKLIST" ]
