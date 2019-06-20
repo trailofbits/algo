@@ -15,6 +15,11 @@
     job: /usr/local/sbin/adblock.sh
     user: root
 
+- name: dnscrypt-proxy wildcard-blacklist configured
+  template:
+    src: wildcard.list.j2
+    dest: "{{ config_prefix|default('/') }}etc/dnscrypt-proxy/wildcard.list"
+
 - name: Update adblock hosts
   command: /usr/local/sbin/adblock.sh
   changed_when: false
