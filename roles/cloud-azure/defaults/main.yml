@@ -211,5 +211,33 @@ _azure_regions: >
       "longitude": "149.1244",
       "name": "australiacentral2",
       "subscriptionId": null
+    },
+    {
+      "displayName": "UAE Central",
+      "latitude": "‎24.466667",
+      "longitude": "‎54.366669",
+      "name": "uaecentral",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "UAE North",
+      "latitude": "25.266666",
+      "longitude": "55.316666",
+      "name": "uaenorth",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "South Africa North",
+      "latitude": "-25.731340",
+      "longitude": "28.218370",
+      "name": "southafricanorth",
+      "subscriptionId": null
+    },
+    {
+      "displayName": "South Africa West",
+      "latitude": "-34.075691",
+      "longitude": "18.843266",
+      "name": "southafricawest",
+      "subscriptionId": null
     }
   ]
