@@ -48,7 +48,7 @@ docker-ci-local:
 	-v $(shell echo ${HOME})/.ssh:/root/.ssh \
 	-v $(shell pwd)/configs:/algo/configs \
 	-e "DEPLOY_ARGS=$(DEPLOY_ARGS)" \
-	trailofbits/algo:latest /bin/sh -c "chown -R root: /root/.ssh && chmod -R 600 /root/.ssh && ansible-playbook main.yml -e ${DEPLOY_ARGS} --skip-tags apparmor"
+	trailofbits/algo:latest /bin/sh -c "chown -R root: /root/.ssh && chmod -R 600 /root/.ssh && source env/bin/activate && ansible-playbook main.yml -e ${DEPLOY_ARGS} --skip-tags apparmor"
 
 ## docker-ci-user-update
 .PHONY: docker-ci-user-update
@@ -62,6 +62,6 @@ docker-ci-user-update:
 	-v $(shell echo ${HOME})/.ssh:/root/.ssh \
 	-v $(shell pwd)/configs:/algo/configs \
 	-e "USER_ARGS=$(USER_ARGS)" \
-	trailofbits/algo:latest /bin/sh -c "ansible-playbook users.yml -e ${USER_ARGS} -t update-users"
+	trailofbits/algo:latest /bin/sh -c "source env/bin/activate && ansible-playbook users.yml -e ${USER_ARGS} -t update-users"
 
 all: docker-build docker-deploy docker-clean
