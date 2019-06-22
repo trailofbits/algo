@@ -21,7 +21,6 @@ docker-deploy:
 	--cap-drop=all \
 	--rm \
 	-it \
-	-e "DOCKER_BUILD=true" \
 	-v $(CONFIGURATIONS):/data \
 	$(IMAGE):$(TAG)
 
