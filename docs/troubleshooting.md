@@ -31,6 +31,7 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
      * [Wireguard: clients can connect on Wifi but not LTE](#wireguard-clients-can-connect-on-wifi-but-not-lte)
      * ["Error 809" or IKE_AUTH requests that never make it to the server](#error-809-or-ike_auth-requests-that-never-make-it-to-the-server)
      * [Windows: Parameter is incorrect](#windows-parameter-is-incorrect)
+     * [IPsec: Difficulty connecting through router](#ipsec-difficulty-connecting-through-router)
   * [I have a problem not covered here](#i-have-a-problem-not-covered-here)
 
 ## Installation Problems
@@ -469,6 +470,18 @@ The problem may happen if you recently moved to a new server, where you have Alg
 	- The adapters you just uninstalled should come back
 
 The VPN connection should work again
+
+### IPsec: Difficulty connecting through router
+
+Some routers treat IPsec connections specially because older versions of IPsec did not work properly through [NAT](https://en.wikipedia.org/wiki/Network_address_translation). If you're having problems connecting to your AlgoVPN through a specific router using IPsec you might need to change some settings on the router.
+
+#### Change the "VPN Passthrough" settings
+
+If your router has a setting called something like "VPN Passthrough" or "IPsec Passthrough" try changing the setting to a different value.
+
+#### Change the default pfSense NAT rules
+
+If your router runs [pfSense](https://www.pfsense.org) and a single IPsec client can connect but you have issues when using multiple clients, you'll need to change the **Outbound NAT** mode to **Manual Outbound NAT** and disable the rule that specifies **Static Port** for IKE (UDP port 500). See [Outbound NAT](https://docs.netgate.com/pfsense/en/latest/book/nat/outbound-nat.html#outbound-nat) in the [pfSense Book](https://docs.netgate.com/pfsense/en/latest/book).
 
 ## I have a problem not covered here
 
