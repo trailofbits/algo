@@ -17,13 +17,12 @@
         [exoscale]
     register: _cs_region
 
-  # - name: Parse zones from output
-  #   set_fact:
-  #     _cs_zones: "{{ _cloudstack_zones | from_json }}"
-
   - name: Get zones on cloud
     cloudstack_zones:
     register: _cs_zones
+    environment:
+      CLOUDSTACK_CONFIG: "{{ _cs_config }}"
+      CLOUDSTACK_REGION: "{% if _cs_region.user_input | length <= 0 %}{{ 'exoscale' }}{% else %}{{ _cs_region.user_input }}{% endif %}"
 
   - name: Extract zones from output
     set_fact:

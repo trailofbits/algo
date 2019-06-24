@@ -42,7 +42,7 @@ zone:
         {
         "allocationstate": "Enabled",
         "dhcpprovider": "VirtualRouter",
-        "id": "1128bd56-b4d9-4ac6-a7b9-c715b187ce11",
+        "id": "<id>",
         "localstorageenabled": true,
         "name": "ch-gva-2",
         "networktype": "Basic",
@@ -53,7 +53,7 @@ zone:
         {
         "allocationstate": "Enabled",
         "dhcpprovider": "VirtualRouter",
-        "id": "91e5e9e4-c9ed-4b76-bee4-427004b3baf9",
+        "id": "<id>",
         "localstorageenabled": true,
         "name": "ch-dk-2",
         "networktype": "Basic",
@@ -64,7 +64,7 @@ zone:
         {
         "allocationstate": "Enabled",
         "dhcpprovider": "VirtualRouter",
-        "id": "4da1b188-dcd6-4ff5-b7fd-bde984055548",
+        "id": "<id>",
         "localstorageenabled": true,
         "name": "at-vie-1",
         "networktype": "Basic",
@@ -75,7 +75,7 @@ zone:
         {
         "allocationstate": "Enabled",
         "dhcpprovider": "VirtualRouter",
-        "id": "35eb7739-d19e-45f7-a581-4687c54d6d02",
+        "id": "<id>",
         "localstorageenabled": true,
         "name": "de-fra-1",
         "networktype": "Basic",
