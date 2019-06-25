@@ -55,9 +55,11 @@ You can use the Dockerfile provided in this repository as-is, or modify it to su
 A `Makefile` is included as a convenience for Docker users which aims to simplify some of the command syntax. 
 **This has not been tested in a Windows environment.**
 
-1. From the project's root run `make docker-build`. This builds a Docker image labeled `trailofbits/algo:latest`. These values can be changed in the `Makefile` itself.
-2. Run `make docker-deploy`. By default this will use the given copy of `config.cfg` and populate the project's root `~/configs/` directory with your client configuration data. If you would rather use a local directory and `config.cfg` file, then follow steps 2 and 3 before changing the `CONFIGURATIONS` variable in the `Makefile`.
-3. If desired, `make docker-clean` will remove the image.
+1. From the project's root run `make docker-build`. This builds a Docker image labeled `trailofbits/algo:latest`.
+2. Also from the root run `make docker-deploy` to deploy your VPN server as usual. Once done, your configs will be placed in the project's `~/configs` directory. 
+3. Additionally, `make docker-clean` will remove the built Docker image.
+
+If desired the `Makefile`'s parameters can be modified to fit the needs of the operator.
 
 ## Security Considerations
 
