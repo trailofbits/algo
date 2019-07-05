@@ -6,7 +6,7 @@
 
 - name: MacOS | mount a ram disk
   shell:
-    diskutil info "/{{ tmpfs_volume_path }}/{{ tmpfs_volume_name }}/" ||
-    diskutil erasevolume HFS+ "{{ tmpfs_volume_name }}" $(hdiutil attach -nomount ram://64000)
+    /usr/sbin/diskutil info "/{{ tmpfs_volume_path }}/{{ tmpfs_volume_name }}/" ||
+    /usr/sbin/diskutil erasevolume HFS+ "{{ tmpfs_volume_name }}" $(hdiutil attach -nomount ram://64000)
   args:
     creates: "/{{ tmpfs_volume_path }}/{{ tmpfs_volume_name }}"

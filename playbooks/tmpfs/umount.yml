@@ -5,7 +5,21 @@
     state: absent
   when: facts.ansible_system == "Linux"
 
-- name: MacOS | eject the ram disk
-  command: diskutil eject "/{{ facts.tmpfs_volume_path }}/{{ facts.tmpfs_volume_name }}/" || true
+- name: MacOS | check fs the ramdisk exists
+  command: /usr/sbin/diskutil info AlgoVPN-test
+  ignore_errors: true
   changed_when: false
-  when: facts.ansible_system == "Darwin"
+  register: diskutil_info
+
+- name: MacOS | unmount and eject the ram disk
+  shell:
+    /usr/sbin/diskutil umount force "/{{ facts.tmpfs_volume_path }}/{{ facts.tmpfs_volume_name }}/" &&
+    /usr/sbin/diskutil eject "{{ facts.tmpfs_volume_name }}"
+  changed_when: false
+  when:
+    - facts.ansible_system == "Darwin"
+    - diskutil_info.rc == 0
+  register: result
+  until: result.rc == 0
+  retries: 5
+  delay: 3
