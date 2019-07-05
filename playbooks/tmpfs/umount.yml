@@ -6,7 +6,7 @@
   when: facts.ansible_system == "Linux"
 
 - name: MacOS | check fs the ramdisk exists
-  command: /usr/sbin/diskutil info AlgoVPN-test
+  command: /usr/sbin/diskutil info "{{ facts.tmpfs_volume_name }}"
   ignore_errors: true
   changed_when: false
   register: diskutil_info
