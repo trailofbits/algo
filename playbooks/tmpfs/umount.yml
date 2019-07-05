@@ -13,7 +13,7 @@
     register: diskutil_info
 
   - name: MacOS | unmount and eject the ram disk
-    shell:
+    shell: >
       /usr/sbin/diskutil umount force "/{{ facts.tmpfs_volume_path }}/{{ facts.tmpfs_volume_name }}/" &&
       /usr/sbin/diskutil eject "{{ facts.tmpfs_volume_name }}"
     changed_when: false
