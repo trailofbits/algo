@@ -19,7 +19,7 @@ The command will prepare the environment and install AlgoVPN with the default pa
 `ONDEMAND_WIFI` - "Connect On Demand" when connected to Wi-Fi. Default: false.
 `ONDEMAND_WIFI_EXCLUDE` - List the names of any trusted Wi-Fi networks where macOS/iOS IPsec clients should not use "Connect On Demand". Comma-separated list.
 `WINDOWS` - To support Windows 10 or Linux Desktop clients. Default: false.
-`STORE_CAKEY` - To retain the CA key. (required to add users in the future, but less secure). Default: false.
+`STORE_PKI` - To retain the PKI. (required to add users in the future, but less secure). Default: false.
 `DNS_ADBLOCKING` - To install an ad blocking DNS resolver. Default: false.
 `SSH_TUNNELING` -  Enable SSH tunneling for each user. Default: false.
 `ENDPOINT` - The public IP address or domain name of your server: (IMPORTANT! This is used to verify the certificate). It will be gathered automatically for DigitalOcean, AWS, GCE, Azure or Vultr if the `METHOD` is cloud. Otherwise you need to define this variable according to your public IP address.  

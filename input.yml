@@ -10,7 +10,7 @@
       dns_adblocking: false
       ssh_tunneling: false
       windows: false
-      store_cakey: false
+      store_pki: false
     providers_map:
       - { name: DigitalOcean, alias: digitalocean }
       - { name: Amazon Lightsail, alias: lightsail }
@@ -87,13 +87,13 @@
           register: _windows
           when: windows is undefined
 
-        - name: Retain the CA key prompt
+        - name: Retain the PKI prompt
           pause:
             prompt: |
-              Do you want to retain the CA key? (required to add users in the future, but less secure)
+              Do you want to retain the keys (PKI)? (required to add users in the future, but less secure)
               [y/N]
-          register: _store_cakey
-          when: store_cakey is undefined
+          register: _store_pki
+          when: store_pki is undefined
         when: ipsec_enabled
 
       - name: DNS adblocking prompt
@@ -145,9 +145,9 @@
             {% if windows is defined %}{{ windows | bool }}
             {%- elif _windows.user_input is defined %}{{ booleans_map[_windows.user_input] | default(defaults['windows']) }}
             {%- else %}false{% endif %}
-          algo_store_cakey: >-
-            {% if ipsec_enabled %}{%- if store_cakey is defined %}{{ store_cakey | bool }}
-            {%- elif _store_cakey.user_input is defined  %}{{ booleans_map[_store_cakey.user_input] | default(defaults['store_cakey']) }}
+          algo_store_pki: >-
+            {% if ipsec_enabled %}{%- if store_pki is defined %}{{ store_pki | bool }}
+            {%- elif _store_pki.user_input is defined  %}{{ booleans_map[_store_pki.user_input] | default(defaults['store_pki']) }}
             {%- else %}false{% endif %}{% endif %}
       rescue:
         - include_tasks: playbooks/rescue.yml

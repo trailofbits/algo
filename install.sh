@@ -7,7 +7,7 @@ ONDEMAND_CELLULAR="${2:-${ONDEMAND_CELLULAR:-false}}"
 ONDEMAND_WIFI="${3:-${ONDEMAND_WIFI:-false}}"
 ONDEMAND_WIFI_EXCLUDE="${4:-${ONDEMAND_WIFI_EXCLUDE:-_null}}"
 WINDOWS="${5:-${WINDOWS:-false}}"
-STORE_CAKEY="${6:-${STORE_CAKEY:-false}}"
+STORE_PKI="${6:-${STORE_PKI:-false}}"
 DNS_ADBLOCKING="${7:-${DNS_ADBLOCKING:-false}}"
 SSH_TUNNELING="${8:-${SSH_TUNNELING:-false}}"
 ENDPOINT="${9:-${ENDPOINT:-localhost}}"
@@ -92,7 +92,7 @@ deployAlgo() {
     -e "ondemand_wifi=${ONDEMAND_WIFI}" \
     -e "ondemand_wifi_exclude=${ONDEMAND_WIFI_EXCLUDE}" \
     -e "windows=${WINDOWS}" \
-    -e "store_cakey=${STORE_CAKEY}" \
+    -e "store_pki=${STORE_PKI}" \
     -e "dns_adblocking=${DNS_ADBLOCKING}" \
     -e "ssh_tunneling=${SSH_TUNNELING}" \
     -e "endpoint=$ENDPOINT" \

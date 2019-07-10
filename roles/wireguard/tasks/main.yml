@@ -1,13 +1,14 @@
 ---
 - name: Ensure the required directories exist
   file:
-    dest: "{{ wireguard_pki_path }}/{{ item }}"
+    dest: "{{ item }}"
     state: directory
     recurse: true
   with_items:
-    - private
-    - public
-    - preshared
+    - "{{ wireguard_pki_path }}/preshared"
+    - "{{ wireguard_pki_path }}/private"
+    - "{{ wireguard_pki_path }}/public"
+    - "{{ wireguard_config_path }}"
   delegate_to: localhost
   become: false
 
@@ -81,5 +82,15 @@
     name: "{{ service_name }}"
     state: started
     enabled: true
+
+- name: Delete the PKI directory
+  file:
+    path: "{{ wireguard_pki_path }}"
+    state: absent
+  become: false
+  delegate_to: localhost
+  when:
+    - not algo_store_pki
+    - not pki_in_tmpfs
 
 - meta: flush_handlers

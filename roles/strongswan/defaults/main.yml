@@ -8,7 +8,6 @@ algo_ondemand_cellular: false
 algo_ondemand_wifi: false
 algo_ondemand_wifi_exclude: '_null'
 algo_windows: false
-algo_store_cakey: false
 algo_dns_adblocking: false
 ipv6_support: false
 dns_encryption: true
