@@ -10,7 +10,7 @@
         'algo_ondemand_wifi_exclude "{{ algo_ondemand_wifi_exclude }}"' \
         'algo_windows "{{ algo_windows }}"' \
         {% endif %}
-        'algo_local_dns "{{ algo_local_dns }}"' \
+        'algo_dns_adblocking "{{ algo_dns_adblocking }}"' \
         'algo_ssh_tunneling "{{ algo_ssh_tunneling }}"' \
         'wireguard_enabled "{{ wireguard_enabled }}"' \
         'dns_encryption "{{ dns_encryption }}"' \

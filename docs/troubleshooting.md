@@ -28,8 +28,10 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
      * [I can't get Network Manager to connect to the Algo server](#i-cant-get-network-manager-to-connect-to-the-algo-server)
      * [Various websites appear to be offline through the VPN](#various-websites-appear-to-be-offline-through-the-vpn)
      * [Clients appear stuck in a reconnection loop](#clients-appear-stuck-in-a-reconnection-loop)
+     * [Wireguard: clients can connect on Wifi but not LTE](#wireguard-clients-can-connect-on-wifi-but-not-lte)
      * ["Error 809" or IKE_AUTH requests that never make it to the server](#error-809-or-ike_auth-requests-that-never-make-it-to-the-server)
      * [Windows: Parameter is incorrect](#windows-parameter-is-incorrect)
+     * [IPsec: Difficulty connecting through router](#ipsec-difficulty-connecting-through-router)
   * [I have a problem not covered here](#i-have-a-problem-not-covered-here)
 
 ## Installation Problems
@@ -408,6 +410,12 @@ Example command:
 sed -i -e 's/#*.dos_protection = yes/dos_protection = no/' /etc/strongswan.d/charon.conf && ipsec restart
 ```
 
+### WireGuard: Clients can connect on Wifi but not LTE
+
+Certain cloud providers (like AWS Lightsail) don't assign an IPv6 address to your server, but certain cellular carriers (e.g. T-Mobile in the United States, [EE](https://community.ee.co.uk/t5/4G-and-mobile-data/IPv4-VPN-Connectivity/td-p/757881) in the United Kingdom) operate an IPv6-only network. This somehow leads to the Wireguard app not being able to make a connection when transitioning to cell service. Go to the Wireguard app on the device when you're having problems with cell connectivity and select "Export log file" or similar option. If you see a long string of error messages like "`Failed to send data packet write udp6 [::]:49727->[2607:7700:0:2a:0:1:354:40ae]:51820: sendto: no route to host` then you might be having this problem. 
+
+Manually disconnecting and then reconnecting should restore your connection. To solve this, you need to either "force IPv4 connection" if available on your phone, or install an IPv4 APN, which might be available from your carrier tech support. T-mobile's is available [for iOS here under "iOS IPv4/IPv6 fix"](https://www.reddit.com/r/tmobile/wiki/index), and [here is a walkthrough for Android phones](https://www.myopenrouter.com/article/vpn-connections-not-working-t-mobile-heres-how-fix).
+
 ### "Error 809" or IKE_AUTH requests that never make it to the server
 
 On Windows, this issue may manifest with an error message that says "The network connection between your computer and the VPN server could not be established because the remote server is not responding... This is Error 809." On other operating systems, you may try to debug the issue by capturing packets with tcpdump and notice that, while IKE_SA_INIT request and responses are exchanged between the client and server, IKE_AUTH requests never make it to the server.
@@ -462,6 +470,18 @@ The problem may happen if you recently moved to a new server, where you have Alg
 	- The adapters you just uninstalled should come back
 
 The VPN connection should work again
+
+### IPsec: Difficulty connecting through router
+
+Some routers treat IPsec connections specially because older versions of IPsec did not work properly through [NAT](https://en.wikipedia.org/wiki/Network_address_translation). If you're having problems connecting to your AlgoVPN through a specific router using IPsec you might need to change some settings on the router.
+
+#### Change the "VPN Passthrough" settings
+
+If your router has a setting called something like "VPN Passthrough" or "IPsec Passthrough" try changing the setting to a different value.
+
+#### Change the default pfSense NAT rules
+
+If your router runs [pfSense](https://www.pfsense.org) and a single IPsec client can connect but you have issues when using multiple clients, you'll need to change the **Outbound NAT** mode to **Manual Outbound NAT** and disable the rule that specifies **Static Port** for IKE (UDP port 500). See [Outbound NAT](https://docs.netgate.com/pfsense/en/latest/book/nat/outbound-nat.html#outbound-nat) in the [pfSense Book](https://docs.netgate.com/pfsense/en/latest/book).
 
 ## I have a problem not covered here
 

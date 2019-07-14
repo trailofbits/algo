@@ -51,56 +51,73 @@ custom_scripts:
     - sudo env "PATH=$PATH" ./tests/ipsec-client.sh
     - sudo ./tests/ssh-tunnel.sh
 
+stages:
+  - &tests-and-linters
+    stage: Tests
+    name: code checks and linters
+    addons:
+      apt:
+        packages:
+          - shellcheck
+    script:
+      - pip install ansible-lint
+      - shellcheck algo install.sh
+      - ansible-playbook main.yml --syntax-check
+      - ansible-lint -v *.yml
+
+  - &deploy-local
+    stage: Deploy
+    name: local deployment from docker
+    addons:
+      apt:
+        sources: *default_sources
+        packages: *default_packages
+    before_install: *provisioning
+    before_script:
+      - docker build -t travis/algo .
+      - ./tests/local-deploy.sh
+      - ./tests/update-users.sh
+    script: *tests
+
+  - &deploy-cloudinit
+    stage: Deploy
+    name: cloud-init deployment
+    addons:
+      apt:
+        sources: *default_sources
+        packages: *default_packages
+    env: DEPLOY=cloud-init
+    before_install: *provisioning
+    before_script:
+      - until sudo lxc exec algo -- test -f /var/log/cloud-init-output.log; do echo 'Log file not found, Sleep for 3 seconds'; sleep 3; done
+      - ( sudo lxc exec algo -- tail -f /var/log/cloud-init-output.log & )
+      - |
+        until sudo lxc exec algo -- test -f /var/lib/cloud/data/result.json; do
+          echo 'Cloud init is not finished. Sleep for 30 seconds';
+          sleep 30;
+        done
+      - sudo lxc exec algo -- test -f /opt/algo/configs/localhost/.config.yml
+      - sudo lxc exec algo -- tar zcf /root/algo-configs.tar -C /opt/algo/configs/ .
+      - sudo lxc file pull algo/root/algo-configs.tar ./
+      - sudo tar -C ./configs -zxf algo-configs.tar
+    script: *tests
+
 matrix:
   fast_finish: true
   include:
-    - stage: Tests
-      name: code checks and linters
-      addons:
-        apt:
-          packages:
-            - shellcheck
-      script:
-        - pip install ansible-lint
-        - shellcheck algo install.sh
-        - ansible-playbook main.yml --syntax-check
-        - ansible-lint -v roles/*/*/*.yml playbooks/*.yml *.yml
-
-    - stage: Deploy
-      name: local deployment from docker
-      addons:
-        apt:
-          sources: *default_sources
-          packages: *default_packages
-      env: DEPLOY=docker
-      before_install: *provisioning
-      before_script:
-        - docker build -t travis/algo .
-        - ./tests/local-deploy.sh
-        - ./tests/update-users.sh
-      script: *tests
-
-    - stage: Deploy
-      name: cloud-init deployment
-      addons:
-        apt:
-          sources: *default_sources
-          packages: *default_packages
-      env: DEPLOY=cloud-init
-      before_install: *provisioning
-      before_script:
-        - until sudo lxc exec algo -- test -f /var/log/cloud-init-output.log; do echo 'Log file not found, Sleep for 3 seconds'; sleep 3; done
-        - ( sudo lxc exec algo -- tail -f /var/log/cloud-init-output.log & )
-        - |
-          until sudo lxc exec algo -- test -f /var/lib/cloud/data/result.json; do
-            echo 'Cloud init is not finished. Sleep for 30 seconds';
-            sleep 30;
-          done
-        - sudo lxc exec algo -- test -f /opt/algo/configs/localhost/.config.yml
-        - sudo lxc exec algo -- tar zcf /root/algo-configs.tar -C /opt/algo/configs/ .
-        - sudo lxc file pull algo/root/algo-configs.tar ./
-        - sudo tar -C ./configs -zxf algo-configs.tar
-      script: *tests
+    - <<: *tests-and-linters
+    - <<: *deploy-local
+      name: 'Ubuntu 18.04: local deployment from docker'
+      env: DEPLOY=docker UBUNTU_VERSION=18.04
+    - <<: *deploy-local
+      name: 'Ubuntu 19.04: local deployment from docker'
+      env: DEPLOY=docker UBUNTU_VERSION=19.04
+    - <<: *deploy-cloudinit
+      name: 'Ubuntu 18.04: cloud-init deployment'
+      env: DEPLOY=cloud-init UBUNTU_VERSION=18.04
+    - <<: *deploy-cloudinit
+      name: 'Ubuntu 19.04: cloud-init deployment'
+      env: DEPLOY=cloud-init UBUNTU_VERSION=19.04
 
 notifications:
   email: false

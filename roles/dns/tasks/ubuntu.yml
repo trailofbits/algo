@@ -2,7 +2,7 @@
 - name: Add the repository
   apt_repository:
     state: present
-    codename: bionic
+    codename: "{{ ansible_distribution_release }}"
     repo: ppa:shevchuk/dnscrypt-proxy
   register: result
   until: result is succeeded
@@ -24,7 +24,7 @@
     mode: 0644
 
 - block:
-  - name: Ubuntu | Unbound profile for apparmor configured
+  - name: Ubuntu | Configure AppArmor policy for dnscrypt-proxy
     copy:
       src: apparmor.profile.dnscrypt-proxy
       dest: /etc/apparmor.d/usr.bin.dnscrypt-proxy

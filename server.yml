@@ -12,14 +12,11 @@
         tags: common
 
       - import_role:
-          name: dns_encryption
-        when: dns_encryption
-        tags: dns_encryption
-
-      - import_role:
-          name: dns_adblocking
-        when: algo_local_dns
-        tags: dns_adblocking
+          name: dns
+        when:
+          - algo_dns_adblocking or
+            dns_encryption
+        tags: dns
 
       - import_role:
           name: wireguard
@@ -51,10 +48,10 @@
               algo_ondemand_cellular: {{ algo_ondemand_cellular }}
               algo_ondemand_wifi: {{ algo_ondemand_wifi }}
               algo_ondemand_wifi_exclude: {{ algo_ondemand_wifi_exclude }}
-              algo_local_dns: {{ algo_local_dns }}
+              algo_dns_adblocking: {{ algo_dns_adblocking }}
               algo_ssh_tunneling: {{ algo_ssh_tunneling }}
               algo_windows: {{ algo_windows }}
-              algo_store_cakey: {{ algo_store_cakey }}
+              algo_store_pki: {{ algo_store_pki }}
               IP_subject_alt_name: {{ IP_subject_alt_name }}
               ipsec_enabled: {{ ipsec_enabled }}
               wireguard_enabled: {{ wireguard_enabled }}
@@ -73,11 +70,21 @@
             force: true
           when: inventory_hostname == 'localhost'
 
+        - name: Import tmpfs tasks
+          import_tasks: playbooks/tmpfs/umount.yml
+          become: false
+          delegate_to: localhost
+          vars:
+            facts: "{{ hostvars['localhost'] }}"
+          when:
+            - pki_in_tmpfs
+            - not algo_store_pki
+
         - debug:
             msg:
               - "{{ congrats.common.split('\n') }}"
               - "    {{ congrats.p12_pass if algo_ssh_tunneling or ipsec_enabled else '' }}"
-              - "    {{ congrats.ca_key_pass if algo_store_cakey and ipsec_enabled else '' }}"
+              - "    {{ congrats.ca_key_pass if algo_store_pki and ipsec_enabled else '' }}"
               - "    {{ congrats.ssh_access if algo_provider != 'local' else ''}}"
         tags: always
       rescue:

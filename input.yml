@@ -7,10 +7,10 @@
       server_name: algo
       ondemand_cellular: false
       ondemand_wifi: false
-      local_dns: false
+      dns_adblocking: false
       ssh_tunneling: false
       windows: false
-      store_cakey: false
+      store_pki: false
     providers_map:
       - { name: DigitalOcean, alias: digitalocean }
       - { name: Amazon Lightsail, alias: lightsail }
@@ -21,7 +21,7 @@
       - { name: Scaleway, alias: scaleway}
       - { name: OpenStack (DreamCompute optimised), alias: openstack }
       - { name: CloudStack (Exoscale optimised), alias: cloudstack }
-      - { name: Install to existing Ubuntu 18.04 server (Advanced), alias: local }
+      - { name: Install to existing Ubuntu 18.04 or 19.04 server (Advanced), alias: local }
   vars_files:
     - config.cfg
 
@@ -88,22 +88,22 @@
           register: _windows
           when: windows is undefined
 
-        - name: Retain the CA key prompt
+        - name: Retain the PKI prompt
           pause:
             prompt: |
-              Do you want to retain the CA key? (required to add users in the future, but less secure)
+              Do you want to retain the keys (PKI)? (required to add users in the future, but less secure)
               [y/N]
-          register: _store_cakey
-          when: store_cakey is undefined
+          register: _store_pki
+          when: store_pki is undefined
         when: ipsec_enabled
 
       - name: DNS adblocking prompt
         pause:
           prompt: |
-            Do you want to install an ad blocking DNS resolver on this VPN server?
+            Do you want to enable DNS ad blocking on this VPN server?
             [y/N]
-        register: _local_dns
-        when: local_dns is undefined
+        register: _dns_adblocking
+        when: dns_adblocking is undefined
 
       - name: SSH tunneling prompt
         pause:
@@ -134,9 +134,9 @@
             {%- elif _ondemand_wifi_exclude.user_input is defined and _ondemand_wifi_exclude.user_input|length > 0 -%}
             {{ _ondemand_wifi_exclude.user_input | b64encode }}
             {%- else %}{{ '_null' | b64encode }}{% endif %}
-          algo_local_dns: >-
-            {% if local_dns is defined %}{{ local_dns | bool }}
-            {%- elif _local_dns.user_input is defined %}{{ booleans_map[_local_dns.user_input] | default(defaults['local_dns']) }}
+          algo_dns_adblocking: >-
+            {% if dns_adblocking is defined %}{{ dns_adblocking | bool }}
+            {%- elif _dns_adblocking.user_input is defined %}{{ booleans_map[_dns_adblocking.user_input] | default(defaults['dns_adblocking']) }}
             {%- else %}false{% endif %}
           algo_ssh_tunneling: >-
             {% if ssh_tunneling is defined %}{{ ssh_tunneling | bool }}
@@ -146,9 +146,9 @@
             {% if windows is defined %}{{ windows | bool }}
             {%- elif _windows.user_input is defined %}{{ booleans_map[_windows.user_input] | default(defaults['windows']) }}
             {%- else %}false{% endif %}
-          algo_store_cakey: >-
-            {% if ipsec_enabled %}{%- if store_cakey is defined %}{{ store_cakey | bool }}
-            {%- elif _store_cakey.user_input is defined  %}{{ booleans_map[_store_cakey.user_input] | default(defaults['store_cakey']) }}
+          algo_store_pki: >-
+            {% if ipsec_enabled %}{%- if store_pki is defined %}{{ store_pki | bool }}
+            {%- elif _store_pki.user_input is defined  %}{{ booleans_map[_store_pki.user_input] | default(defaults['store_pki']) }}
             {%- else %}false{% endif %}{% endif %}
       rescue:
         - include_tasks: playbooks/rescue.yml

@@ -1,9 +1,0 @@
-- name: restart dnsmasq
-  service: name=dnsmasq state=restarted
-
-- name: restart apparmor
-  service: name=apparmor state=restarted
-
-- name: daemon-reload
-  systemd:
-    daemon_reload: true

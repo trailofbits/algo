@@ -1,18 +1,18 @@
-# Using Ubuntu Server as a Client with WireGuard
+# Using Ubuntu as a Client with WireGuard
 
 ## Install WireGuard
 
-To connect to your AlgoVPN using [WireGuard](https://www.wireguard.com) from Ubuntu Server, first install WireGuard:
+To connect to your AlgoVPN using [WireGuard](https://www.wireguard.com) from Ubuntu, first install WireGuard:
 
 ```shell
 # Add the WireGuard repository:
 sudo add-apt-repository ppa:wireguard/wireguard
 
-# Update the list of available packages (not necessary on Bionic or later):
-sudo apt update 
+# Update the list of available packages (not necessary on 18.04 or later):
+sudo apt update
 
 # Install the tools and kernel module:
-sudo apt install wireguard
+sudo apt install wireguard openresolv
 ```
 
 For installation on other Linux distributions, see the [Installation](https://www.wireguard.com/install/) page on the WireGuard site.
@@ -20,28 +20,6 @@ For installation on other Linux distributions, see the [Installation](https://ww
 ## Locate the Config File
 
 The Algo-generated config files for WireGuard are named `configs/<ip_address>/wireguard/<username>.conf` on the system where you ran `./algo`. One file was generated for each of the users you added to `config.cfg`. Each WireGuard client you connect to your AlgoVPN must use a different config file. Choose one of these files and copy it to your Linux client.
-
-## Configure DNS
-
-### Ubuntu 18.04 (Bionic)
-
-If your client is running Bionic (or another Linux that uses `systemd-resolved` for DNS but does not have `resolvectl` or `resolvconf` installed) you should first edit the config file. Comment out the line that begins with `DNS =` and replace it with:
-```
-PostUp = systemd-resolve -i %i --set-dns=172.16.0.1 --set-domain=~.
-```
-Use the IP address shown on the `DNS =` line (for most, this will be `172.16.0.1`). If the `DNS =` line contains multiple IP addresses, use multiple  `--set-dns=` options.
-
-### Ubuntu 18.10 (Cosmic) or 19.04 (Disco)
-
-If your client is running Cosmic or Disco (or another Linux that uses `systemd-resolved` for DNS and has `resolvectl` but *not* `resolvconf` installed) you can either edit the config file as shown above for Bionic or run the following command once:
-
-```
-sudo ln -s /usr/bin/resolvectl /usr/bin/resolvconf
-```
-
-### Other Linux Distributions
-
-On other Linux distributions you might need to install the `openresolv` package.
 
 ## Configure WireGuard
 

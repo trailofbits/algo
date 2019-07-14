@@ -1,0 +1,5 @@
+---
+- name: Linux | set OS specific facts
+  set_fact:
+    tmpfs_volume_name: "AlgoVPN-{{ IP_subject_alt_name }}"
+    tmpfs_volume_path: /dev/shm

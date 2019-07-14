@@ -1,6 +1,6 @@
 #include <tunables/global>
 
-/usr/bin/dnscrypt-proxy flags=(attach_disconnected) {
+/usr/{s,}bin/dnscrypt-proxy flags=(attach_disconnected) {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/openssl>

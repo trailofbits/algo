@@ -2,11 +2,19 @@
 - hosts: localhost
   become: false
   tasks:
-    - name: Verify Ansible meets Drupal VM's version requirements.
+    - name: Ensure the requirements installed
+      debug:
+        msg: "{{ '' | ipaddr }}"
+      ignore_errors: true
+      no_log: true
+      register: ipaddr
+
+    - name: Verify Ansible meets Algo VPN requirements.
       assert:
-        that: "ansible_version.full is version('2.7.10', '==')"
+        that:
+          - ansible_version.full is version('2.7.10', '==')
+          - not ipaddr.failed
         msg: >
-          Ansible version is {{ ansible_version.full }}.
           You must update the requirements to use this version of Algo.
           Try to run python -m pip install -U -r requirements.txt
 

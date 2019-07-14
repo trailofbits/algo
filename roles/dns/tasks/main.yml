@@ -21,10 +21,14 @@
   notify:
     - restart dnscrypt-proxy
 
+- name: Include DNS adblocking tasks
+  import_tasks: dns_adblocking.yml
+  when: algo_dns_adblocking
+
+- meta: flush_handlers
+
 - name: dnscrypt-proxy enabled and started
   service:
     name: dnscrypt-proxy
     state: started
     enabled: true
-
-- meta: flush_handlers
