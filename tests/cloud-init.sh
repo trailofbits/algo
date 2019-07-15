@@ -4,7 +4,6 @@ export METHOD=local
 export ONDEMAND_CELLULAR=true
 export ONDEMAND_WIFI=true
 export ONDEMAND_WIFI_EXCLUDE=test1,test2
-export WINDOWS=true
 export STORE_PKI=true
 export DNS_ADBLOCKING=true
 export SSH_TUNNELING=true

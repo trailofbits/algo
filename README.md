@@ -105,14 +105,9 @@ If you prefer to use the built-in IPSEC VPN on Apple devices, or need "Connect o
 
 WireGuard is used to provide VPN services on Android. Install the [WireGuard VPN Client](https://play.google.com/store/apps/details?id=com.wireguard.android). Import the corresponding `wireguard/<name>.conf` file to your device, then setup a new connection with it. See the [Android setup instructions](/docs/client-android.md) for more detailed walkthrough.
 
-### Windows 10
+### Windows
 
-Copy your PowerShell script `windows_{username}.ps1` to the Windows client and run the following command as Administrator to configure the VPN connection.
-```
-powershell -ExecutionPolicy ByPass -File windows_{username}.ps1 -Add
-```
-
-For a manual installation, see the [Windows setup instructions](/docs/client-windows.md).
+WireGuard is used to provide VPN services on Windows. Install the [WireGuard VPN Client](https://www.wireguard.com/install/#windows-7-8-81-10-2012-2016-2019). Import the corresponding `wireguard/<name>.conf` file to your device, then setup a new connection with it.
 
 ### Linux Network Manager Clients (e.g., Ubuntu, Debian, or Fedora Desktop)
 
@@ -149,12 +144,13 @@ To configure the connection to come up at boot time replace `auto=add` with `aut
 
 Depending on the platform, you may need one or multiple of the following files.
 
-* cacert.pem: CA Certificate
-* user.mobileconfig: Apple Profile
-* user.p12: User Certificate and Private Key (in PKCS#12 format)
-* ipsec_user.conf: strongSwan client configuration
-* ipsec_user.secrets: strongSwan client configuration
-* windows_user.ps1: Powershell script to help setup a VPN connection on Windows
+* ipsec/manual/cacert.pem: CA Certificate
+* ipsec/manual/<user>.p12: User Certificate and Private Key (in PKCS#12 format)
+* ipsec/manual/<user>.conf: strongSwan client configuration
+* ipsec/manual/<user>.secrets: strongSwan client configuration
+* ipsec/apple/<user>.mobileconfig: Apple Profile
+* wireguard/<user>.conf: WireGuard configuration profile
+* wireguard/<user>.png: WireGuard configuration QR code
 
 ## Setup an SSH Tunnel
 

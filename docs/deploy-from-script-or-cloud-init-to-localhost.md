@@ -18,7 +18,6 @@ The command will prepare the environment and install AlgoVPN with the default pa
 `ONDEMAND_CELLULAR` - "Connect On Demand" when connected to cellular networks. Boolean. Default: false.
 `ONDEMAND_WIFI` - "Connect On Demand" when connected to Wi-Fi. Default: false.
 `ONDEMAND_WIFI_EXCLUDE` - List the names of any trusted Wi-Fi networks where macOS/iOS IPsec clients should not use "Connect On Demand". Comma-separated list.
-`WINDOWS` - To support Windows 10 or Linux Desktop clients. Default: false.
 `STORE_PKI` - To retain the PKI. (required to add users in the future, but less secure). Default: false.
 `DNS_ADBLOCKING` - To install an ad blocking DNS resolver. Default: false.
 `SSH_TUNNELING` -  Enable SSH tunneling for each user. Default: false.
@@ -36,7 +35,6 @@ The command will prepare the environment and install AlgoVPN with the default pa
 ```
 #!/bin/bash
 export ONDEMAND_CELLULAR=true
-export WINDOWS=true
 export SSH_TUNNELING=true
 curl -s https://raw.githubusercontent.com/trailofbits/algo/master/install.sh | sudo -E bash -x
 ```

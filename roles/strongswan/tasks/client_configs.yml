@@ -41,16 +41,6 @@
   with_items:
     - "{{ users }}"
 
-- name: Build the windows client powershell script
-  template:
-    src: client_windows.ps1.j2
-    dest: "{{ ipsec_config_path }}/windows/{{ item.0 }}.ps1"
-    mode: 0600
-  when: algo_windows
-  with_together:
-    - "{{ users }}"
-    - "{{ PayloadContent.results }}"
-
 - name: Restrict permissions for the local private directories
   file:
     path: "{{ ipsec_config_path }}"
