@@ -14,7 +14,7 @@ Algo VPN is a set of Ansible scripts that simplify the setup of a personal IPSEC
 * Blocks ads with a local DNS resolver (optional)
 * Sets up limited SSH users for tunneling traffic (optional)
 * Based on current versions of Ubuntu and strongSwan
-* Installs to DigitalOcean, Amazon Lightsail, Amazon EC2, Vultr, Microsoft Azure, Google Compute Engine, Scaleway, OpenStack, or your own Ubuntu server
+* Installs to DigitalOcean, Amazon Lightsail, Amazon EC2, Vultr, Microsoft Azure, Google Compute Engine, Scaleway, OpenStack, or [your own Ubuntu server](docs/deploy-to-ubuntu.md)
 
 ## Anti-features
 
