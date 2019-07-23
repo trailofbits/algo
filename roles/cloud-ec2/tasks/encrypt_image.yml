@@ -8,6 +8,7 @@
     filters:
       state: available
       "tag:Algo": encrypted
+      "tag:image": "{{ cloud_providers.ec2.image.name }}"
   register: search_crypt
 
 - name: Copy to an encrypted image
@@ -15,7 +16,7 @@
     aws_access_key: "{{ access_key }}"
     aws_secret_key: "{{ secret_key }}"
     encrypted: yes
-    name: algo
+    name: "algo/{{ cloud_providers.ec2.image.name }}"
     kms_key_id: "{{ kms_key_id | default(omit) }}"
     region: "{{ algo_region }}"
     source_image_id: "{{ (ami_search.images | sort(attribute='creation_date') | last)['image_id'] }}"
@@ -23,5 +24,6 @@
     wait: true
     tags:
       Algo: "encrypted"
+      image: "{{ cloud_providers.ec2.image.name }}"
   register: ami_search_encrypted
   when: search_crypt.images|length|int == 0
