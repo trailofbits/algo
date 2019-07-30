@@ -18,7 +18,7 @@ No. This project is under active development. We're happy to [accept and fix iss
 
 ## What's the current status of WireGuard?
 
-[WireGuard is not yet complete](https://www.wireguard.com/#work-in-progress). You should not rely on this code. It has not undergone proper degrees of security auditing and the protocol is still subject to change. WireGuard is working toward a stable 1.0 release, but that time has not yet come. There are experimental snapshots tagged with "0.0.YYYYMMDD", but these should not be considered real releases and they may contain security vulnerabilities (which would not be eligible for CVEs, since this is pre-release snapshot software).
+[WireGuard is a work in progress](https://www.wireguard.com/#work-in-progress). It has undergone [substantial](https://www.wireguard.com/formal-verification/) security review, however, its authors are appropriately cautious about its safety and the protocol is subject to change. As a result, WireGuard does not yet have a "stable" 1.0 release. Releases are tagged with their build date -- "0.0.YYYYMMDD" -- and users should be advised to apply new updates when they are available.
 
 ## Why aren't you using Tor?
 
