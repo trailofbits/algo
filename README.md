@@ -107,7 +107,9 @@ WireGuard is used to provide VPN services on Android. Install the [WireGuard VPN
 
 ### Windows
 
-WireGuard is used to provide VPN services on Windows. Install the [WireGuard VPN Client](https://www.wireguard.com/install/#windows-7-8-81-10-2012-2016-2019). Import the corresponding `wireguard/<name>.conf` file to your device, then setup a new connection with it.
+WireGuard is used to provide VPN services on Windows.  Algo generates a WireGuard configuration file, `wireguard/<username>.conf`, and a QR code, `wireguard/<username>.png`, for each user defined in `config.cfg`.
+
+Install the [WireGuard VPN Client](https://www.wireguard.com/install/#windows-7-8-81-10-2012-2016-2019). Import the corresponding `wireguard/<username>.conf` file to your device, then setup a new connection with it.
 
 ### Linux Network Manager Clients (e.g., Ubuntu, Debian, or Fedora Desktop)
 
