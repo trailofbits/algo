@@ -6,13 +6,8 @@ conn algovpn-{{ IP_subject_alt_name }}
     compress=no
     dpddelay=35s
 
-{% if algo_windows %}
-    ike={{ ciphers.compat.ike }}
-    esp={{ ciphers.compat.esp }}
-{% else %}
     ike={{ ciphers.defaults.ike }}
     esp={{ ciphers.defaults.esp }}
-{% endif %}
 
     right={{ IP_subject_alt_name }}
     rightid={{ IP_subject_alt_name }}

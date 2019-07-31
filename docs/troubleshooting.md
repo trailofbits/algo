@@ -29,8 +29,6 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
      * [Various websites appear to be offline through the VPN](#various-websites-appear-to-be-offline-through-the-vpn)
      * [Clients appear stuck in a reconnection loop](#clients-appear-stuck-in-a-reconnection-loop)
      * [Wireguard: clients can connect on Wifi but not LTE](#wireguard-clients-can-connect-on-wifi-but-not-lte)
-     * ["Error 809" or IKE_AUTH requests that never make it to the server](#error-809-or-ike_auth-requests-that-never-make-it-to-the-server)
-     * [Windows: Parameter is incorrect](#windows-parameter-is-incorrect)
      * [IPsec: Difficulty connecting through router](#ipsec-difficulty-connecting-through-router)
   * [I have a problem not covered here](#i-have-a-problem-not-covered-here)
 
@@ -229,7 +227,7 @@ You tried to deploy Algo from Windows and you received an error like this one:
 
 ```
 TASK [cloud-azure : Create an instance].
-fatal: [localhost]: FAILED! => {"changed": false, 
+fatal: [localhost]: FAILED! => {"changed": false,
 "msg": "Error creating or updating virtual machine AlgoVPN - Azure Error:
 InvalidParameter\n
 Message: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid.\n
@@ -243,7 +241,7 @@ This is related to [the chmod issue](https://github.com/Microsoft/WSL/issues/81)
 You tried to deploy Algo from Docker and you received an error like this one:
 
 ```
-Failed to connect to the host via ssh: 
+Failed to connect to the host via ssh:
 Warning: Permanently added 'xxx.xxx.xxx.xxx' (ECDSA) to the list of known hosts.\r\n
 Control socket connect(/root/.ansible/cp/6d9d22e981): Connection refused\r\n
 Failed to connect to new control master\r\n
@@ -265,7 +263,7 @@ TASK [wireguard : Generate public keys] ****************************************
 [WARNING]: Unable to find 'configs/xxx.xxx.xxx.xxx/wireguard//private/dan' in expected paths.
 
 fatal: [localhost]: FAILED! => {"msg": "An unhandled exception occurred while running the lookup plugin 'file'. Error was a <class 'ansible.errors.AnsibleError'>, original message: could not locate file in lookup: configs/xxx.xxx.xxx.xxx/wireguard//private/dan"}
-``` 
+```
 This error is usually hit when using the local install option on a server that isn't Ubuntu 18.04. You should upgrade your server to Ubuntu 18.04. If this doesn't work, try removing `*.lock` files at /etc/wireguard/ as follows:
 
 ```ssh
@@ -412,15 +410,9 @@ sed -i -e 's/#*.dos_protection = yes/dos_protection = no/' /etc/strongswan.d/cha
 
 ### WireGuard: Clients can connect on Wifi but not LTE
 
-Certain cloud providers (like AWS Lightsail) don't assign an IPv6 address to your server, but certain cellular carriers (e.g. T-Mobile in the United States, [EE](https://community.ee.co.uk/t5/4G-and-mobile-data/IPv4-VPN-Connectivity/td-p/757881) in the United Kingdom) operate an IPv6-only network. This somehow leads to the Wireguard app not being able to make a connection when transitioning to cell service. Go to the Wireguard app on the device when you're having problems with cell connectivity and select "Export log file" or similar option. If you see a long string of error messages like "`Failed to send data packet write udp6 [::]:49727->[2607:7700:0:2a:0:1:354:40ae]:51820: sendto: no route to host` then you might be having this problem. 
+Certain cloud providers (like AWS Lightsail) don't assign an IPv6 address to your server, but certain cellular carriers (e.g. T-Mobile in the United States, [EE](https://community.ee.co.uk/t5/4G-and-mobile-data/IPv4-VPN-Connectivity/td-p/757881) in the United Kingdom) operate an IPv6-only network. This somehow leads to the Wireguard app not being able to make a connection when transitioning to cell service. Go to the Wireguard app on the device when you're having problems with cell connectivity and select "Export log file" or similar option. If you see a long string of error messages like "`Failed to send data packet write udp6 [::]:49727->[2607:7700:0:2a:0:1:354:40ae]:51820: sendto: no route to host` then you might be having this problem.
 
 Manually disconnecting and then reconnecting should restore your connection. To solve this, you need to either "force IPv4 connection" if available on your phone, or install an IPv4 APN, which might be available from your carrier tech support. T-mobile's is available [for iOS here under "iOS IPv4/IPv6 fix"](https://www.reddit.com/r/tmobile/wiki/index), and [here is a walkthrough for Android phones](https://www.myopenrouter.com/article/vpn-connections-not-working-t-mobile-heres-how-fix).
-
-### "Error 809" or IKE_AUTH requests that never make it to the server
-
-On Windows, this issue may manifest with an error message that says "The network connection between your computer and the VPN server could not be established because the remote server is not responding... This is Error 809." On other operating systems, you may try to debug the issue by capturing packets with tcpdump and notice that, while IKE_SA_INIT request and responses are exchanged between the client and server, IKE_AUTH requests never make it to the server.
-
-It is possible that the IKE_AUTH payload is too big to fit in a single IP datagram, and so is fragmented. Many consumer routers and cable modems ship with a feature that blocks "fragmented IP packets." Try logging into your router and disabling any firewall settings related to blocking or dropping fragmented IP packets. For more information, see [Issue #305](https://github.com/trailofbits/algo/issues/305).
 
 ### Error: name 'basestring' is not defined
 
@@ -447,29 +439,6 @@ Then rerun the dependency installation explicitly using python 2.7
 ```
 python2.7 -m virtualenv --python=`which python2.7` env && source env/bin/activate && python2.7 -m pip install -U pip && python2.7 -m pip install -r requirements.txt
 ```
-
-### Windows: Parameter is incorrect
-
-The problem may happen if you recently moved to a new server, where you have Algo VPN.
-
-1. Clear the Networking caches:
-	- Run CMD (click windows start menu, type 'cmd', right click on 'Command Prompt' and select "Run as Administrator").
-	- Type the commands below:
-	```
-	netsh int ip reset
-	netsh int ipv6 reset
-	netsh winsock reset
-	```
-
-3. Restart your computer
-4. Reset Device Manager adaptors:
-	- Open Device Manager
-	- Find Network Adapters
-	- Uninstall WAN Miniport drivers (IKEv2, IP, IPv6, etc)
-	- Click Action > Scan for hardware changes
-	- The adapters you just uninstalled should come back
-
-The VPN connection should work again
 
 ### IPsec: Difficulty connecting through router
 

@@ -39,7 +39,6 @@
       mode: '0700'
     with_items:
       - apple
-      - windows
       - manual
 
   - name: Ensure the files exist

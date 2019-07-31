@@ -12,13 +12,8 @@ conn %default
     lifetime=3h
     ikelifetime=12h
 
-{% if algo_windows %}
-    ike={{ ciphers.compat.ike }}
-    esp={{ ciphers.compat.esp }}
-{% else %}
     ike={{ ciphers.defaults.ike }}
     esp={{ ciphers.defaults.esp }}
-{% endif %}
 
     left=%any
     leftauth=pubkey

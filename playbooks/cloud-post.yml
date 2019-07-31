@@ -17,7 +17,6 @@
     algo_ondemand_wifi_exclude: "{{ algo_ondemand_wifi_exclude }}"
     algo_dns_adblocking: "{{ algo_dns_adblocking }}"
     algo_ssh_tunneling: "{{ algo_ssh_tunneling }}"
-    algo_windows: "{{ algo_windows }}"
     algo_store_pki: "{{ algo_store_pki }}"
     IP_subject_alt_name: "{{ IP_subject_alt_name }}"
 

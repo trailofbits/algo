@@ -71,7 +71,7 @@ Some steps are needed before we can deploy our Algo VPN server.
 ### Check `pip`
 
 Run `pip -v` and check the python version it is using:
- 
+
 ````
 $ pip -V
 pip 19.0.3 from /usr/lib/python2.7/site-packages (python 2.7)
@@ -99,7 +99,6 @@ We can now deploy our server by running:
 ./algo
 ````
 
-Ensure to allow Windows / Linux clients when going through the config options.
 Note the IP and password of the newly created Algo VPN server and store it safely.
 
 If you want to setup client config on your Fedora Workstation, refer to [the Linux Client docs](client-linux.md).

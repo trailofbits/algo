@@ -9,7 +9,6 @@
       ondemand_wifi: false
       dns_adblocking: false
       ssh_tunneling: false
-      windows: false
       store_pki: false
     providers_map:
       - { name: DigitalOcean, alias: digitalocean }
@@ -79,14 +78,6 @@
             - (ondemand_wifi|default(false)|bool) or
               (booleans_map[_ondemand_wifi.user_input|default(omit)]|default(false))
 
-        - name: Compatible ciphers prompt
-          pause:
-            prompt: |
-              Do you want the VPN to support Windows 10 or Linux Desktop clients? (enables compatible ciphers and key exchange, less secure)
-              [y/N]
-          register: _windows
-          when: windows is undefined
-
         - name: Retain the PKI prompt
           pause:
             prompt: |
@@ -140,10 +131,6 @@
           algo_ssh_tunneling: >-
             {% if ssh_tunneling is defined %}{{ ssh_tunneling | bool }}
             {%- elif _ssh_tunneling.user_input is defined %}{{ booleans_map[_ssh_tunneling.user_input] | default(defaults['ssh_tunneling']) }}
-            {%- else %}false{% endif %}
-          algo_windows: >-
-            {% if windows is defined %}{{ windows | bool }}
-            {%- elif _windows.user_input is defined %}{{ booleans_map[_windows.user_input] | default(defaults['windows']) }}
             {%- else %}false{% endif %}
           algo_store_pki: >-
             {% if ipsec_enabled %}{%- if store_pki is defined %}{{ store_pki | bool }}
