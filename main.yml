@@ -9,12 +9,21 @@
       no_log: true
       register: ipaddr
 
+    - name: Set required ansible version as a fact
+      set_fact:
+        required_ansible_version:
+          "{{ item |  regex_replace('^ansible[\\s+]?(?P<op>[=,>,<]+)[\\s+]?(?P<ver>\\d.\\d(.\\d+)?)$',
+                      '{\"op\": \"\\g<op>\",\"ver\": \"\\g<ver>\" }') }}"
+      when: '"ansible" in item'
+      with_items: "{{ lookup('file', 'requirements.txt').splitlines() }}"
+
     - name: Verify Ansible meets Algo VPN requirements.
       assert:
         that:
-          - ansible_version.full is version('2.7.10', '==')
+          - ansible_version.full is version(required_ansible_version.ver, required_ansible_version.op)
           - not ipaddr.failed
         msg: >
+          Ansible version is {{ ansible_version.full }}.
           You must update the requirements to use this version of Algo.
           Try to run python -m pip install -U -r requirements.txt
 
