@@ -1,6 +1,13 @@
-## 1.1 [(Unreleased)](https://github.com/trailofbits/algo/tree/HEAD)
+## 1.2 [(Unreleased)](https://github.com/trailofbits/algo/tree/HEAD)
+
+
+## 1.1 [(Jul 31, 2019)](https://github.com/trailofbits/algo/tree/v1.1)
+
+### Removed
+- IKEv2 for Windows is now deleted, use Wireguard [\#1493](https://github.com/trailofbits/algo/issues/1493)
 
 ### Added
+- Tmpfs for key generation [\#145](https://github.com/trailofbits/algo/issues/145)
 - Randomly generated pre-shared keys for WireGuard [\#1465](https://github.com/trailofbits/algo/pull/1465) ([elreydetoda](https://github.com/elreydetoda))
 - Support for Ubuntu 19.04 [\#1405](https://github.com/trailofbits/algo/pull/1405) ([jackivanov](https://github.com/jackivanov))
 - AWS support for existing EIP [\#1292](https://github.com/trailofbits/algo/pull/1292) ([statik](https://github.com/statik))
@@ -17,8 +24,10 @@
 - Error message is missing for some roles [\#1364](https://github.com/trailofbits/algo/issues/1364)
 - DNS leak in Linux/Wireguard when LAN gateway/DNS is 172.16.0.1 [\#1422](https://github.com/trailofbits/algo/issues/1422)
 - Installation error after \#1397 [\#1409](https://github.com/trailofbits/algo/issues/1409)
+- EC2 encrypted images bug [\#1528](https://github.com/trailofbits/algo/issues/1528)
 
 ### Changed
+- Upgrade Ansible to 2.7.12 [\#1536](https://github.com/trailofbits/algo/pull/1536)
 - DNSmasq removed, and the DNS adblocking functionality has been moved to the dnscrypt-proxy
 - Azure: moved to the Standard_B1S image size
 - Refactoring, Linting and additional tests [\#1397](https://github.com/trailofbits/algo/pull/1397) ([jackivanov](https://github.com/jackivanov))
