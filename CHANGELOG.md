@@ -1,7 +1,7 @@
 ## 1.2 [(Unreleased)](https://github.com/trailofbits/algo/tree/HEAD)
 
 
-## 1.1 [(Jul 31, 2019)](https://github.com/trailofbits/algo/tree/v1.1)
+## 1.1 [(Jul 31, 2019)](https://github.com/trailofbits/algo/releases/tag/v1.1)
 
 ### Removed
 - IKEv2 for Windows is now deleted, use Wireguard [\#1493](https://github.com/trailofbits/algo/issues/1493)
@@ -36,7 +36,7 @@
 - Simplify Apple Profile Configuration Template [\#1033](https://github.com/trailofbits/algo/pull/1033) ([faf0](https://github.com/faf0))
 - Include roles as separate tasks [\#1365](https://github.com/trailofbits/algo/pull/1365) ([jackivanov](https://github.com/jackivanov))
 
-## 1.0 [(Mar 19, 2019)](https://github.com/trailofbits/algo/tree/v1.0)
+## 1.0 [(Mar 19, 2019)](https://github.com/trailofbits/algo/releases/tag/v1.0)
 
 ### Added 
 - Tagged releases and changelog [\#724](https://github.com/trailofbits/algo/issues/724)
