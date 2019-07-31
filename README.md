@@ -63,7 +63,7 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
     ```
     On macOS, you may be prompted to install `cc`. You should press accept if so.
 
-5. **List the users to create.** Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list. If you want to be able to add or delete users later, you **must** select `yes` for the `Do you want to retain the CA key?` prompt during the deployment.
+5. **List the users to create.** Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list. If you want to be able to add or delete users later, you **must** select `yes` for the `Do you want to retain the CA key?` prompt during the deployment. Make a unique user for each device you plan to setup.
 
 6. **Start the deployment.** Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [deploy-from-ansible.md](docs/deploy-from-ansible.md).
 
@@ -107,9 +107,9 @@ WireGuard is used to provide VPN services on Android. Install the [WireGuard VPN
 
 ### Windows
 
-WireGuard is used to provide VPN services on Windows.  Algo generates a WireGuard configuration file, `wireguard/<username>.conf`, for each user defined in `config.cfg`.
+WireGuard is used to provide VPN services on Windows. Algo generates a WireGuard configuration file, `wireguard/<username>.conf`, for each user defined in `config.cfg`.
 
-Install the [WireGuard VPN Client](https://www.wireguard.com/install/#windows-7-8-81-10-2012-2016-2019). Import the corresponding `wireguard/<username>.conf` file to your device, then setup a new connection with it.
+Install the [WireGuard VPN Client](https://www.wireguard.com/install/#windows-7-8-81-10-2012-2016-2019). Import the generated `wireguard/<username>.conf` file to your device, then setup a new connection with it.
 
 ### Linux Network Manager Clients (e.g., Ubuntu, Debian, or Fedora Desktop)
 
