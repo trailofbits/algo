@@ -56,7 +56,7 @@ The easiest way to get an Algo server running is to let it set up a _new_ virtua
 
 4. **Install Algo's remaining dependencies.** Use the same Terminal window as the previous step and run:
     ```bash
-    $ python -m virtualenv --python=`which python2` env &&
+    $ python -m virtualenv --python=`which python` env &&
         source env/bin/activate &&
         python -m pip install -U pip virtualenv &&
         python -m pip install -r requirements.txt
