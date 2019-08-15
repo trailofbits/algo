@@ -44,7 +44,11 @@
       service_account_email: "{{ service_account_email }}"
       credentials_file: "{{ credentials_file_path }}"
       project_id: "{{ project_id }}"
-      metadata: '{"ssh-keys":"ubuntu:{{ ssh_public_key_lookup }}"}'
+      metadata:
+        ssh-keys: "ubuntu:{{ ssh_public_key_lookup }}"
+        user-data: |
+          #!/bin/bash
+          sudo apt-get remove -y --purge sshguard
       network: "{{ algo_server_name }}"
       tags:
         - "environment-algo"
