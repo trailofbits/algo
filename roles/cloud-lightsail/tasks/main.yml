@@ -16,7 +16,7 @@
       zone: "{{ algo_region }}a"
       blueprint_id: "{{ cloud_providers.lightsail.image }}"
       bundle_id: "{{ cloud_providers.lightsail.size }}"
-      wait_timeout: 300
+      wait_timeout: "300"
       open_ports:
         - from_port: 4500
           to_port: 4500
