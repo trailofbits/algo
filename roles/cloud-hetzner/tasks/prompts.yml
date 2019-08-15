@@ -1,0 +1,48 @@
+---
+- pause:
+    prompt: |
+      Enter your API token (https://trailofbits.github.io/algo/cloud-hetzner.html#api-token):
+    echo: false
+  register: _hcloud_token
+  when:
+    - hcloud_token is undefined
+    - lookup('env','HCLOUD_TOKEN')|length <= 0
+
+- name: Set the token as a fact
+  set_fact:
+    algo_hcloud_token: "{{ hcloud_token | default(_hcloud_token.user_input|default(None)) | default(lookup('env','HCLOUD_TOKEN'), true) }}"
+
+- name: Get regions
+  hcloud_datacenter_facts:
+    api_token: "{{ algo_hcloud_token }}"
+  register: _hcloud_regions
+
+- name: Set facts about thre regions
+  set_fact:
+    hcloud_regions: "{{ hcloud_datacenter_facts | sort(attribute='location') }}"
+
+- name: Set default region
+  set_fact:
+    default_region: >-
+      {% for r in hcloud_regions %}
+      {%- if r['location'] == "nbg1" %}{{ loop.index }}{% endif %}
+      {%- endfor %}
+
+- pause:
+    prompt: |
+      What region should the server be located in?
+        {% for r in hcloud_regions %}
+        {{ loop.index }}. {{ r['location'] }}     {{ r['description'] }}
+        {% endfor %}
+
+      Enter the number of your desired region
+      [{{ default_region }}]
+  register: _algo_region
+  when: region is undefined
+
+- name: Set additional facts
+  set_fact:
+    algo_hcloud_region: >-
+      {% if region is defined %}{{ region }}
+      {%- elif _algo_region.user_input %}{{ hcloud_regions[_algo_region.user_input | int -1 ]['location'] }}
+      {%- else %}{{ hcloud_regions[default_region | int - 1]['location'] }}{% endif %}

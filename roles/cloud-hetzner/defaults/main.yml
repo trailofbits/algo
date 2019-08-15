@@ -1,0 +1,2 @@
+---
+hetzner_venv: "{{ playbook_dir }}/configs/.venvs/hetzner"
