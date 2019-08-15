@@ -1,5 +1,7 @@
 ## 1.2 [(Unreleased)](https://github.com/trailofbits/algo/tree/HEAD)
 
+- New provider CloudStack added [\#1420](https://github.com/trailofbits/algo/pull/1420)
+
 
 ## 1.1 [(Jul 31, 2019)](https://github.com/trailofbits/algo/releases/tag/v1.1)
 
