@@ -1,0 +1,55 @@
+---
+- block:
+  - pause:
+      prompt: |
+        Enter path for cloudstack.ini file (https://trailofbits.github.io/algo/cloud-cloudstack.html)
+        [~/.cloudstack.ini]
+    register: _cs_config
+    when:
+      - cs_config is undefined
+      - lookup('env', 'CLOUDSTACK_CONFIG') | length <= 0
+
+  - pause:
+      prompt: |
+        Specify region to use in cloudstack.ini file
+        [exoscale]
+    register: _cs_region
+    when:
+      - cs_region is undefined
+      - lookup('env', 'CLOUDSTACK_REGION') | length <= 0
+
+  - set_fact:
+      algo_cs_config: "{{ cs_config | default(_cs_config.user_input|default(None)) | default(lookup('env', 'CLOUDSTACK_CONFIG'), true) | default('~/.cloudstack.ini', true) }}"
+      algo_cs_region:  "{{ cs_region | default(_cs_region.user_input|default(None)) | default(lookup('env', 'CLOUDSTACK_REGION'), true) | default('exoscale', true) }}"
+
+  - name: Get zones on cloud
+    cloudstack_zones:
+    register: _cs_zones
+    environment:
+      CLOUDSTACK_CONFIG: "{{ algo_cs_config }}"
+      CLOUDSTACK_REGION: "{{ algo_cs_region }}"
+
+  - name: Extract zones from output
+    set_fact:
+      cs_zones: "{{ _cs_zones['zone'] | sort(attribute='name') }}"
+
+  - name: Set the default zone
+    set_fact:
+      default_zone: >-
+        {% for z in cs_zones %}
+        {%- if z['name'] == "ch-gva-2" %}{{ loop.index }}{% endif %}
+        {%- endfor %}
+
+  - pause:
+      prompt: |
+        What zone should the server be located in?
+          {% for z in cs_zones %}
+          {{ loop.index }}. {{ z['name'] }}
+          {% endfor %}
+
+          Enter the number of your desired zone
+          [{{ default_zone }}]
+    register: _algo_region
+    when: region is undefined
+  environment:
+    PYTHONPATH: "{{ cloudstack_venv }}/lib/python2.7/site-packages/"

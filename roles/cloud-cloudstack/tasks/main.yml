@@ -1,0 +1,71 @@
+---
+- block:
+    - name: Build python virtual environment
+      import_tasks: venv.yml
+
+    - name: Include prompts
+      import_tasks: prompts.yml
+
+    - block:
+      - set_fact:
+          algo_region: >-
+            {% if region is defined %}{{ region }}
+            {%- elif _algo_region.user_input is defined and _algo_region.user_input | length > 0 %}{{ cs_zones[_algo_region.user_input | int -1 ]['name'] }}
+            {%- else %}{{ cs_zones[default_zone | int - 1]['name'] }}{% endif %}
+
+      - name: Security group created
+        cs_securitygroup:
+          name: "{{ algo_server_name }}-security_group"
+          description: AlgoVPN security group
+        register: cs_security_group
+
+      - name: Security rules created
+        cs_securitygroup_rule:
+          security_group: "{{ cs_security_group.name }}"
+          protocol: "{{ item.proto }}"
+          start_port: "{{ item.start_port }}"
+          end_port: "{{ item.end_port }}"
+          cidr: "{{ item.range }}"
+        with_items:
+          - { proto: tcp, start_port: 22, end_port: 22, range: 0.0.0.0/0 }
+          - { proto: udp, start_port: 4500, end_port: 4500, range: 0.0.0.0/0 }
+          - { proto: udp, start_port: 500, end_port: 500, range: 0.0.0.0/0 }
+          - { proto: udp, start_port: "{{ wireguard_port }}", end_port: "{{ wireguard_port }}", range: 0.0.0.0/0 }
+
+      - name: Keypair created
+        cs_sshkeypair:
+          name: "{{ SSH_keys.comment|regex_replace('@', '_') }}"
+          public_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
+        register: cs_keypair
+
+      - name: Set facts
+        set_fact:
+          image_id: "{{ cloud_providers.cloudstack.image }}"
+          size: "{{ cloud_providers.cloudstack.size }}"
+          disk: "{{ cloud_providers.cloudstack.disk }}"
+          keypair_name: "{{ cs_keypair.name }}"
+
+      - name: Server created
+        cs_instance:
+          name: "{{ algo_server_name }}"
+          root_disk_size: "{{ disk }}"
+          template: "{{ image_id }}"
+          ssh_key: "{{ keypair_name }}"
+          security_groups: "{{ cs_security_group.name }}"
+          zone: "{{ algo_region }}"
+          service_offering: "{{ size }}"
+        register: cs_server
+
+      - set_fact:
+          cloud_instance_ip: "{{ cs_server.default_ip }}"
+          ansible_ssh_user: ubuntu
+      environment:
+        PYTHONPATH: "{{ cloudstack_venv }}/lib/python2.7/site-packages/"
+        CLOUDSTACK_CONFIG: "{{ algo_cs_config }}"
+        CLOUDSTACK_REGION: "{{ algo_cs_region }}"
+
+      rescue:
+      - debug: var=fail_hint
+        tags: always
+      - fail:
+        tags: always

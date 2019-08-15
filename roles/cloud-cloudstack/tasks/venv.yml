@@ -1,0 +1,15 @@
+---
+- name: Clean up the environment
+  file:
+    dest: "{{ cloudstack_venv }}"
+    state: absent
+  when: clean_environment
+
+- name: Install requirements
+  pip:
+    name:
+      - cs
+      - sshpubkeys
+    state: latest
+    virtualenv: "{{ cloudstack_venv }}"
+    virtualenv_python: python2.7

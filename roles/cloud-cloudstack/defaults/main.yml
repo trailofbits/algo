@@ -1,0 +1,2 @@
+---
+cloudstack_venv: "{{ playbook_dir }}/configs/.venvs/cloudstack"

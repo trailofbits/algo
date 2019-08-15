@@ -20,6 +20,7 @@
   - Configure [DigitalOcean](cloud-do.md)
   - Configure [Google Cloud Platform](cloud-gce.md)
   - Configure [Vultr](cloud-vultr.md)
+  - Configure [CloudStack](cloud-cloudstack.md)
 * Advanced Deployment
   - Deploy to your own [FreeBSD](deploy-to-freebsd.md) server
   - Deploy to your own [Ubuntu](deploy-to-ubuntu.md) server
