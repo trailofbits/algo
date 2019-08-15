@@ -2,27 +2,32 @@
 - block:
   - pause:
       prompt: |
-        Enter path for cloudstack.ini file
+        Enter path for cloudstack.ini file (https://trailofbits.github.io/algo/cloud-cloudstack.html)
         [~/.cloudstack.ini]
-    register: _cs_config_input
+    register: _cs_config
     when:
+      - cs_config is undefined
       - lookup('env', 'CLOUDSTACK_CONFIG') | length <= 0
-
-  - set_fact:
-      _cs_config: "{{ _cs_config_input.user_input | default(lookup('env', 'CLOUDSTACK_CONFIG'), true) | default('~/.cloudstack.ini') }}"
 
   - pause:
       prompt: |
         Specify region to use in cloudstack.ini file
         [exoscale]
     register: _cs_region
+    when:
+      - cs_region is undefined
+      - lookup('env', 'CLOUDSTACK_REGION') | length <= 0
+
+  - set_fact:
+      algo_cs_config: "{{ cs_config | default(_cs_config.user_input|default(None)) | default(lookup('env', 'CLOUDSTACK_CONFIG'), true) | default('~/.cloudstack.ini', true) }}"
+      algo_cs_region:  "{{ cs_region | default(_cs_region.user_input|default(None)) | default(lookup('env', 'CLOUDSTACK_REGION'), true) | default('exoscale', true) }}"
 
   - name: Get zones on cloud
     cloudstack_zones:
     register: _cs_zones
     environment:
-      CLOUDSTACK_CONFIG: "{{ _cs_config }}"
-      CLOUDSTACK_REGION: "{% if _cs_region.user_input | length <= 0 %}{{ 'exoscale' }}{% else %}{{ _cs_region.user_input }}{% endif %}"
+      CLOUDSTACK_CONFIG: "{{ algo_cs_config }}"
+      CLOUDSTACK_REGION: "{{ algo_cs_region }}"
 
   - name: Extract zones from output
     set_fact:
@@ -47,4 +52,4 @@
     register: _algo_region
     when: region is undefined
   environment:
-        PYTHONPATH: "{{ cloudstack_venv }}/lib/python2.7/site-packages/"
+    PYTHONPATH: "{{ cloudstack_venv }}/lib/python2.7/site-packages/"
