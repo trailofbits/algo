@@ -63,7 +63,7 @@ stages:
       - pip install ansible-lint
       - shellcheck algo install.sh
       - ansible-playbook main.yml --syntax-check
-      - ansible-lint -v *.yml
+      - ansible-lint -v *.yml roles/{local,cloud-*}/*/*.yml
 
   - &deploy-local
     stage: Deploy
