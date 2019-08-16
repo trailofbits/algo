@@ -48,6 +48,8 @@ Cloud roles:
 - role: cloud-azure,        provider: azure
 - role: cloud-scaleway,     provider: scaleway
 - role: cloud-openstack,    provider: openstack
+- role: cloud-cloudstack,   provider: cloudstack
+- role: cloud-hetzner,      proivder: hetzner
 
 Server roles:
 
@@ -238,11 +240,30 @@ Possible options can be gathered via cli `aws lightsail get-regions`
 Required variables:
 
 - [scaleway_token](https://www.scaleway.com/docs/generate-an-api-token/)
-- region: e.g. ams1, par1
+- region: e.g. `ams1`, `par1`
 
 ### OpenStack
 
 You need to source the rc file prior to run Algo. Download it from the OpenStack dashboard->Compute->API Access and source it in the shell (eg: source /tmp/dhc-openrc.sh)
+
+### CloudStack
+
+Required variables:
+
+- [cs_config](https://trailofbits.github.io/algo/cloud-cloudstack.html): /path/to/.cloudstack.ini
+- cs_region: e.g. `exoscale`
+- cs_zones: e.g. `ch-gva2`
+
+The first two can also be defined in your environment, using the variables `CLOUDSTACK_CONFIG` and `CLOUDSTACK_REGION`.
+
+### Hetzner
+
+Required variables:
+
+- hcloud_token: Your [API token](https://trailofbits.github.io/algo/cloud-hetzner.html#api-token) - can also be defined in the environment as HCLOUD_TOKEN
+- region: e.g. `nbg1`
+
+
 
 ### Update users
 
