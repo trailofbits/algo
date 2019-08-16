@@ -9,6 +9,10 @@
         update_cache: true
         install_recommends: true
         upgrade: dist
+      register: result
+      until: result is succeeded
+      retries: 30
+      delay: 10
 
     - name: Check if reboot is required
       shell: >
