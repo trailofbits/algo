@@ -21,6 +21,7 @@
       server_type: "{{ cloud_providers.hetzner.server_type }}"
       image: "{{ cloud_providers.hetzner.image }}"
       state: present
+      api_token: "{{ algo_hcloud_token }}"
       ssh_keys: "{{ hcloud_ssh_key.hcloud_ssh_key.name }}"
       labels:
         Environment: algo
