@@ -11,6 +11,7 @@
       name: "algo-{{ 999999 | random(seed=lookup('file', SSH_keys.public)) }}"
       public_key: "{{ lookup('file', SSH_keys.public) }}"
       state: present
+      api_token: "{{ algo_hcloud_token }}"
     register: hcloud_ssh_key
 
   - name: Create a server...
