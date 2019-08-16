@@ -183,8 +183,8 @@ Additional variables:
 
 Required variables:
 
-- gce_credentials_file
-- [region](https://cloud.google.com/compute/docs/regions-zones/)
+- gce_credentials_file: e.g. /configs/gce.json if you use the [GCE docs](https://trailofbits.github.io/algo/cloud-gce.html) - can also be defined in environment as GCE_CREDENTIALS_FILE_PATH
+- [region](https://cloud.google.com/compute/docs/regions-zones/): e.g. `useast-1`
 
 ### Vultr
 
