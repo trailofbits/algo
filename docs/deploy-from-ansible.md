@@ -41,15 +41,16 @@ Cloud roles can be activated by specifying an extra variable `provider`.
 
 Cloud roles:
 
-- role: cloud-digitalocean, provider: digitalocean
-- role: cloud-ec2,          provider: ec2
-- role: cloud-vultr,        provider: vultr
-- role: cloud-gce,          provider: gce
-- role: cloud-azure,        provider: azure
-- role: cloud-scaleway,     provider: scaleway
-- role: cloud-openstack,    provider: openstack
-- role: cloud-cloudstack,   provider: cloudstack
-- role: cloud-hetzner,      proivder: hetzner
+- [role: cloud-digitalocean, provider: digitalocean](#digital-ocean)
+- [role: cloud-ec2,          provider: ec2](#amazon-ec2)
+- [role: cloud-gce,          provider: gce](#google-compute-engine)
+- [role: cloud-vultr,        provider: vultr](#vultr)
+- [role: cloud-azure,        provider: azure](#azure)
+- [role: cloud-lightsail,    provider: lightsail](#lightsail)
+- [role: cloud-scaleway,     provider: scaleway](#scaleway)
+- [role: cloud-openstack,    provider: openstack](#openstack)
+- [role: cloud-cloudstack,   provider: cloudstack](#cloudstack)
+- [role: cloud-hetzner,      proivder: hetzner](#hetzner)
 
 Server roles:
 
@@ -262,8 +263,6 @@ Required variables:
 
 - hcloud_token: Your [API token](https://trailofbits.github.io/algo/cloud-hetzner.html#api-token) - can also be defined in the environment as HCLOUD_TOKEN
 - region: e.g. `nbg1`
-
-
 
 ### Update users
 
