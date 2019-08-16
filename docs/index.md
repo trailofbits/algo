@@ -13,7 +13,6 @@
   - Setup Ubuntu clients to use [WireGuard](client-linux-wireguard.md)
   - Setup Apple devices to use [IPSEC](client-apple-ipsec.md)
   - Setup Macs running macOS 10.13 or older to use [Wireguard](client-macos-wireguard.md)
-  - Manual Windows 10 client setup for [IPSEC](client-windows.md)
 * Cloud provider setup
   - Configure [Amazon EC2](cloud-amazon-ec2.md)
   - Configure [Azure](cloud-azure.md)
