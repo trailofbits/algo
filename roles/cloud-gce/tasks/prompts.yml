@@ -21,36 +21,32 @@
 
 - block:
   - name: Get regions
-    gce_region_facts:
-      service_account_email: "{{ credentials_file_lookup.client_email }}"
-      credentials_file: "{{ credentials_file_path  }}"
-      project_id: "{{ credentials_file_lookup.project_id }}"
-    register: _gce_regions
+    gcp_compute_location_info:
+      auth_kind: serviceaccount
+      service_account_file: "{{ credentials_file_path }}"
+      project: "{{ project_id }}"
+      scope: regions
+      filters: status=UP
+    register: gcp_compute_regions_info
 
   - name: Set facts about the regions
     set_fact:
       gce_regions: >-
-        [{%- for region in _gce_regions.results.regions | sort(attribute='name') -%}
-          {% if region.status == "UP" %}
-            {% for zone in region.zones | sort(attribute='name') %}
-              {% if zone.status == "UP" %}
-                '{{ zone.name }}'
-              {% endif %}{% if not loop.last %},{% endif %}
-            {% endfor %}
-          {% endif %}{% if not loop.last %},{% endif %}
+        [{%- for region in gcp_compute_regions_info.resources | sort(attribute='name') -%}
+            '{{ region.name }}'{% if not loop.last %},{% endif %}
         {%- endfor -%}]
 
   - name: Set facts about the default region
     set_fact:
       default_region: >-
         {% for region in gce_regions %}
-          {%- if region == "us-east1-b" %}{{ loop.index }}{% endif %}
+          {%- if region == "us-east1" %}{{ loop.index }}{% endif %}
         {%- endfor %}
 
   - pause:
       prompt: |
         What region should the server be located in?
-        (https://cloud.google.com/compute/docs/regions-zones/)
+        (https://cloud.google.com/compute/docs/regions-zones/#locations)
           {% for r in gce_regions %}
           {{ loop.index }}. {{ r }}
           {% endfor %}
@@ -60,8 +56,24 @@
     register: _gce_region
   when: region is undefined
 
-- set_fact:
+- name: Set region as a fact
+  set_fact:
     algo_region: >-
       {% if region is defined %}{{ region }}
       {%- elif _gce_region.user_input %}{{ gce_regions[_gce_region.user_input | int -1 ] }}
       {%- else %}{{ gce_regions[default_region | int - 1] }}{% endif %}
+
+- name: Get zones
+  gcp_compute_location_info:
+    auth_kind: serviceaccount
+    service_account_file: "{{ credentials_file_path }}"
+    project: "{{ project_id }}"
+    scope: zones
+    filters:
+      - "name={{ algo_region }}-*"
+      - "status=UP"
+  register: gcp_compute_zone_info
+
+- name: Set random available zone as a fact
+  set_fact:
+    algo_zone: "{{ (gcp_compute_zone_info.resources | random(seed=algo_server_name + algo_region + project_id) ).name }}"
