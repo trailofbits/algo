@@ -41,16 +41,16 @@ Cloud roles can be activated by specifying an extra variable `provider`.
 
 Cloud roles:
 
-- [role: cloud-digitalocean, provider: digitalocean](#digital-ocean)
-- [role: cloud-ec2,          provider: ec2](#amazon-ec2)
-- [role: cloud-gce,          provider: gce](#google-compute-engine)
-- [role: cloud-vultr,        provider: vultr](#vultr)
-- [role: cloud-azure,        provider: azure](#azure)
-- [role: cloud-lightsail,    provider: lightsail](#lightsail)
-- [role: cloud-scaleway,     provider: scaleway](#scaleway)
-- [role: cloud-openstack,    provider: openstack](#openstack)
-- [role: cloud-cloudstack,   provider: cloudstack](#cloudstack)
-- [role: cloud-hetzner,      proivder: hetzner](#hetzner)
+- role: cloud-digitalocean, [provider: digitalocean](#digital-ocean)
+- role: cloud-ec2,          [provider: ec2](#amazon-ec2)
+- role: cloud-gce,          [provider: gce](#google-compute-engine)
+- role: cloud-vultr,        [provider: vultr](#vultr)
+- role: cloud-azure,        [provider: azure](#azure)
+- role: cloud-lightsail,    [provider: lightsail](#lightsail)
+- role: cloud-scaleway,     [provider: scaleway](#scaleway)
+- role: cloud-openstack,    [provider: openstack](#openstack)
+- role: cloud-cloudstack,   [provider: cloudstack](#cloudstack)
+- role: cloud-hetzner,      [provider: hetzner](#hetzner)
 
 Server roles:
 
