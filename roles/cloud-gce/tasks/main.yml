@@ -2,60 +2,83 @@
 - name: Build python virtual environment
   import_tasks: venv.yml
 
+- name: Include prompts
+  import_tasks: prompts.yml
+
+- name: Network configured
+  gcp_compute_network:
+    auth_kind: serviceaccount
+    service_account_file: "{{ credentials_file_path }}"
+    project: "{{ project_id }}"
+    name: algovpn
+    auto_create_subnetworks: true
+    routing_config:
+      routing_mode: REGIONAL
+  register: gcp_compute_network
+
+- name: Firewall configured
+  gcp_compute_firewall:
+    auth_kind: serviceaccount
+    service_account_file: "{{ credentials_file_path }}"
+    project: "{{ project_id }}"
+    name: algovpn
+    network: "{{ gcp_compute_network }}"
+    direction: INGRESS
+    allowed:
+      - ip_protocol: udp
+        ports:
+          - '500'
+          - '4500'
+          - '{{ wireguard_port|string }}'
+      - ip_protocol: tcp
+        ports:
+          - '22'
+      - ip_protocol: icmp
+
 - block:
-  - name: Include prompts
-    import_tasks: prompts.yml
-
-  - name: Network configured
-    gce_net:
+  - name: External IP allocated
+    gcp_compute_address:
+      auth_kind: serviceaccount
+      service_account_file: "{{ credentials_file_path }}"
+      project: "{{ project_id }}"
       name: "{{ algo_server_name }}"
-      fwname: "{{ algo_server_name }}-fw"
-      allowed: "udp:500,4500,{{ wireguard_port }};tcp:22"
-      state: "present"
-      mode: auto
-      src_range: 0.0.0.0/0
-      service_account_email: "{{ service_account_email }}"
-      credentials_file: "{{ credentials_file_path  }}"
-      project_id: "{{ project_id }}"
+      region: "{{ algo_region }}"
+    register: gcp_compute_address
 
-  - block:
-    - name: External IP allocated
-      gce_eip:
-        service_account_email: "{{ service_account_email }}"
-        credentials_file: "{{ credentials_file_path }}"
-        project_id: "{{ project_id }}"
-        name: "{{ algo_server_name }}"
-        region: "{{ algo_region.split('-')[0:2] | join('-') }}"
-        state: present
-      register: gce_eip
+  - name: Set External IP as a fact
+    set_fact:
+      external_ip: "{{ gcp_compute_address.address }}"
+  when: cloud_providers.gce.external_static_ip
 
-    - name: Set External IP as a fact
-      set_fact:
-        external_ip: "{{ gce_eip.address }}"
-    when: cloud_providers.gce.external_static_ip
-
-  - name: "Creating a new instance..."
-    gce:
-      instance_names: "{{ algo_server_name }}"
-      zone: "{{ algo_region }}"
-      external_ip: "{{ external_ip | default('ephemeral') }}"
-      machine_type: "{{ cloud_providers.gce.size }}"
-      image: "{{ cloud_providers.gce.image }}"
-      service_account_email: "{{ service_account_email }}"
-      credentials_file: "{{ credentials_file_path }}"
-      project_id: "{{ project_id }}"
-      metadata:
-        ssh-keys: "ubuntu:{{ ssh_public_key_lookup }}"
-        user-data: |
-          #!/bin/bash
-          sudo apt-get remove -y --purge sshguard
-      network: "{{ algo_server_name }}"
-      tags:
+- name: Instance created
+  gcp_compute_instance:
+    auth_kind: serviceaccount
+    service_account_file: "{{ credentials_file_path }}"
+    project: "{{ project_id }}"
+    name: "{{ algo_server_name }}"
+    zone: "{{ algo_zone }}"
+    machine_type: "{{ cloud_providers.gce.size }}"
+    disks:
+      - auto_delete: true
+        boot: true
+        initialize_params:
+          source_image: "projects/ubuntu-os-cloud/global/images/family/{{ cloud_providers.gce.image }}"
+    metadata:
+      ssh-keys: "ubuntu:{{ ssh_public_key_lookup }}"
+      user-data: |
+        #!/bin/bash
+        sudo apt-get remove -y --purge sshguard
+    network_interfaces:
+      - network: "{{ gcp_compute_network }}"
+        access_configs:
+          - name: "{{ algo_server_name }}"
+            nat_ip: "{{ gcp_compute_address|default(None) }}"
+            type: ONE_TO_ONE_NAT
+    tags:
+      items:
         - "environment-algo"
-    register: google_vm
+  register: gcp_compute_instance
 
-  - set_fact:
-      cloud_instance_ip: "{{ google_vm.instance_data[0].public_ip }}"
-      ansible_ssh_user: ubuntu
-  environment:
-    PYTHONPATH: "{{ gce_venv }}/lib/python2.7/site-packages/"
+- set_fact:
+    cloud_instance_ip: "{{ gcp_compute_instance.networkInterfaces[0].accessConfigs[0].natIP }}"
+    ansible_ssh_user: ubuntu
