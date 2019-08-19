@@ -14,6 +14,8 @@ Parameters:
   UseThisElasticIP:
     Type: String
     Default: ''
+  EbsEncrypted:
+    Type: String
 Conditions:
   AllocateNewEIP: !Equals [!Ref UseThisElasticIP, '']
   AssociateExistingEIP: !Not [!Equals [!Ref UseThisElasticIP, '']]
@@ -159,6 +161,12 @@ Resources:
     Properties:
       InstanceType:
         Ref: InstanceTypeParameter
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            DeleteOnTermination: true
+            VolumeSize: 8
+            Encrypted: !Ref EbsEncrypted
       InstanceInitiatedShutdownBehavior: terminate
       SecurityGroupIds:
         - Ref: InstanceSecurityGroup
