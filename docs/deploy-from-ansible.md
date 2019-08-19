@@ -41,13 +41,16 @@ Cloud roles can be activated by specifying an extra variable `provider`.
 
 Cloud roles:
 
-- role: cloud-digitalocean, provider: digitalocean
-- role: cloud-ec2,          provider: ec2
-- role: cloud-vultr,        provider: vultr
-- role: cloud-gce,          provider: gce
-- role: cloud-azure,        provider: azure
-- role: cloud-scaleway,     provider: scaleway
-- role: cloud-openstack,    provider: openstack
+- role: cloud-digitalocean, [provider: digitalocean](#digital-ocean)
+- role: cloud-ec2,          [provider: ec2](#amazon-ec2)
+- role: cloud-gce,          [provider: gce](#google-compute-engine)
+- role: cloud-vultr,        [provider: vultr](#vultr)
+- role: cloud-azure,        [provider: azure](#azure)
+- role: cloud-lightsail,    [provider: lightsail](#lightsail)
+- role: cloud-scaleway,     [provider: scaleway](#scaleway)
+- role: cloud-openstack,    [provider: openstack](#openstack)
+- role: cloud-cloudstack,   [provider: cloudstack](#cloudstack)
+- role: cloud-hetzner,      [provider: hetzner](#hetzner)
 
 Server roles:
 
@@ -180,8 +183,8 @@ Additional variables:
 
 Required variables:
 
-- gce_credentials_file
-- [region](https://cloud.google.com/compute/docs/regions-zones/)
+- gce_credentials_file: e.g. /configs/gce.json if you use the [GCE docs](https://trailofbits.github.io/algo/cloud-gce.html) - can also be defined in environment as GCE_CREDENTIALS_FILE_PATH
+- [region](https://cloud.google.com/compute/docs/regions-zones/): e.g. `useast-1`
 
 ### Vultr
 
@@ -238,11 +241,28 @@ Possible options can be gathered via cli `aws lightsail get-regions`
 Required variables:
 
 - [scaleway_token](https://www.scaleway.com/docs/generate-an-api-token/)
-- region: e.g. ams1, par1
+- region: e.g. `ams1`, `par1`
 
 ### OpenStack
 
 You need to source the rc file prior to run Algo. Download it from the OpenStack dashboard->Compute->API Access and source it in the shell (eg: source /tmp/dhc-openrc.sh)
+
+### CloudStack
+
+Required variables:
+
+- [cs_config](https://trailofbits.github.io/algo/cloud-cloudstack.html): /path/to/.cloudstack.ini
+- cs_region: e.g. `exoscale`
+- cs_zones: e.g. `ch-gva2`
+
+The first two can also be defined in your environment, using the variables `CLOUDSTACK_CONFIG` and `CLOUDSTACK_REGION`.
+
+### Hetzner
+
+Required variables:
+
+- hcloud_token: Your [API token](https://trailofbits.github.io/algo/cloud-hetzner.html#api-token) - can also be defined in the environment as HCLOUD_TOKEN
+- region: e.g. `nbg1`
 
 ### Update users
 

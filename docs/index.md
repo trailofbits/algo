@@ -13,7 +13,6 @@
   - Setup Ubuntu clients to use [WireGuard](client-linux-wireguard.md)
   - Setup Apple devices to use [IPSEC](client-apple-ipsec.md)
   - Setup Macs running macOS 10.13 or older to use [Wireguard](client-macos-wireguard.md)
-  - Manual Windows 10 client setup for [IPSEC](client-windows.md)
 * Cloud provider setup
   - Configure [Amazon EC2](cloud-amazon-ec2.md)
   - Configure [Azure](cloud-azure.md)
@@ -21,6 +20,7 @@
   - Configure [Google Cloud Platform](cloud-gce.md)
   - Configure [Vultr](cloud-vultr.md)
   - Configure [CloudStack](cloud-cloudstack.md)
+  - Configure [Hetzner Cloud](cloud-hetzner.md)
 * Advanced Deployment
   - Deploy to your own [FreeBSD](deploy-to-freebsd.md) server
   - Deploy to your own [Ubuntu](deploy-to-ubuntu.md) server
