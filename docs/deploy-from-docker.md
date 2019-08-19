@@ -46,6 +46,13 @@ $ docker run --cap-drop=all -it \
   trailofbits/algo:latest
 ```
 
+## GNU Makefile for Docker
+
+You can also build and deploy with a Makefile. This simplifies some of the command strings and opens the door for further user configuration.
+
+The `Makefile` consists of three targets: `docker-build`, `docker-deploy`, and `docker-prune`.
+`docker-all` will run thru all of them.
+
 ## Building Your Own Docker Image
 
 You can use the Dockerfile provided in this repository as-is, or modify it to suit your needs. Further instructions on building an image can be found in the [Docker engine](https://docs.docker.com/engine/) documents.
