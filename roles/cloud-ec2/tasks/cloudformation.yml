@@ -13,7 +13,7 @@
       ImageIdParameter: "{{ ami_image }}"
       WireGuardPort: "{{ wireguard_port }}"
       UseThisElasticIP: "{{ existing_eip }}"
-      EbsEncrypted: "{{ cloud_providers.ec2.encrypted }}"
+      EbsEncrypted: "{{ encrypted }}"
     tags:
       Environment: Algo
   register: stack
