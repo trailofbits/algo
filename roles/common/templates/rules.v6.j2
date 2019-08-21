@@ -91,9 +91,10 @@ COMMIT
 -A OUTPUT -d {{ subnets|join(',') }} -m owner --gid-owner 15000 -j {{ "DROP" if BetweenClients_DROP else "ACCEPT" }}
 
 -A FORWARD -j ICMPV6-CHECK
--A FORWARD -p tcp --dport 445 -j DROP
--A FORWARD -p udp -m multiport --ports 137,138 -j DROP
--A FORWARD -p tcp -m multiport --ports 137,139 -j DROP
+-A FORWARD -p tcp --dport 445 -j {{ "DROP" if block_smb else "ACCEPT" }}
+-A FORWARD -p udp -m multiport --ports 137,138 -j {{ "DROP" if block_netbios else "ACCEPT" }}
+-A FORWARD -p tcp -m multiport --ports 137,139 -j {{ "DROP" if block_netbios else "ACCEPT" }}
+
 -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 {% if ipsec_enabled %}
 -A FORWARD -m conntrack --ctstate NEW -s {{ strongswan_network_ipv6 }} -m policy --pol ipsec --dir in -j ACCEPT
