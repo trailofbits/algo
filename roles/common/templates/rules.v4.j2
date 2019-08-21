@@ -88,10 +88,10 @@ COMMIT
 # Forward any packet that's part of an established connection
 -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 # Drop SMB/CIFS traffic that requests to be forwarded
--A FORWARD -p tcp --dport 445 -j DROP
+-A FORWARD -p tcp --dport 445 -j {{ "DROP" if block_smb else "ACCEPT" }}
 # Drop NETBIOS trafic that requests to be forwarded
--A FORWARD -p udp -m multiport --ports 137,138 -j DROP
--A FORWARD -p tcp -m multiport --ports 137,139 -j DROP
+-A FORWARD -p udp -m multiport --ports 137,138 -j {{ "DROP" if block_netbios else "ACCEPT" }}
+-A FORWARD -p tcp -m multiport --ports 137,139 -j {{ "DROP" if block_netbios else "ACCEPT" }}
 
 {% if ipsec_enabled %}
 # Forward any IPSEC traffic from the VPN network
