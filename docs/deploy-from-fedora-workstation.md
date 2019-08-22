@@ -7,17 +7,16 @@ These docs were written based on experience on Fedora Workstation 30.
 ### DNF counterparts of apt packages
 
 The following table lists `apt` packages with their `dnf` counterpart. This is purely informative.
-Using `python2-*` in favour of `python3-*` as per [declared dependency](https://github.com/trailofbits/algo#deploy-the-algo-server).
 
 | `apt` | `dnf` |
 | ----- | ----- |
 | `build-essential` | `make automake gcc gcc-c++ kernel-devel` |
 | `libssl-dev` | `openssl-devel` |
 | `libffi-dev` | `libffi-devel` |
-| `python-dev` | `python2-devel` |
-| `python-pip` | `python2-pip` |
-| `python-setuptools` | `python2-setuptools` |
-| `python-virtualenv` | `python2-virtualenv` |
+| `python3-dev` | `python3-devel` |
+| `python3-pip` | `python3-pip` |
+| `python3-setuptools` | `python3-setuptools` |
+| `python3-virtualenv` | `python3-virtualenv` |
 
 ### Install requirements
 
@@ -31,22 +30,20 @@ Next, install the required packages:
 
 ````
 dnf install -y \
-  ansible \
   automake \
   gcc \
   gcc-c++ \
   kernel-devel \
   openssl-devel \
   libffi-devel \
-  libselinux-python \
-  python2-devel \
-  python2-pip \
-  python2-setuptools \
-  python2-virtualenv \
-  python2-crypto \
-  python2-pyyaml \
-  python2-pyOpenSSL \
-  python2-libselinux \
+  python3-devel \
+  python3-pip \
+  python3-setuptools \
+  python3-virtualenv \
+  python3-crypto \
+  python3-pyyaml \
+  python3-pyOpenSSL \
+  python3-libselinux \
   make
 ````
 
@@ -56,7 +53,7 @@ dnf install -y \
 [Download](https://github.com/trailofbits/algo/archive/master.zip) or clone:
 
 ````
-git clone git@github.com:trailofbits/algo.git
+git clone https://github.com/trailofbits/algo.git
 cd algo
 ````
 
@@ -68,24 +65,14 @@ We'll assume from this point forward that our working directory is the `algo` ro
 
 Some steps are needed before we can deploy our Algo VPN server.
 
-### Check `pip`
-
-Run `pip -v` and check the python version it is using:
-
-````
-$ pip -V
-pip 19.0.3 from /usr/lib/python2.7/site-packages (python 2.7)
-````
-
-`python 2.7` is what we're looking for.
-
 ### Setup virtualenv and install requirements
 
-````
-python2 -m virtualenv --system-site-packages env
-source env/bin/activate
-pip -q install --user -r requirements.txt
-````
+```
+python3 -m virtualenv --python="$(command -v python3)" .env
+source .env/bin/activate
+python3 -m pip install -U pip virtualenv
+python3 -m pip install -r requirements.txt
+```
 
 ## Configure
 

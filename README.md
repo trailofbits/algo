@@ -33,12 +33,12 @@ The easiest way to get an Algo server running is to run it on your local machine
 
 2. **[Download Algo](https://github.com/trailofbits/algo/archive/master.zip).** Unzip it in a convenient location on your local machine.
 
-3. **Install Algo's core dependencies.** Open the Terminal. The `python` interpreter you use to deploy Algo must be python2. If you don't know what this means, you're probably fine. `cd` into the `algo-master` directory where you unzipped Algo, then run:
+3. **Install Algo's core dependencies.** Open the Terminal. `cd` into the `algo-master` directory where you unzipped Algo, then run:
 
     - macOS:
       ```bash
-      $ python -m ensurepip --user
-      $ python -m pip install --user --upgrade virtualenv
+      $ python3 -m ensurepip --user
+      $ python3 -m pip install --user --upgrade virtualenv
       ```
     - Linux (deb-based):
       ```bash
@@ -46,20 +46,20 @@ The easiest way to get an Algo server running is to run it on your local machine
           build-essential \
           libssl-dev \
           libffi-dev \
-          python-dev \
-          python-pip \
-          python-setuptools \
-          python-virtualenv -y
+          python3-dev \
+          python3-pip \
+          python3-setuptools \
+          python3-virtualenv -y
       ```
      - Linux (rpm-based): See the pre-installation documentation for [RedHat/CentOS 6.x](docs/deploy-from-redhat-centos6.md) or [Fedora](docs/deploy-from-fedora-workstation.md)
      - Windows: See the [Windows documentation](docs/deploy-from-windows.md)
 
 4. **Install Algo's remaining dependencies.** Use the same Terminal window as the previous step and run:
     ```bash
-    $ python -m virtualenv --python=`which python2` env &&
+    $ python3 -m virtualenv --python="$(command -v python3)" env &&
         source env/bin/activate &&
-        python -m pip install -U pip virtualenv &&
-        python -m pip install -r requirements.txt
+        python3 -m pip install -U pip virtualenv &&
+        python3 -m pip install -r requirements.txt
     ```
     On macOS, you may be prompted to install `cc`. You should press accept if so.
 
@@ -177,7 +177,7 @@ where `user` is either `root` or `ubuntu` as listed on the success message, and 
 _If you chose to save the CA key during the deploy process,_ then Algo's own scripts can easily add and remove users from the VPN server.
 
 1. Update the `users` list in your `config.cfg`
-2. Open a terminal, `cd` to the algo directory, and activate the virtual environment with `source env/bin/activate`
+2. Open a terminal, `cd` to the algo directory, and activate the virtual environment with `source .env/bin/activate`
 3. Run the command: `./algo update-users`
 
 After this process completes, the Algo VPN server will contain only the users listed in the `config.cfg` file.

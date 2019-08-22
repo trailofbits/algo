@@ -21,7 +21,7 @@ Wait a minute for Windows to install a few things in the background (it will eve
 Install additional packages:
 
 ```shell
-sudo apt-get update && sudo apt-get install git build-essential libssl-dev libffi-dev python-dev python-pip python-setuptools python-virtualenv -y
+sudo apt-get update && sudo apt-get install git build-essential libssl-dev libffi-dev python3-dev python3-pip python3-setuptools python3-virtualenv -y
 ```
 
 Clone the Algo repository:
