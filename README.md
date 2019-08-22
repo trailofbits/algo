@@ -56,8 +56,8 @@ The easiest way to get an Algo server running is to run it on your local machine
 
 4. **Install Algo's remaining dependencies.** Use the same Terminal window as the previous step and run:
     ```bash
-    $ python3 -m virtualenv --python="$(command -v python3)" env &&
-        source env/bin/activate &&
+    $ python3 -m virtualenv --python="$(command -v python3)" .env &&
+        source .env/bin/activate &&
         python3 -m pip install -U pip virtualenv &&
         python3 -m pip install -r requirements.txt
     ```

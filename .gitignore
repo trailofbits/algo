@@ -3,7 +3,7 @@
 configs/*
 inventory_users
 *.kate-swp
-env
+*env
 .DS_Store
 venvs/*
 !venvs/.gitinit
