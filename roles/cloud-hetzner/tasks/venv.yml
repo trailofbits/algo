@@ -1,14 +1,7 @@
 ---
-- name: Clean up the environment
-  file:
-    dest: "{{ hetzner_venv }}"
-    state: absent
-  when: clean_environment
-
 - name: Install requirements
   pip:
     name:
       - hcloud
     state: latest
-    virtualenv: "{{ hetzner_venv }}"
-    virtualenv_python: python2.7
+    virtualenv_python: python3

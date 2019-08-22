@@ -1,10 +1,4 @@
 ---
-- name: Clean up the environment
-  file:
-    dest: "{{ azure_venv }}"
-    state: absent
-  when: clean_environment
-
 - name: Install requirements
   pip:
     name:
@@ -45,5 +39,4 @@
       - azure-mgmt-devtestlabs==3.0.0
       - azure-mgmt-loganalytics==0.2.0
     state: latest
-    virtualenv: "{{ azure_venv }}"
-    virtualenv_python: python2.7
+    virtualenv_python: python3

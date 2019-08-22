@@ -1,5 +1,4 @@
 ---
-azure_venv: "{{ playbook_dir }}/configs/.venvs/azure"
 _azure_regions: >
   [
     {
