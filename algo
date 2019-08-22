@@ -2,16 +2,18 @@
 
 set -e
 
-ACTIVATE_SCRIPT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/env/bin/activate"
-if [ -f "$ACTIVATE_SCRIPT" ]
+if [ -z ${VIRTUAL_ENV+x} ]
 then
+  ACTIVATE_SCRIPT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/env/bin/activate"
+  if [ -f "$ACTIVATE_SCRIPT" ]
+  then
     # shellcheck source=/dev/null
     source "$ACTIVATE_SCRIPT"
-else
+  else
     echo "$ACTIVATE_SCRIPT not found.  Did you follow documentation to install dependencies?"
     exit 1
+  fi
 fi
-
 
 case "$1" in
   update-users) PLAYBOOK=users.yml; ARGS=( "${@:2}"  -t update-users ) ;;
