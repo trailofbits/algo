@@ -16,15 +16,9 @@
         name: "ubuntu/images/hvm-ssd/{{ cloud_providers.ec2.image.name }}-amd64-server-*"
     register: ami_search
 
-  - import_tasks: encrypt_image.yml
-    when: encrypted
-
   - name: Set the ami id as a fact
     set_fact:
-      ami_image: >-
-        {% if ami_search_encrypted.image_id is defined %}{{ ami_search_encrypted.image_id }}
-        {%- elif search_crypt.images is defined and search_crypt.images|length >= 1 %}{{ (search_crypt.images | sort(attribute='creation_date') | last)['image_id'] }}
-        {%- else %}{{ (ami_search.images | sort(attribute='creation_date') | last)['image_id'] }}{% endif %}
+      ami_image: "{{ (ami_search.images | sort(attribute='creation_date') | last)['image_id'] }}"
 
   - name: Deploy the stack
     import_tasks: cloudformation.yml
