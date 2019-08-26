@@ -22,7 +22,7 @@
       Authorization: "Bearer {{ algo_do_token }}"
   register: _do_regions
 
-- name: Set facts about thre regions
+- name: Set facts about the regions
   set_fact:
     do_regions: "{{ _do_regions.json.regions | sort(attribute='slug') }}"
 

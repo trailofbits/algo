@@ -2,7 +2,7 @@
 - include_tasks: ubuntu.yml
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
-- name: Ensure that the strongswan user exist
+- name: Ensure that the strongswan user exists
   user:
     name: strongswan
     group: nogroup

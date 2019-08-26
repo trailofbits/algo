@@ -1,6 +1,6 @@
 # Local Installation
 
-You can use Algo to configure a pre-existing server as an AlgoVPN rather than using it create and configure a new server on a supported cloud provider. This is referred to as a **local** installation rather than a **cloud** deployment.
+You can use Algo to configure a pre-existing server as an AlgoVPN rather than using it to create and configure a new server on a supported cloud provider. This is referred to as a **local** installation rather than a **cloud** deployment.
 
 Install the Algo scripts following the normal installation instructions, then choose:
 ```
