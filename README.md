@@ -123,10 +123,6 @@ Install the [WireGuard VPN Client](https://www.wireguard.com/install/#windows-7-
 
 WireGuard works great with Linux clients. See [this page](docs/client-linux-wireguard.md) for an example of how to configure WireGuard on Ubuntu.
 
-### Linux Network Manager Clients (e.g., Ubuntu, Debian, or Fedora Desktop)
-
-Network Manager does not support AES-GCM. In order to support Linux Desktop clients, choose the "compatible" cryptography during the deploy process and use at least Network Manager 1.4.1. See [Issue #263](https://github.com/trailofbits/algo/issues/263) for more information.
-
 ### Linux strongSwan IPsec Clients (e.g., OpenWRT, Ubuntu Server, etc.)
 
 Please see [this page](docs/client-linux-ipsec.md).
