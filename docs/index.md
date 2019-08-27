@@ -1,7 +1,6 @@
 # Algo VPN documentation
 
 * Deployment instructions
-  - Deploy from [Fedora Workstation (26)](deploy-from-fedora-workstation.md)
   - Deploy from [RedHat/CentOS 6.x](deploy-from-redhat-centos6.md)
   - Deploy from [Windows](deploy-from-windows.md)
   - Deploy from a [Docker container](deploy-from-docker.md)
@@ -11,6 +10,7 @@
   - Setup [Android](client-android.md) clients
   - Setup [Generic/Linux](client-linux.md) clients with Ansible
   - Setup Ubuntu clients to use [WireGuard](client-linux-wireguard.md)
+  - Setup Linux clients to use [IPSEC](client-linux-ipsec.md)
   - Setup Apple devices to use [IPSEC](client-apple-ipsec.md)
   - Setup Macs running macOS 10.13 or older to use [Wireguard](client-macos-wireguard.md)
 * Cloud provider setup
