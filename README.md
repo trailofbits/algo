@@ -37,7 +37,7 @@ The easiest way to get an Algo server running is to run it on your local system 
 
     - Run the command `git clone https://github.com/trailofbits/algo.git` to create a directory named `algo` containing the Algo scripts.
 
-3. **Install Algo's core dependencies.** Algo requires that Python 3 and one supporting package are installed on your system.
+3. **Install Algo's core dependencies.** Algo requires that **Python 3** and at least one supporting package are installed on your system.
 
     - **macOS:** Apple does not provide Python 3 with macOS. There are two ways to obtain it:
         * Use the [Homebrew](https://brew.sh) package manager. After installing Homebrew install Python 3 by running `brew install python3`.
@@ -49,11 +49,12 @@ The easiest way to get an Algo server running is to run it on your local system 
         python3 -m pip install --upgrade virtualenv
         ```
 
-    - **Linux:** Recent releases of Ubuntu, Debian, and Fedora come with Python 3 already installed. Make sure your system is up-to-date and install the needed supporting package:
+    - **Linux:** Recent releases of Ubuntu, Debian, and Fedora come with Python 3 already installed. Make sure your system is up-to-date and install the supporting package(s):
         * Ubuntu and Debian:
         ```bash
-        sudo apt install -y python3-pip python3-virtualenv
+        sudo apt install -y python3-virtualenv
         ```
+        On Ubuntu 16.04 LTS you should also install `python3-pip`.
         * Fedora:
         ```bash
         sudo dnf install -y python3-virtualenv
