@@ -5,10 +5,8 @@
     register: CA_password
 
   - name: Generate p12 export password
-    shell: >
-      openssl rand 8 |
-      python -c 'import sys,string; chars=string.ascii_letters + string.digits + "_@"; print("".join([chars[ord(c) % 64] for c in list(sys.stdin.read())]))'
-    register: p12_password_generated
+    set_fact:
+      p12_password_generated: "{{ lookup('password', '/dev/null length=9 chars=ascii_letters,digits,!,@,#,$,%,^,&,*,<,>,/,?') }}"
     when: p12_password is not defined
     tags: update-users
   become: false
