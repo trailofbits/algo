@@ -1,0 +1,19 @@
+---
+- name: Include prompts
+  import_tasks: prompts.yml
+
+- name: "Creating an instance..."
+  linode_v4:
+    access_token: "{{ algo_linode_token }}"
+    label: "{{ algo_server_name }}"
+    state: present
+    region: "{{ algo_linode_region }}"
+    image: "{{ cloud_providers.linode.image }}"
+    type: "{{ cloud_providers.linode.type }}"
+    authorized_keys: "{{ public_key }}"
+    root_pass: "{{ algo_linode_password }}"
+  register: _linode
+
+- set_fact:
+    cloud_instance_ip: "{{ _linode.instance.ipv4[0] }}"
+    ansible_ssh_user: root
