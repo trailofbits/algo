@@ -6,7 +6,7 @@
 
   - name: Generate p12 export password
     set_fact:
-      p12_password_generated: "{{ lookup('password', '/dev/null length=9 chars=ascii_letters,digits,!,@,#,$,%,^,&,*,<,>,/,?') }}"
+      p12_password_generated: "{{ lookup('password', '/dev/null length=9 chars=ascii_letters,digits,_,@') }}"
     when: p12_password is not defined
     tags: update-users
   become: false
