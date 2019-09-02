@@ -14,7 +14,7 @@
 
 - name: Define facts
   set_fact:
-    p12_export_password: "{{ p12_password|default(p12_password_generated.stdout) }}"
+    p12_export_password: "{{ p12_password|default(p12_password_generated) }}"
   tags: update-users
 
 - name: Set facts
