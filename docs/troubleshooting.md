@@ -36,6 +36,10 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
 
 Look here if you have a problem running the installer to set up a new Algo server.
 
+### Python version is not supported
+
+The minimum Python version required to run Algo is 3.6. Most modern operation systems should have it by default, but if the OS you are using doesn't meet the requirements, you have to upgrade. See the official documentation for your OS, or manual download it from https://www.python.org/downloads/. Otherwise, you may [deploy from docker](deploy-from-docker.md)
+
 ### Error: "You have not agreed to the Xcode license agreements"
 
 On macOS, you tried to install the dependencies with pip and encountered the following error:
