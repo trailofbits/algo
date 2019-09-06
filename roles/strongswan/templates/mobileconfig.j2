@@ -8,11 +8,11 @@
         <dict>
             <key>IKEv2</key>
             <dict>
-{% if algo_ondemand_wifi or algo_ondemand_cellular %}
               <key>OnDemandEnabled</key>
-                <integer>1</integer>
+              <integer>{{ 1 if algo_ondemand_wifi or algo_ondemand_cellular else 0 }}</integer>
               <key>OnDemandRules</key>
               <array>
+{% if algo_ondemand_wifi or algo_ondemand_cellular %}
   {% if algo_ondemand_wifi_exclude|b64decode != '_null' %}
     {% set WIFI_EXCLUDE_LIST = (algo_ondemand_wifi_exclude|b64decode|string).split(',') %}
                   <dict>
@@ -52,12 +52,12 @@
                     <key>URLStringProbe</key>
                       <string>http://captive.apple.com/hotspot-detect.html</string>
                   </dict>
+{% endif %}
                   <dict>
                     <key>Action</key>
-                      <string>Disconnect</string>
+                      <string>{{ 'Disconnect' if algo_ondemand_wifi or algo_ondemand_cellular else 'Connect' }}</string>
                   </dict>
                 </array>
-{% endif %}
                 <key>AuthenticationMethod</key>
                 <string>Certificate</string>
                 <key>ChildSecurityAssociationParameters</key>
