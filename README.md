@@ -54,7 +54,6 @@ The easiest way to get an Algo server running is to run it on your local system 
         ```bash
         sudo apt install -y python3-virtualenv
         ```
-        On Ubuntu 16.04 LTS you should also install `python3-pip`.
         * Fedora:
         ```bash
         sudo dnf install -y python3-virtualenv
