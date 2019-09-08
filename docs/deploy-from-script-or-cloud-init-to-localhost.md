@@ -26,7 +26,7 @@ The command will prepare the environment and install AlgoVPN with the default pa
 
 - `ONDEMAND_WIFI_EXCLUDE`: List the names of any trusted Wi-Fi networks where macOS/iOS IPsec clients should not use "Connect On Demand". Comma-separated list.
 
-- `STORE_PKI: To retain the PKI. (required to add users in the future, but less secure). Default: false.
+- `STORE_PKI`: To retain the PKI. (required to add users in the future, but less secure). Default: false.
 
 - `DNS_ADBLOCKING`: To install an ad blocking DNS resolver. Default: false.
 
