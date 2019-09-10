@@ -37,7 +37,7 @@ fi
 tr -d '\r' < "${DATA_DIR}"/config.cfg > "${ALGO_DIR}"/config.cfg
 test -d "${DATA_DIR}"/configs && rsync -qLktr --delete "${DATA_DIR}"/configs "${ALGO_DIR}"/
 
-"${ALGO_DIR}"/algo ${ALGO_ARGS}
+"${ALGO_DIR}"/algo "${ALGO_ARGS}"
 retcode=${?}
 
 rsync -qLktr --delete "${ALGO_DIR}"/configs "${DATA_DIR}"/
