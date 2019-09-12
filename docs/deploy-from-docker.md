@@ -4,9 +4,8 @@ While it is not possible to run your Algo server from within a Docker container,
 
 ## Limitations
 
-1. [Advanced](deploy-from-ansible.md) installations are not currently supported; you must use the interactive `algo` script.
-2. This has not yet been tested with user namespacing enabled.
-3. If you're running this on Windows, take care when editing files under `configs/` to ensure that line endings are set appropriately for Unix systems.
+1. This has not yet been tested with user namespacing enabled.
+2. If you're running this on Windows, take care when editing files under `configs/` to ensure that line endings are set appropriately for Unix systems.
 
 ## Deploying an Algo Server with Docker
 
@@ -29,10 +28,30 @@ While it is not possible to run your Algo server from within a Docker container,
 5. When it exits, you'll be left with a fully populated `configs` directory, containing all appropriate configuration data for your clients, and for future server management
 
 ### Providing Additional Files
-f
 If you need to provide additional files -- like authorization files for Google Cloud Project -- you can simply specify an additional `-v` parameter, and provide the appropriate path when prompted by `algo`.
 
 For example, you can specify `-v C:\Users\trailofbits\Documents\VPNs\gce_auth.json:/algo/gce_auth.json`, making the local path to your credentials JSON file `/algo/gce_auth.json`.
+
+### Scripted deployment
+Ansible variables (see [Deployment from Ansible](deploy-from-ansible.md)) can be passed via `ALGO_ARGS` environment variable.
+_The leading `-e` (or `--extra-vars`) is required_, e.g.
+```bash
+$ ALGO_ARGS="-e
+    provider=digitalocean
+    server_name=algo
+    ondemand_cellular=false
+    ondemand_wifi=false
+    dns_adblocking=true
+    ssh_tunneling=true
+    store_pki=true
+    region=ams3
+    do_token=token"
+
+$ docker run --cap-drop=all -it \
+    -e "ALGO_ARGS=$ALGO_ARGS" \
+    -v /home/trailofbits/Documents/VPNs:/data \
+    trailofbits/algo:latest
+```
 
 ## Managing an Algo Server with Docker
 
