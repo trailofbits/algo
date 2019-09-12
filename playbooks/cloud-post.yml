@@ -23,7 +23,7 @@
 - name: Additional variables for the server
   add_host:
     name: "{% if cloud_instance_ip == 'localhost' %}localhost{% else %}{{ cloud_instance_ip }}{% endif %}"
-    ansible_ssh_private_key_file: "{{ SSH_keys.private }}"
+    ansible_ssh_private_key_file: "{{ SSH_keys.private_tmp }}"
   when: algo_provider != 'local'
 
 - name: Wait until SSH becomes ready...
