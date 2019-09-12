@@ -8,6 +8,6 @@ DNS = {{ wireguard_dns_servers }}
 [Peer]
 PublicKey = {{ lookup('file', wireguard_pki_path + '/public/' + IP_subject_alt_name) }}
 PresharedKey = {{ lookup('file', wireguard_pki_path + '/preshared/' + item.1) }}
-AllowedIPs = 0.0.0.0/0{{ ', ::/0'  if ipv6_support else '' }}
+AllowedIPs = 0.0.0.0/0,::/0
 Endpoint = {{ IP_subject_alt_name }}:{{ wireguard_port }}
 {{ 'PersistentKeepalive = ' + wireguard_PersistentKeepalive|string if wireguard_PersistentKeepalive > 0 else '' }}
