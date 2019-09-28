@@ -1,4 +1,4 @@
-FROM python:2-alpine
+FROM python:3-alpine
 
 ARG VERSION="git"
 ARG PACKAGES="bash libffi openssh-client openssl rsync tini"
@@ -16,11 +16,11 @@ RUN mkdir -p /algo && mkdir -p /algo/configs
 WORKDIR /algo
 COPY requirements.txt .
 RUN apk --no-cache add ${BUILD_PACKAGES} && \
-    python -m pip --no-cache-dir install -U pip && \
-    python -m pip --no-cache-dir install virtualenv && \
-    python -m virtualenv env && \
-    source env/bin/activate && \
-    python -m pip --no-cache-dir install -r requirements.txt && \
+    python3 -m pip --no-cache-dir install -U pip && \
+    python3 -m pip --no-cache-dir install virtualenv && \
+    python3 -m virtualenv .env && \
+    source .env/bin/activate && \
+    python3 -m pip --no-cache-dir install -r requirements.txt && \
     apk del ${BUILD_PACKAGES}
 COPY . .
 RUN chmod 0755 /algo/algo-docker.sh

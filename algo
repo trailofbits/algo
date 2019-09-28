@@ -4,7 +4,7 @@ set -e
 
 if [ -z ${VIRTUAL_ENV+x} ]
 then
-  ACTIVATE_SCRIPT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/env/bin/activate"
+  ACTIVATE_SCRIPT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/.env/bin/activate"
   if [ -f "$ACTIVATE_SCRIPT" ]
   then
     # shellcheck source=/dev/null

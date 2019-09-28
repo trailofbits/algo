@@ -2,7 +2,6 @@
 - name: Install requirements
   pip:
     name:
-      - boto>=2.5
-      - boto3
+      - hcloud
     state: latest
     virtualenv_python: python3

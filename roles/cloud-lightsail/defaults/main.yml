@@ -1,2 +1,0 @@
----
-lightsail_venv: "{{ playbook_dir }}/configs/.venvs/aws"

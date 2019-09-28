@@ -4,7 +4,7 @@
 [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/fold_left.svg?style=social&label=Follow%20%40AlgoVPN)](https://twitter.com/AlgoVPN)
 [![TravisCI Status](https://api.travis-ci.org/trailofbits/algo.svg?branch=master)](https://travis-ci.org/trailofbits/algo)
 
-Algo VPN is a set of Ansible scripts that simplify the setup of a personal IPSEC and Wireguard VPN. It uses the most secure defaults available, works with common cloud providers, and does not require client software on most devices. See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo-the-vpn-that-works/) for more information.
+Algo VPN is a set of Ansible scripts that simplify the setup of a personal Wireguard and IPSEC VPN. It uses the most secure defaults available, works with common cloud providers, and does not require client software on most devices. See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo-the-vpn-that-works/) for more information.
 
 ## Features
 
@@ -14,7 +14,7 @@ Algo VPN is a set of Ansible scripts that simplify the setup of a personal IPSEC
 * Blocks ads with a local DNS resolver (optional)
 * Sets up limited SSH users for tunneling traffic (optional)
 * Based on current versions of Ubuntu and strongSwan
-* Installs to DigitalOcean, Amazon Lightsail, Amazon EC2, Vultr, Microsoft Azure, Google Compute Engine, Scaleway, OpenStack, or [your own Ubuntu server](docs/deploy-to-ubuntu.md)
+* Installs to DigitalOcean, Amazon Lightsail, Amazon EC2, Vultr, Microsoft Azure, Google Compute Engine, Scaleway, OpenStack, CloudStack, Hetzner Cloud, or [your own Ubuntu server](docs/deploy-to-ubuntu.md)
 
 ## Anti-features
 
@@ -27,49 +27,57 @@ Algo VPN is a set of Ansible scripts that simplify the setup of a personal IPSEC
 
 ## Deploy the Algo Server
 
-The easiest way to get an Algo server running is to let it set up a _new_ virtual machine in the cloud for you.
+The easiest way to get an Algo server running is to run it on your local system and let it set up a _new_ virtual machine in the cloud for you.
 
-1. **Setup an account on a cloud hosting provider.** Algo supports [DigitalOcean](https://m.do.co/c/4d7f4ff9cfe4) (most user friendly), [Amazon Lightsail](https://aws.amazon.com/lightsail/), [Amazon EC2](https://aws.amazon.com/), [Vultr](https://www.vultr.com/), [Microsoft Azure](https://azure.microsoft.com/), [Google Compute Engine](https://cloud.google.com/compute/), [Scaleway](https://www.scaleway.com/), and [DreamCompute](https://www.dreamhost.com/cloud/computing/) or other OpenStack-based cloud hosting.
+1. **Setup an account on a cloud hosting provider.** Algo supports [DigitalOcean](https://m.do.co/c/4d7f4ff9cfe4) (most user friendly), [Amazon Lightsail](https://aws.amazon.com/lightsail/), [Amazon EC2](https://aws.amazon.com/), [Vultr](https://www.vultr.com/), [Microsoft Azure](https://azure.microsoft.com/), [Google Compute Engine](https://cloud.google.com/compute/), [Scaleway](https://www.scaleway.com/), [DreamCompute](https://www.dreamhost.com/cloud/computing/) or other OpenStack-based cloud hosting, [Exoscale](https://www.exoscale.com) or other CloudStack-based cloud hosting,  or [Hetzner Cloud](https://www.hetzner.com/).
 
-2. **[Download Algo](https://github.com/trailofbits/algo/archive/master.zip).** Unzip it in a convenient location on your local machine.
+2. **Get a copy of Algo.** The Algo scripts will be installed on your local system. There are two ways to get a copy:
 
-3. **Install Algo's core dependencies.** Open the Terminal. The `python` interpreter you use to deploy Algo must be python2. If you don't know what this means, you're probably fine. `cd` into the `algo-master` directory where you unzipped Algo, then run:
+    - Download the [ZIP file](https://github.com/trailofbits/algo/archive/master.zip). Unzip the file to create a directory named `algo-master` containing the Algo scripts.
 
-    - macOS:
-      ```bash
-      $ python -m ensurepip --user
-      $ python -m pip install --user --upgrade virtualenv
-      ```
-    - Linux (deb-based):
-      ```bash
-      $ sudo apt-get update && sudo apt-get install \
-          build-essential \
-          libssl-dev \
-          libffi-dev \
-          python-dev \
-          python-pip \
-          python-setuptools \
-          python-virtualenv -y
-      ```
-     - Linux (rpm-based): See the pre-installation documentation for [RedHat/CentOS 6.x](docs/deploy-from-redhat-centos6.md) or [Fedora](docs/deploy-from-fedora-workstation.md)
-     - Windows: See the [Windows documentation](docs/deploy-from-windows.md)
+    - Run the command `git clone https://github.com/trailofbits/algo.git` to create a directory named `algo` containing the Algo scripts.
 
-4. **Install Algo's remaining dependencies.** Use the same Terminal window as the previous step and run:
+3. **Install Algo's core dependencies.** Algo requires that **Python 3** and at least one supporting package are installed on your system.
+
+    - **macOS:** Apple does not provide Python 3 with macOS. There are two ways to obtain it:
+        * Use the [Homebrew](https://brew.sh) package manager. After installing Homebrew install Python 3 by running `brew install python3`.
+
+        * Download and install the latest stable [Python 3 package](https://www.python.org/downloads/mac-osx/). Be sure to run the included *Install Certificates* command from Finder.
+
+        Once Python 3 is installed on your Mac, from Terminal run:
+        ```bash
+        python3 -m pip install --upgrade virtualenv
+        ```
+
+    - **Linux:** Recent releases of Ubuntu, Debian, and Fedora come with Python 3 already installed. Make sure your system is up-to-date and install the supporting package(s):
+        * Ubuntu and Debian:
+        ```bash
+        sudo apt install -y python3-virtualenv
+        ```
+        * Fedora:
+        ```bash
+        sudo dnf install -y python3-virtualenv
+        ```
+        * Red Hat and CentOS: See this [documentation](docs/deploy-from-redhat-centos6.md).
+
+    - **Windows:** Use the Windows Subsystem for Linux (WSL) to create your own copy of Ubuntu running under Windows from which to install and run Algo. See the [Windows documentation](docs/deploy-from-windows.md).
+
+4. **Install Algo's remaining dependencies.** You'll need to run these commands from the Algo directory each time you download a new copy of Algo. In a Terminal window `cd` into the `algo-master` (ZIP file) or `algo` (`git clone`) directory and run:
     ```bash
-    $ python -m virtualenv --python=`which python2` env &&
-        source env/bin/activate &&
-        python -m pip install -U pip virtualenv &&
-        python -m pip install -r requirements.txt
+    python3 -m virtualenv --python="$(command -v python3)" .env &&
+      source .env/bin/activate &&
+      python3 -m pip install -U pip virtualenv &&
+      python3 -m pip install -r requirements.txt
     ```
-    On macOS, you may be prompted to install `cc`. You should press accept if so.
+    On Fedora add the option `--system-site-packages` to the first command above. On macOS install the C compiler if prompted.
 
-5. **List the users to create.** Open `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list. If you want to be able to add or delete users later, you **must** select `yes` for the `Do you want to retain the CA key?` prompt during the deployment. Make a unique user for each device you plan to setup.
+5. **List the users to create.** Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list. Create a unique user for each device you plan to connect to your VPN. If you want to be able to add or delete users later, you **must** select `yes` at the `Do you want to retain the keys (PKI)?` prompt during the deployment.
 
-6. **Start the deployment.** Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [deploy-from-ansible.md](docs/deploy-from-ansible.md).
+6. **Start the deployment.** Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [here](docs/deploy-from-ansible.md).
 
-That's it! You will get the message below when the server deployment process completes. You now have an Algo server on the internet. Take note of the p12 (user certificate) password and the CA key in case you need them later, **they will only be displayed this time**.
+That's it! You will get the message below when the server deployment process completes. Take note of the p12 (user certificate) password and the CA key in case you need them later, **they will only be displayed this time**.
 
-You can now setup clients to connect it, e.g. your iPhone or laptop. Proceed to [Configure the VPN Clients](#configure-the-vpn-clients) below.
+You can now set up clients to connect to your VPN. Proceed to [Configure the VPN Clients](#configure-the-vpn-clients) below.
 
 ```
     "#                          Congratulations!                            #"
@@ -111,36 +119,13 @@ WireGuard is used to provide VPN services on Windows. Algo generates a WireGuard
 
 Install the [WireGuard VPN Client](https://www.wireguard.com/install/#windows-7-8-81-10-2012-2016-2019). Import the generated `wireguard/<username>.conf` file to your device, then setup a new connection with it.
 
-### Linux Network Manager Clients (e.g., Ubuntu, Debian, or Fedora Desktop)
+### Linux WireGuard Clients
 
-Network Manager does not support AES-GCM. In order to support Linux Desktop clients, choose the "compatible" cryptography during the deploy process and use at least Network Manager 1.4.1. See [Issue #263](https://github.com/trailofbits/algo/issues/263) for more information.
+WireGuard works great with Linux clients. See [this page](docs/client-linux-wireguard.md) for an example of how to configure WireGuard on Ubuntu.
 
-### Linux strongSwan Clients (e.g., OpenWRT, Ubuntu Server, etc.)
+### Linux strongSwan IPsec Clients (e.g., OpenWRT, Ubuntu Server, etc.)
 
-Install strongSwan, then copy the included ipsec_user.conf, ipsec_user.secrets, user.crt (user certificate), and user.key (private key) files to your client device. These will require customization based on your exact use case. These files were originally generated with a point-to-point OpenWRT-based VPN in mind.
-
-#### Ubuntu Server example
-
-1. `sudo apt-get install strongswan libstrongswan-standard-plugins`: install strongSwan
-2. `/etc/ipsec.d/certs`: copy `<name>.crt` from `algo-master/configs/<server_ip>/ipsec/manual/<name>.crt`
-3. `/etc/ipsec.d/private`: copy `<name>.key` from `algo-master/configs/<server_ip>/ipsec/manual/<name>.key`
-4. `/etc/ipsec.d/cacerts`: copy `cacert.pem` from `algo-master/configs/<server_ip>/ipsec/manual/cacert.pem`
-5. `/etc/ipsec.secrets`: add your `user.key` to the list, e.g. `<server_ip> : ECDSA <name>.key`
-6. `/etc/ipsec.conf`: add the connection from `ipsec_user.conf` and ensure `leftcert` matches the `<name>.crt` filename
-7. `sudo ipsec restart`: pick up config changes
-8. `sudo ipsec up <conn-name>`: start the ipsec tunnel
-9. `sudo ipsec down <conn-name>`: shutdown the ipsec tunnel
-
-One common use case is to let your server access your local LAN without going through the VPN. Set up a passthrough connection by adding the following to `/etc/ipsec.conf`:
-
-    conn lan-passthrough
-    leftsubnet=192.168.1.1/24 # Replace with your LAN subnet
-    rightsubnet=192.168.1.1/24 # Replace with your LAN subnet
-    authby=never # No authentication necessary
-    type=pass # passthrough
-    auto=route # no need to ipsec up lan-passthrough
-
-To configure the connection to come up at boot time replace `auto=add` with `auto=start`.
+Please see [this page](docs/client-linux-ipsec.md).
 
 ### Other Devices
 
@@ -177,7 +162,7 @@ where `user` is either `root` or `ubuntu` as listed on the success message, and 
 _If you chose to save the CA key during the deploy process,_ then Algo's own scripts can easily add and remove users from the VPN server.
 
 1. Update the `users` list in your `config.cfg`
-2. Open a terminal, `cd` to the algo directory, and activate the virtual environment with `source env/bin/activate`
+2. Open a terminal, `cd` to the algo directory, and activate the virtual environment with `source .env/bin/activate`
 3. Run the command: `./algo update-users`
 
 After this process completes, the Algo VPN server will contain only the users listed in the `config.cfg` file.

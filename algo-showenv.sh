@@ -68,10 +68,10 @@ elif [[ -f LICENSE && ${STAT} ]]; then
 fi
 
 # The Python version might be useful to know.
-if [[ -x ./env/bin/python ]]; then
-    ./env/bin/python --version 2>&1
+if [[ -x ./.env/bin/python3 ]]; then
+    ./.env/bin/python3 --version 2>&1
 elif [[ -f ./algo ]]; then
-    echo "env/bin/python not found: has 'python -m virtualenv ...' been run?"
+    echo ".env/bin/python3 not found: has 'python3 -m virtualenv ...' been run?"
 fi
 
 # Just print out all command line arguments, which are expected

@@ -22,7 +22,7 @@
       Authorization: "Bearer {{ algo_do_token }}"
   register: _do_regions
 
-- name: Set facts about thre regions
+- name: Set facts about the regions
   set_fact:
     do_regions: "{{ _do_regions.json.regions | sort(attribute='slug') }}"
 
@@ -44,3 +44,10 @@
       [{{ default_region }}]
   register: _algo_region
   when: region is undefined
+
+- name: Set additional facts
+  set_fact:
+    algo_do_region: >-
+      {% if region is defined %}{{ region }}
+      {%- elif _algo_region.user_input %}{{ do_regions[_algo_region.user_input | int -1 ]['slug'] }}
+      {%- else %}{{ do_regions[default_region | int - 1]['slug'] }}{% endif %}

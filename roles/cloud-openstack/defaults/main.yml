@@ -1,2 +1,0 @@
----
-openstack_venv: "{{ playbook_dir }}/configs/.venvs/openstack"

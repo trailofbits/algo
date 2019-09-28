@@ -17,7 +17,15 @@
       when: '"ansible" in item'
       with_items: "{{ lookup('file', 'requirements.txt').splitlines() }}"
 
-    - name: Verify Ansible meets Algo VPN requirements.
+    - name: Verify Python meets Algo VPN requirements
+      assert:
+        that: (ansible_python.version.major|string + '.' + ansible_python.version.minor|string)|float is version('3.6', '>=')
+        msg: >
+          Python version is not supported.
+          You must upgrade to at least Python 3.6 to use this version of Algo.
+          See for more details - https://trailofbits.github.io/algo/troubleshooting.html#python-version-is-not-supported
+
+    - name: Verify Ansible meets Algo VPN requirements
       assert:
         that:
           - ansible_version.full is version(required_ansible_version.ver, required_ansible_version.op)
@@ -25,7 +33,7 @@
         msg: >
           Ansible version is {{ ansible_version.full }}.
           You must update the requirements to use this version of Algo.
-          Try to run python -m pip install -U -r requirements.txt
+          Try to run python3 -m pip install -U -r requirements.txt
 
 - name: Include prompts playbook
   import_playbook: input.yml

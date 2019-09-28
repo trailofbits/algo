@@ -32,7 +32,7 @@
 
   - name: Set facts about the regions
     set_fact:
-      lightsail_regions: "{{ _lightsail_regions.results.regions | sort(attribute='name') }}"
+      lightsail_regions: "{{ _lightsail_regions.data.regions | sort(attribute='name') }}"
 
   - name: Set the default region
     set_fact:

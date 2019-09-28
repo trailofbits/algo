@@ -14,9 +14,10 @@
       - { name: DigitalOcean, alias: digitalocean }
       - { name: Amazon Lightsail, alias: lightsail }
       - { name: Amazon EC2, alias: ec2 }
-      - { name: Vultr, alias: vultr }
       - { name: Microsoft Azure, alias: azure }
       - { name: Google Compute Engine, alias: gce }
+      - { name: Hetzner Cloud, alias: hetzner }
+      - { name: Vultr, alias: vultr }
       - { name: Scaleway, alias: scaleway}
       - { name: OpenStack (DreamCompute optimised), alias: openstack }
       - { name: CloudStack (Exoscale optimised), alias: cloudstack }

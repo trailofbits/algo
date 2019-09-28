@@ -1,14 +1,8 @@
 ---
-- name: Clean up the environment
-  file:
-    dest: "{{ gce_venv }}"
-    state: absent
-  when: clean_environment
-
 - name: Install requirements
   pip:
     name:
-      - apache-libcloud
+      - requests>=2.18.4
+      - google-auth>=1.3.0
     state: latest
-    virtualenv: "{{ gce_venv }}"
-    virtualenv_python: python2.7
+    virtualenv_python: python3

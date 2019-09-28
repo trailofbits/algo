@@ -93,7 +93,7 @@ def main():
         response = client.get_regions(
             includeAvailabilityZones=False
         )
-        module.exit_json(changed=False, results=response)
+        module.exit_json(changed=False, data=response)
     except (botocore.exceptions.ClientError, Exception) as e:
         module.fail_json(msg=str(e), exception=traceback.format_exc())
 

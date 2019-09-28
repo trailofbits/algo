@@ -24,6 +24,7 @@
     scaleway_compute:
       name: "{{ algo_server_name }}"
       enable_ipv6: true
+      public_ip: dynamic
       boot_type: local
       state: running
       image: "{{ images[0] }}"

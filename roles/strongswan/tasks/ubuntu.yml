@@ -38,7 +38,7 @@
     - strongswan
     - netfilter-persistent
 
-- name: Ubuntu | Ensure that the strongswan service directory exist
+- name: Ubuntu | Ensure that the strongswan service directory exists
   file:
     path: /etc/systemd/system/strongswan.service.d/
     state: directory

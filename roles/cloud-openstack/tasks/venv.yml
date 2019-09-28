@@ -1,13 +1,6 @@
 ---
-- name: Clean up the environment
-  file:
-    dest: "{{ openstack_venv }}"
-    state: absent
-  when: clean_environment
-
 - name: Install requirements
   pip:
     name: shade
     state: latest
-    virtualenv: "{{ openstack_venv }}"
-    virtualenv_python: python2.7
+    virtualenv_python: python3

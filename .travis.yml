@@ -1,6 +1,6 @@
 ---
 language: python
-python: "2.7"
+python: "3.7"
 dist: xenial
 
 services:
@@ -12,7 +12,7 @@ addons:
       - sourceline: 'ppa:ubuntu-lxc/stable'
       - sourceline: 'ppa:wireguard/wireguard'
     packages: &default_packages
-      - python-pip
+      - python3-pip
       - lxd
       - expect-dev
       - debootstrap
@@ -22,7 +22,7 @@ addons:
       - build-essential
       - libssl-dev
       - libffi-dev
-      - python-dev
+      - python3-dev
       - linux-headers-$(uname -r)
       - wireguard
       - libxml2-utils
@@ -63,7 +63,7 @@ stages:
       - pip install ansible-lint
       - shellcheck algo install.sh
       - ansible-playbook main.yml --syntax-check
-      - ansible-lint -v *.yml
+      - ansible-lint -v *.yml roles/{local,cloud-*}/*/*.yml
 
   - &deploy-local
     stage: Deploy

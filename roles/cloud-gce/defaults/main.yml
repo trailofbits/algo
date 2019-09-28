@@ -1,2 +1,0 @@
----
-gce_venv: "{{ playbook_dir }}/configs/.venvs/gce"

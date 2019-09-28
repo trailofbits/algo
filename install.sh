@@ -27,10 +27,10 @@ installRequirements() {
     build-essential \
     libssl-dev \
     libffi-dev \
-    python-dev \
-    python-pip \
-    python-setuptools \
-    python-virtualenv \
+    python3-dev \
+    python3-pip \
+    python3-setuptools \
+    python3-virtualenv \
     bind9-host \
     jq -y
 }
@@ -39,11 +39,11 @@ getAlgo() {
   [ ! -d "algo" ] && git clone "https://github.com/${REPO_SLUG}" -b "${REPO_BRANCH}" algo
   cd algo
 
-  python -m virtualenv --python="$(command -v python2)" .venv
+  python3 -m virtualenv --python="$(command -v python3)" .venv
   # shellcheck source=/dev/null
   . .venv/bin/activate
-  python -m pip install -U pip virtualenv
-  python -m pip install -r requirements.txt
+  python3 -m pip install -U pip virtualenv
+  python3 -m pip install -r requirements.txt
 }
 
 publicIpFromInterface() {

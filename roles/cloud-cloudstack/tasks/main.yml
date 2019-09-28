@@ -60,7 +60,6 @@
           cloud_instance_ip: "{{ cs_server.default_ip }}"
           ansible_ssh_user: ubuntu
       environment:
-        PYTHONPATH: "{{ cloudstack_venv }}/lib/python2.7/site-packages/"
         CLOUDSTACK_CONFIG: "{{ algo_cs_config }}"
         CLOUDSTACK_REGION: "{{ algo_cs_region }}"
 

@@ -36,6 +36,10 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
 
 Look here if you have a problem running the installer to set up a new Algo server.
 
+### Python version is not supported
+
+The minimum Python version required to run Algo is 3.6. Most modern operation systems should have it by default, but if the OS you are using doesn't meet the requirements, you have to upgrade. See the official documentation for your OS, or manual download it from https://www.python.org/downloads/. Otherwise, you may [deploy from docker](deploy-from-docker.md)
+
 ### Error: "You have not agreed to the Xcode license agreements"
 
 On macOS, you tried to install the dependencies with pip and encountered the following error:
@@ -105,25 +109,13 @@ Command /usr/bin/python -c "import setuptools, tokenize;__file__='/private/tmp/p
 Storing debug log for failure in /Users/algore/Library/Logs/pip.log
 ```
 
-You are running an old version of `pip` that cannot download the binary `cryptography` dependency. Upgrade to a new version of `pip` by running `sudo pip install -U pip`.
-
-### Error: "TypeError: must be str, not bytes"
-
-You tried to install Algo and you see many repeated errors referencing `TypeError`, such as `TypeError: '>=' not supported between instances of 'TypeError' and 'int'` and `TypeError: must be str, not bytes`. For example:
-
-```
-TASK [Wait until SSH becomes ready...] *****************************************
-An exception occurred during task execution. To see the full traceback, use -vvv. The error was: TypeError: must be str, not bytes
-fatal: [localhost -> localhost]: FAILED! => {"changed": false, "failed": true, "module_stderr": "Traceback (most recent call last):\n  File \"/var/folders/x_/nvr61v455qq98vp22k5r5vm40000gn/T/ansible_6sdjysth/ansible_module_wait_for.py\", line 538, in <module>\n    main()\n  File \"/var/folders/x_/nvr61v455qq98vp22k5r5vm40000gn/T/ansible_6sdjysth/ansible_module_wait_for.py\", line 483, in main\n    data += response\nTypeError: must be str, not bytes\n", "module_stdout": "", "msg": "MODULE FAILURE"}
-```
-
-You may be trying to run Algo with Python3. Algo uses [Ansible](https://github.com/ansible/ansible) which has issues with Python3, although this situation is improving over time. Try running Algo with Python2 to fix this issue. Open your terminal and `cd` to the directory with Algo, then run: ``virtualenv -p `which python2.7` env && source env/bin/activate && pip install -r requirements.txt``
+You are running an old version of `pip` that cannot download the binary `cryptography` dependency. Upgrade to a new version of `pip` by running `sudo python3 -m pip install -U pip`.
 
 ### Error: "ansible-playbook: command not found"
 
 You tried to install Algo and you see an error that reads "ansible-playbook: command not found."
 
-You did not finish step 4 in the installation instructions, "[Install Algo's remaining dependencies](https://github.com/trailofbits/algo#deploy-the-algo-server)." Algo depends on [Ansible](https://github.com/ansible/ansible), an automation framework, and this error indicates that you do not have Ansible installed. Ansible is installed by `pip` when you run `python -m pip install -r requirements.txt`. You must complete the installation instructions to run the Algo server deployment process.
+You did not finish step 4 in the installation instructions, "[Install Algo's remaining dependencies](https://github.com/trailofbits/algo#deploy-the-algo-server)." Algo depends on [Ansible](https://github.com/ansible/ansible), an automation framework, and this error indicates that you do not have Ansible installed. Ansible is installed by `pip` when you run `python3 -m pip install -r requirements.txt`. You must complete the installation instructions to run the Algo server deployment process.
 
 ### Could not fetch URL ... TLSV1_ALERT_PROTOCOL_VERSION
 
@@ -137,9 +129,9 @@ No matching distribution found for SecretStorage<3 (from -r requirements.txt (li
 
 It's time to upgrade your python.
 
-`brew upgrade python2`
+`brew upgrade python3`
 
-You can also download python 2.7.x from python.org.
+You can also download python 3.7.x from python.org.
 
 ### Bad owner or permissions on .ssh
 
@@ -413,32 +405,6 @@ sed -i -e 's/#*.dos_protection = yes/dos_protection = no/' /etc/strongswan.d/cha
 Certain cloud providers (like AWS Lightsail) don't assign an IPv6 address to your server, but certain cellular carriers (e.g. T-Mobile in the United States, [EE](https://community.ee.co.uk/t5/4G-and-mobile-data/IPv4-VPN-Connectivity/td-p/757881) in the United Kingdom) operate an IPv6-only network. This somehow leads to the Wireguard app not being able to make a connection when transitioning to cell service. Go to the Wireguard app on the device when you're having problems with cell connectivity and select "Export log file" or similar option. If you see a long string of error messages like "`Failed to send data packet write udp6 [::]:49727->[2607:7700:0:2a:0:1:354:40ae]:51820: sendto: no route to host` then you might be having this problem.
 
 Manually disconnecting and then reconnecting should restore your connection. To solve this, you need to either "force IPv4 connection" if available on your phone, or install an IPv4 APN, which might be available from your carrier tech support. T-mobile's is available [for iOS here under "iOS IPv4/IPv6 fix"](https://www.reddit.com/r/tmobile/wiki/index), and [here is a walkthrough for Android phones](https://www.myopenrouter.com/article/vpn-connections-not-working-t-mobile-heres-how-fix).
-
-### Error: name 'basestring' is not defined
-
-```
-TASK [cloud-digitalocean : Creating a droplet...] *******************************************
-An exception occurred during task execution. To see the full traceback, use -vvv. The error was: NameError: name 'basestring' is not defined
-fatal: [localhost]: FAILED! => {"changed": false, "msg": "name 'basestring' is not defined"}
-```
-
-If you get something like the above it's likely you're not using a python2 virtualenv.
-
-Ensure running `python2.7` drops you into a python 2 shell (it looks something like this)
-
-```
-user@homebook ~ $ python2.7
-Python 2.7.10 (default, Feb  7 2017, 00:08:15)
-[GCC 4.2.1 Compatible Apple LLVM 8.0.0 (clang-800.0.34)] on darwin
-Type "help", "copyright", "credits" or "license" for more information.
->>>
-```
-
-Then rerun the dependency installation explicitly using python 2.7
-
-```
-python2.7 -m virtualenv --python=`which python2.7` env && source env/bin/activate && python2.7 -m pip install -U pip && python2.7 -m pip install -r requirements.txt
-```
 
 ### IPsec: Difficulty connecting through router
 
