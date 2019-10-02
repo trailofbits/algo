@@ -25,13 +25,16 @@
 
 - name: Set default region
   set_fact:
-    default_region: 1
+    default_region: >-
+      {% for r in linode_regions %}
+      {%- if r['id'] == "us-east" %}{{ loop.index }}{% endif %}
+      {%- endfor %}
 
 - pause:
     prompt: |
       What region should the server be located in?
         {% for r in linode_regions %}
-        {{ loop.index }}. {{ r['country'] }}
+        {{ loop.index }}. {{ r['id'] }}
         {% endfor %}
 
       Enter the number of your desired region
