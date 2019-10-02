@@ -9,7 +9,7 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
      * [Error: "TypeError: must be str, not bytes"](#error-typeerror-must-be-str-not-bytes)
      * [Error: "ansible-playbook: command not found"](#error-ansible-playbook-command-not-found)
      * [Error: "Could not fetch URL ... TLSV1_ALERT_PROTOCOL_VERSION](#could-not-fetch-url--tlsv1_alert_protocol_version)
-     * [Fatal: "Failed to validate the SSL certificate for ..."](#failed-to-validate-the-SSL-certificate-for)
+     * [Fatal: "Failed to validate the SSL certificate for ..."](#fatal-failed-to-validate-the-SSL-certificate)
      * [Bad owner or permissions on .ssh](#bad-owner-or-permissions-on-ssh)
      * [The region you want is not available](#the-region-you-want-is-not-available)
      * [AWS: SSH permission denied with an ECDSA key](#aws-ssh-permission-denied-with-an-ecdsa-key)
@@ -118,7 +118,7 @@ You tried to install Algo and you see an error that reads "ansible-playbook: com
 
 You did not finish step 4 in the installation instructions, "[Install Algo's remaining dependencies](https://github.com/trailofbits/algo#deploy-the-algo-server)." Algo depends on [Ansible](https://github.com/ansible/ansible), an automation framework, and this error indicates that you do not have Ansible installed. Ansible is installed by `pip` when you run `python3 -m pip install -r requirements.txt`. You must complete the installation instructions to run the Algo server deployment process.
 
-### Fatal: "Failed to validate the SSL certificate for ..."
+### Fatal: "Failed to validate the SSL certificate for"
 
 You received a message like this:
 ```
