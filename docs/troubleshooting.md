@@ -9,7 +9,7 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
      * [Error: "TypeError: must be str, not bytes"](#error-typeerror-must-be-str-not-bytes)
      * [Error: "ansible-playbook: command not found"](#error-ansible-playbook-command-not-found)
      * [Error: "Could not fetch URL ... TLSV1_ALERT_PROTOCOL_VERSION](#could-not-fetch-url--tlsv1_alert_protocol_version)
-     * [Fatal: "Failed to validate the SSL certificate for ..."](#could-not-validate-certificate)
+     * [Fatal: "Failed to validate the SSL certificate for ..."](#failed-to-validate-the-SSL-certificate-for)
      * [Bad owner or permissions on .ssh](#bad-owner-or-permissions-on-ssh)
      * [The region you want is not available](#the-region-you-want-is-not-available)
      * [AWS: SSH permission denied with an ECDSA key](#aws-ssh-permission-denied-with-an-ecdsa-key)
