@@ -14,7 +14,6 @@
     image: "{{ cloud_providers.linode.image }}"
     type: "{{ cloud_providers.linode.type }}"
     authorized_keys: "{{ public_key }}"
-    root_pass: "{{ algo_linode_password }}"
   register: _linode
 
 - set_fact:

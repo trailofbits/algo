@@ -42,17 +42,10 @@
   register: _algo_region
   when: region is undefined
 
-- pause:
-    prompt: |
-      Enter root password of this instance.
-    echo: false
-  register: _linode_root_password
-
 - name: Set additional facts
   set_fact:
     algo_linode_region: >-
       {% if region is defined %}{{ region }}
       {%- elif _algo_region.user_input %}{{ linode_regions[_algo_region.user_input | int -1 ]['id'] }}
       {%- else %}{{ linode_regions[default_region | int - 1]['id'] }}{% endif %}
-    algo_linode_password: "{{ _linode_root_password.user_input }}"
     public_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
