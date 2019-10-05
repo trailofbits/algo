@@ -9,6 +9,7 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
      * [Error: "TypeError: must be str, not bytes"](#error-typeerror-must-be-str-not-bytes)
      * [Error: "ansible-playbook: command not found"](#error-ansible-playbook-command-not-found)
      * [Error: "Could not fetch URL ... TLSV1_ALERT_PROTOCOL_VERSION](#could-not-fetch-url--tlsv1_alert_protocol_version)
+     * [Fatal: "Failed to validate the SSL certificate for ..."](#fatal-failed-to-validate-the-SSL-certificate)
      * [Bad owner or permissions on .ssh](#bad-owner-or-permissions-on-ssh)
      * [The region you want is not available](#the-region-you-want-is-not-available)
      * [AWS: SSH permission denied with an ECDSA key](#aws-ssh-permission-denied-with-an-ecdsa-key)
@@ -116,6 +117,15 @@ You are running an old version of `pip` that cannot download the binary `cryptog
 You tried to install Algo and you see an error that reads "ansible-playbook: command not found."
 
 You did not finish step 4 in the installation instructions, "[Install Algo's remaining dependencies](https://github.com/trailofbits/algo#deploy-the-algo-server)." Algo depends on [Ansible](https://github.com/ansible/ansible), an automation framework, and this error indicates that you do not have Ansible installed. Ansible is installed by `pip` when you run `python3 -m pip install -r requirements.txt`. You must complete the installation instructions to run the Algo server deployment process.
+
+### Fatal: "Failed to validate the SSL certificate"
+
+You received a message like this:
+```
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "Failed to validate the SSL certificate for api.digitalocean.com:443. Make sure your managed systems have a valid CA certificate installed. You can use validate_certs=False if you do not need to confirm the servers identity but this is unsafe and not recommended. Paths checked for this platform: /etc/ssl/certs, /etc/ansible, /usr/local/etc/openssl. The exception msg was: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1076).", "status": -1, "url": "https://api.digitalocean.com/v2/regions"}
+```
+
+Your local system does not have a CA certificate that can validate the cloud provider's API. Are you using MacPorts instead of Homebrew? The MacPorts openssl installation does not include a CA certificate, but you can fix this by installing the [curl-ca-bundle](https://andatche.com/articles/2012/02/fixing-ssl-ca-certificates-with-openssl-from-macports/) port with `port install curl-ca-bundle`. That should do the trick.
 
 ### Could not fetch URL ... TLSV1_ALERT_PROTOCOL_VERSION
 
