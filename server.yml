@@ -35,6 +35,7 @@
                 IdentityFile {{ SSH_keys.private }}
                 KeepAlive yes
                 ServerAliveInterval 30
+        when: inventory_hostname != 'localhost'
         become: false
         delegate_to: localhost
 

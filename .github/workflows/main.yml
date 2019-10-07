@@ -93,7 +93,6 @@ jobs:
           set -x
           sudo -E bash -x ./tests/wireguard-client.sh
           sudo env "PATH=$PATH" ./tests/ipsec-client.sh
-          sudo ./tests/ssh-tunnel.sh
 
   local-deploy:
     runs-on: ubuntu-16.04

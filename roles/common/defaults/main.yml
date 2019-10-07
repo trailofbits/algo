@@ -1,2 +1,9 @@
 ---
 install_headers: true
+aip_supported_providers:
+  - digitalocean
+snat_aipv4: false
+ipv6_default: "{{ ansible_default_ipv6.address + '/' + ansible_default_ipv6.prefix }}"
+ipv6_subnet_size: "{{ ipv6_default | ipaddr('size') }}"
+ipv6_egress_ip: >-
+  {{ (ipv6_default | next_nth_usable(15 | random(seed=algo_server_name + ansible_fqdn))) + '/124' if ipv6_subnet_size|int > 1 else ipv6_default }}
