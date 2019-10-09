@@ -31,7 +31,7 @@ See below for more information about variables and roles.
 - `ondemand_wifi_exclude` (Required if `ondemand_wifi` set) - WiFi networks to exclude from using the VPN. Comma-separated values
 - `dns_adblocking` - (Optional) Enables dnscrypt-proxy adblocking. Default: false
 - `ssh_tunneling` - (Optional) Enable SSH tunneling for each user. Default: false
-- `store_cakey` - (Optional) Whether or not keep the CA key (required to add users in the future, but less secure). Default: false
+- `store_pki` - (Optional) Whether or not keep the CA key (required to add users in the future, but less secure). Default: false
 
 If any of the above variables are unspecified, ansible will ask the user to input them.
 
