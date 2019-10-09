@@ -2,7 +2,7 @@
 
 You can use `install.sh` to prepare the environment and deploy AlgoVPN on the local Ubuntu server in one shot using cloud-init, or run the script directly on the server after it's been created. 
 
-The script doesn't configure any parameters in your cloud, so it's on your own to configure related [firewall rules](/docs/firewalls.md), a floating ip address and other resources you may need. The output of the install script (including the p12 and CA passwords) and user config files will be installed into the `/opt/algo` directory.
+The script doesn't configure any parameters in your cloud, so you're on your own to configure related [firewall rules](/docs/firewalls.md), a floating IP address and other resources you may need. The output of the install script (including the p12 and CA passwords) and user config files will be installed into the `/opt/algo` directory. If you need to update users later, change the user list in `/opt/algo/config.cfg` and run `./algo update-users` from that directory.
 
 ## Cloud init deployment
 
