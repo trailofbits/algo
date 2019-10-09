@@ -58,7 +58,11 @@ The easiest way to get an Algo server running is to run it on your local system 
         ```bash
         sudo dnf install -y python3-virtualenv
         ```
-        * Red Hat and CentOS: See this [documentation](docs/deploy-from-redhat-centos6.md).
+        * Red Hat and CentOS 7 and later (for earlier versions see this [documentation](docs/deploy-from-redhat-centos6.md)):
+        ```bash
+        sudo yum -y install epel-release
+        sudo yum install -y python36-virtualenv
+        ```
 
     - **Windows:** Use the Windows Subsystem for Linux (WSL) to create your own copy of Ubuntu running under Windows from which to install and run Algo. See the [Windows documentation](docs/deploy-from-windows.md).
 
