@@ -11,6 +11,7 @@
 * [Can DNS filtering be disabled?](#can-dns-filtering-be-disabled)
 * [Wasn't IPSEC backdoored by the US government?](#wasnt-ipsec-backdoored-by-the-us-government)
 * [What inbound ports are used?](#what-inbound-ports-are-used)
+* [How do I monitor user activity?](#how-do-i-monitor-user-activity)
 
 ## Has Algo been audited?
 
@@ -79,3 +80,7 @@ No.
 ## What inbound ports are used?
 
 You should only need 22/TCP, 500/UDP, 4500/UDP, and 51820/UDP opened on any firewall that sits between your clients and your Algo server. See [AlgoVPN and Firewalls](/docs/firewalls.md) for more information.
+
+## How do I monitor user activity?
+
+Your Algo server will track IPsec client logins by default in `/var/log/syslog`. This will give you client names, date/time of connection and reconnection, and what IP addresses they're connecting from. This can be disabled entirely by setting `strongswan_log_level` to `-1` in `config.cfg`. Wireguard doesn't save any logs, but entering `sudo wg` on the server will give you the last endpoint and contact time of each client. Disabling this is [paradoxically difficult](https://git.zx2c4.com/blind-operator-mode/about/). There isn't any out-of-the-box way to monitor actual user _activity_ (e.g. websites browsed, etc.)
