@@ -46,7 +46,7 @@ No. By design, the Algo development team has no access to any Algo server that o
 
 As a result, once your Algo server has been deployed, it is yours to maintain. If you want to take advantage of new features available in the current release of Algo, then you have two options. You can use the [SSH administrative interface](/README.md#ssh-into-algo-server) to make the changes you want on your own or you can shut down the server and deploy a new one (recommended).
 
-In the future, we will make it easier for users who want to update their own servers by providing official releases of Algo. Each official release will summarize the changes from the last release to make it easier to follow along with them.
+As an extension of this rationale, most configuration options (other than users) available in `config.cfg` can only be set at the time of initial deployment.
 
 ## Where did the name "Algo" come from?
 
