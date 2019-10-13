@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Algo webapp</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<div class="container" id="app">
+  <h1>1. Set up user list</h1>
+  <ul class="list-group">
+    <li class="list-group-item"
+        v-for="(user, index) in config.users"
+        :key="user"
+    >
+      {{ user }}
+      <button type="button" class="btn btn-secondary btn-sm float-right" v-on:click="removeUser(index)">Remove</button>
+    </li>
+  </ul>
+  <div class="my-3 form-group">
+    <label for="id_new_user">Add new user</label>
+      <div class="input-group">
+
+          <input type="text" id="id_new_user" class="form-control" placeholder="username" v-model="newUser">
+          <div class="input-group-append">
+              <button v-on:click="addUser" class="btn btn-outline-primary" type="button" id="button-addon2">Add</button>
+          </div>
+      </div>
+  </div>
+  <button v-on:click="save" v-bind:disabled="loading" class="btn btn-primary" type="button">Save</button>
+  <span v-if="saveConfigMessage" v-bind:class="{ 'text-success': ok, 'text-danged': !ok }">{{saveConfigMessage}}</span>
+  
+</div>
+
+<body>
+<script>
+var ws = new WebSocket("ws://127.0.0.1:8080/ws");
+window.ws = ws;
+ws.onopen = function (event) {
+    init();
+}
+function init() {
+    var app = new Vue({
+        el: '#app',
+        data: {
+          ok: false,
+          config: {},
+          loading: false,
+          newUser: '',
+          saveConfigMessage: ''
+        },
+        methods: {
+            addUser: function () {
+              this.config.users.push(this.newUser);
+              this.newUser = '';
+            },
+            removeUser: function(index) {
+              this.config.users.splice(index, 1);
+            },
+            save: function() {
+              this.loading = true;
+              fetch('/config', {
+                  method: 'POST',
+                  body: JSON.stringify(this.config),
+                  headers: {
+                    'Content-Type': 'application/json'
+                  }
+              }).then(r => r.json()).then(result => {
+                if (result.ok) {
+                  this.ok = true;
+                  this.saveConfigMessage = 'Saved!';
+                  setTimeout(() => {
+                    this.saveConfigMessage = '';
+                  }, 1000);
+                } else {
+                  this.ok = false;
+                  this.saveConfigMessage = 'Not Saved!';
+                  setTimeout(() => {
+                    this.saveConfigMessage = '';
+                  }, 1000);
+                }
+              }).finally(() => {
+                this.loading = false;
+              });
+            },
+            load: function() {
+              this.loading = true;
+              fetch('/config').then(r => r.json()).then(config => {
+                  this.config = config;
+              }).finally(() => {
+                this.loading = false;
+              });
+            }
+        }
+    });
+    app.load();
+    window.app = app;
+}
+
+
+</script>
+</body>
+</html>
