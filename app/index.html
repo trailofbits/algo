@@ -1,38 +1,182 @@
 <!DOCTYPE html>
-<html>
+<html class="h-100">
 <head>
   <title>Algo webapp</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.5/xterm.min.css"
+          integrity="sha256-uTIrmf95e6IHlacC0wpDaPS58eWF314UC7OgdrD6AdU=" crossorigin="anonymous"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"
+            integrity="sha256-chlNFSVx3TdcQ2Xlw7SvnbLAavAQLO0Y/LBiWX04viY=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.5/xterm.min.js"
+            integrity="sha256-tDeULIXIGkXbz7dkZ0qcQajBIS22qS8jQ6URaeMoVJs=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.bundle.js"
+            integrity="sha256-pVreZ67fRaATygHF6T+gQtF1NI700W9kzeAivu6au9U=" crossorigin="anonymous"></script>
 </head>
-<div class="container" id="app">
-  <h1>1. Set up user list</h1>
-  <ul class="list-group">
-    <li class="list-group-item"
-        v-for="(user, index) in config.users"
-        :key="user"
-    >
-      {{ user }}
-      <button type="button" class="btn btn-secondary btn-sm float-right" v-on:click="removeUser(index)">Remove</button>
-    </li>
-  </ul>
-  <div class="my-3 form-group">
-    <label for="id_new_user">Add new user</label>
-      <div class="input-group">
+<body class="h-100">
+<div class="d-flex flex-column h-100" id="app">
+    <div class="flex-shrink-0" v-if="formMode">
+        <div class="container">
+            <h1 class="mb-5 text-center">Algo VPN Setup</h1>
+            <div class="row">
+                <div class="col-md-4 order-md-2 mb-4">
+                    <h2>Users</h2>
+                    <section class="my-3">
+                        <h4>Set up user list</h4>
+                        <ul class="list-group">
+                            <li class="list-group-item"
+                                v-for="(user, index) in config.users"
+                                :key="user"
+                            >
+                                {{ user }}
+                                <button type="button" class="btn btn-secondary btn-sm float-right"
+                                        @click="removeUser(index)">
+                                    Remove
+                                </button>
+                            </li>
+                        </ul>
+                        <div class="my-3 form-group">
+                            <label for="id_new_user">Add new user</label>
+                            <div class="input-group">
 
-          <input type="text" id="id_new_user" class="form-control" placeholder="username" v-model="newUser">
-          <div class="input-group-append">
-              <button v-on:click="addUser" class="btn btn-outline-primary" type="button" id="button-addon2">Add</button>
-          </div>
-      </div>
-  </div>
-  <button v-on:click="save" v-bind:disabled="loading" class="btn btn-primary" type="button">Save</button>
-  <span v-if="saveConfigMessage" v-bind:class="{ 'text-success': ok, 'text-danged': !ok }">{{saveConfigMessage}}</span>
-  
+                                <input type="text" id="id_new_user" class="form-control" placeholder="username"
+                                       v-model="newUser">
+                                <div class="input-group-append">
+                                    <button @click="addUser" class="btn btn-outline-primary" type="button"
+                                            id="button-addon2">
+                                        Add
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <div>
+                        <button @click="save" v-bind:disabled="loading" class="btn btn-secondary" type="button">Save
+                        </button>
+                        <span v-if="saveConfigMessage"
+                              v-bind:class="{ 'text-success': ok, 'text-danged': !ok }">{{saveConfigMessage}}</span>
+                    </div>
+                </div>
+                <div class="col-md-8 order-md-1">
+                    <h2>VPN Options</h2>
+                    <section class="my-3">
+                        <div class="form-group">
+                            <label>Name the vpn server</label>
+                            <input type="text" class="form-control" placeholder="server name"
+                                   v-model="extra_args.server_name"/>
+                        </div>
+                        <label>MacOS/iOS IPsec clients to enable Connect On Demand:</label>
+                        <div class="form-check">
+                            <label title="MacOS/iOS IPsec clients to enable Connect On Demand when connected to cellular
+                                networks?">
+                                <input class="form-check-input" type="checkbox" name="ondemand_cellular"
+                                       v-model="extra_args.ondemand_cellular">
+                                when connected to cellular networks
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <label title="MacOS/iOS IPsec clients to enable Connect On Demand when connected to Wi-Fi?">
+                                <input class="form-check-input" type="checkbox" name="ondemand_wifi"
+                                       v-model="extra_args.ondemand_wifi">
+                                when connected to WiFi
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_ondemand_wifi_exclude">Trusted Wi-Fi networks</label>
+                            <input type="text" class="form-control" id="id_ondemand_wifi_exclude"
+                                   name="ondemand_wifi_exclude"
+                                   placeholder="HomeNet,OfficeWifi,AlgoWiFi"
+                                   v-model="extra_args.ondemand_wifi_exclude"/>
+                            <small class="form-text text-muted">
+                                List the names of any trusted Wi-Fi networks where
+                                macOS/iOS
+                                IPsec clients should not use "Connect On Demand"
+                                (e.g., your home network. Comma-separated value, e.g.,
+                                HomeNet,OfficeWifi,AlgoWiFi)
+                            </small>
+                        </div>
+                        <label>Retain the PKI</label>
+                        <div class="form-check">
+                            <label>
+                                <input class="form-check-input" type="checkbox" name="store_pki"
+                                       v-model="extra_args.store_pki">
+                                Do you want to retain the keys (PKI)?
+                                <small class="form-text text-muted">required to add users in the future, but less
+                                secure</small>
+                            </label>
+
+                        </div>
+                        <label>DNS adblocking</label>
+                        <div class="form-check">
+                            <label>
+                                <input class="form-check-input" type="checkbox" name="dns_adblocking"
+                                       v-model="extra_args.dns_adblocking">
+                                Enable DNS ad blocking on this VPN server
+                            </label>
+                        </div>
+                        <label>SSH tunneling</label>
+                        <div class="form-check">
+                            <label>
+                                <input class="form-check-input" type="checkbox" name="ssh_tunneling"
+                                       v-model="extra_args.ssh_tunneling">
+                                Each user will have their own account for SSH tunneling
+                            </label>
+                        </div>
+                    </section>
+                </div>
+            </div>
+            <hr class="my-3">
+            <section class="my-3">
+                <h2>Select cloud provider</h2>
+                <div class="form-check">
+                    <label>
+                        <input class="form-check-input" type="radio" name="provider" value="digitalocean"
+                               v-model="extra_args.provider">
+                        DigitalOcean
+                    </label>
+                </div>
+                <div class="form-check">
+                    <label>
+                        <input class="form-check-input" type="radio" name="provider" value="lightsail"
+                               v-model="extra_args.provider">
+                        Amazon Lightsail
+                    </label>
+                </div>
+            </section>
+            <section class="my-3" v-if="extra_args.provider === 'digitalocean'">
+                <h4>Digital Ocean Options</h4>
+                <div class="form-group">
+                    <label for="id_do_token">Enter your API token. The token must have read and write permissions
+                        (https://cloud.digitalocean.com/settings/api/tokens):</label>
+                    <input type="text" class="form-control" id="id_do_token" name="do_token"
+                           v-model="extra_args.do_token"
+                           @blur="load_do_regions"/>
+                </div>
+                <div class="form-group">
+                    <label for="id_region">What region should the server be located in?</label>
+                    <select name="region" id="id_region" class="form-control" v-model="extra_args.region">
+                        <option value="" disabled>Select region</option>
+                        <option
+                            v-for="(region, index) in do_regions"
+                            v-bind:value="region.slug">
+                            {{region.name}}
+                        </option>
+                    </select>
+                </div>
+            </section>
+        </div>
+    </div>
+    <div v-if="consoleMode" id="terminal">
+    </div>
+    <footer class="footer mt-auto py-3" v-if="formMode">
+        <div class="container text-center">
+            <button @click="start" v-bind:disabled="loading" class="btn btn-primary btn-lg" type="button">Install
+            </button>
+        </div>
+    </footer>
 </div>
-
-<body>
 <script>
 var ws = new WebSocket("ws://127.0.0.1:8080/ws");
 window.ws = ws;
@@ -45,9 +189,21 @@ function init() {
         data: {
           ok: false,
           config: {},
+          do_regions: {},
+          extra_args: {
+            server_name: 'algo',
+            ondemand_cellular: false,
+            ondemand_wifi: false,
+            dns_adblocking: false,
+            ssh_tunneling: false,
+            store_pki: false,
+            ondemand_wifi_exclude: ''
+          },
           loading: false,
           newUser: '',
-          saveConfigMessage: ''
+          saveConfigMessage: '',
+          formMode: true,
+          consoleMode: false
         },
         methods: {
             addUser: function () {
@@ -90,11 +246,50 @@ function init() {
               }).finally(() => {
                 this.loading = false;
               });
+            },
+            start: function() {
+              var args = '';
+              for (arg in this.extra_args) {
+                args += `${arg}=${this.extra_args[arg]} `;
+              }
+              ws.send(`ansible-playbook main.yml --extra-vars "${args}"`);
+              this.formMode = false;
+              var term = new Terminal();
+              term.open(document.getElementById('terminal'));
+              ws.onmessage = function(event) {
+                term.write(event.data + '\r\n');
+                if (event.data.length > term.cols) {
+                  term.resize(event.data.length, term.rows);
+                }
+              };
+              window.term = term;
+              this.consoleMode = true;
+            },
+            load_do_regions: function() {
+              if (this.extra_args.provider === 'digitalocean' && this.extra_args.do_token) {
+                this.loading = true;
+                fetch('/do/regions', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({token: this.extra_args.do_token})
+                }).then(r => r.json()).then(r => {
+                    this.do_regions = r.regions;
+                }).finally(() => {
+                  this.loading = false;
+                });
+              }
             }
         }
     });
     app.load();
     window.app = app;
+    window.onclose = function() {
+      if (ws.readyState === ws.OPEN) {
+        ws.send('close');
+      }
+    }
 }
 
 
