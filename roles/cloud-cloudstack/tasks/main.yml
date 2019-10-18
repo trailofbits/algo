@@ -4,7 +4,7 @@
 
 - name: Include prompts
   import_tasks: prompts.yml
-  
+
 - block:
     - set_fact:
         algo_region: >-
@@ -61,4 +61,3 @@
   environment:
     CLOUDSTACK_CONFIG: "{{ algo_cs_config }}"
     CLOUDSTACK_REGION: "{{ algo_cs_region }}"
-    
