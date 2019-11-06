@@ -51,5 +51,4 @@
           [{{ default_zone }}]
     register: _algo_region
     when: region is undefined
-  environment:
-    PYTHONPATH: "{{ cloudstack_venv }}/lib/python2.7/site-packages/"
+
