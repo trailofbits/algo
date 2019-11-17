@@ -24,4 +24,6 @@
   tags:
     - always
 
+- import_tasks: sshd.yml
+
 - meta: flush_handlers
