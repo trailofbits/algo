@@ -10,7 +10,7 @@
 
 - name: Set the token as a fact
   set_fact:
-    algo_linode_token: "{{ linode_token | default(_linode_token.user_input|default(None)) | default(lookup('env','linode_API_TOKEN'), true) }}"
+    algo_linode_token: "{{ linode_token | default(_linode_token.user_input|default(None)) | default(lookup('env','LINODE_API_TOKEN'), true) }}"
 
 - name: Get regions
   uri:
