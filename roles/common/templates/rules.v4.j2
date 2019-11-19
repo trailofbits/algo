@@ -64,8 +64,8 @@ COMMIT
 -A INPUT -p icmp --icmp-type echo-request -m hashlimit --hashlimit-upto 5/s --hashlimit-mode srcip --hashlimit-srcmask 32 --hashlimit-name icmp-echo-drop -j ACCEPT
 # Accept IPSEC/WireGuard traffic to ports {{ subnets|join(',') }}
 -A INPUT -p udp -m multiport --dports {{ ports|join(',') }} -j ACCEPT
-# Allow new traffic to port {{ ssh_port }} (SSH)
--A INPUT -p tcp --dport {{ ssh_port }} -m conntrack --ctstate NEW -j ACCEPT
+# Allow new traffic to port {{ ansible_ssh_port }} (SSH)
+-A INPUT -p tcp --dport {{ ansible_ssh_port }} -m conntrack --ctstate NEW -j ACCEPT
 
 {% if ipsec_enabled %}
 # Allow any traffic from the IPsec VPN
