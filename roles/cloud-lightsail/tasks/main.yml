@@ -17,6 +17,9 @@
     bundle_id: "{{ cloud_providers.lightsail.size }}"
     wait_timeout: "300"
     open_ports:
+      - from_port: "{{ ssh_port }}"
+        to_port:  "{{ ssh_port }}"
+        protocol: tcp
       - from_port: 4500
         to_port: 4500
         protocol: udp
@@ -27,15 +30,11 @@
         to_port: "{{ wireguard_port }}"
         protocol: udp
     user_data: |
-      #!/bin/bash
-      mkdir -p /home/ubuntu/.ssh/
-      echo "{{ lookup('file', '{{ SSH_keys.public }}') }}" >> /home/ubuntu/.ssh/authorized_keys
-      chown -R ubuntu: /home/ubuntu/.ssh/
-      chmod 0700 /home/ubuntu/.ssh/
-      chmod 0600 /home/ubuntu/.ssh/*
-      test
+      {{ lookup('template', 'files/cloud-init/base.sh') }}
   register: algo_instance
 
 - set_fact:
     cloud_instance_ip: "{{ algo_instance['instance']['public_ip_address'] }}"
-    ansible_ssh_user: ubuntu
+    ansible_ssh_user: algo
+    ansible_ssh_port: "{{ ssh_port }}"
+    cloudinit: true

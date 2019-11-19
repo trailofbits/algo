@@ -21,10 +21,13 @@
     unique_name: true
     ipv6: true
     ssh_keys: "{{ do_ssh_key.data.ssh_key.id }}"
+    user_data: "{{ lookup('template', 'files/cloud-init/base.yml') }}"
     tags:
       - Environment:Algo
   register: digital_ocean_droplet
 
 - set_fact:
     cloud_instance_ip: "{{ digital_ocean_droplet.data.ip_address }}"
-    ansible_ssh_user: root
+    ansible_ssh_user: algo
+    ansible_ssh_port: "{{ ssh_port }}"
+    cloudinit: true

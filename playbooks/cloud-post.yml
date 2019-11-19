@@ -9,6 +9,7 @@
     groups: vpn-host
     ansible_connection: "{% if cloud_instance_ip == 'localhost' %}local{% else %}ssh{% endif %}"
     ansible_ssh_user: "{{ ansible_ssh_user }}"
+    ansible_ssh_port: "{{ ansible_ssh_port|default(22) }}"
     ansible_python_interpreter: "/usr/bin/python3"
     algo_provider: "{{ algo_provider }}"
     algo_server_name: "{{ algo_server_name }}"
@@ -19,6 +20,7 @@
     algo_ssh_tunneling: "{{ algo_ssh_tunneling }}"
     algo_store_pki: "{{ algo_store_pki }}"
     IP_subject_alt_name: "{{ IP_subject_alt_name }}"
+    cloudinit: "{{ cloudinit|default(false) }}"
 
 - name: Additional variables for the server
   add_host:
@@ -28,7 +30,7 @@
 
 - name: Wait until SSH becomes ready...
   wait_for:
-    port: 22
+    port: "{{ ansible_ssh_port|default(22) }}"
     host: "{{ cloud_instance_ip }}"
     search_regex: "OpenSSH"
     delay: 10
@@ -47,6 +49,7 @@
 - debug:
     var: IP_subject_alt_name
 
-- name: A short pause, in order to be sure the instance is ready
-  pause:
-    seconds: 20
+- name: Wait 600 seconds for target connection to become reachable/usable
+  wait_for_connection:
+  delegate_to: "{{ item }}"
+  loop: "{{ groups['vpn-host'] }}"

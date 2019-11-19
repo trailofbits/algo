@@ -22,18 +22,11 @@
     port_range_max: "{{ item.port_max }}"
     remote_ip_prefix: "{{ item.range }}"
   with_items:
-    - { proto: tcp, port_min: 22, port_max: 22, range: 0.0.0.0/0 }
+    - { proto: tcp, port_min: '{{ ssh_port }}', port_max: '{{ ssh_port }}', range: 0.0.0.0/0 }
     - { proto: icmp, port_min: -1, port_max: -1, range: 0.0.0.0/0 }
     - { proto: udp, port_min: 4500, port_max: 4500, range: 0.0.0.0/0 }
     - { proto: udp, port_min: 500, port_max: 500, range: 0.0.0.0/0 }
     - { proto: udp, port_min: "{{ wireguard_port }}", port_max: "{{ wireguard_port }}", range: 0.0.0.0/0 }
-
-- name: Keypair created
-  os_keypair:
-    state: "{{ state|default('present') }}"
-    name: "{{ SSH_keys.comment|regex_replace('@', '_') }}"
-    public_key_file: "{{ SSH_keys.public }}"
-  register: os_keypair
 
 - name: Gather facts about flavors
   os_flavor_facts:
@@ -41,7 +34,14 @@
 
 - name: Gather facts about images
   os_image_facts:
-    image: "{{ cloud_providers.openstack.image }}"
+
+- name: Set image as a fact
+  set_fact:
+    image_id: "{{ item.id }}"
+  loop: "{{ openstack_image }}"
+  when:
+    - item.name == cloud_providers.openstack.image
+    - item.status == "active"
 
 - name: Gather facts about public networks
   os_networks_facts:
@@ -58,8 +58,6 @@
 - name: Set facts
   set_fact:
     flavor_id: "{{ (openstack_flavors | sort(attribute='ram'))[0]['id'] }}"
-    image_id: "{{ openstack_image['id'] }}"
-    keypair_name: "{{ os_keypair.key.name }}"
     security_group_name: "{{ os_security_group['secgroup']['name'] }}"
 
 - name: Server created
@@ -68,12 +66,14 @@
     name: "{{ algo_server_name }}"
     image: "{{ image_id }}"
     flavor: "{{ flavor_id }}"
-    key_name: "{{ keypair_name }}"
     security_groups: "{{ security_group_name }}"
+    userdata: "{{ lookup('template', 'files/cloud-init/base.yml') }}"
     nics:
       - net-id: "{{ public_network_id }}"
   register: os_server
 
 - set_fact:
     cloud_instance_ip: "{{ os_server['openstack']['public_v4'] }}"
-    ansible_ssh_user: ubuntu
+    ansible_ssh_user: algo
+    ansible_ssh_port: "{{ ssh_port }}"
+    cloudinit: true

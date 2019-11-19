@@ -6,6 +6,14 @@
   vars_files:
     - config.cfg
   tasks:
+    - name: Wait until the cloud-init completed
+      wait_for:
+        path: /var/lib/cloud/data/result.json
+        delay: 10
+        timeout: 600
+        state: present
+      when: cloudinit
+
     - block:
       - import_role:
           name: common
@@ -40,6 +48,7 @@
             content: |
               server: {{ 'localhost' if inventory_hostname == 'localhost' else inventory_hostname }}
               server_user: {{ ansible_ssh_user }}
+              ansible_ssh_port: "{{ ansible_ssh_port|default(22) }}"
               {% if algo_provider != "local" %}
               ansible_ssh_private_key_file: {{ SSH_keys.private }}
               {% endif %}
