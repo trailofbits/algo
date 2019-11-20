@@ -12,6 +12,7 @@
         delay: 10
         timeout: 600
         state: present
+      become: false
       when: cloudinit
 
     - block:
