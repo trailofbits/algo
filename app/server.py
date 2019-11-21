@@ -1,48 +1,80 @@
 import asyncio
-import signal
-import sys
+import mimetypes
+
 import aiohttp
 import yaml
 from os.path import join, dirname
 from aiohttp import web
+from ansible.cli.playbook import PlaybookCLI
+from time import sleep
+import concurrent.futures
+
 
 routes = web.RouteTableDef()
 PROJECT_ROOT = dirname(dirname(__file__))
-jobs = []
+pool = None
+task_future = None
+task_program = ''
+
+def run_playbook(data={}):
+    global task_program
+    extra_vars = ' '.join(['{0}={1}'.format(key, data[key]) for key in data.keys()])
+    task_program = ['ansible-playbook', 'main.yml', '--extra-vars', extra_vars]
+    cli = PlaybookCLI(task_program).run()
+    return cli
 
 
+@routes.get('/static/{path}')
+async def handle_static(request):
+    filepath = request.match_info['path']
+    mimetype = mimetypes.guess_type(filepath)
+    try:
+        with open(join(dirname(__file__), 'static', *filepath.split('/')), 'r') as f:
+            return web.Response(body=f.read(), content_type=mimetype[0])
+    except FileNotFoundError:
+        return web.Response(status=404)
+
+@routes.get('/')
 async def handle_index(_):
-    with open(join(PROJECT_ROOT, 'app', 'index.html'), 'r') as f:
+    with open(join(PROJECT_ROOT, 'app', 'static', 'index.html'), 'r') as f:
         return web.Response(body=f.read(), content_type='text/html')
 
 
-async def websocket_handler(request):
-    ws = web.WebSocketResponse()
-    await ws.prepare(request)
+@routes.get('/playbook')
+async def playbook_get_handler(request):
+    if not task_future:
+        return web.json_response({'status': None})
 
-    async for msg in ws:
-        if msg.type == aiohttp.WSMsgType.TEXT:
-            if msg.data == 'close':
-                await ws.close()
-            else:
-                p = await asyncio.create_subprocess_shell(
-                    msg.data,
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE
-                )
-                jobs.append(p)
-                while True:
-                    line = await p.stdout.readline()
-                    if not line:
-                        break
-                    else:
-                        await ws.send_str(line.decode('ascii').rstrip())
+    if task_future.done():
+        return web.json_response({'status': 'done', 'program': task_program, 'result': task_future.result()})
+    elif task_future.cancelled():
+        return web.json_response({'status': 'cancelled', 'program': task_program})
+    else:
+        return web.json_response({'status': 'running', 'program': task_program})
 
-        elif msg.type == aiohttp.WSMsgType.ERROR:
-            print('ws connection closed with exception %s' % ws.exception())
 
-    print('websocket connection closed')
-    return ws
+@routes.post('/playbook')
+async def playbook_post_handler(request):
+    global task_future
+    global pool
+    data = await request.json()
+    loop = asyncio.get_running_loop()
+
+    pool = concurrent.futures.ThreadPoolExecutor()
+    task_future = loop.run_in_executor(pool, run_playbook, data)
+    return web.json_response({'ok': True})
+
+
+@routes.delete('/playbook')
+async def playbook_delete_handler(request):
+    global task_future
+    if not task_future:
+        return web.json_response({'ok': False})
+
+    cancelled = task_future.cancel()
+    pool.shutdown(wait=False)
+    task_future = None
+    return web.json_response({'ok': cancelled})
 
 
 @routes.get('/config')
@@ -81,21 +113,7 @@ async def get_do_regions(request):
             json_body = await r.json()
             return web.json_response(json_body)
 
+
 app = web.Application()
-app.router.add_get('/ws', websocket_handler)
-app.router.add_get('/', handle_index)
 app.router.add_routes(routes)
 web.run_app(app)
-
-def signal_handler(sig, frame):
-    print('Closing child processes')
-    for p in jobs:
-        try:
-            p.terminate()
-        except:
-            pass
-    sys.exit(0)
-
-signal.signal(signal.SIGINT, signal_handler)
-print('Press Ctrl+C to stop')
-signal.pause()
