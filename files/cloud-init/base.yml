@@ -12,7 +12,7 @@ users:
   - name: algo
     homedir: /home/algo
     sudo: ALL=(ALL) NOPASSWD:ALL
-    groups: sudo
+    groups: adm,netdev
     shell: /bin/bash
     lock_passwd: true
     ssh_authorized_keys:
