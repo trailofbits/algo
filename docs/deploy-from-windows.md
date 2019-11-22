@@ -1,8 +1,15 @@
-# Windows client prerequisite
+# Deploy from Windows
 
+The Algo scripts can't be run directly on Windows, but you can use the Windows Subsystem for Linux (WSL) to run a copy of Ubuntu Linux right on your Windows system.
+
+To run WSL you will need:
+
+* A 64-bit system
 * 64-bit Windows 10 (Anniversary update or later version)
 
-Once you verify your system is 64-bit (32-bit is not supported) and up to date, you have to do a few manual steps to enable the 'Windows Subsystem for Linux':
+## Install WSL
+
+Enable the 'Windows Subsystem for Linux':
 
 1. Open 'Settings'
 2. Click 'Update & Security', then click the 'For developers' option on the left.
@@ -17,17 +24,22 @@ Wait a minute for Windows to install a few things in the background (it will eve
 5. Restart Windows and then [install Ubuntu from the Windows Store](https://www.microsoft.com/p/ubuntu/9nblggh4msv6).
 6. Run Ubuntu from the Start menu. It will take a few minutes to install. It will have you create a separate user account for the Linux subsystem. Once that's done, you will finally have Ubuntu running somewhat integrated with Windows.
 
+## Install Algo
 
-Install additional packages:
-
-```shell
-sudo apt-get update && sudo apt-get install git build-essential libssl-dev libffi-dev python3-dev python3-pip python3-setuptools python3-virtualenv -y
-```
-
-Clone the Algo repository:
+Run these commands in the Ubuntu Terminal to install a prerequisite package and download the Algo scripts to your home directory. Note that when using WSL you should **not** install Algo in the `/mnt/c` directory due to problems with file permissions.
 
 ```shell
-cd ~ && git clone https://github.com/trailofbits/algo && cd algo
+cd
+umask 0002
+sudo apt update
+sudo apt install -y python3-virtualenv
+git clone https://github.com/trailofbits/algo
+cd algo
 ```
 
-Now, you can go through the [README](https://github.com/trailofbits/algo#deploy-the-algo-server) (start from the 4th step) and deploy your Algo server!
+Now you can continue by following the [README](https://github.com/trailofbits/algo#deploy-the-algo-server) from the 4th step to deploy your Algo server!
+
+You'll be instructed to edit the file `config.cfg` in order to specify the Algo user accounts to be created. If you're new to Linux the simplest editor to use is `nano`. To edit the file while in the `algo` directory, run:
+```shell
+nano config.cfg
+```
