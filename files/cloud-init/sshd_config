@@ -1,5 +1,5 @@
 Port {{ ssh_port }}
-AllowUsers algo
+AllowGroups algo
 PermitRootLogin no
 PasswordAuthentication no
 ChallengeResponseAuthentication no
