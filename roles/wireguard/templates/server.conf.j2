@@ -1,6 +1,6 @@
 [Interface]
 Address = {{ wireguard_server_ip }}
-ListenPort = {{ wireguard_port }}
+ListenPort = {{ wireguard_port_actual if wireguard_port|int == wireguard_port_avoid|int else wireguard_port }}
 PrivateKey = {{ lookup('file', wireguard_pki_path + '/private/' + IP_subject_alt_name) }}
 SaveConfig = false
 
