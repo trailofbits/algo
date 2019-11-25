@@ -28,6 +28,8 @@ Wait a minute for Windows to install a few things in the background (it will eve
 
 Run these commands in the Ubuntu Terminal to install a prerequisite package and download the Algo scripts to your home directory. Note that when using WSL you should **not** install Algo in the `/mnt/c` directory due to problems with file permissions.
 
+You may need to follow [these directions](https://devblogs.microsoft.com/commandline/copy-and-paste-arrives-for-linuxwsl-consoles/) in order to paste commands into the Ubuntu Terminal.
+
 ```shell
 cd
 umask 0002
@@ -43,3 +45,4 @@ You'll be instructed to edit the file `config.cfg` in order to specify the Algo 
 ```shell
 nano config.cfg
 ```
+Once `./algo` has finished you can use the `cp` command to copy the configuration files from the `configs` directory into your Windows directory under `/mnt/c/Users` for easier access.
