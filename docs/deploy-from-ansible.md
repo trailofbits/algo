@@ -26,12 +26,12 @@ See below for more information about variables and roles.
 
 - `provider` - (Required) The provider to use. See possible values below
 - `server_name` - (Required) Server name. Default: algo
-- `ondemand_cellular` (Optional) VPN On Demand when connected to cellular networks with IPsec. Default: false
-- `ondemand_wifi` - (Optional. See `ondemand_wifi_exclude`) VPN On Demand when connected to WiFi networks with IPsec. Default: false
+- `ondemand_cellular` (Optional) Enables VPN On Demand when connected to cellular networks for iOS/macOS clients using IPsec. Default: false
+- `ondemand_wifi` - (Optional. See `ondemand_wifi_exclude`) Enables VPN On Demand when connected to WiFi networks for iOS/macOS clients using IPsec. Default: false
 - `ondemand_wifi_exclude` (Required if `ondemand_wifi` set) - WiFi networks to exclude from using the VPN. Comma-separated values
 - `dns_adblocking` - (Optional) Enables dnscrypt-proxy adblocking. Default: false
 - `ssh_tunneling` - (Optional) Enable SSH tunneling for each user. Default: false
-- `store_cakey` - (Optional) Whether or not keep the CA key (required to add users in the future, but less secure). Default: false
+- `store_pki` - (Optional) Whether or not keep the CA key (required to add users in the future, but less secure). Default: false
 
 If any of the above variables are unspecified, ansible will ask the user to input them.
 
