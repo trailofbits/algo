@@ -4,12 +4,14 @@
 [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/fold_left.svg?style=social&label=Follow%20%40AlgoVPN)](https://twitter.com/AlgoVPN)
 [![TravisCI Status](https://api.travis-ci.org/trailofbits/algo.svg?branch=master)](https://travis-ci.org/trailofbits/algo)
 
-Algo VPN is a set of Ansible scripts that simplify the setup of a personal Wireguard and IPSEC VPN. It uses the most secure defaults available, works with common cloud providers, and does not require client software on most devices. See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo-the-vpn-that-works/) for more information.
+Algo VPN is a set of Ansible scripts that simplify the setup of a personal WireGuard and IPsec VPN. It uses the most secure defaults available and works with common cloud providers. See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo-the-vpn-that-works/) for more information.
 
 ## Features
 
-* Supports only IKEv2 with strong crypto (AES-GCM, SHA2, and P-256) and [WireGuard](https://www.wireguard.com/)
-* Generates Apple profiles to auto-configure iOS and macOS devices
+* Supports only IKEv2 with strong crypto (AES-GCM, SHA2, and P-256) for iOS, macOS, and Linux
+* Supports [WireGuard](https://www.wireguard.com/) for all of the above, in addition to Android and Windows 10
+* Generates .conf files and QR codes for iOS, macOS, Android, and Windows WireGuard clients
+* Generates Apple profiles to auto-configure iOS and macOS devices for IPsec - no client software required
 * Includes a helper script to add and remove users
 * Blocks ads with a local DNS resolver (optional)
 * Sets up limited SSH users for tunneling traffic (optional)
@@ -21,7 +23,6 @@ Algo VPN is a set of Ansible scripts that simplify the setup of a personal Wireg
 * Does not support legacy cipher suites or protocols like L2TP, IKEv1, or RSA
 * Does not install Tor, OpenVPN, or other risky servers
 * Does not depend on the security of [TLS](https://tools.ietf.org/html/rfc7457)
-* Does not require client software on most platforms
 * Does not claim to provide anonymity or censorship avoidance
 * Does not claim to protect you from the [FSB](https://en.wikipedia.org/wiki/Federal_Security_Service), [MSS](https://en.wikipedia.org/wiki/Ministry_of_State_Security_(China)), [DGSE](https://en.wikipedia.org/wiki/Directorate-General_for_External_Security), or [FSM](https://en.wikipedia.org/wiki/Flying_Spaghetti_Monster)
 
@@ -37,14 +38,17 @@ The easiest way to get an Algo server running is to run it on your local system 
 
     - Run the command `git clone https://github.com/trailofbits/algo.git` to create a directory named `algo` containing the Algo scripts.
 
-3. **Install Algo's core dependencies.** Algo requires that **Python 3** and at least one supporting package are installed on your system.
+3. **Install Algo's core dependencies.** Algo requires that **Python 3.6 or later** and at least one supporting package are installed on your system.
 
-    - **macOS:** Apple does not provide Python 3 with macOS. There are two ways to obtain it:
+    - **macOS:** Apple does not provide a suitable version of Python 3 with macOS. Here are two ways to obtain one:
         * Use the [Homebrew](https://brew.sh) package manager. After installing Homebrew install Python 3 by running `brew install python3`.
 
-        * Download and install the latest stable [Python 3 package](https://www.python.org/downloads/mac-osx/). Be sure to run the included *Install Certificates* command from Finder.
+        * Download and install the latest stable [Python 3.7.x package](https://www.python.org/downloads/mac-osx/) (currently Python 3.8 will not work). Be sure to run the included *Install Certificates* command from Finder.
+
+        See [Deploy from macOS](docs/deploy-from-macos.md) for more detailed information on installing Python 3 on macOS.
 
         Once Python 3 is installed on your Mac, from Terminal run:
+
         ```bash
         python3 -m pip install --upgrade virtualenv
         ```
@@ -75,7 +79,7 @@ The easiest way to get an Algo server running is to run it on your local system 
     ```
     On Fedora add the option `--system-site-packages` to the first command above. On macOS install the C compiler if prompted.
 
-5. **List the users to create.** Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list. Create a unique user for each device you plan to connect to your VPN. If you want to be able to add or delete users later, you **must** select `yes` at the `Do you want to retain the keys (PKI)?` prompt during the deployment.
+5. **Set your configuration options.** Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list. Create a unique user for each device you plan to connect to your VPN. If you want to be able to add or delete users later, you **must** select `yes` at the `Do you want to retain the keys (PKI)?` prompt during the deployment. You should also review the other options before deployment, as changing your mind about them later [may require you to deploy a brand new server](https://github.com/trailofbits/algo/blob/master/docs/faq.md#i-deployed-an-algo-server-can-you-update-it-with-new-features).
 
 6. **Start the deployment.** Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [here](docs/deploy-from-ansible.md).
 
