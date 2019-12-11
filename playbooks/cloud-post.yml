@@ -8,7 +8,7 @@
     name: "{% if cloud_instance_ip == 'localhost' %}localhost{% else %}{{ cloud_instance_ip }}{% endif %}"
     groups: vpn-host
     ansible_connection: "{% if cloud_instance_ip == 'localhost' %}local{% else %}ssh{% endif %}"
-    ansible_ssh_user: "{{ ansible_ssh_user }}"
+    ansible_ssh_user: "{{ ansible_ssh_user|default('root') }}"
     ansible_ssh_port: "{{ ansible_ssh_port|default(22) }}"
     ansible_python_interpreter: "/usr/bin/python3"
     algo_provider: "{{ algo_provider }}"
