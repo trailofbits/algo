@@ -41,3 +41,4 @@
     cloud_instance_ip: "{{ azure_rm_deployment.deployment.outputs.publicIPAddresses.value }}"
     ansible_ssh_user: algo
     ansible_ssh_port: "{{ ssh_port }}"
+    cloudinit: true
