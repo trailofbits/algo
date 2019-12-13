@@ -1,6 +1,26 @@
 ## 1.2 [(Unreleased)](https://github.com/trailofbits/algo/tree/HEAD)
 
+### Added
 - New provider CloudStack added [\#1420](https://github.com/trailofbits/algo/pull/1420)
+- Support for Ubuntu 19.10 [\#1630](https://github.com/trailofbits/algo/pull/1630)
+- Allow WireGuard to listen on port 53 [\#1594](https://github.com/trailofbits/algo/pull/1594)
+- Introducing Makefile [\#1553](https://github.com/trailofbits/algo/pull/1553)
+- Option to unblock SMB and Netbios [\#1558](https://github.com/trailofbits/algo/pull/1558)
+- Allow OnDemand to be toggled later [\#1557](https://github.com/trailofbits/algo/pull/1557)
+- New provider Hetzner added [\#1549](https://github.com/trailofbits/algo/pull/1549)
+
+### Fixes
+- WSL private SSH key permissions [\#1584](https://github.com/trailofbits/algo/pull/1584)
+- Scaleway instance creating issue [\#1549](https://github.com/trailofbits/algo/pull/1549)
+
+### Changed
+- EC2: enable EBS encryption by default [\#1556](https://github.com/trailofbits/algo/pull/1556)
+- Upgrades [\#1549](https://github.com/trailofbits/algo/pull/1549)
+  - Python 3
+  - Ansible 2.8
+  
+ ### Breaking changes
+  - Python virtual environment moved to .env [\#1549](https://github.com/trailofbits/algo/pull/1549)
 
 
 ## 1.1 [(Jul 31, 2019)](https://github.com/trailofbits/algo/releases/tag/v1.1)
