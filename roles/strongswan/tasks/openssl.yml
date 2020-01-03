@@ -132,6 +132,30 @@
       executable: bash
     with_items: "{{ users }}"
 
+  - name: Build the tests pair
+    shell: >
+      umask 077;
+      {{ openssl_bin }} req -utf8 -new
+      -newkey ec:ecparams/secp384r1.pem
+      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:google-algo-test-pair.com"))
+      -keyout private/google-algo-test-pair.com.key
+      -out reqs/google-algo-test-pair.com.req -nodes
+      -passin pass:"{{ CA_password }}"
+      -subj "/CN=google-algo-test-pair.com" -batch &&
+      {{ openssl_bin }} ca -utf8
+      -in reqs/google-algo-test-pair.com.req
+      -out certs/google-algo-test-pair.com.crt
+      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:google-algo-test-pair.com"))
+      -days 3650 -batch
+      -passin pass:"{{ CA_password }}"
+      -subj "/CN=google-algo-test-pair.com" &&
+      touch certs/google-algo-test-pair.com_crt_generated
+    args:
+      chdir: "{{ ipsec_pki_path }}"
+      creates: certs/google-algo-test-pair.com_crt_generated
+      executable: bash
+    when: tests|default(false)|bool
+
   - name: Build openssh public keys
     openssl_publickey:
       path:  "{{ ipsec_pki_path }}/public/{{ item }}.pub"
@@ -201,7 +225,7 @@
       chdir: "{{ ipsec_pki_path }}"
       creates: crl/{{ item }}.crt
       executable: bash
-    when: item not in users
+    when: item.split('@')[0] not in users
     with_items: "{{ valid_certs.stdout_lines }}"
 
   - name: Genereate new CRL file
