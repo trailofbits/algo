@@ -14,6 +14,9 @@
 - Scaleway instance creating issue [\#1549](https://github.com/trailofbits/algo/pull/1549)
 
 ### Changed
+- SSH changes [\#1636](https://github.com/trailofbits/algo/pull/1636)
+  - Default port is set to `4160` and can be changed in the config
+  - SSH user for every cloud provider is `algo`
 - EC2: enable EBS encryption by default [\#1556](https://github.com/trailofbits/algo/pull/1556)
 - Upgrades [\#1549](https://github.com/trailofbits/algo/pull/1549)
   - Python 3
