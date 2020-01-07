@@ -26,6 +26,33 @@
       enable_ipv6: true
       public_ip: dynamic
       boot_type: local
+      state: present
+      image: "{{ images[0] }}"
+      organization: "{{ organization_id }}"
+      region: "{{ algo_region }}"
+      commercial_type: "{{ cloud_providers.scaleway.size }}"
+      wait: true
+      tags:
+        - Environment:Algo
+        - AUTHORIZED_KEY={{ lookup('file', SSH_keys.public)|regex_replace(' ', '_') }}
+    register: scaleway_compute
+
+  - name: Patch the cloud-init
+    uri:
+      url: "https://cp-{{ region }}.scaleway.com/servers/{{ scaleway_compute.msg.id }}/user_data/cloud-init"
+      method: PATCH
+      body: "{{ lookup('template', 'files/cloud-init/base.yml') }}"
+      status_code: 204
+      headers:
+        Content-Type: "text/plain"
+        X-Auth-Token: "{{ algo_scaleway_token }}"
+
+  - name: Start the server
+    scaleway_compute:
+      name: "{{ algo_server_name }}"
+      enable_ipv6: true
+      public_ip: dynamic
+      boot_type: local
       state: running
       image: "{{ images[0] }}"
       organization: "{{ organization_id }}"
@@ -44,4 +71,6 @@
 
 - set_fact:
     cloud_instance_ip: "{{ algo_instance.msg.public_ip.address }}"
-    ansible_ssh_user: root
+    ansible_ssh_user: algo
+    ansible_ssh_port: "{{ ssh_port }}"
+    cloudinit: true

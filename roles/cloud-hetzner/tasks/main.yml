@@ -22,10 +22,13 @@
     state: present
     api_token: "{{ algo_hcloud_token }}"
     ssh_keys: "{{ hcloud_ssh_key.hcloud_ssh_key.name }}"
+    user_data: "{{ lookup('template', 'files/cloud-init/base.yml') }}"
     labels:
       Environment: algo
   register: hcloud_server
 
 - set_fact:
     cloud_instance_ip: "{{ hcloud_server.hcloud_server.ipv4_address }}"
-    ansible_ssh_user: root
+    ansible_ssh_user: algo
+    ansible_ssh_port: "{{ ssh_port }}"
+    cloudinit: true

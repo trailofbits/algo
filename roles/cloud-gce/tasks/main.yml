@@ -32,7 +32,7 @@
           - '{{ wireguard_port|string }}'
       - ip_protocol: tcp
         ports:
-          - '22'
+          - '{{ ssh_port }}'
       - ip_protocol: icmp
 
 - block:
@@ -64,10 +64,8 @@
         initialize_params:
           source_image: "projects/ubuntu-os-cloud/global/images/family/{{ cloud_providers.gce.image }}"
     metadata:
-      ssh-keys: "ubuntu:{{ ssh_public_key_lookup }}"
-      user-data: |
-        #!/bin/bash
-        sudo apt-get remove -y --purge sshguard
+      ssh-keys: "algo:{{ ssh_public_key_lookup }}"
+      user-data: "{{ lookup('template', 'files/cloud-init/base.yml') }}"
     network_interfaces:
       - network: "{{ gcp_compute_network }}"
         access_configs:
@@ -81,4 +79,6 @@
 
 - set_fact:
     cloud_instance_ip: "{{ gcp_compute_instance.networkInterfaces[0].accessConfigs[0].natIP }}"
-    ansible_ssh_user: ubuntu
+    ansible_ssh_user: algo
+    ansible_ssh_port: "{{ ssh_port }}"
+    cloudinit: true

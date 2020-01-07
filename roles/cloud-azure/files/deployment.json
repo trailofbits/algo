@@ -13,6 +13,12 @@
     },
     "imageReferenceSku": {
       "type": "string"
+    },
+    "SshPort": {
+      "type": "int"
+    },
+    "UserData": {
+      "type": "string"
     }
   },
   "variables": {
@@ -30,10 +36,10 @@
           {
             "name": "AllowSSH",
             "properties": {
-              "description": "Locks inbound down to ssh default port 22.",
+              "description": "Allow SSH",
               "protocol": "Tcp",
               "sourcePortRange": "*",
-              "destinationPortRange": "22",
+              "destinationPortRange": "[parameters('SshPort')]",
               "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "*",
               "access": "Allow",
@@ -160,13 +166,14 @@
         },
         "osProfile": {
           "computerName": "[resourceGroup().name]",
-          "adminUsername": "ubuntu",
+          "customData": "[parameters('UserData')]",
+          "adminUsername": "algo",
           "linuxConfiguration": {
             "disablePasswordAuthentication": true,
             "ssh": {
               "publicKeys": [
                 {
-                  "path": "/home/ubuntu/.ssh/authorized_keys",
+                  "path": "/home/algo/.ssh/authorized_keys",
                   "keyData": "[parameters('sshKeyData')]"
                 }
               ]

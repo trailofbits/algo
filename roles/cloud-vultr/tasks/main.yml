@@ -3,12 +3,6 @@
   import_tasks: prompts.yml
 
 - block:
-  - name: Upload the SSH key
-    vultr_ssh_key:
-      name: "{{ SSH_keys.comment }}"
-      ssh_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
-    register: ssh_key
-
   - name: Creating a firewall group
     vultr_firewall_group:
       name: "{{ algo_server_name }}"
@@ -21,8 +15,8 @@
       ip_version: "{{ item.ip }}"
       cidr: "{{ item.cidr }}"
     with_items:
-    - { protocol: tcp, port: 22, ip: v4, cidr: "0.0.0.0/0" }
-    - { protocol: tcp, port: 22, ip: v6, cidr: "::/0" }
+    - { protocol: tcp, port: "{{ ssh_port }}", ip: v4, cidr: "0.0.0.0/0" }
+    - { protocol: tcp, port: "{{ ssh_port }}", ip: v6, cidr: "::/0" }
     - { protocol: udp, port: 500, ip: v4, cidr: "0.0.0.0/0" }
     - { protocol: udp, port: 500, ip: v6, cidr: "::/0" }
     - { protocol: udp, port: 4500, ip: v4, cidr: "0.0.0.0/0" }
@@ -30,9 +24,18 @@
     - { protocol: udp, port: "{{ wireguard_port }}", ip: v4, cidr: "0.0.0.0/0" }
     - { protocol: udp, port: "{{ wireguard_port }}", ip: v6, cidr: "::/0" }
 
+  - name: Upload the startup script
+    vultr_startup_script:
+      name: algo-startup
+      script:  |
+        {{ lookup('template', 'files/cloud-init/base.sh') }}
+        mkdir -p /var/lib/cloud/data/ || true
+        touch /var/lib/cloud/data/result.json
+
   - name: Creating a server
     vultr_server:
       name: "{{ algo_server_name }}"
+      startup_script: algo-startup
       hostname: "{{ algo_server_name }}"
       os: "{{ cloud_providers.vultr.os }}"
       plan: "{{ cloud_providers.vultr.size }}"
@@ -40,7 +43,6 @@
       firewall_group: "{{ algo_server_name }}"
       state: started
       tag: Environment:Algo
-      ssh_key: "{{ ssh_key.vultr_ssh_key.name }}"
       ipv6_enabled: true
       auto_backup_enabled: false
       notify_activate: false
@@ -48,7 +50,9 @@
 
   - set_fact:
       cloud_instance_ip: "{{ vultr_server.vultr_server.v4_main_ip }}"
-      ansible_ssh_user: root
+      ansible_ssh_user: algo
+      ansible_ssh_port: "{{ ssh_port }}"
+      cloudinit: true
 
   environment:
     VULTR_API_CONFIG: "{{ algo_vultr_config }}"

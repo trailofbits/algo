@@ -16,6 +16,10 @@ Parameters:
     Default: ''
   EbsEncrypted:
     Type: String
+  UserData:
+    Type: String
+  SshPort:
+    Type: String
 Conditions:
   AllocateNewEIP: !Equals [!Ref UseThisElasticIP, '']
   AssociateExistingEIP: !Not [!Equals [!Ref UseThisElasticIP, '']]
@@ -123,8 +127,8 @@ Resources:
       GroupDescription: Enable SSH and IPsec
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: '22'
-          ToPort: '22'
+          FromPort: !Ref SshPort
+          ToPort: !Ref SshPort
           CidrIp: 0.0.0.0/0
         - IpProtocol: udp
           FromPort: '500'
@@ -148,16 +152,6 @@ Resources:
       - SubnetIPv6
       - Subnet
       - InstanceSecurityGroup
-    Metadata:
-      AWS::CloudFormation::Init:
-        config:
-          files:
-            /home/ubuntu/.ssh/authorized_keys:
-              content:
-                Ref: PublicSSHKeyParameter
-              mode: "000644"
-              owner: "ubuntu"
-              group: "ubuntu"
     Properties:
       InstanceType:
         Ref: InstanceTypeParameter
@@ -174,15 +168,7 @@ Resources:
         Ref: ImageIdParameter
       SubnetId: !Ref Subnet
       Ipv6AddressCount: 1
-      UserData:
-        "Fn::Base64":
-          !Sub |
-            #!/bin/bash -xe
-            apt-get update
-            apt-get -y install python-pip
-            pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
-            cfn-init -v --stack ${AWS::StackName} --resource EC2Instance --region ${AWS::Region}
-            cfn-signal -e $? --stack ${AWS::StackName} --resource EC2Instance --region ${AWS::Region}
+      UserData: !Ref UserData
       Tags:
         - Key: Name
           Value: !Ref AWS::StackName

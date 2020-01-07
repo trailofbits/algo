@@ -1,0 +1,29 @@
+#cloud-config
+output: {all: '| tee -a /var/log/cloud-init-output.log'}
+
+package_update: true
+package_upgrade: true
+
+packages:
+ - sudo
+
+users:
+  - default
+  - name: algo
+    homedir: /home/algo
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: adm,netdev
+    shell: /bin/bash
+    lock_passwd: true
+    ssh_authorized_keys:
+      - "{{ lookup('file', '{{ SSH_keys.public }}') }}"
+
+write_files:
+  - path: /etc/ssh/sshd_config
+    content: |
+      {{ lookup('template', 'files/cloud-init/sshd_config') | indent(width=6) }}
+
+runcmd:
+  - set -x
+  - sudo apt-get remove -y --purge sshguard || true
+  - systemctl restart sshd.service
