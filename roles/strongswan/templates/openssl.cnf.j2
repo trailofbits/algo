@@ -120,7 +120,7 @@ subjectKeyIdentifier=hash
 authorityKeyIdentifier=keyid:always,issuer:always
 
 basicConstraints = critical,CA:true,pathlen:0
-nameConstraints = critical,permitted;{{ subjectAltName_IP }}/255.255.255.255{{ ',permitted;IP:' + ansible_default_ipv6['address'] + '/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff' if ipv6_support else '' }}{{ ',permitted;DNS:' + subjectAltName_DNS if domain and subjectAltName_DNS else '' }},permitted;DNS:algo.local,permitted;email:{{ openssl_user_domain }}
+nameConstraints = critical,permitted;{{ subjectAltName_IP }}/255.255.255.255{{ ',permitted;IP:' + ansible_default_ipv6['address'] + '/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff' if ipv6_support else '' }}{{ ',permitted;DNS:' + subjectAltName_DNS if domain and subjectAltName_DNS else '' }},permitted;DNS:{{ openssl_constraint_random_id }},permitted;email:{{ openssl_constraint_random_id }}
 
 # Limit key usage to CA tasks. If you really want to use the generated pair as
 # a self-signed cert, comment this out.

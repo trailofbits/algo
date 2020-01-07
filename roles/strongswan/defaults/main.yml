@@ -11,9 +11,9 @@ algo_dns_adblocking: false
 ipv6_support: false
 dns_encryption: true
 domain: false
-openssl_user_domain: algo.vpn
+openssl_constraint_random_id: "{{ IP_subject_alt_name | to_uuid }}"
 subjectAltName_IP: "{{ 'DNS:' if IP_subject_alt_name|regex_search('[a-z]') else 'IP:' }}{{ IP_subject_alt_name }}"
-subjectAltName_USER: "email:{{ item }}@{{ openssl_user_domain }}"
+subjectAltName_USER: "email:{{ item }}@{{ openssl_constraint_random_id }}"
 openssl_bin: openssl
 strongswan_enabled_plugins:
   - aes
