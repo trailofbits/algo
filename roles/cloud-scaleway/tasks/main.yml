@@ -39,7 +39,7 @@
 
   - name: Patch the cloud-init
     uri:
-      url: "https://cp-{{ region }}.scaleway.com/servers/{{ scaleway_compute.msg.id }}/user_data/cloud-init"
+      url: "https://cp-{{ algo_region }}.scaleway.com/servers/{{ scaleway_compute.msg.id }}/user_data/cloud-init"
       method: PATCH
       body: "{{ lookup('template', 'files/cloud-init/base.yml') }}"
       status_code: 204
