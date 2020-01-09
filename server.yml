@@ -43,10 +43,7 @@
         tags: common
 
       - import_role:
-          name: dns
-        when:
-          - algo_dns_adblocking or
-            dns_encryption
+          name: adguard
         tags: dns
 
       - import_role:

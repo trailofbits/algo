@@ -1,0 +1,25 @@
+---
+dependencies: []
+
+galaxy_info:
+  min_ansible_version: 2.1
+  author: WoodenDoors
+  description: "Ansible role to install the ad-blocking DNS-server Adguard Home (https://github.com/AdguardTeam/AdGuardHome)."
+  license: MIT
+  platforms:
+    - name: Debian
+      versions:
+      - jessie
+      - stretch
+    - name: Ubuntu
+      versions:
+      - xenial
+      - yakkety
+      - zesty
+      - artful
+      - bionic
+  galaxy_tags:
+    - adguard
+    - dns
+    - adblocking
+    - networking

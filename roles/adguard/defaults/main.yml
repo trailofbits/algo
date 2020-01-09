@@ -1,0 +1,15 @@
+---
+adguard_home_version: '0.98.1'
+
+adguard_home_base_path: /opt/AdGuardHome
+adguard_home_user: root
+
+adguard_home_path: "{{ adguard_home_base_path }}/AdGuardHome"
+adguard_home_executable: "{{ adguard_home_path }}/AdGuardHome"
+adguard_home_group: "{{ adguard_home_user }}"
+adguard_home_host: "{{ ansible_default_ipv4.address }}"
+adguard_home_arch: "{{ (ansible_architecture == 'x86_64') | ternary('amd64', 'arm') }}"
+adguard_home_archive: "AdGuardHome_linux_{{ adguard_home_arch }}.tar.gz"
+adguard_home_download_url: "https://static.adguard.com/adguardhome/release/AdGuardHome_linux_{{ adguard_home_arch }}.tar.gz"
+
+adguard_home_tmp_path: /tmp/

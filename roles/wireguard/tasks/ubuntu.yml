@@ -1,12 +1,28 @@
 ---
-- name: WireGuard repository configured
+- name: Install wireguard repo (Debian)
   apt_repository:
-    repo: ppa:wireguard/wireguard
-    state: present
-  register: result
-  until: result is succeeded
-  retries: 10
-  delay: 3
+    filename: unstable
+    repo: 'deb http://deb.debian.org/debian/ unstable main'
+    update_cache: yes
+  when: ansible_distribution == 'Debian'
+
+- name: Configure wireguard repo (Debian)
+  blockinfile:
+    path: /etc/apt/preferences.d/limit-unstable
+    create: yes
+    block: |-
+      Package: *
+      Pin: release a=unstable
+      Pin-Priority: 90
+
+- name: Configure wireguard repo (Debian)
+  blockinfile:
+    path: /etc/apt/preferences.d/wireguard
+    create: yes
+    block: |-
+      Package: /wireguard/
+      Pin: release a=unstable
+      Pin-Priority: 500
 
 - name: WireGuard installed
   apt:
@@ -19,13 +35,19 @@
     dest: /etc/wireguard/.reload-module-on-update
     state: touch
 
-- name: Configure unattended-upgrades
-  copy:
-    src: 50-wireguard-unattended-upgrades
-    dest: /etc/apt/apt.conf.d/50-wireguard-unattended-upgrades
+- name: Wireguard updater
+  template:
+    src: wireguard-updater.sh.j2
+    dest: /usr/local/sbin/wireguard-updater.sh
     owner: root
-    group: root
-    mode: 0644
+    group: "{{ root_group|default('root') }}"
+    mode: 0755
+
+- name: Add Wireguard updater to cron
+  cron:
+    name: "Update Wireguard"
+    special_time: daily
+    job: "/usr/local/sbin/wireguard_update.sh >/dev/null 2>&1"
 
 - name: Set OS specific facts
   set_fact:

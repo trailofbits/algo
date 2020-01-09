@@ -89,14 +89,6 @@
           when: store_pki is undefined
         when: ipsec_enabled
 
-      - name: DNS adblocking prompt
-        pause:
-          prompt: |
-            Do you want to enable DNS ad blocking on this VPN server?
-            [y/N]
-        register: _dns_adblocking
-        when: dns_adblocking is undefined
-
       - name: SSH tunneling prompt
         pause:
           prompt: |
@@ -126,10 +118,7 @@
             {%- elif _ondemand_wifi_exclude.user_input is defined and _ondemand_wifi_exclude.user_input|length > 0 -%}
             {{ _ondemand_wifi_exclude.user_input | b64encode }}
             {%- else %}{{ '_null' | b64encode }}{% endif %}
-          algo_dns_adblocking: >-
-            {% if dns_adblocking is defined %}{{ dns_adblocking | bool }}
-            {%- elif _dns_adblocking.user_input is defined %}{{ booleans_map[_dns_adblocking.user_input] | default(defaults['dns_adblocking']) }}
-            {%- else %}false{% endif %}
+          algo_dns_adblocking: false
           algo_ssh_tunneling: >-
             {% if ssh_tunneling is defined %}{{ ssh_tunneling | bool }}
             {%- elif _ssh_tunneling.user_input is defined %}{{ booleans_map[_ssh_tunneling.user_input] | default(defaults['ssh_tunneling']) }}

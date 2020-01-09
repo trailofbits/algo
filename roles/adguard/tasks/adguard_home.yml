@@ -1,0 +1,69 @@
+---
+- name: ensure user exists
+  user:
+    name: "{{ adguard_home_user }}"
+    state: present
+
+- name: ensure base directory exists
+  file:
+    dest: "{{ adguard_home_base_path }}"
+    owner: "{{ adguard_home_user }}"
+    group: "{{ adguard_home_group }}"
+    recurse: yes
+    state: directory
+
+- name: check if adguard is already installed
+  stat:
+    path: "{{ adguard_home_executable }}"
+  register: adguard_home_executable_stat
+
+- name: check adguard version if it is already installed
+  command: "{{ adguard_home_executable }} --help"
+  register: adguard_home_version_exists_check
+  check_mode: no
+  changed_when: adguard_home_version_exists_check.stderr.find('version v' + adguard_home_version) == -1
+  failed_when: adguard_home_version_exists_check.rc != 64
+  when: adguard_home_executable_stat.stat.exists
+
+- name: download adguard-home archive
+  get_url:
+    url: "{{ adguard_home_download_url }}"
+    dest: "{{ adguard_home_tmp_path }}"
+    checksum: "{{ adguard_home_checksum | default(omit, true) }}"
+  when: >
+    (not adguard_home_executable_stat.stat.exists)
+    or (adguard_home_version_exists_check | changed)
+
+- name: unarchive adguard-home
+  unarchive:
+    copy: no
+    src: "{{ adguard_home_tmp_path }}/{{ adguard_home_archive }}"
+    dest: "{{ adguard_home_base_path }}"
+    owner: "{{ adguard_home_user }}"
+    group: "{{ adguard_home_group }}"
+  become: yes
+  become_user: "{{ adguard_home_user }}"
+  when: >
+    (not adguard_home_executable_stat.stat.exists)
+    or (adguard_home_version_exists_check | changed)
+
+- name: Restore AdGuard settings
+  copy:
+    src: AdGuardHome.yaml
+    dest: "{{ adguard_home_base_path }}/AdGuardHome.yaml"
+    owner: root
+    group: root
+    mode: 0644
+    force: yes
+
+- name: Install AdGuardHome
+  command: "sudo {{ adguard_home_base_path }}/AdGuardHome -s install"
+  changed_when: false
+
+- name: Start AdGuardHome
+  command: "sudo {{ adguard_home_base_path }}/AdGuardHome -s start"
+  changed_when: false
+
+- name: Set AdGuardHome permissions
+  command: "sudo setcap CAP_NET_BIND_SERVICE=+eip {{ adguard_home_base_path }}/AdGuardHome"
+  changed_when: false

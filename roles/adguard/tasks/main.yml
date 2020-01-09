@@ -1,0 +1,3 @@
+---
+- include: adguard_home.yml
+  tags: adguard_home

@@ -15,7 +15,7 @@
 - name: Periodic upgrades configured
   template:
     src: 10periodic.j2
-    dest: /etc/apt/apt.conf.d/10periodic
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
     owner: root
     group: root
     mode: 0644

@@ -1,0 +1,15 @@
+[Unit]
+Description=AdGuard Home
+After=syslog.target
+After=network.target
+
+[Service]
+Type=simple
+User={{ adguard_home_user }}
+Group={{ adguard_home_group }}
+WorkingDirectory={{ adguard_home_path }}
+ExecStart={{ adguard_home_executable }} --host {{ adguard_home_host }}
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

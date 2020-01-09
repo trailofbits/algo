@@ -1,0 +1,198 @@
+bind_host: 0.0.0.0
+bind_port: 80
+users: []
+language: ""
+rlimit_nofile: 0
+web_session_ttl: 720
+dns:
+  bind_host: 0.0.0.0
+  port: 53
+  statistics_interval: 1
+  querylog_enabled: true
+  querylog_interval: 1
+  querylog_memsize: 0
+  protection_enabled: true
+  blocking_mode: nxdomain
+  blocking_ipv4: ""
+  blocking_ipv6: ""
+  blocked_response_ttl: 10
+  ratelimit: 20
+  ratelimit_whitelist: []
+  refuse_any: true
+  bootstrap_dns:
+  - 8.8.8.8:53
+  - 8.8.4.4:53
+  all_servers: false
+  edns_client_subnet: true
+  allowed_clients: []
+  disallowed_clients: []
+  blocked_hosts: []
+  parental_block_host: family-block.dns.adguard.com
+  safebrowsing_block_host: standard-block.dns.adguard.com
+  cache_size: 4194304
+  upstream_dns:
+  - https://dns.google/dns-query
+  - tls://8.8.8.8
+  - tls://8.8.4.4
+  - https://dns.cloudflare.com/dns-query
+  - tls://1.1.1.1
+  - tls://1.0.0.1
+  filtering_enabled: true
+  filters_update_interval: 24
+  parental_sensitivity: 0
+  parental_enabled: false
+  safesearch_enabled: false
+  safebrowsing_enabled: false
+  safebrowsing_cache_size: 1048576
+  safesearch_cache_size: 1048576
+  parental_cache_size: 1048576
+  cache_time: 30
+  rewrites: []
+  blocked_services: []
+tls:
+  enabled: false
+  server_name: ""
+  force_https: false
+  port_https: 443
+  port_dns_over_tls: 853
+  allow_unencrypted_doh: false
+  certificate_chain: ""
+  private_key: ""
+  certificate_path: ""
+  private_key_path: ""
+filters:
+- enabled: true
+  url: https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
+  name: AdGuard Simplified Domain Names filter
+  id: 1
+- enabled: true
+  url: https://adaway.org/hosts.txt
+  name: AdAway
+  id: 2
+- enabled: true
+  url: https://hosts-file.net/ad_servers.txt
+  name: hpHosts - Ad and Tracking servers only
+  id: 3
+- enabled: true
+  url: https://www.malwaredomainlist.com/hostslist/hosts.txt
+  name: MalwareDomainList.com Hosts List
+  id: 4
+- enabled: true
+  url: https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+  name: Steven Black Hosts
+  id: 5
+- enabled: true
+  url: http://sysctl.org/cameleon/hosts
+  name: Cameleon
+  id: 6
+- enabled: true
+  url: https://s3.amazonaws.com/lists.disconnect.me/simple_tracking.txt
+  name: Disconnect Simple Tracking
+  id: 7
+- enabled: true
+  url: https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt
+  name: Disconnect Simple Ads
+  id: 8
+- enabled: true
+  url: https://pgl.yoyo.org/adservers/serverlist.php?hostformat=adblockplus&showintro=0&mimetype=plaintext
+  name: Peter Lowe's list
+  id: 9
+- enabled: true
+  url: https://reddestdream.github.io/Projects/MinimalHosts/etc/MinimalHostsBlocker/minimalhosts
+  name: Minimal Hosts
+  id: 10
+- enabled: true
+  url: https://raw.githubusercontent.com/anudeepND/blacklist/master/adservers.txt
+  name: Anudeep ND
+  id: 11
+- enabled: true
+  url: https://someonewhocares.org/hosts/hosts
+  name: Dan Pollock's list
+  id: 12
+- enabled: true
+  url: https://www.squidblacklist.org/downloads/dg-ads.acl
+  name: Squid Blacklist
+  id: 13
+- enabled: true
+  url: https://s3.amazonaws.com/lists.disconnect.me/simple_malvertising.txt
+  name: Disconnect Simple Malvertising
+  id: 15
+- enabled: true
+  url: https://zerodot1.gitlab.io/CoinBlockerLists/hosts
+  name: Coinblocker
+  id: 16
+- enabled: true
+  url: https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Formats/GoodbyeAds-AdBlock-Filter.txt
+  name: Goodbye Ads
+  id: 1576635076
+- enabled: true
+  url: https://raw.githubusercontent.com/Strappazzon/filterlists/master/Filterlists/Tracking.txt
+  name: Strappazzon's Tracking list
+  id: 1576779870
+- enabled: true
+  url: https://raw.githubusercontent.com/rodeodomino/Scripts/master/Filters/AdGuardHome.txt
+  name: Personal filters
+  id: 1577993820
+user_rules:
+- ""
+dhcp:
+  enabled: false
+  interface_name: ""
+  gateway_ip: ""
+  subnet_mask: ""
+  range_start: ""
+  range_end: ""
+  lease_duration: 86400
+  icmp_timeout_msec: 1000
+clients:
+- name: Phone - Full
+  ids:
+  - 10.19.49.4
+  - fd9d:bc11:4021::4
+  use_global_settings: true
+  filtering_enabled: false
+  parental_enabled: false
+  safebrowsing_enabled: false
+  safesearch_enabled: false
+  use_global_blocked_services: true
+  blocked_services: []
+  upstreams: []
+- name: Laptop - Full
+  ids:
+  - 10.19.49.5
+  - fd9d:bc11:4021::5
+  use_global_settings: true
+  filtering_enabled: false
+  parental_enabled: false
+  safebrowsing_enabled: false
+  safesearch_enabled: false
+  use_global_blocked_services: true
+  blocked_services: []
+  upstreams: []
+- name: Phone - DNS Only
+  ids:
+  - 10.19.49.2
+  - fd9d:bc11:4021::2
+  use_global_settings: true
+  filtering_enabled: false
+  parental_enabled: false
+  safebrowsing_enabled: false
+  safesearch_enabled: false
+  use_global_blocked_services: true
+  blocked_services: []
+  upstreams: []
+- name: Laptop - DNS Only
+  ids:
+  - 10.19.49.3
+  - fd9d:bc11:4021::3
+  use_global_settings: true
+  filtering_enabled: false
+  parental_enabled: false
+  safebrowsing_enabled: false
+  safesearch_enabled: false
+  use_global_blocked_services: true
+  blocked_services: []
+  upstreams: []
+log_file: ""
+verbose: false
+schema_version: 6

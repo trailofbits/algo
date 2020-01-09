@@ -45,13 +45,6 @@
     - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/login' }
     - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/sshd' }
 
-- name: Loopback for services configured
-  template:
-    src: 10-algo-lo100.network.j2
-    dest: /etc/systemd/network/10-algo-lo100.network
-  notify:
-    - restart systemd-networkd
-
 - name: systemd services enabled and started
   systemd:
     name: "{{ item }}"
@@ -107,7 +100,6 @@
 - name: Install headers
   apt:
     name:
-      - linux-headers-generic
       - "linux-headers-{{ ansible_kernel }}"
     state: present
   when: install_headers
