@@ -19,7 +19,7 @@ systemctl restart lxd-bridge.service lxd-containers.service lxd.service
 lxc profile set default raw.lxc lxc.aa_profile=unconfined
 lxc profile set default security.privileged true
 lxc profile show default
-lxc launch ubuntu:${UBUNTU_VERSION} algo
+lxc launch images:debian/${DEBIAN_VERSION}/amd64 algo
 
 ip addr
 
