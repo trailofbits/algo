@@ -6,7 +6,7 @@ USER_ARGS="{ 'server': '10.0.8.100', 'users': ['desktop', 'user1', 'user2'], 'lo
 
 if [ "${DEPLOY}" == "docker" ]
 then
-  docker run -it -v $(pwd)/config.cfg:/algo/config.cfg -v ~/.ssh:/root/.ssh -v $(pwd)/configs:/algo/configs -e "USER_ARGS=${USER_ARGS}" travis/algo /bin/sh -c "chown -R root: /root/.ssh && chmod -R 600 /root/.ssh && source .env/bin/activate && ansible-playbook users.yml -e \"${USER_ARGS}\" -t update-users"
+  docker run -i -v $(pwd)/config.cfg:/algo/config.cfg -v ~/.ssh:/root/.ssh -v $(pwd)/configs:/algo/configs -e "USER_ARGS=${USER_ARGS}" local/algo /bin/sh -c "chown -R root: /root/.ssh && chmod -R 600 /root/.ssh && source .env/bin/activate && ansible-playbook users.yml -e \"${USER_ARGS}\" -t update-users --skip-tags debug -vvvvv"
 else
   ansible-playbook users.yml -e "${USER_ARGS}" -t update-users
 fi
@@ -23,7 +23,7 @@ if sudo openssl crl -inform pem -noout -text -in configs/10.0.8.100/ipsec/.pki/c
     exit 1
 fi
 
-if sudo openssl x509 -inform pem -noout -text -in configs/10.0.8.100/ipsec/.pki/certs/user1.crt | grep CN=user1
+if sudo openssl x509 -inform pem -noout -text -in configs/10.0.8.100/ipsec/.pki/certs/user1.crt | grep -E "CN(=|\s+=\s+)user1"
   then
     echo "The new user exists"
   else

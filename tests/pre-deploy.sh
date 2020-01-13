@@ -8,6 +8,9 @@ tar xf $HOME/lxc/cache.tar -C / || echo "Didn't extract cache."
 cp -f tests/lxd-bridge /etc/default/lxd-bridge
 cp -f tests/algo.conf /etc/default/algo.conf
 
+export REPOSITORY=${GITHUB_REPOSITORY}
+export BRANCH=${GITHUB_REF#refs/heads/}
+
 if [[ "$DEPLOY" == "cloud-init" ]]; then
   bash tests/cloud-init.sh | lxc profile set default user.user-data -
 else
