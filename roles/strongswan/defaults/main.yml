@@ -11,7 +11,7 @@ algo_dns_adblocking: false
 ipv6_support: false
 dns_encryption: true
 domain: false
-openssl_constraint_random_id: "{{ IP_subject_alt_name | to_uuid }}"
+openssl_constraint_random_id: "{{ IP_subject_alt_name | to_uuid }}.algo"
 subjectAltName_IP: "{{ 'DNS:' if IP_subject_alt_name|regex_search('[a-z]') else 'IP:' }}{{ IP_subject_alt_name }}"
 subjectAltName_USER: "email:{{ item }}@{{ openssl_constraint_random_id }}"
 openssl_bin: openssl
