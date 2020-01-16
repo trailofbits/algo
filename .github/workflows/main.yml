@@ -14,7 +14,9 @@ jobs:
       - name: test
         run: |
           env
-          echo ${{ github.event.pull_request.head.ref }}
+          echo BRANCH: $BRANCH
+        env:
+          BRANCH: ${{ github.event.pull_request.head.ref || github.event.push.ref }}
 
       - name: Install dependencies
         run: |
