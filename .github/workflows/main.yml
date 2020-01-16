@@ -140,6 +140,8 @@ jobs:
         env:
           DEPLOY: docker
           UBUNTU_VERSION: ${{ matrix.UBUNTU_VERSION }}
+          REPOSITORY: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}
+          BRANCH: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref }}
         run: |
           ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
           sed -i "s/^reduce_mtu:\s0$/reduce_mtu: 80/" config.cfg
