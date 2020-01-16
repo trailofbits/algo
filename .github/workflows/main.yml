@@ -15,6 +15,7 @@ jobs:
         run: |
           env
           echo ${{ github.event.pull_request.head.ref }}
+
       - name: Install dependencies
         run: |
           sudo apt update -y
