@@ -12,9 +12,14 @@
   delegate_to: localhost
   become: false
 
+- name: Include tasks for Armbian
+  include_tasks: armbian.yml
+  when: algo_armbian and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
+  tags: always
+
 - name: Include tasks for Ubuntu
   include_tasks: ubuntu.yml
-  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  when: not algo_armbian and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
   tags: always
 
 - name: Include tasks for FreeBSD

@@ -1,0 +1,16 @@
+---
+- name: WireGuard installed
+  apt:
+    name: wireguard-tools
+    state: present
+    update_cache: true
+
+- name: WireGuard reload-module-on-update
+  file:
+    dest: /etc/wireguard/.reload-module-on-update
+    state: touch
+
+- name: Set OS specific facts
+  set_fact:
+    service_name: "wg-quick@{{ wireguard_interface }}"
+  tags: always

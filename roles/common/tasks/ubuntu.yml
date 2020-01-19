@@ -36,6 +36,32 @@
       become: false
   when: algo_provider != "local"
 
+# the dev-sec.os-hardening role overwrites our users fact in 'Get user accounts | os-09'.  It's not clear why this is
+# happening, but as a workaround, save a temporary copy of the users variable so that it can be restored afterwards
+
+- name: save a temporary copy of users
+  set_fact:
+    algo_users: "{{ users }}"
+
+- name: dev-sec.os-hardening
+  import_role:
+    name: dev-sec.os-hardening
+  vars:
+    sysctl_overwrite:
+      net.ipv4.ip_forward: 1
+      net.ipv4.conf.all.forwarding: 1
+      net.ipv6.conf.all.forwarding: "{{ '1' if ipv6_support else '0' }}"
+  tags: os-hardening
+
+- name: restore users variable to its proper value
+  set_fact:
+    users: "{{ algo_users }}"
+
+- name: dev-sec.ssh-hardening
+  import_role:
+    name: dev-sec.ssh-hardening
+  tags: ssh-hardening
+
 - name: Include unatteded upgrades configuration
   import_tasks: unattended-upgrades.yml
 
@@ -72,8 +98,7 @@
 
 - name: Set fact if apparmor enabled
   set_fact:
-    apparmor_enabled: true
-  when: '"profiles are in enforce mode" in apparmor_status.stdout'
+    apparmor_enabled: "{{ not apparmor_status.failed and 'profiles are in enforce mode' in apparmor_status.stdout }} "
 
 - name: Gather additional facts
   import_tasks: facts.yml
@@ -110,7 +135,9 @@
       - linux-headers-generic
       - "linux-headers-{{ ansible_kernel }}"
     state: present
-  when: install_headers
+  when:
+    - not algo_armbian
+    - install_headers
 
 - include_tasks: iptables.yml
   tags: iptables

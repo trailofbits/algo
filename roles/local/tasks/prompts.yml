@@ -21,12 +21,23 @@
     register: _algo_ssh_user
     when: ssh_user is undefined
 
+  - name: Armbian prompt
+    pause:
+      prompt: |
+        Is this an Armbian host?
+        [y/N]
+    register: _armbian
+    when:
+      - armbian is undefined
+      - algo_provider == "local"
+
   - name: Set the facts
     set_fact:
       ansible_ssh_user: >-
         {% if ssh_user is defined %}{{ ssh_user }}
         {%- elif _algo_ssh_user.user_input %}{{ _algo_ssh_user.user_input }}
         {%- else %}root{% endif %}
+
   when: cloud_instance_ip != "localhost"
 
 - pause:
@@ -42,3 +53,7 @@
       {% if endpoint is defined %}{{ endpoint }}
       {%- elif _endpoint.user_input %}{{ _endpoint.user_input }}
       {%- else %}{{ cloud_instance_ip }}{% endif %}
+    algo_armbian: >-
+      {% if armbian is defined %}{{ armbian | bool }}
+      {%- elif _armbian.user_input is defined %}{{ booleans_map[_armbian.user_input] | default(defaults['armbian']) }}
+      {%- else %}false{% endif %}

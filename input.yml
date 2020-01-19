@@ -10,6 +10,7 @@
       dns_adblocking: false
       ssh_tunneling: false
       store_pki: false
+      armbian: false
     providers_map:
       - { name: DigitalOcean, alias: digitalocean }
       - { name: Amazon Lightsail, alias: lightsail }
@@ -52,6 +53,7 @@
         when:
           - server_name is undefined
           - algo_provider != "local"
+
       - block:
         - name: Cellular On Demand prompt
           pause:
@@ -138,5 +140,6 @@
             {% if ipsec_enabled %}{%- if store_pki is defined %}{{ store_pki | bool }}
             {%- elif _store_pki.user_input is defined  %}{{ booleans_map[_store_pki.user_input] | default(defaults['store_pki']) }}
             {%- else %}false{% endif %}{% endif %}
+
       rescue:
         - include_tasks: playbooks/rescue.yml

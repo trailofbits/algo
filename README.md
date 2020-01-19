@@ -76,6 +76,9 @@ The easiest way to get an Algo server running is to run it on your local system 
       source .env/bin/activate &&
       python3 -m pip install -U pip virtualenv &&
       python3 -m pip install -r requirements.txt
+
+      ansible-galaxy install dev-sec.os-hardening
+      ansible-galaxy install dev-sec.ssh-hardening
     ```
     On Fedora add the option `--system-site-packages` to the first command above. On macOS install the C compiler if prompted.
 

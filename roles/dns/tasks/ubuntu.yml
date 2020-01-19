@@ -8,6 +8,7 @@
   until: result is succeeded
   retries: 10
   delay: 3
+  when: not algo_armbian
 
 - name: Install dnscrypt-proxy
   apt:
@@ -22,6 +23,7 @@
     owner: root
     group: root
     mode: 0644
+  when: not algo_armbian
 
 - block:
   - name: Ubuntu | Configure AppArmor policy for dnscrypt-proxy
