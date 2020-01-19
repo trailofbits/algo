@@ -64,6 +64,9 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install -r requirements.txt
 
+          ansible-galaxy install dev-sec.os-hardening
+          ansible-galaxy install dev-sec.ssh-hardening
+
       - name: Provision
         env:
           DEPLOY: cloud-init
@@ -135,6 +138,9 @@ jobs:
 
           python3 -m pip install --upgrade pip
           python3 -m pip install -r requirements.txt
+
+          ansible-galaxy install dev-sec.os-hardening
+          ansible-galaxy install dev-sec.ssh-hardening
 
       - name: Provision
         env:
