@@ -1,0 +1,25 @@
+#jinja2:lstrip_blocks: True
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PayloadContent</key>
+	<array>
+    {% include 'vpn-dict.j2' %}
+  </array>
+  <key>PayloadDisplayName</key>
+  <string>AlgoVPN {{ algo_server_name }} WireGuard</string>
+  <key>PayloadIdentifier</key>
+  <string>donut.local.{{ 500000 | random | to_uuid | upper }}</string>
+  <key>PayloadOrganization</key>
+  <string>AlgoVPN</string>
+  <key>PayloadRemovalDisallowed</key>
+  <false/>
+  <key>PayloadType</key>
+  <string>Configuration</string>
+  <key>PayloadUUID</key>
+  <string>{{ 400000 | random | to_uuid | upper }}</string>
+  <key>PayloadVersion</key>
+  <integer>1</integer>
+</dict>
+</plist>
