@@ -2,6 +2,8 @@
 
 set -euxo pipefail
 
+xmllint --noout ./configs/10.0.8.100/wireguard/apple/*/*.mobileconfig
+
 crudini --set configs/10.0.8.100/wireguard/user1.conf Interface Table off
 
 wg-quick up configs/10.0.8.100/wireguard/user1.conf
