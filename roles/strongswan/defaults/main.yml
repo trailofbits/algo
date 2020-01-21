@@ -17,7 +17,7 @@ subjectAltName: >-
   {%- if ipv6_support -%},IP:{{ ansible_default_ipv6['address'] }}{%- endif -%}
 subjectAltName_USER: "email:{{ item }}@{{ openssl_constraint_random_id }}"
 nameConstraints: >-
-  permitted;{{ subjectAltName_type }}:{{ IP_subject_alt_name }}{{- '/255.255.255.255' if subjectAltName_type == 'IP' else '' -}}
+  critical,permitted;{{ subjectAltName_type }}:{{ IP_subject_alt_name }}{{- '/255.255.255.255' if subjectAltName_type == 'IP' else '' -}}
   {%- if subjectAltName_type == 'IP' -%}
   ,permitted;DNS:{{ openssl_constraint_random_id }}
   {%- else -%}
