@@ -7,6 +7,7 @@
   - Deploy from [Ansible](deploy-from-ansible.md) non-interactively
   - Deploy onto a [cloud server at time of creation with shell script or cloud-init](deploy-from-script-or-cloud-init-to-localhost.md)
   - Deploy from [macOS](deploy-from-macos.md)
+  - Deploy from [Google Cloud Shell](deploy-from-cloudshell.md)
 * Client setup
   - Setup [Android](client-android.md) clients
   - Setup [Generic/Linux](client-linux.md) clients with Ansible
