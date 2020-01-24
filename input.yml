@@ -86,8 +86,9 @@
             Do you want to retain the keys (PKI)? (required to add users in the future, but less secure)
             [y/N]
         register: _store_pki
-        when: store_pki is undefined
-        when: ipsec_enabled
+        when:
+          - store_pki is undefined
+          - ipsec_enabled
 
       - name: DNS adblocking prompt
         pause:
