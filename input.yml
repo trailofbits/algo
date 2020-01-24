@@ -52,41 +52,41 @@
         when:
           - server_name is undefined
           - algo_provider != "local"
-      - block:
-        - name: Cellular On Demand prompt
-          pause:
-            prompt: |
-              Do you want macOS/iOS IPsec clients to enable "Connect On Demand" when connected to cellular networks?
-              [y/N]
-          register: _ondemand_cellular
-          when: ondemand_cellular is undefined
 
-        - name: Wi-Fi On Demand prompt
-          pause:
-            prompt: |
-              Do you want macOS/iOS IPsec clients to enable "Connect On Demand" when connected to Wi-Fi?
-              [y/N]
-          register: _ondemand_wifi
-          when: ondemand_wifi is undefined
+      - name: Cellular On Demand prompt
+        pause:
+          prompt: |
+            Do you want macOS/iOS clients to enable "Connect On Demand" when connected to cellular networks?
+            [y/N]
+        register: _ondemand_cellular
+        when: ondemand_cellular is undefined
 
-        - name: Trusted Wi-Fi networks prompt
-          pause:
-            prompt: |
-              List the names of any trusted Wi-Fi networks where macOS/iOS IPsec clients should not use "Connect On Demand"
-              (e.g., your home network. Comma-separated value, e.g., HomeNet,OfficeWifi,AlgoWiFi)
-          register: _ondemand_wifi_exclude
-          when:
-            - ondemand_wifi_exclude is undefined
-            - (ondemand_wifi|default(false)|bool) or
-              (booleans_map[_ondemand_wifi.user_input|default(omit)]|default(false))
+      - name: Wi-Fi On Demand prompt
+        pause:
+          prompt: |
+            Do you want macOS/iOS clients to enable "Connect On Demand" when connected to Wi-Fi?
+            [y/N]
+        register: _ondemand_wifi
+        when: ondemand_wifi is undefined
 
-        - name: Retain the PKI prompt
-          pause:
-            prompt: |
-              Do you want to retain the keys (PKI)? (required to add users in the future, but less secure)
-              [y/N]
-          register: _store_pki
-          when: store_pki is undefined
+      - name: Trusted Wi-Fi networks prompt
+        pause:
+          prompt: |
+            List the names of any trusted Wi-Fi networks where macOS/iOS clients should not use "Connect On Demand"
+            (e.g., your home network. Comma-separated value, e.g., HomeNet,OfficeWifi,AlgoWiFi)
+        register: _ondemand_wifi_exclude
+        when:
+          - ondemand_wifi_exclude is undefined
+          - (ondemand_wifi|default(false)|bool) or
+            (booleans_map[_ondemand_wifi.user_input|default(omit)]|default(false))
+
+      - name: Retain the PKI prompt
+        pause:
+          prompt: |
+            Do you want to retain the keys (PKI)? (required to add users in the future, but less secure)
+            [y/N]
+        register: _store_pki
+        when: store_pki is undefined
         when: ipsec_enabled
 
       - name: DNS adblocking prompt
