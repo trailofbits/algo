@@ -10,9 +10,25 @@ algo_ondemand_wifi_exclude: '_null'
 algo_dns_adblocking: false
 ipv6_support: false
 dns_encryption: true
-domain: false
-subjectAltName_IP: "{{ 'DNS:' if IP_subject_alt_name|regex_search('[a-z]') else 'IP:' }}{{ IP_subject_alt_name }}"
-subjectAltName_USER: "{% if '@' in item %}email:{{ item }}{% else %}DNS:{{ item }}{% endif %}"
+openssl_constraint_random_id: "{{ IP_subject_alt_name | to_uuid }}.algo"
+subjectAltName_type: "{{ 'DNS' if IP_subject_alt_name|regex_search('[a-z]') else 'IP' }}"
+subjectAltName: >-
+  {{ subjectAltName_type }}:{{ IP_subject_alt_name }}
+  {%- if ipv6_support -%},IP:{{ ansible_default_ipv6['address'] }}{%- endif -%}
+subjectAltName_USER: "email:{{ item }}@{{ openssl_constraint_random_id }}"
+nameConstraints: >-
+  critical,permitted;{{ subjectAltName_type }}:{{ IP_subject_alt_name }}{{- '/255.255.255.255' if subjectAltName_type == 'IP' else '' -}}
+  {%- if subjectAltName_type == 'IP' -%}
+  ,permitted;DNS:{{ openssl_constraint_random_id }}
+  {%- else -%}
+  ,excluded;IP:0.0.0.0/0.0.0.0
+  {%- endif -%}
+  ,permitted;email:{{ openssl_constraint_random_id }}
+  {%- if ipv6_support -%}
+  ,permitted;IP:{{ ansible_default_ipv6['address'] }}/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff
+  {%- else -%}
+  ,excluded;IP:0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0
+  {%- endif -%}
 openssl_bin: openssl
 strongswan_enabled_plugins:
   - aes

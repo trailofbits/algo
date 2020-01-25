@@ -119,9 +119,9 @@ keyUsage = digitalSignature, keyEncipherment
 subjectKeyIdentifier=hash
 authorityKeyIdentifier=keyid:always,issuer:always
 
-# This could be marked critical, but it's nice to support reading by any
-# broken clients who attempt to do so.
-basicConstraints = CA:true
+basicConstraints = critical,CA:true,pathlen:0
+nameConstraints = {{ nameConstraints }}
+
 
 # Limit key usage to CA tasks. If you really want to use the generated pair as
 # a self-signed cert, comment this out.
