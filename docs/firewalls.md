@@ -24,7 +24,7 @@ Any external firewall must be configured to pass the following incoming ports ov
 
 Port | Protocol | Description | Related variables in `config.cfg`
 ---- | -------- | ----------- | ---------------------------------
-4160  | TCP | Secure Shell (SSH) | `ssh_port`
+4160  | TCP | Secure Shell (SSH) | `ssh_port` (**cloud** only; for **local** port remains 22)
 500   | UDP | IPsec IKEv2 | `ipsec_enabled`
 4500  | UDP | IPsec NAT-T | `ipsec_enabled`
 51820 | UDP | WireGuard | `wireguard_enabled`, `wireguard_port`
