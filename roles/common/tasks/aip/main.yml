@@ -1,5 +1,5 @@
 ---
-- name: Include a provisioning role
+- name: Include alternative ingress ip configuration
   include_tasks:
     file: "{{ algo_provider }}.yml"
   when: algo_provider in aip_supported_providers
