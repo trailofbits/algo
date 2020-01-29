@@ -1,7 +1,7 @@
 ---
 - name: Include alternative ingress ip configuration
   include_tasks:
-    file: "{{ algo_provider }}.yml"
+    file: "{{ algo_provider if algo_provider in aip_supported_providers else 'placeholder' }}.yml"
   when: algo_provider in aip_supported_providers
 
 - name: Verify SNAT IPv4 found
