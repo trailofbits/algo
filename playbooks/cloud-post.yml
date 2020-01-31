@@ -20,6 +20,7 @@
     algo_ssh_tunneling: "{{ algo_ssh_tunneling }}"
     algo_store_pki: "{{ algo_store_pki }}"
     IP_subject_alt_name: "{{ IP_subject_alt_name }}"
+    alternative_ingress_ip: "{{ alternative_ingress_ip | default(omit) }}"
     cloudinit: "{{ cloudinit|default(false) }}"
 
 - name: Additional variables for the server

@@ -1,0 +1,13 @@
+---
+- name: Get the anchor IP
+  uri:
+    url: http://169.254.169.254/metadata/v1/interfaces/public/0/anchor_ipv4/address
+    return_content: true
+  register: anchor_ipv4
+  until: anchor_ipv4 is succeeded
+  retries: 30
+  delay: 10
+
+- name: Set SNAT IP as a fact
+  set_fact:
+    snat_aipv4: "{{ anchor_ipv4.content }}"

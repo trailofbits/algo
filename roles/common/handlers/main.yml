@@ -22,3 +22,6 @@
 
 - name: restart iptables
   service: name=netfilter-persistent state=restarted
+
+- name: netplan apply
+  command: netplan apply

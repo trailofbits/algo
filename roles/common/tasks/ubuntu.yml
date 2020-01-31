@@ -78,6 +78,16 @@
 - name: Gather additional facts
   import_tasks: facts.yml
 
+- name: IPv6 egress alias configured
+  template:
+    src: 99-algo-ipv6-egress.yaml.j2
+    dest: /etc/netplan/99-algo-ipv6-egress.yaml
+  when:
+    - ipv6_support
+    - ipv6_subnet_size|int > 1
+  notify:
+    - netplan apply
+
 - name: Set OS specific facts
   set_fact:
     tools:
@@ -111,6 +121,10 @@
       - "linux-headers-{{ ansible_kernel }}"
     state: present
   when: install_headers
+
+- name: Configure the alternative ingress ip
+  include_tasks: aip/main.yml
+  when: alternative_ingress_ip
 
 - include_tasks: iptables.yml
   tags: iptables
