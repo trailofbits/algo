@@ -8,6 +8,7 @@
 - Option to unblock SMB and Netbios [\#1558](https://github.com/trailofbits/algo/pull/1558)
 - Allow OnDemand to be toggled later [\#1557](https://github.com/trailofbits/algo/pull/1557)
 - New provider Hetzner added [\#1549](https://github.com/trailofbits/algo/pull/1549)
+- Alternative Ingress IP [\#1605](https://github.com/trailofbits/algo/pull/1605)
 
 ### Fixes
 - WSL private SSH key permissions [\#1584](https://github.com/trailofbits/algo/pull/1584)
