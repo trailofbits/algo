@@ -165,6 +165,14 @@ where `<ip>` is the IP address of your Algo server. If you find yourself regular
 
  `ssh-add ~/.ssh/algo > /dev/null 2>&1`
 
+Alternatively, you can choose to include the generated configuration for any Algo servers created into your SSH config. Edit the file `~/.ssh/config` to include this directive at the top:
+
+```
+Include <algodirectory>/configs/*/ssh_config
+```
+
+where `<algodirectory>` is the directory where you cloned Algo.
+
 ## Adding or Removing Users
 
 _If you chose to save the CA key during the deploy process,_ then Algo's own scripts can easily add and remove users from the VPN server.
