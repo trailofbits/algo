@@ -32,7 +32,7 @@
                 HostName {{ IP_subject_alt_name }}
                 User {{ ansible_ssh_user }}
                 Port {{ ansible_ssh_port }}
-                IdentityFile {{ SSH_keys.private }}
+                IdentityFile {{ SSH_keys.private | realpath }}
                 KeepAlive yes
                 ServerAliveInterval 30
         when: inventory_hostname != 'localhost'
