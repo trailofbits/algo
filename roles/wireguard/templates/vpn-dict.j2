@@ -1,0 +1,94 @@
+<dict>
+	<key>IPv4</key>
+  <dict>
+      <key>OverridePrimary</key>
+      <integer>1</integer>
+  </dict>
+	<key>PayloadDescription</key>
+	<string>Configures VPN settings</string>
+	<key>PayloadDisplayName</key>
+	<string>{{ algo_server_name }}</string>
+	<key>PayloadIdentifier</key>
+	<string>com.apple.vpn.managed.{{ algo_server_name + system | to_uuid | upper }}</string>
+	<key>PayloadType</key>
+	<string>com.apple.vpn.managed</string>
+	<key>PayloadUUID</key>
+	<string>{{ algo_server_name + system | to_uuid | upper }}</string>
+	<key>PayloadVersion</key>
+	<integer>1</integer>
+	<key>Proxies</key>
+	<dict>
+		<key>HTTPEnable</key>
+		<integer>0</integer>
+		<key>HTTPSEnable</key>
+		<integer>0</integer>
+	</dict>
+	<key>UserDefinedName</key>
+	<string>AlgoVPN {{ algo_server_name }}</string>
+	<key>VPN</key>
+	<dict>
+    <key>OnDemandEnabled</key>
+    <integer>{{ 1 if algo_ondemand_wifi or algo_ondemand_cellular else 0 }}</integer>
+    <key>OnDemandRules</key>
+    <array>
+      {% if algo_ondemand_wifi or algo_ondemand_cellular %}
+      {% if algo_ondemand_wifi_exclude|b64decode != '_null' %}
+      {% set WIFI_EXCLUDE_LIST = (algo_ondemand_wifi_exclude|b64decode|string).split(',') %}
+      <dict>
+        <key>Action</key>
+        <string>Disconnect</string>
+        <key>InterfaceTypeMatch</key>
+        <string>WiFi</string>
+        <key>SSIDMatch</key>
+        <array>
+          {% for network_name in WIFI_EXCLUDE_LIST %}
+          <string>{{ network_name|e }}</string>
+          {% endfor %}
+        </array>
+      </dict>
+      {% endif %}
+      <dict>
+        <key>Action</key>
+        {% if algo_ondemand_wifi %}
+        <string>Connect</string>
+        {% else %}
+        <string>Disconnect</string>
+        {% endif %}
+        <key>InterfaceTypeMatch</key>
+        <string>WiFi</string>
+        <key>URLStringProbe</key>
+        <string>http://captive.apple.com/hotspot-detect.html</string>
+      </dict>
+      <dict>
+        <key>Action</key>
+        {% if algo_ondemand_cellular %}
+        <string>Connect</string>
+        {% else %}
+        <string>Disconnect</string>
+        {% endif %}
+        <key>InterfaceTypeMatch</key>
+        <string>Cellular</string>
+        <key>URLStringProbe</key>
+        <string>http://captive.apple.com/hotspot-detect.html</string>
+      </dict>
+      {% endif %}
+      <dict>
+        <key>Action</key>
+        <string>{{ 'Disconnect' if algo_ondemand_wifi or algo_ondemand_cellular else 'Connect' }}</string>
+      </dict>
+    </array>
+		<key>AuthenticationMethod</key>
+		<string>Password</string>
+		<key>RemoteAddress</key>
+		<string>{{ IP_subject_alt_name }}:{{ wireguard_port }}</string>
+	</dict>
+	<key>VPNSubType</key>
+	<string>com.wireguard.{{ system }}</string>
+	<key>VPNType</key>
+	<string>VPN</string>
+	<key>VendorConfig</key>
+	<dict>
+		<key>WgQuickConfig</key>
+		<string>{{- lookup('template', 'client.conf.j2') | indent(8) }}</string>
+	</dict>
+</dict>
