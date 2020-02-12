@@ -28,7 +28,7 @@
             dest: "configs/{{ IP_subject_alt_name }}/ssh_config"
             mode: "0600"
             content: |
-              Host {{ IP_subject_alt_name }} algo
+              Host {{ IP_subject_alt_name }} {{ algo_server_name }}
                 HostName {{ IP_subject_alt_name }}
                 User {{ ansible_ssh_user }}
                 Port {{ ansible_ssh_port }}
