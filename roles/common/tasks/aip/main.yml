@@ -1,4 +1,9 @@
 ---
+- name: Verify the provider
+  assert:
+    that: algo_provider in aip_supported_providers
+    msg: Algo does not support Alternative Ingress IP for {{ algo_provider }}
+
 - name: Include alternative ingress ip configuration
   include_tasks:
     file: "{{ algo_provider if algo_provider in aip_supported_providers else 'placeholder' }}.yml"
