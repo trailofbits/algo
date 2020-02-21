@@ -96,7 +96,7 @@ You can now set up clients to connect to your VPN. Proceed to [Configure the VPN
     "#                     Local DNS resolver 172.16.0.1                    #"
     "#        The p12 and SSH keys password for new users is XXXXXXXX       #"
     "#        The CA key password is XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX       #"
-    "#      Shell access: ssh -F configs/<server_ip>/ssh_config algo        #"
+    "#      Shell access: ssh -F configs/<server_ip>/ssh_config <hostname>  #"
 ```
 
 ## Configure the VPN Clients
@@ -159,11 +159,19 @@ Use the example command below to start an SSH tunnel by replacing `<user>` and `
 
 Your Algo server is configured for key-only SSH access for administrative purposes. Open the Terminal app, `cd` into the `algo-master` directory where you originally downloaded Algo, and then use the command listed on the success message:
 
- `ssh -F configs/<ip>/ssh_config algo`
+`ssh -F configs/<ip>/ssh_config <hostname>`
 
 where `<ip>` is the IP address of your Algo server. If you find yourself regularly logging into the server then it will be useful to load your Algo ssh key automatically. Add the following snippet to the bottom of `~/.bash_profile` to add it to your shell environment permanently.
 
  `ssh-add ~/.ssh/algo > /dev/null 2>&1`
+
+Alternatively, you can choose to include the generated configuration for any Algo servers created into your SSH config. Edit the file `~/.ssh/config` to include this directive at the top:
+
+```
+Include <algodirectory>/configs/*/ssh_config
+```
+
+where `<algodirectory>` is the directory where you cloned Algo.
 
 ## Adding or Removing Users
 

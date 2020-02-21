@@ -1,0 +1,10 @@
+---
+- name: WireGuard apple mobileconfig generated
+  template:
+    src: mobileconfig.j2
+    dest: "{{ wireguard_config_path }}/apple/{{ system }}/{{ item.1 }}.mobileconfig"
+    mode: "0600"
+  with_indexed_items:  "{{ wireguard_users }}"
+  when: item.1 in users
+  vars:
+    index: "{{ item.0 }}"

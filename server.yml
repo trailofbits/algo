@@ -28,11 +28,11 @@
             dest: "configs/{{ IP_subject_alt_name }}/ssh_config"
             mode: "0600"
             content: |
-              Host {{ IP_subject_alt_name }} algo
+              Host {{ IP_subject_alt_name }} {{ algo_server_name }}
                 HostName {{ IP_subject_alt_name }}
                 User {{ ansible_ssh_user }}
                 Port {{ ansible_ssh_port }}
-                IdentityFile {{ SSH_keys.private }}
+                IdentityFile {{ SSH_keys.private | realpath }}
                 KeepAlive yes
                 ServerAliveInterval 30
         when: inventory_hostname != 'localhost'
