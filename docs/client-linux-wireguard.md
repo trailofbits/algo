@@ -14,7 +14,7 @@ sudo add-apt-repository ppa:wireguard/wireguard
 sudo apt update
 
 # Install the tools and kernel module:
-sudo apt install wireguard openresolv
+sudo apt install wireguard openresolv nscd
 ```
 
 For installation on other Linux distributions, see the [Installation](https://www.wireguard.com/install/) page on the WireGuard site.
