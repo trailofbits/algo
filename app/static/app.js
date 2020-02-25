@@ -86,6 +86,7 @@ new Vue({
   el: '#provider_app',
   data: {
     loading: false,
+    do_region_loading: false,
     do_regions: [],
     extra_args: provider_extra_args,
     providers_map: [
@@ -115,6 +116,7 @@ new Vue({
         this.extra_args.do_token
       ) {
         this.loading = true;
+        this.do_region_loading = true;
         fetch('/do/regions', {
           method: 'POST',
           headers: {
@@ -128,6 +130,7 @@ new Vue({
           })
           .finally(() => {
             this.loading = false;
+            this.do_region_loading = false;
           });
       }
     }
@@ -161,6 +164,9 @@ new Vue({
     },
     show_backdrop() {
       return this.status === 'running';
+    },
+    is_success() {
+      return this.result === 0;
     }
   },
   watch: {
