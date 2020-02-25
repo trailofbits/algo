@@ -31,6 +31,7 @@ COMMIT
 {% if wireguard_enabled and wireguard_port|int == wireguard_port_avoid|int %}
 # Handle the special case of allowing access to WireGuard over an already used
 # port like 53
+-A PREROUTING -s {{ subnets|join(',') }} -p udp --dport {{ wireguard_port_avoid }} -j RETURN
 -A PREROUTING --in-interface {{ ansible_default_ipv6['interface'] }} -p udp --dport {{ wireguard_port_avoid }} -j REDIRECT --to-port {{ wireguard_port_actual }}
 {% endif %}
 # Allow traffic from the VPN network to the outside world, and replies
