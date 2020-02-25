@@ -5,9 +5,8 @@ import aiohttp
 import yaml
 from os.path import join, dirname
 from aiohttp import web
-from ansible.cli.playbook import PlaybookCLI
-from time import sleep
 import concurrent.futures
+from playbook import PlaybookCLI
 
 
 routes = web.RouteTableDef()
@@ -16,13 +15,14 @@ pool = None
 task_future = None
 task_program = ''
 
-def run_playbook(data={}):
+
+def run_playbook(data):
     global task_program
     extra_vars = ' '.join(['{0}={1}'.format(key, data[key]) for key in data.keys()])
     task_program = ['ansible-playbook', 'main.yml', '--extra-vars', extra_vars]
-    cli = PlaybookCLI(task_program).run()
-    return cli
-
+    vars = PlaybookCLI(task_program).run()
+    # TODO: filter only necessary vars
+    return vars
 
 @routes.get('/static/{path}')
 async def handle_static(request):
@@ -116,4 +116,4 @@ async def get_do_regions(request):
 
 app = web.Application()
 app.router.add_routes(routes)
-web.run_app(app)
+web.run_app(app, port=9000)
