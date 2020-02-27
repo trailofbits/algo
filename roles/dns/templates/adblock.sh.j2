@@ -14,7 +14,7 @@ rm -f $BLOCKHOSTS
 echo 'Downloading hosts lists...'
 #Download and process the files needed to make the lists (enable/add more, if you want)
 for url in $BLOCKLIST_URLS; do
-  wget --timeout=2 --tries=3 -qO- "$url" | grep -Ev "(localhost)" | grep -Ew "(0.0.0.0|127.0.0.1)" | awk '{sub(/\r$/,"");print $2}'  >> "$TEMP"
+  wget --timeout=2 --tries=3 -qO- "$url" | grep -Ev "(localhost)" | grep -Ev "#" | sed -E "s/(0.0.0.0 |127.0.0.1 |255.255.255.255 )//" >> "$TEMP"
 done
 
 #Add black list, if non-empty
