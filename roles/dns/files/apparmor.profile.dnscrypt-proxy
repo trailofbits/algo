@@ -13,6 +13,7 @@
   capability sys_resource,
 
   /etc/dnscrypt-proxy/** r,
+  /opt/dnscrypt-proxy/** rw,
   /usr/bin/dnscrypt-proxy mr,
   /tmp/public-resolvers.md* rw,
 

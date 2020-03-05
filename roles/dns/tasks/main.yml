@@ -7,23 +7,23 @@
   include_tasks: freebsd.yml
   when: ansible_distribution == 'FreeBSD'
 
-- name: dnscrypt-proxy ip-blacklist configured
-  template:
-    src: ip-blacklist.txt.j2
-    dest: "{{ config_prefix|default('/') }}etc/dnscrypt-proxy/ip-blacklist.txt"
-  notify:
-    - restart dnscrypt-proxy
-
-- name: dnscrypt-proxy configured
-  template:
-    src: dnscrypt-proxy.toml.j2
-    dest: "{{ config_prefix|default('/') }}etc/dnscrypt-proxy/dnscrypt-proxy.toml"
-  notify:
-    - restart dnscrypt-proxy
-
 - name: Include DNS adblocking tasks
   import_tasks: dns_adblocking.yml
   when: algo_dns_adblocking
+
+- block:
+  - name: Install dnscrypt-proxy service
+    command: "/opt/dnscrypt-proxy/dnscrypt-proxy -service install"
+    become: yes
+    become_user: root
+    changed_when: false
+
+  - name: Start dnscrypt-proxy service
+    command: "/opt/dnscrypt-proxy/dnscrypt-proxy -service start"
+    become: yes
+    become_user: root
+    changed_when: false
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
 - meta: flush_handlers
 

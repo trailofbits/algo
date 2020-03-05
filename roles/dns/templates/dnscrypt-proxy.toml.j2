@@ -21,10 +21,12 @@
 ## Servers from the "public-resolvers" source (see down below) can
 ## be viewed here: https://dnscrypt.info/public-servers
 ##
-## If this line is commented, all registered servers matching the require_* filters
-## will be used.
+## The proxy will automatically pick working servers from this list.
+## Note that the require_* filters do NOT apply when using this setting.
 ##
-## The proxy will automatically pick the fastest, working servers from the list.
+## By default, this list is empty and all registered servers matching the
+## require_* filters will be used instead.
+##
 ## Remove the leading # first to enable this; lines starting with # are ignored.
 
 {# Allow either list to be empty. Output nothing if both are empty. #}
@@ -35,12 +37,10 @@
 
 
 ## List of local addresses and ports to listen to. Can be IPv4 and/or IPv6.
-## Note: When using systemd socket activation, choose an empty set (i.e. [] ).
+## Example with both IPv4 and IPv6:
+## listen_addresses = ['127.0.0.1:53', '[::1]:53']
 
-listen_addresses  = [
-  '{{ local_service_ip }}:53'{% if ipv6_support %},
-  '[{{ local_service_ipv6 }}]:53'{% endif %}
-  ]
+listen_addresses = ['{{ local_service_ip }}:53'{{ ", '[" + local_service_ipv6 + "]:53']" if ipv6_support else "]" }}
 
 
 ## Maximum number of simultaneous client connections to accept
@@ -99,18 +99,21 @@ force_tcp = false
 ## Uncomment the following line to route all TCP connections to a local Tor node
 ## Tor doesn't support UDP, so set `force_tcp` to `true` as well.
 
-# proxy = "socks5://127.0.0.1:9050"
+# proxy = 'socks5://127.0.0.1:9050'
 
 
 ## HTTP/HTTPS proxy
 ## Only for DoH servers
 
-# http_proxy = "http://127.0.0.1:8888"
+# http_proxy = 'http://127.0.0.1:8888'
 
 
-## How long a DNS query will wait for a response, in milliseconds
+## How long a DNS query will wait for a response, in milliseconds.
+## If you have a network with *a lot* of latency, you may need to
+## increase this. Startup may be slower if you do so.
+## Don't increase it too much. 10000 is the highest reasonable value.
 
-timeout = 2500
+timeout = 5000
 
 
 ## Keepalive for HTTP (HTTPS, HTTP/2) queries, in seconds
@@ -118,11 +121,12 @@ timeout = 2500
 keepalive = 30
 
 
-## Use the REFUSED return code for blocked responses
-## Setting this to `false` means that some responses will be lies.
-## Unfortunately, `false` appears to be required for Android 8+
+## Response for blocked queries.  Options are `refused`, `hinfo` (default) or
+## an IP response.  To give an IP response, use the format `a:<IPv4>,aaaa:<IPv6>`.
+## Using the `hinfo` option means that some responses will be lies.
+## Unfortunately, the `hinfo` option appears to be required for Android 8+
 
-refused_code_in_responses = false
+# blocked_query_response = 'refused'
 
 
 ## Load-balancing strategy: 'p2' (default), 'ph', 'first' or 'random'
@@ -185,25 +189,25 @@ tls_disable_session_tickets = true
 # tls_cipher_suite = [52392, 49199]
 
 
-## Fallback resolver
-## This is a normal, non-encrypted DNS resolver, that will be only used
+## Fallback resolvers
+## These are normal, non-encrypted DNS resolvers, that will be only used
 ## for one-shot queries when retrieving the initial resolvers list, and
 ## only if the system DNS configuration doesn't work.
-## No user application queries will ever be leaked through this resolver,
-## and it will not be used after IP addresses of resolvers URLs have been found.
-## It will never be used if lists have already been cached, and if stamps
+## No user application queries will ever be leaked through these resolvers,
+## and they will not be used after IP addresses of resolvers URLs have been found.
+## They will never be used if lists have already been cached, and if stamps
 ## don't include host names without IP addresses.
-## It will not be used if the configured system DNS works.
-## A resolver supporting DNSSEC is recommended. This may become mandatory.
+## They will not be used if the configured system DNS works.
+## Resolvers supporting DNSSEC are recommended.
 ##
 ## People in China may need to use 114.114.114.114:53 here.
 ## Other popular options include 8.8.8.8 and 1.1.1.1.
+##
+## If more than one resolver is specified, they will be tried in sequence.
 
-fallback_resolver = '{% if ansible_distribution == "FreeBSD" %}{{ ansible_dns.nameservers.0 }}:53{% else %}127.0.0.53:53{% endif %}'
+fallback_resolvers = ['{{ ansible_dns.nameservers.0 + ":53" if ansible_distribution == "FreeBSD" else "127.0.0.53:53" }}']
 
-
-## Never let dnscrypt-proxy try to use the system DNS settings;
-## unconditionally use the fallback resolver.
+## Always use the fallback resolver before the system DNS settings.
 
 ignore_system_dns = true
 
@@ -226,7 +230,7 @@ netprobe_timeout = 60
 ## On other operating systems, the connection will be initialized
 ## but nothing will be sent at all.
 
-netprobe_address = "1.1.1.1:53"
+netprobe_address = '1.1.1.1:53'
 
 
 ## Offline mode - Do not use any remote encrypted servers.
@@ -236,9 +240,17 @@ netprobe_address = "1.1.1.1:53"
 # offline_mode = false
 
 
+## Additional data to attach to outgoing queries.
+## These strings will be added as TXT records to queries.
+## Do not use, except on servers explicitly asking for extra data
+## to be present.
+
+# query_meta = ["key1:value1", "key2:value2", "key3:value3"]
+
+
 ## Automatic log files rotation
 
-# Maximum log files size in MB
+# Maximum log files size in MB - Set to 0 for unlimited.
 log_files_max_size = 10
 
 # How long to keep backup files, in days
@@ -253,13 +265,34 @@ log_files_max_backups = 1
 #        Filters        #
 #########################
 
+## Note: if you are using dnsmasq, disable the `dnssec` option in dnsmasq if you
+## configure dnscrypt-proxy to do any kind of filtering (including the filters
+## below and blacklists).
+## You can still choose resolvers that do DNSSEC validation.
+
+
 ## Immediately respond to IPv6-related queries with an empty response
 ## This makes things faster when there is no IPv6 connectivity, but can
 ## also cause reliability issues with some stub resolvers.
-## Do not enable if you added a validating resolver such as dnsmasq in front
-## of the proxy.
 
 block_ipv6 = false
+
+
+## Immediately respond to A and AAAA queries for host names without a domain name
+
+block_unqualified = true
+
+
+## Immediately respond to queries for local zones instead of leaking them to
+## upstream resolvers (always causing errors or timeouts).
+
+block_undelegated = true
+
+
+## TTL for synthetic responses sent when a request has been blocked (due to
+## IPv6 or blacklists).
+
+reject_ttl = 600
 
 
 
@@ -267,9 +300,7 @@ block_ipv6 = false
 #        Route queries for specific domains to a dedicated set of servers        #
 ##################################################################################
 
-## Example map entries (one entry per line):
-## example.com 9.9.9.9
-## example.net 9.9.9.9,8.8.8.8,1.1.1.1
+## See the `example-forwarding-rules.txt` file for an example
 
 # forwarding_rules = 'forwarding-rules.txt'
 
@@ -283,12 +314,13 @@ block_ipv6 = false
 ## In addition to acting as a HOSTS file, it can also return the IP address
 ## of a different name. It will also do CNAME flattening.
 ##
-## Example map entries (one entry per line)
-## example.com     10.1.1.1
-## www.google.com  forcesafesearch.google.com
+## See the `example-cloaking-rules.txt` file for an example
 
 # cloaking_rules = 'cloaking-rules.txt'
 
+## TTL used when serving entries in cloaking-rules.txt
+
+# cloak_ttl = 600
 
 
 ###########################
@@ -326,6 +358,37 @@ cache_neg_max_ttl = 600
 
 
 
+##################################
+#        Local DoH server        #
+##################################
+
+[local_doh]
+
+## dnscrypt-proxy can act as a local DoH server. By doing so, web browsers
+## requiring a direct connection to a DoH server in order to enable some
+## features will enable these, without bypassing your DNS proxy.
+
+## Addresses that the local DoH server should listen to
+
+# listen_addresses = ['127.0.0.1:3000']
+
+
+## Path of the DoH URL. This is not a file, but the part after the hostname
+## in the URL. By convention, `/dns-query` is frequently chosen.
+## For each `listen_address` the complete URL to access the server will be:
+## `https://<listen_address><path>` (ex: `https://127.0.0.1/dns-query`)
+
+# path = "/dns-query"
+
+
+## Certificate file and key - Note that the certificate has to be trusted.
+## See the documentation (wiki) for more information.
+
+# cert_file = "localhost.pem"
+# cert_key_file = "localhost.pem"
+
+
+
 ###############################
 #        Query logging        #
 ###############################
@@ -334,7 +397,8 @@ cache_neg_max_ttl = 600
 
 [query_log]
 
-  ## Path to the query log file (absolute, or relative to the same directory as the executable file)
+  ## Path to the query log file (absolute, or relative to the same directory as the config file)
+  ## On non-Windows systems, can be /dev/stdout to log to the standard output (also set log_files_max_size to 0)
 
   # file = 'query.log'
 
@@ -360,7 +424,7 @@ cache_neg_max_ttl = 600
 
 [nx_log]
 
-  ## Path to the query log file (absolute, or relative to the same directory as the executable file)
+  ## Path to the query log file (absolute, or relative to the same directory as the config file)
 
   # file = 'nx.log'
 
@@ -390,7 +454,7 @@ cache_neg_max_ttl = 600
 
 [blacklist]
 
-  ## Path to the file of blocking rules (absolute, or relative to the same directory as the executable file)
+  ## Path to the file of blocking rules (absolute, or relative to the same directory as the config file)
 
   {{ "blacklist_file = 'blacklist.txt'" if algo_dns_adblocking else "" }}
 
@@ -418,7 +482,7 @@ cache_neg_max_ttl = 600
 
 [ip_blacklist]
 
-  ## Path to the file of blocking rules (absolute, or relative to the same directory as the executable file)
+  ## Path to the file of blocking rules (absolute, or relative to the same directory as the config file)
 
   blacklist_file = 'ip-blacklist.txt'
 
@@ -446,7 +510,7 @@ cache_neg_max_ttl = 600
 
 [whitelist]
 
-  ## Path to the file of whitelisting rules (absolute, or relative to the same directory as the executable file)
+  ## Path to the file of whitelisting rules (absolute, or relative to the same directory as the config file)
 
   # whitelist_file = 'whitelist.txt'
 
@@ -472,8 +536,7 @@ cache_neg_max_ttl = 600
 ##
 ## For example, the following rule in a blacklist file:
 ## *.youtube.* @time-to-sleep
-## would block access to YouTube only during the days, and period of the days
-## define by the 'time-to-sleep' schedule.
+## would block access to YouTube during the times defined by the 'time-to-sleep' schedule.
 ##
 ## {after='21:00', before= '7:00'} matches 0:00-7:00 and 21:00-0:00
 ## {after= '9:00', before='18:00'} matches 9:00-18:00
@@ -514,7 +577,7 @@ cache_neg_max_ttl = 600
 ## must include the prefixes.
 ##
 ## If the `urls` property is missing, cache files and valid signatures
-## must be already present; This doesn't prevent these cache files from
+## must already be present. This doesn't prevent these cache files from
 ## expiring after `refresh_delay` hours.
 
 [sources]
@@ -523,17 +586,26 @@ cache_neg_max_ttl = 600
 
   [sources.'public-resolvers']
   urls = ['https://raw.githubusercontent.com/DNSCrypt/dnscrypt-resolvers/master/v2/public-resolvers.md', 'https://download.dnscrypt.info/resolvers-list/v2/public-resolvers.md']
-  cache_file = '/tmp/public-resolvers.md'
+  cache_file = 'public-resolvers.md'
   minisign_key = 'RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3'
+  prefix = ''
+
+  ## Anonymized DNS relays
+
+  [sources.'relays']
+  urls = ['https://raw.githubusercontent.com/DNSCrypt/dnscrypt-resolvers/master/v2/relays.md', 'https://download.dnscrypt.info/resolvers-list/v2/relays.md']
+  cache_file = 'relays.md'
+  minisign_key = 'RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3'
+  refresh_delay = 72
   prefix = ''
 
   ## Quad9 over DNSCrypt - https://quad9.net/
 
   # [sources.quad9-resolvers]
-  # urls = ["https://www.quad9.net/quad9-resolvers.md"]
-  # minisign_key = "RWQBphd2+f6eiAqBsvDZEBXBGHQBJfeG6G+wJPPKxCZMoEQYpmoysKUN"
-  # cache_file = "quad9-resolvers.md"
-  # prefix = "quad9-"
+  # urls = ['https://www.quad9.net/quad9-resolvers.md']
+  # minisign_key = 'RWQBphd2+f6eiAqBsvDZEBXBGHQBJfeG6G+wJPPKxCZMoEQYpmoysKUN'
+  # cache_file = 'quad9-resolvers.md'
+  # prefix = 'quad9-'
 
   ## Another example source, with resolvers censoring some websites not appropriate for children
   ## This is a subset of the `public-resolvers` list, so enabling both is useless
@@ -543,6 +615,59 @@ cache_neg_max_ttl = 600
   #  cache_file = 'parental-control.md'
   #  minisign_key = 'RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3'
 
+
+
+
+#########################################
+#        Servers with known bugs        #
+#########################################
+
+[broken_implementations]
+
+# Cisco servers currently cannot handle queries larger than 1472 bytes, and don't
+# truncate reponses larger than questions as expected by the DNSCrypt protocol.
+# This prevents large responses from being received, and breaks relaying.
+# A workaround for the first issue will be applied to servers in list below.
+# Quad9 (actually dnsdist) appears to currently have a similar issue.
+# Do not change that list until the bugs are fixed server-side.
+
+broken_query_padding = ['cisco', 'cisco-ipv6', 'cisco-familyshield', "quad9-dnscrypt-ip4-filter-alt", "quad9-dnscrypt-ip4-filter-pri", "quad9-dnscrypt-ip4-nofilter-alt", "quad9-dnscrypt-ip4-nofilter-pri", "quad9-dnscrypt-ip6-filter-alt", "quad9-dnscrypt-ip6-filter-pri", "quad9-dnscrypt-ip6-nofilter-alt", "quad9-dnscrypt-ip6-nofilter-pri"]
+
+
+
+
+################################
+#        Anonymized DNS        #
+################################
+
+[anonymized_dns]
+
+## Routes are indirect ways to reach DNSCrypt servers.
+##
+## A route maps a server name ("server_name") to one or more relays that will be
+## used to connect to that server.
+##
+## A relay can be specified as a DNS Stamp (either a relay stamp, or a
+## DNSCrypt stamp), an IP:port, a hostname:port, or a server name.
+##
+## The following example routes "example-server-1" via `anon-example-1` or `anon-example-2`,
+## and "example-server-2" via the relay whose relay DNS stamp
+## is "sdns://gRIxMzcuNzQuMjIzLjIzNDo0NDM".
+##
+## !!! THESE ARE JUST EXAMPLES !!!
+##
+## Review the list of available relays from the "relays.md" file, and, for each
+## server you want to use, define the relays you want connections to go through.
+##
+## Carefully choose relays and servers so that they are run by different entities.
+##
+## "server_name" can also be set to "*" to define a default route, but this is not
+## recommended. If you do so, keep "server_names" short and distinct from relays.
+
+# routes = [
+#    { server_name='example-server-1', via=['anon-example-1', 'anon-example-2'] },
+#    { server_name='example-server-2', via=['sdns://gRIxMzcuNzQuMjIzLjIzNDo0NDM'] }
+# ]
 
 
 ## Optional, local, static list of additional servers

@@ -3,9 +3,15 @@
 
 TEMP="$(mktemp)"
 TEMP_SORTED="$(mktemp)"
+{% if ansible_distribution == "FreeBSD" %}
 WHITELIST="/etc/dnscrypt-proxy/white.list"
 BLACKLIST="/etc/dnscrypt-proxy/black.list"
 BLOCKHOSTS="{{ config_prefix|default('/') }}etc/dnscrypt-proxy/blacklist.txt"
+{% else %}
+WHITELIST="/opt/dnscrypt-proxy/white.list"
+BLACKLIST="/opt/dnscrypt-proxy/black.list"
+BLOCKHOSTS="/opt/dnscrypt-proxy/blacklist.txt"
+{% endif %}
 BLOCKLIST_URLS="{% for url in adblock_lists %}{{ url }} {% endfor %}"
 
 #Delete the old block.hosts to make room for the updates

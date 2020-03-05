@@ -7,3 +7,17 @@
   lineinfile:
     path: /etc/rc.conf
     line: 'dnscrypt_proxy_mac_portacl_enable="YES"'
+
+- name: dnscrypt-proxy ip-blacklist configured
+  template:
+    src: ip-blacklist.txt.j2
+    dest: "{{ config_prefix|default('/') }}etc/dnscrypt-proxy/ip-blacklist.txt"
+  notify:
+    - restart dnscrypt-proxy
+
+- name: dnscrypt-proxy configured
+  template:
+    src: dnscrypt-proxy.toml.j2
+    dest: "{{ config_prefix|default('/') }}etc/dnscrypt-proxy/dnscrypt-proxy.toml"
+  notify:
+    - restart dnscrypt-proxy

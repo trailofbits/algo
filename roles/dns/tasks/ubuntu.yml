@@ -1,27 +1,62 @@
 ---
-- name: Add the repository
-  apt_repository:
-    state: present
-    codename: "{{ ansible_distribution_release }}"
-    repo: ppa:shevchuk/dnscrypt-proxy
-  register: result
-  until: result is succeeded
-  retries: 10
-  delay: 3
+- name: Get latest dnscrypt-proxy version
+  uri:
+    url: https://api.github.com/repos/DNSCrypt/dnscrypt-proxy/releases/latest
+    return_content: true
+  register: dnscrypt_version
 
-- name: Install dnscrypt-proxy
-  apt:
-    name: dnscrypt-proxy
-    state: present
-    update_cache: true
+- name: Download dnscrypt-proxy
+  get_url:
+    url: "https://github.com/DNSCrypt/dnscrypt-proxy/releases/download/{{ dnscrypt_version.json.tag_name }}/dnscrypt-proxy-linux_{{ ansible_architecture }}-{{ dnscrypt_version.json.tag_name }}.tar.gz"
+    dest: /tmp/
 
-- name: Configure unattended-upgrades
-  copy:
-    src: 50-dnscrypt-proxy-unattended-upgrades
-    dest: /etc/apt/apt.conf.d/50-dnscrypt-proxy-unattended-upgrades
+- name: Unarchive dnscrypt-proxy
+  unarchive:
+    copy: no
+    src: /tmp/dnscrypt-proxy-linux_{{ ansible_architecture }}-{{ dnscrypt_version.json.tag_name }}.tar.gz
+    dest: /opt
     owner: root
-    group: root
-    mode: 0644
+    group: "{{ root_group|default('root') }}"
+    list_files: yes
+  become: yes
+  become_user: root
+  register: dnscrypt_archive_contents
+
+- name: Move dnscrypt-proxy into place
+  command: "mv /opt/{{ dnscrypt_archive_contents.files[0].split('/')[0] }} /opt/dnscrypt-proxy"
+  become: yes
+  become_user: root
+  changed_when: false
+
+- name: dnscrypt-proxy update script added
+  copy:
+    src: dnscrypt-proxy-update.sh
+    dest: /usr/local/sbin/dnscrypt-proxy-update.sh
+    owner: root
+    group: "{{ root_group|default('root') }}"
+    mode: 0755
+
+- name: Updater script added to cron
+  cron:
+    name: dnscrypt-proxy updater
+    minute: "{{ range(0, 60) | random }}"
+    hour: "{{ range(0, 24) | random }}"
+    job: /usr/local/sbin/dnscrypt-proxy-update.sh
+    user: root
+
+- name: dnscrypt-proxy ip-blacklist configured
+  template:
+    src: ip-blacklist.txt.j2
+    dest: "/opt/dnscrypt-proxy/ip-blacklist.txt"
+  notify:
+    - restart dnscrypt-proxy
+
+- name: dnscrypt-proxy configured
+  template:
+    src: dnscrypt-proxy.toml.j2
+    dest: "/opt/dnscrypt-proxy/dnscrypt-proxy.toml"
+  notify:
+    - restart dnscrypt-proxy
 
 - block:
   - name: Ubuntu | Configure AppArmor policy for dnscrypt-proxy
