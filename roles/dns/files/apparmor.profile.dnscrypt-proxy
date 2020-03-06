@@ -1,6 +1,6 @@
 #include <tunables/global>
 
-/usr/{s,}bin/dnscrypt-proxy flags=(attach_disconnected) {
+/opt/dnscrypt-proxy/dnscrypt-proxy flags=(attach_disconnected) {
   #include <abstractions/base>
   #include <abstractions/nameservice>
   #include <abstractions/openssl>
@@ -14,17 +14,13 @@
 
   /etc/dnscrypt-proxy/** r,
   /opt/dnscrypt-proxy/** rw,
-  /usr/bin/dnscrypt-proxy mr,
+  /opt/dnscrypt-proxy/dnscrypt-proxy mr,
   /tmp/public-resolvers.md* rw,
-
-  /tmp/*.tmp w,
-  owner /tmp/*.tmp r,
+  /etc/systemd/system/dnscrypt-proxy.service rw,
 
   /run/systemd/notify rw,
   /lib/x86_64-linux-gnu/ld-*.so mr,
   @{PROC}/sys/kernel/hostname r,
   @{PROC}/sys/net/core/somaxconn r,
   /etc/ld.so.cache r,
-  /usr/local/lib/{@{multiarch}/,}libldns.so* mr,
-  /usr/local/lib/{@{multiarch}/,}libsodium.so* mr,
 }
