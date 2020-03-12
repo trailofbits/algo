@@ -12,14 +12,14 @@
           <a
             class="nav-link"
             href="#prodiver_id"
-            v-bind:class="{ active: item.alias === provider && provider.alias }"
+            v-bind:class="{ active: item.alias === (provider && provider.alias) }"
             @click="set_provider(item)"
           >{{item.name}}</a>
         </li>
       </ul>
     </div>
     <div class="col-8">
-      {{ provider && provider.alias }}
+      <component v-if="provider" v-bind:is="provider.alias" v-on:submit="on_provider_submit"></component>
     </div>
   </div>
 </template>
@@ -51,7 +51,13 @@ module.exports = {
   methods: {
     set_provider(provider) {
       this.provider = provider;
+    },
+    on_provider_submit(extra_args) {
+      this.$emit('submit', Object.assign({provider: this.provider.alias}, extra_args));
     }
+  },
+  components: {
+    'digitalocean': window.httpVueLoader('/static/provider-do.vue')
   }
 };
 </script>
