@@ -103,9 +103,7 @@
 
 <script>
 module.exports = {
-  props: {
-    // Warning: Mutable Object to edit partent props
-    extra_args: Object
-  }
+  // Warning: Mutable Object to edit partent props
+  props: ['extra_args']
 }
 </script>

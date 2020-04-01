@@ -28,15 +28,27 @@
         <user-config class="col-md-4 order-md-2 mb-4"></user-config>
         <vpn-setup class="col-md-8 order-md-1"
           v-bind:extra_args="extra_args"
-          v-on:submit="set_step('provider'); update_extra_args"></vpn-setup>
+          v-on:submit="step = 'provider'"></vpn-setup>
       </div>
     </transition>
     <transition name="fade">
       <provider-setup v-if="step == 'provider'"
                       v-bind:extra_args="extra_args"
-                      v-on:submit="update_extra_args"
-                      v-on:back="set_step('setup')">
+                      v-on:submit="step = 'command'"
+                      v-on:back="step = 'setup'">
       </provider-setup>
+    </transition>
+    <transition name="fade">
+      <command-preview v-if="step == 'command'"
+                      v-bind:extra_args="extra_args"
+                      v-on:submit="start(); step = 'running';"
+                      v-on:back="step = 'provider'">
+      </command-preview>
+    </transition>
+    <transition name="fade">
+      <status-running v-if="step == 'running'"
+                       v-on:submit="stop(); step = 'setup';">
+      </status-running>
     </transition>
   </div>
 
@@ -47,7 +59,7 @@
         playbook: {},
         step: 'setup',
         extra_args: {
-          server_name: "algo",
+          server_name: 'algo2',
           ondemand_cellular: false,
           ondemand_wifi: false,
           dns_adblocking: false,
@@ -65,13 +77,32 @@
         'user-config': window.httpVueLoader('/static/user-config.vue'),
         'vpn-setup': window.httpVueLoader('/static/vpn-setup.vue'),
         'provider-setup': window.httpVueLoader('/static/provider-setup.vue'),
+        'command-preview': window.httpVueLoader('/static/command-preview.vue'),
+        'status-running': window.httpVueLoader('/static/status-running.vue'),
+      },
+      created() {
+        fetch("/playbook")
+          .then(r => r.json())
+          .then(data => {
+            if (data.status === 'running') {
+              this.step = 'running';
+            }
+          });
       },
       methods: {
-        set_step: function(step) {
-          this.step = step;
+        start: function() {
+          fetch("/playbook", {
+            method: "POST",
+            body: JSON.stringify(this.extra_args),
+            headers: {
+              "Content-Type": "application/json"
+            }
+          });
         },
-        update_extra_args: function(extra_args) {
-          Object.assign(this.extra_args, extra_args);
+        stop() {
+          fetch("/playbook", {
+            method: "DELETE"
+          });
         }
       }
     })

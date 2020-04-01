@@ -100,20 +100,6 @@ async def post_config(request):
             return web.json_response({'ok': True})
 
 
-@routes.post('/do/regions')
-async def get_do_regions(request):
-    data = await request.json()
-    async with aiohttp.ClientSession() as session:
-        url = 'https://api.digitalocean.com/v2/regions'
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer {0}'.format(data['token']),
-        }
-        async with session.get(url, headers=headers) as r:
-            json_body = await r.json()
-            return web.json_response(json_body)
-
-
 app = web.Application()
 app.router.add_routes(routes)
 web.run_app(app, port=9000)

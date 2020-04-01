@@ -56,12 +56,11 @@ module.exports = {
   methods: {
     load_do_regions: function () {
       this.do_region_loading = true;
-        fetch("/do/regions", {
-          method: "POST",
+        fetch('https://api.digitalocean.com/v2/regions', {
           headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ token: this.do_token })
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.do_token}`
+          }
         })
           .then(r => r.json())
           .then(r => {

@@ -1,5 +1,5 @@
 <template>
-  <div class="row" id="prodiver_id">
+  <div class="row">
     <h2 class="col-12">
       <button type="button" class="btn btn-secondary back-button" v-on:click="$emit('back')"><</button>
       <span v-if="provider">{{ provider.name }} Setup</span>
@@ -12,7 +12,7 @@
           v-bind:key="item.alias">
           <a
             class="nav-link"
-            href="#prodiver_id"
+            href="#"
             v-bind:class="{ active: item.alias === (provider && provider.alias) }"
             v-on:click="set_provider(item)"
           >{{item.name}}</a>
@@ -49,12 +49,16 @@ module.exports = {
       ]
     }
   },
+  // Warning: Mutable Object to edit parent props
+  props: ['extra_args'],
   methods: {
     set_provider(provider) {
       this.provider = provider;
+      this.extra_args.provider = provider.alias;
     },
     on_provider_submit(extra_args) {
-      this.$emit('submit', Object.assign({provider: this.provider.alias}, extra_args));
+      Object.assign(this.extra_args, extra_args);
+      this.$emit('submit');
     }
   },
   components: {
