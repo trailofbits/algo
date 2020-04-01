@@ -1,6 +1,7 @@
 <template>
   <div class="row" id="prodiver_id">
     <h2 class="col-12">
+      <button type="button" class="btn btn-secondary back-button" v-on:click="$emit('back')"><</button>
       <span v-if="provider">{{ provider.name }} Setup</span>
       <span v-else>Select cloud provider</span>
     </h2>
@@ -13,7 +14,7 @@
             class="nav-link"
             href="#prodiver_id"
             v-bind:class="{ active: item.alias === (provider && provider.alias) }"
-            @click="set_provider(item)"
+            v-on:click="set_provider(item)"
           >{{item.name}}</a>
         </li>
       </ul>
@@ -61,3 +62,10 @@ module.exports = {
   }
 };
 </script>
+<style scoped>
+.back-button {
+  position: absolute;
+  border-radius: 50%;
+  left: -2em;
+}
+</style>

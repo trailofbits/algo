@@ -96,7 +96,7 @@
           Each user will have their own account for SSH tunneling
         </label>
       </div>
-      <button @click="$emit('submit')" class="btn btn-primary" type="button">Select Cloud Provider</button>
+      <button v-on:click="$emit('submit')" class="btn btn-primary" type="button">Select Cloud Provider</button>
     </section>
   </div>
 </template>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="h-100">
+<html class="h-100" lang="en">
 
 <head>
   <title>Algo VPN</title>
@@ -10,19 +10,34 @@
     integrity="sha256-NSuqgY2hCZJUN6hDMFfdxvkexI7+iLxXQbL540RQ/c4=" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
     integrity="sha256-L/W5Wfqfa0sdBNIKN9cG6QA5F2qx4qICmU2VgLruv9Y=" crossorigin="anonymous">
+  <style>
+    .fade-enter-active, .fade-leave-active {
+      transition: opacity 300ms ease-in-out;
+    }
+    .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+      opacity: 0;
+    }
+  </style>
 </head>
 
 <body class="d-flex flex-column h-100">
   <div class="container" id="algo">
     <h1 class="mb-5 text-center">{{ title }}</h1>
-    <div class="row">
-      <user-config class="col-md-4 order-md-2 mb-4"></user-config>
-      <vpn-setup class="col-md-8 order-md-1"
-        v-bind:extra_args="extra_args"
-        v-on:submit="on_setup_submit"></vpn-setup>
-    </div>
-    <provider-setup v-bind:extra_args="extra_args" v-on:submit="on_provider_submit">
-    </provider-setup>
+    <transition name="fade">
+      <div class="row" v-if="step == 'setup'">
+        <user-config class="col-md-4 order-md-2 mb-4"></user-config>
+        <vpn-setup class="col-md-8 order-md-1"
+          v-bind:extra_args="extra_args"
+          v-on:submit="set_step('provider'); update_extra_args"></vpn-setup>
+      </div>
+    </transition>
+    <transition name="fade">
+      <provider-setup v-if="step == 'provider'"
+                      v-bind:extra_args="extra_args"
+                      v-on:submit="update_extra_args"
+                      v-on:back="set_step('setup')">
+      </provider-setup>
+    </transition>
   </div>
 
   <script>
@@ -30,6 +45,7 @@
       el: '#algo',
       data: {
         playbook: {},
+        step: 'setup',
         extra_args: {
           server_name: "algo",
           ondemand_cellular: false,
@@ -51,13 +67,11 @@
         'provider-setup': window.httpVueLoader('/static/provider-setup.vue'),
       },
       methods: {
-        on_setup_submit: function(extra_args) {
-          Object.assign(this.extra_args, extra_args);
-          debugger;
+        set_step: function(step) {
+          this.step = step;
         },
-        on_provider_submit: function(extra_args) {
+        update_extra_args: function(extra_args) {
           Object.assign(this.extra_args, extra_args);
-          debugger;
         }
       }
     })
