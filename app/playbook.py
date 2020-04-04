@@ -186,10 +186,13 @@ class PlaybookCLI(CLI):
 
                         display.display(taskmsg)
 
-        return inventory.groups['vpn-host'].hosts[0].vars
-
-    @staticmethod
-    def _flush_cache(inventory, variable_manager):
-        for host in inventory.list_hosts():
-            hostname = host.get_name()
-            variable_manager.clear_facts(hostname)
+        host = inventory.groups['vpn-host'].hosts[0].name
+        fact_cache = pbex._variable_manager._nonpersistent_fact_cache[host]
+        return {
+            'CA_password': fact_cache['CA_password'],
+            'p12_export_password': fact_cache['p12_export_password'],
+            'algo_server_name': variable_manager.extra_vars['server_name'],
+            'ipv6_support': fact_cache['ipv6_support'],
+            'local_service_ip': variable_manager.get_vars()['hostvars'][host]['ansible_lo']['ipv4_secondaries'][0]['address'],
+            'ansible_ssh_host': host,
+        }
