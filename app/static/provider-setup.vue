@@ -1,10 +1,5 @@
 <template>
   <div class="row">
-    <h2 class="col-12">
-      <button type="button" class="btn btn-secondary back-button" v-on:click="$emit('back')"><</button>
-      <span v-if="provider">{{ provider.name }} Setup</span>
-      <span v-else>Select cloud provider</span>
-    </h2>
     <div class="col-4">
       <ul class="nav flex-column nav-pills">
         <li class="nav-item"
@@ -66,10 +61,3 @@ module.exports = {
   }
 };
 </script>
-<style scoped>
-.back-button {
-  position: absolute;
-  border-radius: 50%;
-  left: -2em;
-}
-</style>

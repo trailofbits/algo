@@ -1,7 +1,4 @@
 import asyncio
-import mimetypes
-
-import aiohttp
 import yaml
 from os.path import join, dirname
 from aiohttp import web
@@ -20,19 +17,8 @@ def run_playbook(data):
     global task_program
     extra_vars = ' '.join(['{0}={1}'.format(key, data[key]) for key in data.keys()])
     task_program = ['ansible-playbook', 'main.yml', '--extra-vars', extra_vars]
-    vars = PlaybookCLI(task_program).run()
-    # TODO: filter only necessary vars
-    return vars
+    return PlaybookCLI(task_program).run()
 
-@routes.get('/static/{path}')
-async def handle_static(request):
-    filepath = request.match_info['path']
-    mimetype = mimetypes.guess_type(filepath)
-    try:
-        with open(join(dirname(__file__), 'static', *filepath.split('/')), 'r') as f:
-            return web.Response(body=f.read(), content_type=mimetype[0])
-    except FileNotFoundError:
-        return web.Response(status=404)
 
 @routes.get('/')
 async def handle_index(_):
@@ -102,4 +88,6 @@ async def post_config(request):
 
 app = web.Application()
 app.router.add_routes(routes)
+app.add_routes([web.static('/static', join(PROJECT_ROOT, 'app', 'static'))])
+app.add_routes([web.static('/results', join(PROJECT_ROOT, 'configs'))])
 web.run_app(app, port=9000)

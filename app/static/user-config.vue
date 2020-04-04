@@ -9,7 +9,7 @@
           <button
             type="button"
             class="btn btn-secondary btn-sm float-right"
-            @click="remove_user(index)"
+            v-on:click="remove_user(index)"
           >Remove</button>
         </li>
       </ul>
@@ -25,7 +25,7 @@
           />
           <div class="input-group-append">
             <button
-              @click="add_user"
+              v-on:click="add_user"
               class="btn btn-outline-primary"
               type="button"
               id="button-addon2"

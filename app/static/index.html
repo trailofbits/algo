@@ -4,6 +4,7 @@
 <head>
   <title>Algo VPN</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <script src="https://cdn.jsdelivr.net/npm/http-vue-loader@1.4.2/src/httpVueLoader.js"
     integrity="sha256-aOeVxnlZDaiJOHsqNWVOMNsKdiGxgT8kbLp1p1Rv2sc=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11/dist/vue.js"
@@ -17,12 +18,52 @@
     .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
       opacity: 0;
     }
+    .back-button {
+      position: absolute;
+      border-radius: 50%;
+      left: 1em;
+      top: 0.5em;
+    }
+    .spin {
+      animation-name: spin;
+      animation-duration: 5000ms;
+      animation-iteration-count: infinite;
+      animation-delay: 5s;
+      animation-timing-function: linear;
+      display: inline-block;
+    }
+    @keyframes spin {
+      from {
+        transform:rotate(0deg);
+      }
+      to {
+        transform:rotate(360deg);
+      }
+    }
   </style>
 </head>
 
 <body class="d-flex flex-column h-100">
   <div class="container" id="algo">
-    <h1 class="mb-5 text-center">{{ title }}</h1>
+      <h1 class="mb-5 text-center" v-if="step === 'setup'">Algo VPN Setup</h1>
+      <h1 class="mb-5 text-center" v-if="step === 'provider'">
+        <button type="button" class="btn btn-secondary back-button" v-on:click="step = 'setup'">←</button>
+        <span>☁ Cloud Provider Setup</span>
+      </h1>
+      <h1 class="mb-5 text-center" v-if="step === 'command'">
+        <button type="button" class="btn btn-secondary back-button" v-on:click="step = 'provider'">←</button>
+        🧐 Review and Start!
+      </h1>
+      <h1 class="mb-5 text-center" v-if="step === 'status-running'">
+        <span class="spin">🙂</span> Please be patient
+      </h1>
+      <h1 class="mb-5 text-center" v-if="step === 'status-error'">
+        😢 Set up failed
+      </h1>
+      <h1 class="mb-5 text-center" v-if="step === 'status-done'">
+         🥳 Congratulations! Your Algo server is running.
+      </h1>
+    </h1>
     <transition name="fade">
       <div class="row" v-if="step == 'setup'">
         <user-config class="col-md-4 order-md-2 mb-4"></user-config>
@@ -34,21 +75,32 @@
     <transition name="fade">
       <provider-setup v-if="step == 'provider'"
                       v-bind:extra_args="extra_args"
-                      v-on:submit="step = 'command'"
-                      v-on:back="step = 'setup'">
+                      v-on:submit="step = 'command'">
       </provider-setup>
     </transition>
     <transition name="fade">
       <command-preview v-if="step == 'command'"
                       v-bind:extra_args="extra_args"
-                      v-on:submit="start(); step = 'running';"
-                      v-on:back="step = 'provider'">
+                      v-on:submit="start(); step = 'status-running';">
       </command-preview>
     </transition>
     <transition name="fade">
-      <status-running v-if="step == 'running'"
-                       v-on:submit="stop(); step = 'setup';">
+      <status-running v-if="step == 'status-running'"
+                      v-on:submit="stop(); step = 'setup';"
+                      v-on:done="step = 'status-done'"
+                      v-on:error="step = 'status-error'"
+                      v-on:cancelled="step = 'setup'">
       </status-running>
+    </transition>
+    <transition name="fade">
+      <section v-if="step == 'status-error'" class="text-center">
+        <p>Now it’s time to inspect console output</p>
+        <p>Restart console process to try again</p>
+      </section>
+    </transition>
+    <transition name="fade">
+      <status-done v-if="step == 'status-done'">
+      </status-done>
     </transition>
   </div>
 
@@ -68,24 +120,23 @@
           ondemand_wifi_exclude: []
         }
       },
-      computed: {
-        title() {
-          return 'Algo VPN Setup';
-        }
-      },
       components: {
         'user-config': window.httpVueLoader('/static/user-config.vue'),
         'vpn-setup': window.httpVueLoader('/static/vpn-setup.vue'),
         'provider-setup': window.httpVueLoader('/static/provider-setup.vue'),
         'command-preview': window.httpVueLoader('/static/command-preview.vue'),
         'status-running': window.httpVueLoader('/static/status-running.vue'),
+        'status-done': window.httpVueLoader('/static/status-done.vue'),
       },
       created() {
         fetch("/playbook")
           .then(r => r.json())
+          .catch(() => {
+            this.step = 'status-error';
+          })
           .then(data => {
-            if (data.status === 'running') {
-              this.step = 'running';
+            if (data.status && data.status !== 'cancelled'){
+              this.step = `status-${data.status}`;
             }
           });
       },

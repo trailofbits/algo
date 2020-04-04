@@ -39,7 +39,7 @@
             >{{region.name}}</option>
       </select>
     </div>
-    <button @click="submit" v-bind:disabled="!do_region" class="btn btn-primary" type="button">Next</button>
+    <button v-on:click="submit" v-bind:disabled="!do_region" class="btn btn-primary" type="button">Next</button>
   </div>
 </template>
 

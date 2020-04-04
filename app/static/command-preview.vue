@@ -1,9 +1,5 @@
 <template>
   <div class="row">
-    <h2 class="col-12">
-      <button type="button" class="btn btn-secondary back-button" v-on:click="$emit('back')"><</button>
-      🧐 Review and Start!
-    </h2>
     <section class="my-3">
       <pre class="code"><code>
         {{cli_preview}}
@@ -28,11 +24,6 @@ module.exports = {
 }
 </script>
 <style scoped>
-  .back-button {
-    position: absolute;
-    border-radius: 50%;
-    left: -2em;
-  }
   .code {
     white-space: normal;
     background: black;

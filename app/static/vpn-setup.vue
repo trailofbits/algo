@@ -100,7 +100,6 @@
     </section>
   </div>
 </template>
-
 <script>
 module.exports = {
   // Warning: Mutable Object to edit partent props
