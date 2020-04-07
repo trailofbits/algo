@@ -56,7 +56,7 @@
 - name: Configure libstrongswan to relax CA constraints
   copy:
     src: libstrongswan-relax-constraints.conf
-    dest: /etc/strongswan/strongswan.d/relax-ca-constraints.conf
+    dest: "{{ configs_prefix }}/strongswan.d/relax-ca-constraints.conf"
     owner: root
     group: root
     mode: 0644
