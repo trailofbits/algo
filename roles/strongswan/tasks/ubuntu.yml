@@ -35,12 +35,12 @@
   service: name={{ item }} enabled=yes
   with_items:
     - apparmor
-    - strongswan
+    - "{{ strongswan_service }}"
     - netfilter-persistent
 
 - name: Ubuntu | Ensure that the strongswan service directory exists
   file:
-    path: /etc/systemd/system/strongswan.service.d/
+    path: /etc/systemd/system/{{ strongswan_service }}.service.d/
     state: directory
     mode: 0755
     owner: root
@@ -49,7 +49,7 @@
 - name: Ubuntu | Setup the cgroup limitations for the ipsec daemon
   template:
     src: 100-CustomLimitations.conf.j2
-    dest: /etc/systemd/system/strongswan.service.d/100-CustomLimitations.conf
+    dest: /etc/systemd/system/{{ strongswan_service }}.service.d/100-CustomLimitations.conf
   notify:
     - daemon-reload
     - restart strongswan
