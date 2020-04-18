@@ -53,6 +53,14 @@
   notify:
     - restart strongswan
 
+- name: Configure libstrongswan to relax CA constraints
+  copy:
+    src: libstrongswan-relax-constraints.conf
+    dest: "{{ configs_prefix }}/strongswan.d/relax-ca-constraints.conf"
+    owner: root
+    group: root
+    mode: 0644
+
 - name: Setup the certificates and keys
   template:
     src: "{{ item.src }}"
