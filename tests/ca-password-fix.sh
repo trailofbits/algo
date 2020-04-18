@@ -19,4 +19,7 @@ CA_PASSWORD_OUT=$(grep ca_password: configs/localhost/.config.yml | awk '{print 
 
 if [ "$CA_PASSWORD" = "$CA_PASSWORD_OUT" ]; then
   echo "ca_password tests(PR #1774) passed"
+else
+  echo "ca_password tests(PR #1774) failed"
+  exit 1
 fi
