@@ -6,7 +6,7 @@
 
 - name: Set facts
   set_fact:
-    CA_password: "{{ lookup('password', '/dev/null length=16 chars=ascii_letters,digits,_,@') }}"
+    CA_password: "{{ ca_password|default(lookup('password', '/dev/null length=16 chars=ascii_letters,digits,_,@')) }}"
     IP_subject_alt_name: "{{ IP_subject_alt_name }}"
 
 - name: Set IPv6 support as a fact
