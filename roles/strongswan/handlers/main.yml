@@ -1,5 +1,5 @@
 - name: restart strongswan
-  service: name=strongswan state=restarted
+  service: name={{ strongswan_service }} state=restarted
 
 - name: daemon-reload
   systemd: daemon_reload=true

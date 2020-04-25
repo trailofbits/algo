@@ -24,7 +24,7 @@
 
 - name: strongSwan started
   service:
-    name: strongswan
+    name: "{{ strongswan_service }}"
     state: started
     enabled: true
 
