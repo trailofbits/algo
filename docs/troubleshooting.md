@@ -253,10 +253,6 @@ Message: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is inv
 Target: linuxConfiguration.ssh.publicKeys.keyData"}
 ```
 
-code {
-  white-space : pre-wrap !important;
-}
-
 This is related to [the chmod issue](https://github.com/Microsoft/WSL/issues/81) inside /mnt directory which is NTFS. The fix is to place Algo outside of /mnt directory.
 
 ### Docker: Failed to connect to the host via ssh
