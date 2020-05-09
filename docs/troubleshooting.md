@@ -223,6 +223,23 @@ The error is caused because Digital Ocean changed its API to treat the tag argum
 5. Finally run `doctl compute tag list` to make sure that the tag has been deleted
 6. Run algo as directed
 
+### Azure: No such file or directory: '/home/username/.azure/azureProfile.json'
+ 
+ ```
+ TASK [cloud-azure : Create AlgoVPN Server] *****************************************************************************************************************************************************************
+An exception occurred during task execution. To see the full traceback, use -vvv. 
+The error was: FileNotFoundError: [Errno 2] No such file or directory: '/home/ubuntu/.azure/azureProfile.json'
+fatal: [localhost]: FAILED! => {"changed": false, "module_stderr": "Traceback (most recent call last):
+File \"/usr/local/lib/python3.6/dist-packages/azure/cli/core/_session.py\", line 39, in load
+with codecs_open(self.filename, 'r', encoding=self._encoding) as f:
+File \"/usr/lib/python3.6/codecs.py\", line 897, in open\n    file = builtins.open(filename, mode, buffering)
+FileNotFoundError: [Errno 2] No such file or directory: '/home/ubuntu/.azure/azureProfile.json'
+", "module_stdout": "", "msg": "MODULE FAILURE
+See stdout/stderr for the exact error", "rc": 1}
+```
+
+It happens when your machine is not authenticated in the azure cloud, follow this [guide](https://trailofbits.github.io/algo/cloud-azure.html) to configure your environment
+
 ### Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid
 
 You tried to deploy Algo from Windows and you received an error like this one:
@@ -235,6 +252,10 @@ InvalidParameter\n
 Message: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid.\n
 Target: linuxConfiguration.ssh.publicKeys.keyData"}
 ```
+
+code {
+  white-space : pre-wrap !important;
+}
 
 This is related to [the chmod issue](https://github.com/Microsoft/WSL/issues/81) inside /mnt directory which is NTFS. The fix is to place Algo outside of /mnt directory.
 
