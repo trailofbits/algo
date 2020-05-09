@@ -2,7 +2,7 @@
 
 Algo officially supports the [cloud providers listed here](https://github.com/trailofbits/algo/blob/master/README.md#deploy-the-algo-server). If you want to deploy Algo on another virtual hosting provider, that provider must support:
 
-1. the base operating system image that Algo uses (Ubuntu 18.04 or 19.10), and
+1. the base operating system image that Algo uses (Ubuntu 18.04 or 20.04), and
 2. a minimum of certain kernel modules required for the strongSwan IPsec server.
 
 Please see the [Required Kernel Modules](https://wiki.strongswan.org/projects/strongswan/wiki/KernelModules) documentation from strongSwan for a list of the specific required modules and a script to check for them. As a first step, we recommend running their shell script to determine initial compatibility with your new hosting provider.

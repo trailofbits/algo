@@ -4,7 +4,7 @@ You can use Algo to configure a pre-existing server as an AlgoVPN rather than us
 
 To perform a local installation, install the Algo scripts following the normal installation instructions, then choose:
 ```
-Install to existing Ubuntu 18.04 or 19.10 server (for more advanced users)
+Install to existing Ubuntu 18.04 or 20.04 server (for more advanced users)
 ```
 Make sure your target server is running an unmodified copy of the operating system version specified. The target can be the same system where you've installed the Algo scripts, or a remote system that you are able to access as root via SSH without needing to enter the SSH key passphrase (such as when using `ssh-agent`).
 

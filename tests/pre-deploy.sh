@@ -24,6 +24,7 @@ lxc profile set default raw.lxc lxc.aa_profile=unconfined
 lxc profile set default security.privileged true
 lxc profile show default
 lxc launch ubuntu:${UBUNTU_VERSION} algo
+lxc exec algo -- apt remove snapd --purge -y || true
 
 ip addr
 
