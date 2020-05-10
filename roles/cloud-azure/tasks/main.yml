@@ -29,8 +29,14 @@
         value: "{{ wireguard_port }}"
       vmSize:
         value: "{{ cloud_providers.azure.size }}"
+      imageReferencePublisher:
+        value: "{{ cloud_providers.azure.image.publisher }}"
+      imageReferenceOffer:
+        value: "{{ cloud_providers.azure.image.offer }}"
       imageReferenceSku:
-        value: "{{ cloud_providers.azure.image }}"
+        value: "{{ cloud_providers.azure.image.sku }}"
+      imageReferenceVersion:
+        value: "{{ cloud_providers.azure.image.version }}"
       SshPort:
         value: "{{ ssh_port }}"
       UserData:

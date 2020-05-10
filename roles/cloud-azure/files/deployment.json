@@ -11,7 +11,16 @@
     "vmSize": {
       "type": "string"
     },
+    "imageReferencePublisher": {
+      "type": "string"
+    },
+    "imageReferenceOffer": {
+      "type": "string"
+    },
     "imageReferenceSku": {
+      "type": "string"
+    },
+    "imageReferenceVersion": {
       "type": "string"
     },
     "SshPort": {
@@ -182,10 +191,10 @@
         },
         "storageProfile": {
           "imageReference": {
-            "publisher": "Canonical",
-            "offer": "UbuntuServer",
+            "publisher": "[parameters('imageReferencePublisher')]",
+            "offer": "[parameters('imageReferenceOffer')]",
             "sku": "[parameters('imageReferenceSku')]",
-            "version": "latest"
+            "version": "[parameters('imageReferenceVersion')]"
           },
           "osDisk": {
             "createOption": "FromImage"

@@ -25,6 +25,10 @@ lxc profile set default security.privileged true
 lxc profile show default
 lxc launch ubuntu:${UBUNTU_VERSION} algo
 
+if [[ ${UBUNTU_VERSION} == "20.04" ]]; then
+  lxc exec algo -- apt remove snapd --purge -y || true
+fi
+
 ip addr
 
 until dig A +short algo.lxd @10.0.8.1 | grep -vE '^$' > /dev/null; do

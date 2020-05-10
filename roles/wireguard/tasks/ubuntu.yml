@@ -1,12 +1,22 @@
 ---
-- name: WireGuard repository configured
-  apt_repository:
-    repo: ppa:wireguard/wireguard
-    state: present
-  register: result
-  until: result is succeeded
-  retries: 10
-  delay: 3
+- block:
+  - name: WireGuard repository configured
+    apt_repository:
+      repo: ppa:wireguard/wireguard
+      state: present
+    register: result
+    until: result is succeeded
+    retries: 10
+    delay: 3
+
+  - name: Configure unattended-upgrades
+    copy:
+      src: 50-wireguard-unattended-upgrades
+      dest: /etc/apt/apt.conf.d/50-wireguard-unattended-upgrades
+      owner: root
+      group: root
+      mode: 0644
+  when: ansible_facts['distribution_version'] is version('20.04', '<')
 
 - name: WireGuard installed
   apt:
@@ -18,14 +28,6 @@
   file:
     dest: /etc/wireguard/.reload-module-on-update
     state: touch
-
-- name: Configure unattended-upgrades
-  copy:
-    src: 50-wireguard-unattended-upgrades
-    dest: /etc/apt/apt.conf.d/50-wireguard-unattended-upgrades
-    owner: root
-    group: root
-    mode: 0644
 
 - name: Set OS specific facts
   set_fact:
