@@ -36,6 +36,12 @@
         </div>
       </div>
     </section>
+    <section>
+      <h2 class="text-center">Finish setup and save configs</h2>
+      <p class="text-center">
+        <button v-on:click="$emit('submit')" class="btn btn-primary btn-lg" type="button">Save &amp; Exit</button>
+      </p>
+    </section>
   </div>
 </template>
 

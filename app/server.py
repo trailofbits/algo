@@ -3,6 +3,7 @@ import yaml
 from os.path import join, dirname
 from aiohttp import web
 import concurrent.futures
+import sys
 from playbook import PlaybookCLI
 
 
@@ -85,6 +86,12 @@ async def post_config(request):
             f.write(config)
             return web.json_response({'ok': True})
 
+@routes.post('/exit')
+async def post_exit(_):
+    if task_future and task_future.done():
+        sys.exit(0)
+    else:
+        sys.exit(1)
 
 app = web.Application()
 app.router.add_routes(routes)

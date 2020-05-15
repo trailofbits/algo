@@ -61,7 +61,10 @@
         😢 Set up failed
       </h1>
       <h1 class="mb-5 text-center" v-if="step === 'status-done'">
-         🥳 Congratulations! Your Algo server is running.
+         🥳 Congratulations, your Algo server is running!
+      </h1>
+      <h1 class="mb-5 text-center" v-if="step === 'status-exit'">
+        Config files are saved, bye!
       </h1>
     </h1>
     <transition name="fade">
@@ -99,7 +102,8 @@
       </section>
     </transition>
     <transition name="fade">
-      <status-done v-if="step == 'status-done'">
+      <status-done v-if="step == 'status-done'"
+                   v-on:submit="exit(); step = 'status-exit'" >
       </status-done>
     </transition>
   </div>
@@ -126,7 +130,7 @@
         'provider-setup': window.httpVueLoader('/static/provider-setup.vue'),
         'command-preview': window.httpVueLoader('/static/command-preview.vue'),
         'status-running': window.httpVueLoader('/static/status-running.vue'),
-        'status-done': window.httpVueLoader('/static/status-done.vue'),
+        'status-done': window.httpVueLoader('/static/status-done.vue')
       },
       created() {
         fetch("/playbook")
@@ -154,6 +158,11 @@
           fetch("/playbook", {
             method: "DELETE"
           });
+        },
+        exit() {
+            fetch("/exit", {
+              method: "POST"
+            });
         }
       }
     })
