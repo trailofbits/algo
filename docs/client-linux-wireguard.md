@@ -49,3 +49,19 @@ sudo systemctl enable wg-quick@wg0
 ```
 
 If your Linux distribution does not use `systemd` you can bring up WireGuard with `sudo wg-quick up wg0`.
+
+## Using a DNS Search Domain
+
+As of the `v1.0.20200510` release of `wireguard-tools` WireGuard supports setting a DNS search domain. In your `wg0.conf` file a non-numeric entry on the `DNS` line will be used as a search domain. For example this:
+```
+DNS =  172.27.153.31, fd00::b:991f, mydomain.com
+```
+will cause your `/etc/resolv.conf` to contain:
+```
+search mydomain.com
+nameserver 172.27.153.31
+nameserver fd00::b:991f
+```
+If you're using the version of WireGuard included with Ubuntu as of 19.10 it might be from before this feature was added. To use the latest version of WireGuard add the PPA repository as shown above.
+
+Note that using the PPA repository on Ubuntu 20.04 LTS instead of the WireGuard modules shipped in the kernel package may cause the installation of about 40 additional packages in order to compile the kernel module.
