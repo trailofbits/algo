@@ -3,6 +3,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import (absolute_import, division, print_function)
+
 __metaclass__ = type
 
 import os
@@ -18,7 +19,6 @@ from ansible.playbook.block import Block
 from ansible.utils.display import Display
 from ansible.utils.collection_loader import set_collection_playbook_paths
 from ansible.plugins.loader import add_all_plugin_dirs
-
 
 display = Display()
 
@@ -187,12 +187,14 @@ class PlaybookCLI(CLI):
                         display.display(taskmsg)
 
         host = inventory.groups['vpn-host'].hosts[0].name
-        fact_cache = pbex._variable_manager._nonpersistent_fact_cache[host]
+        host_vars = variable_manager.get_vars()['hostvars'][host]
         return {
-            'CA_password': fact_cache['CA_password'],
-            'p12_export_password': fact_cache['p12_export_password'],
-            'algo_server_name': variable_manager.extra_vars['server_name'],
-            'ipv6_support': fact_cache['ipv6_support'],
-            'local_service_ip': variable_manager.get_vars()['hostvars'][host]['ansible_lo']['ipv4_secondaries'][0]['address'],
+            'CA_password': host_vars.get('CA_password'),
+            'p12_export_password': host_vars.get('p12_export_password'),
+            'algo_server_name': host_vars.get('server_name'),
+            'ipv6_support': host_vars.get('ipv6_support'),
+            'local_service_ip': host_vars.get('ansible_lo') and
+                                host_vars.get('ansible_lo').get('ipv4_secondaries') and
+                                host_vars.get('ansible_lo').get('ipv4_secondaries')[0]['address'],
             'ansible_ssh_host': host,
         }
