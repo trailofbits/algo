@@ -57,7 +57,8 @@ module.exports = {
     }
   },
   components: {
-    'digitalocean': window.httpVueLoader('/static/provider-do.vue')
+    'digitalocean': window.httpVueLoader('/static/provider-do.vue'),
+    'lightsail': window.httpVueLoader('/static/provider-lightsail.vue')
   }
 };
 </script>

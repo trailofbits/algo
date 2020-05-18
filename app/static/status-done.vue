@@ -4,7 +4,7 @@
       <p>Config files and certificates are in the ./configs/ directory.</p>
       <p>Go to <a href="https://whoer.net/" target="_blank" rel="noopener noopener">https://whoer.net/</a>
         after connecting and ensure that all your traffic passes through the VPN.</p>
-      <p>Local DNS resolver {{result.local_service_ip}}</p>
+      <p v-if="result.local_service_ip">Local DNS resolver {{result.local_service_ip}}</p>
       <p v-if="result.p12_export_password">The p12 and SSH keys password for new users is <code>{{result.p12_export_password}}</code></p>
       <p v-if="result.CA_password">The CA key password is <code>{{result.CA_password}}</code></p>
       <p v-if="result.ssh_access">Shell access: <code>ssh -F configs/{{result.ansible_ssh_host}}/ssh_config {{config.server_name}}</code></p>
