@@ -17,7 +17,7 @@ getent passwd "${user}" \
 (
     umask 0337 \
         && printf '%s\n' "${user} ALL=(ALL) NOPASSWD:ALL" \
-        >"/etc/sudoers.d/10-${user}-user"
+        >"/etc/sudoers.d/10-algo-user"
 )
 
 printf "{{ lookup('template', 'files/cloud-init/sshd_config') }}\n" \
