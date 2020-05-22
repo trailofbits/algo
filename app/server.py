@@ -1,5 +1,6 @@
 import asyncio
 import yaml
+import boto3
 from os.path import join, dirname
 from aiohttp import web
 import concurrent.futures
@@ -92,6 +93,20 @@ async def post_exit(_):
         sys.exit(0)
     else:
         sys.exit(1)
+
+@routes.post('/lightsail_regions')
+async def post_exit(request):
+    data = await request.json()
+    client = boto3.client(
+        'lightsail',
+        aws_access_key_id=data.get('aws_access_key'),
+        aws_secret_access_key=data.get('aws_secret_key')
+    )
+    response = client.get_regions(
+        includeAvailabilityZones=False
+    )
+    return web.json_response(response)
+
 
 app = web.Application()
 app.router.add_routes(routes)
