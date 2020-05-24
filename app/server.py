@@ -107,6 +107,17 @@ async def post_exit(request):
     )
     return web.json_response(response)
 
+@routes.post('/ec2_regions')
+async def post_exit(request):
+    data = await request.json()
+    client = boto3.client(
+        'ec2',
+        aws_access_key_id=data.get('aws_access_key'),
+        aws_secret_access_key=data.get('aws_secret_key')
+    )
+    response = client.describe_regions()['Regions']
+    return web.json_response(response)
+
 
 app = web.Application()
 app.router.add_routes(routes)
