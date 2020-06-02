@@ -1,6 +1,6 @@
 # Deploy from Windows
 
-The Algo scripts can't be run directly on Windows, but you can use the Windows Subsystem for Linux (WSL) to run a copy of Ubuntu Linux right on your Windows system.
+The Algo scripts can't be run directly on Windows, but you can use the Windows Subsystem for Linux (WSL) to run a copy of Ubuntu Linux right on your Windows system. You can then run Algo to deploy a VPN server to a supported cloud provider, though you can't turn the instance of Ubuntu running under WSL into a VPN server.
 
 To run WSL you will need:
 
@@ -21,7 +21,7 @@ Wait a minute for Windows to install a few things in the background (it will eve
 2. Click on 'Turn Windows features on or off'
 3. Scroll down and check 'Windows Subsystem for Linux', and then click OK.
 4. The subsystem will be installed, then Windows will require a restart.
-5. Restart Windows and then [install Ubuntu from the Windows Store](https://www.microsoft.com/p/ubuntu/9nblggh4msv6).
+5. Restart Windows and then [install Ubuntu 18.04 LTS from the Windows Store](https://www.microsoft.com/p/ubuntu-1804-lts/9n9tngvndl3q) (at this time Ubuntu 20.04 LTS does not work with Algo when running under WSL).
 6. Run Ubuntu from the Start menu. It will take a few minutes to install. It will have you create a separate user account for the Linux subsystem. Once that's done, you will finally have Ubuntu running somewhat integrated with Windows.
 
 ## Install Algo
