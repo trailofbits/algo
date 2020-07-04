@@ -18,6 +18,7 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
      * [DigitalOcean: error tagging resource 'xxxxxxxx': param is missing or the value is empty: resources](#digitalocean-error-tagging-resource)
      * [Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid](#windows-the-value-of-parameter-linuxconfigurationsshpublickeyskeydata-is-invalid)
      * [Docker: Failed to connect to the host via ssh](#docker-failed-to-connect-to-the-host-via-ssh)
+     * [Error: Failed to create symlinks for deploying to localhost](#error-failed-to-create-symlinks-for-deplying-to-localhost)
      * [Wireguard: Unable to find 'configs/...' in expected paths](#wireguard-unable-to-find-configs-in-expected-paths)
      * [Ubuntu Error: "unable to write 'random state'" when generating CA password](#ubuntu-error-unable-to-write-random-state-when-generating-ca-password)
   * [Connection Problems](#connection-problems)
@@ -272,6 +273,41 @@ You need to add the following to the ansible.cfg in repo root:
 [ssh_connection]
 control_path_dir=/dev/shm/ansible_control_path
 ```
+
+### Error: Failed to create symlinks for deploying to localhost
+
+You tried to run Algo and you received an error like this one:
+
+```
+TASK [Create a symlink if deploying to localhost] ********************************************************************
+fatal: [localhost]: FAILED! => {"changed": false, "gid": 1000, "group": "ubuntu", "mode": "0775", "msg": "the directory configs/localhost is not empty, refusing to convert it", "owner": "ubuntu", "path": "configs/localhost", "size": 4096, "state": "directory", "uid": 1000}
+included: /home/ubuntu/algo-master/playbooks/rescue.yml for localhost
+
+TASK [debug] *********************************************************************************************************
+ok: [localhost] => {
+    "fail_hint": [
+        "Sorry, but something went wrong!",
+        "Please check the troubleshooting guide.",
+        "https://trailofbits.github.io/algo/troubleshooting.html"
+    ]
+}
+
+TASK [Fail the installation] *****************************************************************************************
+```
+This error is usually hit when using the local install option and `localhost` is provided in answer to this question, which is expecting an IP address or domain name of your server:
+```
+Enter the public IP address or domain name of your server: (IMPORTANT! This is used to verify the certificate)
+[localhost]
+:
+```
+
+You should remove /etc/wireguard/* and configs/ as follows:
+```ssh
+sudo rm -rf /etc/wireguard/*
+rm -rf configs/*
+``` 
+
+And then immediately re-run `./algo`. 
 
 ### Wireguard: Unable to find 'configs/...' in expected paths
 
