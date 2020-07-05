@@ -307,7 +307,7 @@ sudo rm -rf /etc/wireguard/*
 rm -rf configs/*
 ``` 
 
-And then immediately re-run `./algo`. 
+And then immediately re-run `./algo` and provide a domain name or IP address in response to the question referenced above. 
 
 ### Wireguard: Unable to find 'configs/...' in expected paths
 
