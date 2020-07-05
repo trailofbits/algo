@@ -18,7 +18,7 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
      * [DigitalOcean: error tagging resource 'xxxxxxxx': param is missing or the value is empty: resources](#digitalocean-error-tagging-resource)
      * [Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid](#windows-the-value-of-parameter-linuxconfigurationsshpublickeyskeydata-is-invalid)
      * [Docker: Failed to connect to the host via ssh](#docker-failed-to-connect-to-the-host-via-ssh)
-     * [Error: Failed to create symlinks for deploying to localhost](#error-failed-to-create-symlinks-for-deplying-to-localhost)
+     * [Error: Failed to create symlinks for deploying to localhost](#error-failed-to-create-symlinks-for-deploying-to-localhost)
      * [Wireguard: Unable to find 'configs/...' in expected paths](#wireguard-unable-to-find-configs-in-expected-paths)
      * [Ubuntu Error: "unable to write 'random state'" when generating CA password](#ubuntu-error-unable-to-write-random-state-when-generating-ca-password)
   * [Connection Problems](#connection-problems)
@@ -294,14 +294,14 @@ ok: [localhost] => {
 
 TASK [Fail the installation] *****************************************************************************************
 ```
-This error is usually hit when using the local install option and `localhost` is provided in answer to this question, which is expecting an IP address or domain name of your server:
+This error is usually encountered when using the local install option and `localhost` is provided in answer to this question, which is expecting an IP address or domain name of your server:
 ```
 Enter the public IP address or domain name of your server: (IMPORTANT! This is used to verify the certificate)
 [localhost]
 :
 ```
 
-You should remove /etc/wireguard/* and configs/ as follows:
+You should remove the files in /etc/wireguard/ and configs/ as follows:
 ```ssh
 sudo rm -rf /etc/wireguard/*
 rm -rf configs/*
