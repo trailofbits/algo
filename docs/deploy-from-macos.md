@@ -32,13 +32,14 @@ The install command below takes care of initializing the CA certificate store.
 
 #### Installation
 ```
-brew install python3
+brew install python@3.7
+brew link --force python@3.7
 ```
 After installation open a new tab or window in Terminal and verify that the command `which python3` returns `/usr/local/bin/python3`.
 
 #### Removal
 ```
-brew uninstall python3
+brew uninstall python@3.7
 ```
 
 ### Option 2: Install a package from Python.org
