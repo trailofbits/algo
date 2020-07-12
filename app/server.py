@@ -1,12 +1,16 @@
 import asyncio
+import json
+
 import yaml
 import boto3
 from os.path import join, dirname
 from aiohttp import web
 import concurrent.futures
 import sys
-from playbook import PlaybookCLI
 
+from google.auth.transport.requests import AuthorizedSession
+from google.oauth2 import service_account
+from playbook import PlaybookCLI
 
 routes = web.RouteTableDef()
 PROJECT_ROOT = dirname(dirname(__file__))
@@ -87,12 +91,14 @@ async def post_config(request):
             f.write(config)
             return web.json_response({'ok': True})
 
+
 @routes.post('/exit')
 async def post_exit(_):
     if task_future and task_future.done():
         sys.exit(0)
     else:
         sys.exit(1)
+
 
 @routes.post('/lightsail_regions')
 async def post_exit(request):
@@ -107,6 +113,7 @@ async def post_exit(request):
     )
     return web.json_response(response)
 
+
 @routes.post('/ec2_regions')
 async def post_exit(request):
     data = await request.json()
@@ -117,6 +124,20 @@ async def post_exit(request):
     )
     response = client.describe_regions()['Regions']
     return web.json_response(response)
+
+
+@routes.post('/gce_regions')
+async def post_exit(request):
+    #data = await request.json()
+    gce_config_file = 'configs/gce.json'  # 'data.get('gce_config_file')
+    project_id = json.loads(open(gce_config_file, 'r').read())['project_id']
+
+    response = AuthorizedSession(
+        service_account.Credentials.from_service_account_file(gce_config_file).with_scopes(
+            ['https://www.googleapis.com/auth/compute'])).get(
+        'https://www.googleapis.com/compute/v1/projects/{project_id}/regions'.format(project_id=project_id))
+
+    return web.json_response(json.loads(response.content))
 
 
 app = web.Application()
