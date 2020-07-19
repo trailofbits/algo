@@ -59,7 +59,8 @@ module.exports = {
   components: {
     'digitalocean': window.httpVueLoader('/static/provider-do.vue'),
     'lightsail': window.httpVueLoader('/static/provider-lightsail.vue'),
-    'ec2': window.httpVueLoader('/static/provider-ec2.vue')
+    'ec2': window.httpVueLoader('/static/provider-ec2.vue'),
+    'gce': window.httpVueLoader('/static/provider-gce.vue')
   }
 };
 </script>

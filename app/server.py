@@ -21,7 +21,8 @@ task_program = ''
 
 def run_playbook(data):
     global task_program
-    extra_vars = ' '.join(['{0}={1}'.format(key, data[key]) for key in data.keys()])
+    extra_vars = ' '.join(['{0}={1}'.format(key, data[key])
+                           for key in data.keys()])
     task_program = ['ansible-playbook', 'main.yml', '--extra-vars', extra_vars]
     return PlaybookCLI(task_program).run()
 
@@ -101,7 +102,7 @@ async def post_exit(_):
 
 
 @routes.post('/lightsail_regions')
-async def post_exit(request):
+async def lightsail_regions(request):
     data = await request.json()
     client = boto3.client(
         'lightsail',
@@ -115,7 +116,7 @@ async def post_exit(request):
 
 
 @routes.post('/ec2_regions')
-async def post_exit(request):
+async def ec2_regions(request):
     data = await request.json()
     client = boto3.client(
         'ec2',
@@ -126,16 +127,40 @@ async def post_exit(request):
     return web.json_response(response)
 
 
+@routes.get('/gce_config')
+async def check_gce_config(request):
+    gce_file = join(PROJECT_ROOT, 'configs', 'gce.json')
+    response = {}
+    try:
+        json.loads(open(gce_file, 'r').read())['project_id']
+        response['status'] = 'ok'
+    except IOError:
+        response['status'] = 'not_available'
+    except ValueError:
+        response['status'] = 'wrong_format'
+
+    return web.json_response(response)
+
+
 @routes.post('/gce_regions')
-async def post_exit(request):
-    #data = await request.json()
-    gce_config_file = 'configs/gce.json'  # 'data.get('gce_config_file')
-    project_id = json.loads(open(gce_config_file, 'r').read())['project_id']
+async def gce_regions(request):
+    data = await request.json()
+    gce_file_name = join(PROJECT_ROOT, 'configs', 'gce.json')
+    if data.get('project_id'):
+        # File is missing, save it. We can't get file path from browser :(
+        with open(gce_file_name, 'w') as f:
+            f.write(json.dumps(data))
+    else:
+        with open(gce_file_name, 'r') as f:
+            data = json.loads(f.read())
 
     response = AuthorizedSession(
-        service_account.Credentials.from_service_account_file(gce_config_file).with_scopes(
-            ['https://www.googleapis.com/auth/compute'])).get(
-        'https://www.googleapis.com/compute/v1/projects/{project_id}/regions'.format(project_id=project_id))
+        service_account.Credentials.from_service_account_info(
+            data).with_scopes(
+                ['https://www.googleapis.com/auth/compute'])).get(
+                'https://www.googleapis.com/compute/v1/projects/{project_id}/regions'.format(
+                    project_id=data['project_id'])
+    )
 
     return web.json_response(json.loads(response.content))
 
