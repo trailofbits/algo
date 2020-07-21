@@ -5,15 +5,11 @@
 To connect to your AlgoVPN using [WireGuard](https://www.wireguard.com) from Ubuntu, first install WireGuard:
 
 ```shell
-# Ubuntu 19.04 and earlier:
-# Add the WireGuard repository
+# Ubuntu 16.04 only: Add the WireGuard repository
 sudo add-apt-repository ppa:wireguard/wireguard
-
-# Ubuntu 17.10 and earlier:
-# Update the list of available packages
 sudo apt update
 
-# Install the tools and kernel module:
+# Install the tools:
 sudo apt install wireguard openresolv
 ```
 
@@ -62,6 +58,3 @@ search mydomain.com
 nameserver 172.27.153.31
 nameserver fd00::b:991f
 ```
-If you're using the version of WireGuard included with Ubuntu as of 19.10 it might be from before this feature was added. To use the latest version of WireGuard add the PPA repository as shown above.
-
-Note that using the PPA repository on Ubuntu 20.04 LTS instead of the WireGuard modules shipped in the kernel package may cause the installation of about 40 additional packages in order to compile the kernel module.
