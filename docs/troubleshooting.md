@@ -18,6 +18,7 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
      * [DigitalOcean: error tagging resource 'xxxxxxxx': param is missing or the value is empty: resources](#digitalocean-error-tagging-resource)
      * [Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid](#windows-the-value-of-parameter-linuxconfigurationsshpublickeyskeydata-is-invalid)
      * [Docker: Failed to connect to the host via ssh](#docker-failed-to-connect-to-the-host-via-ssh)
+     * [Error: Failed to create symlinks for deploying to localhost](#error-failed-to-create-symlinks-for-deploying-to-localhost)
      * [Wireguard: Unable to find 'configs/...' in expected paths](#wireguard-unable-to-find-configs-in-expected-paths)
      * [Ubuntu Error: "unable to write 'random state'" when generating CA password](#ubuntu-error-unable-to-write-random-state-when-generating-ca-password)
   * [Connection Problems](#connection-problems)
@@ -273,6 +274,41 @@ You need to add the following to the ansible.cfg in repo root:
 control_path_dir=/dev/shm/ansible_control_path
 ```
 
+### Error: Failed to create symlinks for deploying to localhost
+
+You tried to run Algo and you received an error like this one:
+
+```
+TASK [Create a symlink if deploying to localhost] ********************************************************************
+fatal: [localhost]: FAILED! => {"changed": false, "gid": 1000, "group": "ubuntu", "mode": "0775", "msg": "the directory configs/localhost is not empty, refusing to convert it", "owner": "ubuntu", "path": "configs/localhost", "size": 4096, "state": "directory", "uid": 1000}
+included: /home/ubuntu/algo-master/playbooks/rescue.yml for localhost
+
+TASK [debug] *********************************************************************************************************
+ok: [localhost] => {
+    "fail_hint": [
+        "Sorry, but something went wrong!",
+        "Please check the troubleshooting guide.",
+        "https://trailofbits.github.io/algo/troubleshooting.html"
+    ]
+}
+
+TASK [Fail the installation] *****************************************************************************************
+```
+This error is usually encountered when using the local install option and `localhost` is provided in answer to this question, which is expecting an IP address or domain name of your server:
+```
+Enter the public IP address or domain name of your server: (IMPORTANT! This is used to verify the certificate)
+[localhost]
+:
+```
+
+You should remove the files in /etc/wireguard/ and configs/ as follows:
+```ssh
+sudo rm -rf /etc/wireguard/*
+rm -rf configs/*
+``` 
+
+And then immediately re-run `./algo` and provide a domain name or IP address in response to the question referenced above. 
+
 ### Wireguard: Unable to find 'configs/...' in expected paths
 
 You tried to run Algo and you received an error like this one:
@@ -283,10 +319,11 @@ TASK [wireguard : Generate public keys] ****************************************
 
 fatal: [localhost]: FAILED! => {"msg": "An unhandled exception occurred while running the lookup plugin 'file'. Error was a <class 'ansible.errors.AnsibleError'>, original message: could not locate file in lookup: configs/xxx.xxx.xxx.xxx/wireguard//private/dan"}
 ```
-This error is usually hit when using the local install option on a server that isn't Ubuntu 18.04 or later. You should upgrade your server to Ubuntu 18.04 or later. If this doesn't work, try removing `*.lock` files at /etc/wireguard/ as follows:
+This error is usually hit when using the local install option on a server that isn't Ubuntu 18.04 or later. You should upgrade your server to Ubuntu 18.04 or later. If this doesn't work, try removing files in /etc/wireguard/ and the configs directories as follows:
 
 ```ssh
-sudo rm -rf /etc/wireguard/*.lock
+sudo rm -rf /etc/wireguard/*
+rm -rf configs/*
 ```
 Then immediately re-run `./algo`.
 
