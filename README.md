@@ -190,11 +190,42 @@ _If you chose to save the CA key during the deploy process,_ then Algo's own scr
 After this process completes, the Algo VPN server will contain only the users listed in the `config.cfg` file.
 
 ## Additional Documentation
-* [Deployment instructions, cloud provider setup instructions, and further client setup instructions available here.](docs/index.md)
 * [FAQ](docs/faq.md)
 * [Troubleshooting](docs/troubleshooting.md)
+* How Algo uses [Firewalls](docs/firewalls.md)
 
-If you read all the documentation and have further questions, [join the chat on Gitter](https://gitter.im/trailofbits/algo).
+### Setup Instructions for Specific Cloud Providers
+* Configure [Amazon EC2](docs/cloud-amazon-ec2.md)
+* Configure [Azure](docs/cloud-azure.md)
+* Configure [DigitalOcean](docs/cloud-do.md)
+* Configure [Google Cloud Platform](docs/cloud-gce.md)
+* Configure [Vultr](docs/cloud-vultr.md)
+* Configure [CloudStack](docs/cloud-cloudstack.md)
+* Configure [Hetzner Cloud](docs/cloud-hetzner.md)
+
+### Install and Deploy from Common Platforms
+* Deploy from [macOS](docs/deploy-from-macos.md)
+* Deploy from [Windows](docs/deploy-from-windows.md)
+* Deploy from [Google Cloud Shell](docs/deploy-from-cloudshell.md)
+* Deploy from [RedHat/CentOS 6.x](docs/deploy-from-redhat-centos6.md)
+* Deploy from a [Docker container](docs/deploy-from-docker.md)
+
+### Setup VPN Clients to Connect to the Server
+* Setup [Android](docs/client-android.md) clients
+* Setup [Linux](docs/client-linux.md) clients with Ansible
+* Setup Ubuntu clients to use [WireGuard](docs/client-linux-wireguard.md)
+* Setup Linux clients to use [IPsec](docs/client-linux-ipsec.md)
+* Setup Apple devices to use [IPsec](docs/client-apple-ipsec.md)
+* Setup Macs running macOS 10.13 or older to use [WireGuard](docs/client-macos-wireguard.md)
+
+### Advanced Deployment
+* Deploy to your own [Ubuntu](docs/deploy-to-ubuntu.md) server, and road warrior setup
+* Deploy from [Ansible](docs/deploy-from-ansible.md) non-interactively
+* Deploy onto a [cloud server at time of creation with shell script or cloud-init](docs/deploy-from-script-or-cloud-init-to-localhost.md)
+* Deploy to an [unsupported cloud provider](docs/deploy-to-unsupported-cloud.md)
+* Deploy to your own [FreeBSD](docs/deploy-to-freebsd.md) server
+
+If you've read all the documentation and have further questions, [join the chat on Gitter](https://gitter.im/trailofbits/algo).
 
 ## Endorsements
 
