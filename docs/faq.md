@@ -21,7 +21,7 @@ No. This project is under active development. We're happy to [accept and fix iss
 
 ## What's the current status of WireGuard?
 
-[WireGuard is a work in progress](https://www.wireguard.com/#work-in-progress). It has undergone [substantial](https://www.wireguard.com/formal-verification/) security review, however, its authors are appropriately cautious about its safety and the protocol is subject to change. As a result, WireGuard does not yet have a "stable" 1.0 release. Releases are tagged with their build date -- "0.0.YYYYMMDD" -- and users should be advised to apply new updates when they are available. Your Algo server will automatically upgrade and restart WireGuard from the [official WireGuard PPA for Ubuntu](https://launchpad.net/~wireguard/+archive/ubuntu/wireguard) by default.
+[WireGuard reached "stable" 1.0.0 release](https://lists.zx2c4.com/pipermail/wireguard/2020-March/005206.html) in Spring 2020. It has undergone [substantial](https://www.wireguard.com/formal-verification/) security review. Releases are tagged with their build date -- "0.0.YYYYMMDD" -- and users should be advised to apply new updates when they are available. Your Algo server will automatically upgrade and restart WireGuard. For Ubuntu 18.04 LTS, it will retrieve updates from the [official WireGuard PPA for Ubuntu](https://launchpad.net/~wireguard/+archive/ubuntu/wireguard) by default.
 
 ## Why aren't you using Tor?
 
