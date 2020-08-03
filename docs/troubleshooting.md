@@ -16,6 +16,7 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
      * [AWS: "Deploy the template" fails with CREATE_FAILED](#aws-deploy-the-template-fails-with-create_failed)
      * [AWS: not authorized to perform: cloudformation:UpdateStack](#aws-not-authorized-to-perform-cloudformationupdatestack)
      * [DigitalOcean: error tagging resource 'xxxxxxxx': param is missing or the value is empty: resources](#digitalocean-error-tagging-resource)
+     * [Azure: The client xxx with object id xxx does not have authorization to perform action Microsoft.Resources/subscriptions/resourcegroups/write' over scope](#azure-deployment-permissions-error)
      * [Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid](#windows-the-value-of-parameter-linuxconfigurationsshpublickeyskeydata-is-invalid)
      * [Docker: Failed to connect to the host via ssh](#docker-failed-to-connect-to-the-host-via-ssh)
      * [Error: Failed to create symlinks for deploying to localhost](#error-failed-to-create-symlinks-for-deploying-to-localhost)
@@ -240,6 +241,23 @@ See stdout/stderr for the exact error", "rc": 1}
 ```
 
 It happens when your machine is not authenticated in the azure cloud, follow this [guide](https://trailofbits.github.io/algo/cloud-azure.html) to configure your environment
+
+### Azure: Deployment Permissions Error
+
+The AAD Application Registration (aka, the 'Service Principal', where you got the ClientId) needs permission to create the resources for the subscription. Otherwise, you will get the following error when you run the Ansible deploy script:
+
+```
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "Resource group create_or_update failed with status code: 403 and message: The client 'xxxxx' with object id 'THE_OBJECT_ID' does not have authorization to perform action 'Microsoft.Resources/subscriptions/resourcegroups/write' over scope '/subscriptions/THE_SUBSCRIPTION_ID/resourcegroups/algo' or the scope is invalid. If access was recently granted, please refresh your credentials."}
+```
+
+The solution for this is to open the Azure CLI and run the following command to grant contributor role to the Service Principal:
+
+```
+az role assignment create --assignee-object-id THE_OBJECT_ID --scope subscriptions/THE_SUBSCRIPTION_ID --role contributor
+```
+
+After this is applied, the Service Principal has permissions to create the resources and you can re-run `ansible-playbook main.yml` to complete the deployment.
+
 
 ### Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid
 
