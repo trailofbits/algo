@@ -1,25 +1,41 @@
 #!/bin/bash
-set -eux
+set -euxo pipefail
 
-which sudo || until \
-  apt-get update -y && \
-  apt-get install sudo -yf --install-suggests; do
-  sleep 3
+readonly user='algo'
+
+export DEBIAN_FRONTEND='noninteractive'
+
+until which sudo; do
+    apt-get update -qq
+    apt-get install -qqf --install-suggests sudo
+    sleep 3
 done
 
-getent passwd algo || useradd -m -d /home/algo -s /bin/bash -G adm -p '!' algo
+getent passwd "${user}" \
+    || useradd -m -d "/home/${user}" -s /bin/bash -G adm -p '!' "${user}"
 
-(umask 337 && echo "algo ALL=(ALL) NOPASSWD:ALL" >/etc/sudoers.d/10-algo-user)
+(
+    umask 0337 \
+        && printf '%s\n' "${user} ALL=(ALL) NOPASSWD:ALL" \
+        >"/etc/sudoers.d/10-algo-user"
+)
 
-cat <<EOF >/etc/ssh/sshd_config
-{{ lookup('template', 'files/cloud-init/sshd_config') }}
-EOF
+printf "{{ lookup('template', 'files/cloud-init/sshd_config') }}\n" \
+    >/etc/ssh/sshd_config
 
-test -d /home/algo/.ssh || (umask 077 && sudo -u algo mkdir -p /home/algo/.ssh/)
-echo "{{ lookup('file', '{{ SSH_keys.public }}') }}" | (umask 177 && sudo -u algo tee /home/algo/.ssh/authorized_keys)
+# This should be idempotent; correct permsission on .ssh dir if exists
+install -o "${user}" -g "${user}" -m 0700 -d "/home/${user}/.ssh"
 
-dpkg -l sshguard && until apt-get remove -y --purge sshguard; do
-  sleep 3
-done || true
+# umask does not reliably work with sudo
+install -o "${user}" -g "${user}" -m 0600 \
+    /dev/null "/home/${user}/.ssh/authorized_keys"
+
+printf "{{ lookup('file', '{{ SSH_keys.public }}') }}\n" \
+    >"/home/${user}/.ssh/authorized_keys"
+
+until ! dpkg -l sshguard; do
+    apt-get remove -qq --purge sshguard
+    sleep 3
+done || :
 
 systemctl restart sshd.service
