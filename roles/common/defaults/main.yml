@@ -1,5 +1,5 @@
 ---
-install_headers: true
+install_headers: false
 aip_supported_providers:
   - digitalocean
 snat_aipv4: false

@@ -1,4 +1,0 @@
-// Automatically upgrade packages from these (origin:archive) pairs
-Unattended-Upgrade::Allowed-Origins {
-    "LP-PPA-wireguard-wireguard:${distro_codename}";
-};
