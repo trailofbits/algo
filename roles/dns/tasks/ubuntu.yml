@@ -1,27 +1,29 @@
 ---
-- name: Add the repository
-  apt_repository:
-    state: present
-    codename: "{{ ansible_distribution_release }}"
-    repo: ppa:shevchuk/dnscrypt-proxy
-  register: result
-  until: result is succeeded
-  retries: 10
-  delay: 3
+- block:
+  - name: Add the repository
+    apt_repository:
+      state: present
+      codename: "{{ ansible_distribution_release }}"
+      repo: ppa:shevchuk/dnscrypt-proxy
+    register: result
+    until: result is succeeded
+    retries: 10
+    delay: 3
+
+  - name: Configure unattended-upgrades
+    copy:
+      src: 50-dnscrypt-proxy-unattended-upgrades
+      dest: /etc/apt/apt.conf.d/50-dnscrypt-proxy-unattended-upgrades
+      owner: root
+      group: root
+      mode: 0644
+  when: ansible_facts['distribution_version'] is version('20.04', '<')
 
 - name: Install dnscrypt-proxy
   apt:
     name: dnscrypt-proxy
     state: present
     update_cache: true
-
-- name: Configure unattended-upgrades
-  copy:
-    src: 50-dnscrypt-proxy-unattended-upgrades
-    dest: /etc/apt/apt.conf.d/50-dnscrypt-proxy-unattended-upgrades
-    owner: root
-    group: root
-    mode: 0644
 
 - block:
   - name: Ubuntu | Configure AppArmor policy for dnscrypt-proxy
