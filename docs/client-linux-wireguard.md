@@ -5,6 +5,13 @@
 To connect to your AlgoVPN using [WireGuard](https://www.wireguard.com) from Ubuntu, make sure your system is up-to-date then install WireGuard:
 
 ```shell
+# Update your system:
+sudo apt update && sudo apt upgrade
+
+# If the file /var/run/reboot-required exists then reboot:
+sudo reboot
+
+# Install WireGuard:
 sudo apt install wireguard openresolv
 ```
 
