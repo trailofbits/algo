@@ -6,8 +6,6 @@ Algo uses [Ansible](https://www.ansible.com) which requires Python 3. macOS does
 
 You'll need to install Python 3 before you can run Algo. Python 3 is available from several different packagers, three of which are listed below.
 
-**IMPORTANT:** At this time you **cannot** use Python 3.8 or later with Ansible on macOS. Choose a recent version of Python 3.7 instead.
-
 ## macOS 10.15 Catalina
 
 Catalina comes with `/usr/bin/python3` installed. This file, and certain others like `/usr/bin/git`, start out as stub files that prompt you to install the Developer Command Line Tools the first time you run them. Having `git` installed can be useful but whether or not you choose to install the Command Line Tools you **cannot** use this version of Python 3 with Algo at this time. Instead install one of the versions below.
@@ -47,11 +45,11 @@ If you don't want to install a package manager you can download a Python package
 
 #### Installation
 
-Download the most recent version of Python 3.7 and install it like any other macOS package. Then initialize the CA certificate store from Finder by double-clicking on the file `Install Certificates.command` found in the `/Applications/Python 3.7` folder.
+Download the most recent version of Python and install it like any other macOS package. Then initialize the CA certificate store from Finder by double-clicking on the file `Install Certificates.command` found in the `/Applications/Python 3.8` folder.
 
 When you double-click on `Install Certificates.command` a new Terminal window will open. If the window remains blank then the command has not run correctly. This can happen if you've changed the default shell in Terminal Preferences. Try changing it back to the default and run `Install Certificates.command` again.
 
-After installation open a new tab or window in Terminal and verify that the command `which python3` returns either `/usr/local/bin/python3` or  `/Library/Frameworks/Python.framework/Versions/3.7/bin/python3`.
+After installation open a new tab or window in Terminal and verify that the command `which python3` returns either `/usr/local/bin/python3` or  `/Library/Frameworks/Python.framework/Versions/3.8/bin/python3`.
 
 #### Removal
 
@@ -73,13 +71,13 @@ In addition to installing Python you'll need to install the package containing t
 
 #### Installation
 ```
-sudo port install python37
+sudo port install python38
 sudo port install curl-ca-bundle
 ```
 After installation open a new tab or window in Terminal and verify that the command `which python3` returns `/opt/local/bin/python3`.
 
 #### Removal
 ```
-sudo port uninstall python37
+sudo port uninstall python38
 sudo port uninstall curl-ca-bundle
 ```
