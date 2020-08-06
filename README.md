@@ -43,7 +43,7 @@ The easiest way to get an Algo server running is to run it on your local system 
     - **macOS:** Apple does not provide a suitable version of Python 3 with macOS. Here are two ways to obtain one:
         * Use the [Homebrew](https://brew.sh) package manager. After installing Homebrew install Python 3 by running `brew install python3`.
 
-        * Download and install the latest stable [Python 3.7.x package](https://www.python.org/downloads/mac-osx/) (currently Python 3.8 will not work). Be sure to run the included *Install Certificates* command from Finder.
+        * Download and install the latest stable [Python package](https://www.python.org/downloads/mac-osx/). Be sure to run the included *Install Certificates* command from Finder.
 
         See [Deploy from macOS](docs/deploy-from-macos.md) for more detailed information on installing Python 3 on macOS.
 
