@@ -15,13 +15,14 @@
 - Scaleway instance creating issue [\#1549](https://github.com/trailofbits/algo/pull/1549)
 
 ### Changed
+- Discontinue use of the WireGuard PPA [\#1855](https://github.com/trailofbits/algo/pull/1855)
 - SSH changes [\#1636](https://github.com/trailofbits/algo/pull/1636)
   - Default port is set to `4160` and can be changed in the config
   - SSH user for every cloud provider is `algo`
 - EC2: enable EBS encryption by default [\#1556](https://github.com/trailofbits/algo/pull/1556)
 - Upgrades [\#1549](https://github.com/trailofbits/algo/pull/1549)
   - Python 3
-  - Ansible 2.8
+  - Ansible 2.9 [\#1777](https://github.com/trailofbits/algo/pull/1777)
   
  ### Breaking changes
   - Python virtual environment moved to .env [\#1549](https://github.com/trailofbits/algo/pull/1549)
