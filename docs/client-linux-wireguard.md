@@ -9,7 +9,7 @@ To connect to your AlgoVPN using [WireGuard](https://www.wireguard.com) from Ubu
 sudo apt update && sudo apt upgrade
 
 # If the file /var/run/reboot-required exists then reboot:
-sudo reboot
+[ -e /var/run/reboot-required ] && sudo reboot
 
 # Install WireGuard:
 sudo apt install wireguard openresolv
