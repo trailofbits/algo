@@ -2,7 +2,7 @@
 
 ### Added
 - New provider CloudStack added [\#1420](https://github.com/trailofbits/algo/pull/1420)
-- Support for Ubuntu 19.10 [\#1630](https://github.com/trailofbits/algo/pull/1630)
+- Support for Ubuntu 20.04 [\#1782](https://github.com/trailofbits/algo/pull/1782)
 - Allow WireGuard to listen on port 53 [\#1594](https://github.com/trailofbits/algo/pull/1594)
 - Introducing Makefile [\#1553](https://github.com/trailofbits/algo/pull/1553)
 - Option to unblock SMB and Netbios [\#1558](https://github.com/trailofbits/algo/pull/1558)
