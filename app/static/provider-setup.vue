@@ -60,7 +60,8 @@ module.exports = {
     'digitalocean': window.httpVueLoader('/static/provider-do.vue'),
     'lightsail': window.httpVueLoader('/static/provider-lightsail.vue'),
     'ec2': window.httpVueLoader('/static/provider-ec2.vue'),
-    'gce': window.httpVueLoader('/static/provider-gce.vue')
+    'gce': window.httpVueLoader('/static/provider-gce.vue'),
+    'vultr': window.httpVueLoader('/static/provider-vultr.vue')
   }
 };
 </script>

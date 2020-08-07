@@ -3,10 +3,11 @@ import json
 
 import yaml
 import boto3
-from os.path import join, dirname
-from aiohttp import web
+from os.path import join, dirname, expanduser
+from aiohttp import web, ClientSession
 import concurrent.futures
 import sys
+import os
 
 from google.auth.transport.requests import AuthorizedSession
 from google.oauth2 import service_account
@@ -164,6 +165,32 @@ async def gce_regions(request):
 
     return web.json_response(json.loads(response.content))
 
+
+@routes.get('/vultr_config')
+async def check_vultr_config(request):
+    default_path = expanduser(join('~', '.vultr.ini'))
+    response = {'path': None}
+    try:
+        open(default_path, 'r').read()
+        response['path'] = default_path
+    except IOError:
+        pass
+
+    if 'VULTR_API_CONFIG' in os.environ:
+        try:
+            open(os.environ['VULTR_API_CONFIG'], 'r').read()
+            response['path'] = os.environ['VULTR_API_CONFIG']
+        except IOError:
+            pass
+    return web.json_response(response)
+
+
+@routes.get('/vultr_regions')
+async def vultr_regions(request):
+    async with ClientSession() as session:
+        async with session.get('https://api.vultr.com/v1/regions/list') as r:
+            json_body = await r.json()
+            return web.json_response(json_body)
 
 app = web.Application()
 app.router.add_routes(routes)
