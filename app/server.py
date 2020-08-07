@@ -192,6 +192,12 @@ async def vultr_regions(request):
             json_body = await r.json()
             return web.json_response(json_body)
 
+
+@routes.get('/scaleway_config')
+async def check_scaleway_config(request):
+    return web.json_response({"ok": 'SCW_TOKEN' in os.environ})
+
+
 app = web.Application()
 app.router.add_routes(routes)
 app.add_routes([web.static('/static', join(PROJECT_ROOT, 'app', 'static'))])

@@ -61,7 +61,8 @@ module.exports = {
     'lightsail': window.httpVueLoader('/static/provider-lightsail.vue'),
     'ec2': window.httpVueLoader('/static/provider-ec2.vue'),
     'gce': window.httpVueLoader('/static/provider-gce.vue'),
-    'vultr': window.httpVueLoader('/static/provider-vultr.vue')
+    'vultr': window.httpVueLoader('/static/provider-vultr.vue'),
+    'scaleway': window.httpVueLoader('/static/provider-scaleway.vue')
   }
 };
 </script>
