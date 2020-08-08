@@ -1,0 +1,25 @@
+---
+
+name: Lint Code Base
+on:
+  push:
+    branches-ignore: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    name: Lint Code Base
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Lint Code Base
+        uses: docker://github/super-linter:v3
+        env:
+          DEFAULT_BRANCH: master
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANSIBLE_DIRECTORY: .
+          ANSIBLE_FILE_NAME: .ansible-lint
+          OUTPUT_DETAILS: detailed

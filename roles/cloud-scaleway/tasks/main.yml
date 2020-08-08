@@ -50,7 +50,7 @@
         X-Auth-Token: "{{ algo_scaleway_token }}"
 
   - name: Start the server
-    scaleway_compute:
+    scaleway_compute:   
       name: "{{ algo_server_name }}"
       enable_ipv6: true
       public_ip: dynamic
