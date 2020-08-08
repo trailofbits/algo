@@ -20,6 +20,9 @@
         v-bind:disabled="ui_loading_check"
         v-model="vultr_config"
       />
+      <div v-if="ui_token_from_env" class="form-text alert alert-success" role="alert">
+        Configuration file was found in your system. You still can change the path to it
+      </div>
     </div>
 
     <div class="form-group">
@@ -47,6 +50,7 @@ module.exports = {
       vultr_config: null,
       region: null,
       // helper variables
+      ui_token_from_env: false,
       ui_loading_check: false,
       ui_loading_regions: false,
       ui_region_options: []
@@ -69,6 +73,7 @@ module.exports = {
         .then(response => {
           if (response.path) {
             this.vultr_config = response.path;
+            this.ui_token_from_env = true;
           }
         })
         .finally(() => {

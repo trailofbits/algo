@@ -186,15 +186,18 @@ class PlaybookCLI(CLI):
 
                         display.display(taskmsg)
 
-        host = inventory.groups['vpn-host'].hosts[0].name
-        host_vars = variable_manager.get_vars()['hostvars'][host]
-        return {
-            'CA_password': host_vars.get('CA_password'),
-            'p12_export_password': host_vars.get('p12_export_password'),
-            'algo_server_name': host_vars.get('server_name'),
-            'ipv6_support': host_vars.get('ipv6_support'),
-            'local_service_ip': host_vars.get('ansible_lo') and
-                                host_vars.get('ansible_lo').get('ipv4_secondaries') and
-                                host_vars.get('ansible_lo').get('ipv4_secondaries')[0]['address'],
-            'ansible_ssh_host': host,
-        }
+        if 'vpn-host' not in inventory.groups:
+            raise ValueError('no_vpn_host')
+        else:
+            host = inventory.groups['vpn-host'].hosts[0].name
+            host_vars = variable_manager.get_vars()['hostvars'][host]
+            return {
+                'CA_password': host_vars.get('CA_password'),
+                'p12_export_password': host_vars.get('p12_export_password'),
+                'algo_server_name': host_vars.get('server_name'),
+                'ipv6_support': host_vars.get('ipv6_support'),
+                'local_service_ip': host_vars.get('ansible_lo') and
+                                    host_vars.get('ansible_lo').get('ipv4_secondaries') and
+                                    host_vars.get('ansible_lo').get('ipv4_secondaries')[0]['address'],
+                'ansible_ssh_host': host,
+            }

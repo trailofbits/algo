@@ -40,7 +40,10 @@ async def playbook_get_handler(request):
         return web.json_response({'status': None})
 
     if task_future.done():
-        return web.json_response({'status': 'done', 'program': task_program, 'result': task_future.result()})
+        try:
+            return web.json_response({'status': 'done', 'program': task_program, 'result': task_future.result()})
+        except ValueError as e:
+            return web.json_response({'status': 'error', 'program': task_program, 'result': str(e)})
     elif task_future.cancelled():
         return web.json_response({'status': 'cancelled', 'program': task_program})
     else:

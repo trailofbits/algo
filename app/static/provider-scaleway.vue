@@ -20,7 +20,9 @@
         v-bind:disabled="ui_loading_check || ui_token_from_env"
         v-model="scaleway_token"
       />
-      <p v-if="ui_token_from_env">Token was read from the environment</p>
+      <div v-if="ui_token_from_env" class="form-text alert alert-success" role="alert">
+        Token was read from the environment variable
+      </div>
     </div>
 
     <div class="form-group">
