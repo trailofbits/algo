@@ -1,7 +1,7 @@
 ---
 - pause:
     prompt: |
-      Enter your aws_access_key (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
+      Enter your AWS Access Key ID (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
       Note: Make sure to use an IAM user with an acceptable policy attached (see https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md)
     echo: false
   register: _aws_access_key
@@ -11,7 +11,7 @@
 
 - pause:
     prompt: |
-      Enter your aws_secret_key (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
+      Enter your AWS Secret Access Key (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
     echo: false
   register: _aws_secret_key
   when:
