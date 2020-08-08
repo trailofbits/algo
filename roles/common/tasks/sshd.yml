@@ -1,8 +1,0 @@
----
-
-- name: Disable root password login
-  lineinfile:
-    dest: /etc/ssh/sshd_config
-    regexp: '^#?PermitRootLogin'
-    line: PermitRootLogin prohibit-password
-    state: present
