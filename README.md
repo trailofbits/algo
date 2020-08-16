@@ -40,18 +40,15 @@ The easiest way to get an Algo server running is to run it on your local system 
 
 3. **Install Algo's core dependencies.** Algo requires that **Python 3.6 or later** and at least one supporting package are installed on your system.
 
-    - **macOS:** Apple does not provide a suitable version of Python 3 with macOS. Here are two ways to obtain one:
-        * Use the [Homebrew](https://brew.sh) package manager. After installing Homebrew install Python 3 by running `brew install python3`.
-
-        * Download and install the latest stable [Python package](https://www.python.org/downloads/mac-osx/). Be sure to run the included *Install Certificates* command from Finder.
-
-        See [Deploy from macOS](docs/deploy-from-macos.md) for more detailed information on installing Python 3 on macOS.
-
-        Once Python 3 is installed on your Mac, from Terminal run:
+    - **macOS:** Catalina includes Python 3 as part of the optional Command Line Developer Tools package. From Terminal run:
 
         ```bash
-        python3 -m pip install --upgrade virtualenv
+        python3 -m pip install --user --upgrade virtualenv
         ```
+
+        If prompted, install the Command Line Developer Tools and re-run the above command.
+
+        See [Deploy from macOS](docs/deploy-from-macos.md) for information on installing Python 3 on macOS versions prior to Catalina.
 
     - **Linux:** Recent releases of Ubuntu, Debian, and Fedora come with Python 3 already installed. Make sure your system is up-to-date and install the supporting package(s):
         * Ubuntu and Debian:
