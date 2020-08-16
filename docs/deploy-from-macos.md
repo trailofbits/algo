@@ -8,7 +8,7 @@ Algo uses [Ansible](https://www.ansible.com) which requires Python 3. macOS incl
 
 Catalina comes with Python 3 installed as `/usr/bin/python3`. This file, and certain others like `/usr/bin/git`, start out as stub files that prompt you to install the Command Line Developer Tools package the first time you run them. This is the easiest way to install Python 3 on Catalina.
 
-Note that Python 3 from Command Line Developer Tools prior to the release for Xcode 11.5 on 2020-05-20 might not work with Algo. If Software Update does not offer to update an older version of the tools you can download a newer version from [here](https://developer.apple.com/download/more/) (AppleID login required).
+Note that Python 3 from Command Line Developer Tools prior to the release for Xcode 11.5 on 2020-05-20 might not work with Algo. If Software Update does not offer to update an older version of the tools you can download a newer version from [here](https://developer.apple.com/download/more/) (Apple ID login required).
 
 ## macOS prior to 10.15 Catalina
 
