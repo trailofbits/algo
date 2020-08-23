@@ -1,0 +1,7 @@
+---
+- name: Install requirements
+  pip:
+    name:
+      - linode_api4
+    state: latest
+    virtualenv_python: python3

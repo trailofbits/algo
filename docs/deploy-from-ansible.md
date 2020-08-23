@@ -51,6 +51,7 @@ Cloud roles:
 - role: cloud-openstack,    [provider: openstack](#openstack)
 - role: cloud-cloudstack,   [provider: cloudstack](#cloudstack)
 - role: cloud-hetzner,      [provider: hetzner](#hetzner)
+- role: cloud-linode,       [provider: linode](#linode)
 
 Server roles:
 
@@ -263,6 +264,13 @@ Required variables:
 
 - hcloud_token: Your [API token](https://trailofbits.github.io/algo/cloud-hetzner.html#api-token) - can also be defined in the environment as HCLOUD_TOKEN
 - region: e.g. `nbg1`
+
+### Linode
+
+Required variables:
+
+- linode_token: Your [API token](https://trailofbits.github.io/algo/cloud-linode.html#api-token) - can also be defined in the environment as LINODE_TOKEN
+- region: e.g. `us-east`
 
 ### Update users
 
