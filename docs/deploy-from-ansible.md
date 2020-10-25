@@ -150,6 +150,7 @@ Additional variables:
             "Sid": "CloudFormationEC2Access",
             "Effect": "Allow",
             "Action": [
+                "ec2:DescribeRegions",
                 "ec2:CreateInternetGateway",
                 "ec2:DescribeVpcs",
                 "ec2:CreateVpc",
