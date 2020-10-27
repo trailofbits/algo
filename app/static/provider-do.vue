@@ -5,41 +5,37 @@
           Enter your API token. The token must have read and write permissions
           (<a href="https://cloud.digitalocean.com/settings/api/tokens" target="_blank" rel="noopener noreferrer">https://cloud.digitalocean.com/settings/api/tokens</a>):
       </label>
-      <input
+      <div v-if="ui_token_from_env">
+        <input
+          type="password"
+          class="form-control"
+          v-bind:disabled="ui_loading_check"
+          v-bind:value="'1234567890abcdef'"
+        />
+        <div v-if="ui_token_from_env" class="form-text alert alert-success" role="alert">
+          The token was read from the environment variable
+        </div>
+      </div>
+      <div v-else>
+        <input
           type="text"
           class="form-control"
           id="id_do_token"
           name="do_token"
+          v-bind:disabled="ui_loading_check"
           v-model="do_token"
-          @blur="load_do_regions"
-      />
+          @blur="load_regions"
+        />
+      </div>
+      
     </div>
-    <div class="form-group">
-      <label
-          v-if="do_regions.length > 0"
-          for="id_region"
-      >What region should the server be located in?</label>
-      <label
-          v-if="do_regions.length === 0"
-          for="id_region"
-      >Please enter API key above to select region</label>
-      <label v-if="do_region_loading" for="id_region">Loading regions...</label>
-      <select
-          name="region"
-          id="id_region"
-          class="form-control"
-          v-model="do_region"
-          v-bind:disabled="do_region_loading"
-      >
-          <option value disabled>Select region</option>
-          <option
-            v-for="(region, i) in do_regions"
-            v-bind:key="region.slug"
-            v-bind:value="region.slug"
-            >{{region.name}}</option>
-      </select>
-    </div>
-    <button v-on:click="submit" v-bind:disabled="!do_region" class="btn btn-primary" type="button">Next</button>
+    <region-select v-model="region"
+      v-bind:options="ui_region_options"
+      v-bind:loading="ui_loading_check || ui_loading_regions"
+      v-bind:error="ui_region_error">
+    </region-select>
+    <button v-on:click="submit"
+      v-bind:disabled="!is_valid" class="btn btn-primary" type="button">Next</button>
   </div>
 </template>
 
@@ -48,34 +44,76 @@ module.exports = {
   data: function() {
     return {
       do_token: null,
-      do_region: null,
-      do_regions: [],
-      do_region_loading: false
+      region: null,
+      // helper variables
+      ui_loading_check: false,
+      ui_loading_regions: false,
+      ui_region_error: null,
+      ui_token_from_env: false,
+      ui_region_options: []
     }
   },
+  computed: {
+    is_valid() {
+      return (this.do_config || this.ui_token_from_env) && this.region;
+    }
+  },
+  created: function() {
+    this.check_config();
+  },
   methods: {
-    load_do_regions: function () {
-      this.do_region_loading = true;
-        fetch('https://api.digitalocean.com/v2/regions', {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.do_token}`
+    check_config() {
+      this.ui_loading_check = true;
+      return fetch("/do_config")
+        .then(r => r.json())
+        .then(response => {
+          if (response.ok) {
+            this.ui_token_from_env = true;
+            this.load_regions();
           }
         })
-          .then(r => r.json())
-          .then(r => {
-            this.do_regions = r.regions;
+        .finally(() => {
+          this.ui_loading_check = false;
+        });
+    },
+    load_regions() {
+      if (this.ui_token_from_env || this.do_token) {
+        this.ui_loading_regions = true;
+        this.ui_region_error = null;
+        const url = this.ui_token_from_env ? "/do_regions" : "/do_regions?token=" + this.do_token;
+        fetch(url)
+          .then((r) => {
+            if (r.status === 200) {
+              return r.json();
+            }
+            throw new Error(r.status);
+          })
+          .then((data) => {
+            this.ui_region_options = data.regions.map(i => ({key: i.slug, value: i.name}));
+          })
+          .catch((err) => {
+            this.ui_region_error = err;
           })
           .finally(() => {
-            this.do_region_loading = false;
+            this.ui_loading_regions = false;
           });
+      }
     },
     submit() {
-      this.$emit('submit', {
-        do_token: this.do_token,
-        region: this.do_region
-      })
+      if (this.ui_token_from_env) {
+        this.$emit("submit", {
+          region: this.region
+        });
+      } else {
+        this.$emit("submit", {
+          do_token: this.do_token,
+          region: this.region
+        });
+      }
     }
+  },
+  components: {
+    "region-select": window.httpVueLoader("/static/region-select.vue"),
   }
 };
 </script>

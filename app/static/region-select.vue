@@ -8,6 +8,7 @@
     <select
       name="region"
       class="form-control"
+      v-bind:class="{ 'is-invalid': has_error }"
       v-bind:value="value"
       v-bind:disabled="ui_disabled"
       v-on:input="$emit('input', $event.target.value)"
@@ -20,24 +21,33 @@
         >{{ region.value }}</option
       >
     </select>
+    <div v-if="has_error" class="invalid-feedback">
+      There was an error during fetching regions
+    </div>
   </div>
 </template>
 
 <script>
 module.exports = {
-  props: ["value", "options", "loading"],
+  props: ["value", "options", "loading", "error"],
   computed: {
+      has_options: function() {
+        return this.options && this.options.length;
+      },
       ui_disabled: function() {
-          return !this.options.length || this.loading;
+          return !this.has_options || this.loading;
       },
       ui_show_slot: function() {
-          return !this.loading && !this.options.length
+          return !this.loading && !this.has_options
       },
       ui_show_loading: function() {
           return this.loading;
       },
       ui_show_select_prompt: function() {
-          return this.options.length > 0;
+          return this.has_options;
+      },
+      has_error: function() {
+          return !!this.error;
       }
   }
 };

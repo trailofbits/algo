@@ -103,6 +103,6 @@ module.exports = {
   },
   components: {
     "region-select": window.httpVueLoader("/static/region-select.vue"),
-  },
+  }
 };
 </script>
