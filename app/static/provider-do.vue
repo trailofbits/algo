@@ -1,33 +1,24 @@
 <template>
   <div>
-    <div class="form-group">
+    <div v-if="ui_token_from_env">
+      <div v-if="ui_token_from_env" class="form-text alert alert-success" role="alert">
+        The token was read from the environment variable
+      </div>
+    </div>
+    <div class="form-group" v-else>
       <label for="id_do_token">
           Enter your API token. The token must have read and write permissions
           <a href="https://cloud.digitalocean.com/settings/api/tokens" title="https://cloud.digitalocean.com/settings/api/tokens" class="badge bagde-pill badge-primary" target="_blank" rel="noopener noreferrer">?</a>
       </label>
-      <div v-if="ui_token_from_env">
-        <input
-          type="password"
-          class="form-control"
-          v-bind:disabled="ui_loading_check"
-          v-bind:value="'1234567890abcdef'"
-        />
-        <div v-if="ui_token_from_env" class="form-text alert alert-success" role="alert">
-          The token was read from the environment variable
-        </div>
-      </div>
-      <div v-else>
-        <input
-          type="text"
-          class="form-control"
-          id="id_do_token"
-          name="do_token"
-          v-bind:disabled="ui_loading_check"
-          v-model="do_token"
-          @blur="load_regions"
-        />
-      </div>
-      
+      <input
+        type="text"
+        class="form-control"
+        id="id_do_token"
+        name="do_token"
+        v-bind:disabled="ui_loading_check"
+        v-model="do_token"
+        @blur="load_regions"
+      />
     </div>
     <region-select v-model="region"
       v-bind:options="ui_region_options"
