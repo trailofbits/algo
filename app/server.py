@@ -12,6 +12,7 @@ from playbook import PlaybookCLI
 
 try:
     import boto3
+
     HAS_BOTO3 = True
 except ImportError:
     HAS_BOTO3 = False
@@ -19,6 +20,7 @@ except ImportError:
 try:
     from google.auth.transport.requests import AuthorizedSession
     from google.oauth2 import service_account
+
     HAS_GOOGLE_LIBRARIES = True
 except ImportError:
     HAS_GOOGLE_LIBRARIES = False
@@ -117,16 +119,14 @@ async def post_exit(_):
 
 @routes.get('/do_config')
 async def check_do_config(_):
-    return web.json_response({"ok": 'DO_API_TOKEN' in os.environ})
+    return web.json_response({'has_secret': 'DO_API_TOKEN' in os.environ})
 
 
-@routes.get('/do_regions')
+@routes.post('/do_regions')
 async def do_regions(request):
-    if 'token' in request.query:
-        token = request.query['token']
-    elif 'DO_API_TOKEN' in os.environ:
-        token = os.environ['DO_API_TOKEN']
-    else:
+    data = await request.json()
+    token = data.get('token', os.environ.get('DO_API_TOKEN'))
+    if not token:
         return web.json_response({'error': 'no token provided'}, status=400)
 
     headers = {
@@ -137,6 +137,13 @@ async def do_regions(request):
         async with session.get('https://api.digitalocean.com/v2/regions') as r:
             json_body = await r.json()
             return web.json_response(json_body, status=r.status)
+
+
+@routes.get('/aws_config')
+async def aws_config(_):
+    if not HAS_BOTO3:
+        return web.json_response({'error': 'missing_boto'}, status=400)
+    return web.json_response({'has_secret': 'AWS_ACCESS_KEY_ID' in os.environ and 'AWS_SECRET_ACCESS_KEY' in os.environ})
 
 
 @routes.post('/lightsail_regions')
@@ -195,9 +202,9 @@ async def gce_regions(request):
     response = AuthorizedSession(
         service_account.Credentials.from_service_account_info(
             data).with_scopes(
-                ['https://www.googleapis.com/auth/compute'])).get(
-                'https://www.googleapis.com/compute/v1/projects/{project_id}/regions'.format(
-                    project_id=data['project_id'])
+            ['https://www.googleapis.com/auth/compute'])).get(
+        'https://www.googleapis.com/compute/v1/projects/{project_id}/regions'.format(
+            project_id=data['project_id'])
     )
 
     return web.json_response(json.loads(response.content))

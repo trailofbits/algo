@@ -3,7 +3,7 @@
     <div class="form-group">
       <label for="id_do_token">
           Enter your API token. The token must have read and write permissions
-          (<a href="https://cloud.digitalocean.com/settings/api/tokens" target="_blank" rel="noopener noreferrer">https://cloud.digitalocean.com/settings/api/tokens</a>):
+          <a href="https://cloud.digitalocean.com/settings/api/tokens" title="https://cloud.digitalocean.com/settings/api/tokens" class="badge bagde-pill badge-primary" target="_blank" rel="noopener noreferrer">?</a>
       </label>
       <div v-if="ui_token_from_env">
         <input
@@ -67,7 +67,7 @@ module.exports = {
       return fetch("/do_config")
         .then(r => r.json())
         .then(response => {
-          if (response.ok) {
+          if (response.has_secret) {
             this.ui_token_from_env = true;
             this.load_regions();
           }
@@ -80,8 +80,16 @@ module.exports = {
       if (this.ui_token_from_env || this.do_token) {
         this.ui_loading_regions = true;
         this.ui_region_error = null;
-        const url = this.ui_token_from_env ? "/do_regions" : "/do_regions?token=" + this.do_token;
-        fetch(url)
+        const payload = this.ui_token_from_env ? {} : {
+          token: this.do_token
+        };
+        fetch("/do_regions", {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        })
           .then((r) => {
             if (r.status === 200) {
               return r.json();
