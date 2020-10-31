@@ -13,8 +13,8 @@ wireguard_dns_servers: >-
   {% for host in dns_servers.ipv4 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% if ipv6_support %},{% for host in dns_servers.ipv6 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}
   {% endif %}
 wireguard_client_ip: >-
-  {{ wireguard_network_ipv4 | ipaddr(index|int+2) }}
-  {{ ',' + wireguard_network_ipv6 | ipaddr(index|int+2) if ipv6_support else '' }}
+  {{ wireguard_network_ipv4 | ipmath(index|int+2) }}
+  {{ ',' + wireguard_network_ipv6 | ipmath(index|int+2) if ipv6_support else '' }}
 wireguard_server_ip: >-
   {{ wireguard_network_ipv4 | ipaddr('1') }}
   {{ ',' + wireguard_network_ipv6 | ipaddr('1') if ipv6_support else '' }}
