@@ -45,6 +45,15 @@
     - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/login' }
     - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/sshd' }
 
+- name: Ensure fallback resolvers are set
+  ini_file:
+    path: /etc/systemd/resolved.conf
+    section: Resolve
+    option: FallbackDNS
+    value: "{{ dns_servers.ipv4 | join(' ') }}"
+  notify:
+    - restart systemd-resolved
+
 - name: Loopback for services configured
   template:
     src: 10-algo-lo100.network.j2

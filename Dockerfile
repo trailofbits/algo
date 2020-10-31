@@ -1,8 +1,7 @@
 FROM python:3-alpine
 
 ARG VERSION="git"
-ARG PACKAGES="bash libffi openssh-client openssl rsync tini"
-ARG BUILD_PACKAGES="gcc libffi-dev linux-headers make musl-dev openssl-dev"
+ARG PACKAGES="bash libffi openssh-client openssl rsync tini gcc libffi-dev linux-headers make musl-dev openssl-dev"
 
 LABEL name="algo" \
       version="${VERSION}" \
@@ -15,13 +14,11 @@ RUN mkdir -p /algo && mkdir -p /algo/configs
 
 WORKDIR /algo
 COPY requirements.txt .
-RUN apk --no-cache add ${BUILD_PACKAGES} && \
-    python3 -m pip --no-cache-dir install -U pip && \
+RUN python3 -m pip --no-cache-dir install -U pip && \
     python3 -m pip --no-cache-dir install virtualenv && \
     python3 -m virtualenv .env && \
     source .env/bin/activate && \
-    python3 -m pip --no-cache-dir install -r requirements.txt && \
-    apk del ${BUILD_PACKAGES}
+    python3 -m pip --no-cache-dir install -r requirements.txt
 COPY . .
 RUN chmod 0755 /algo/algo-docker.sh
 
