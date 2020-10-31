@@ -23,7 +23,7 @@ jobs:
         run: |
           /snap/bin/shellcheck algo install.sh
           ansible-playbook main.yml --syntax-check
-          ansible-lint -v *.yml roles/{local,cloud-*}/*/*.yml
+          ansible-lint -x 106,207,208 -v *.yml roles/{local,cloud-*}/*/*.yml
 
   scripted-deploy:
     runs-on: ubuntu-16.04
