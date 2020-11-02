@@ -18,6 +18,13 @@ except ImportError:
     HAS_BOTO3 = False
 
 try:
+    import requests
+
+    HAS_REQUESTS = True
+except ImportError:
+    HAS_REQUESTS = False
+
+try:
     from google.auth.transport.requests import AuthorizedSession
     from google.oauth2 import service_account
 
@@ -174,6 +181,10 @@ async def ec2_regions(request):
 
 @routes.get('/gce_config')
 async def check_gce_config(_):
+    if not HAS_REQUESTS:
+        return web.json_response({'error': 'missing_requests'}, status=400)
+    if not HAS_GOOGLE_LIBRARIES:
+        return web.json_response({'error': 'missing_google'}, status=400)
     gce_file = join(PROJECT_ROOT, 'configs', 'gce.json')
     response = {}
     try:
@@ -213,17 +224,17 @@ async def gce_regions(request):
 @routes.get('/vultr_config')
 async def check_vultr_config(request):
     default_path = expanduser(join('~', '.vultr.ini'))
-    response = {'path': None}
+    response = {'has_secret': False}
     try:
         open(default_path, 'r').read()
-        response['path'] = default_path
+        response['has_secret'] = True
     except IOError:
         pass
 
     if 'VULTR_API_CONFIG' in os.environ:
         try:
             open(os.environ['VULTR_API_CONFIG'], 'r').read()
-            response['path'] = os.environ['VULTR_API_CONFIG']
+            response['has_secret'] = True
         except IOError:
             pass
     return web.json_response(response)
@@ -239,7 +250,7 @@ async def vultr_regions(_):
 
 @routes.get('/scaleway_config')
 async def check_scaleway_config(_):
-    return web.json_response({"ok": 'SCW_TOKEN' in os.environ})
+    return web.json_response({"has_secret": 'SCW_TOKEN' in os.environ})
 
 
 app = web.Application()

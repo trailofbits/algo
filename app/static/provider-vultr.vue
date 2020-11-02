@@ -1,7 +1,9 @@
 <template>
   <div>
-
-    <div class="form-group">
+    <div v-if="ui_env_secrets" class="form-text alert alert-success" role="alert">
+      Vultr config file was found in your system
+    </div>
+    <div v-else class="form-group">
       <label
         >Enter the local path to your configuration INI file
         <a
@@ -20,7 +22,7 @@
         v-bind:disabled="ui_loading_check"
         v-model="vultr_config"
       />
-      <div v-if="ui_token_from_env" class="form-text alert alert-success" role="alert">
+      <div v-if="ui_env_secrets" class="form-text alert alert-success" role="alert">
         Configuration file was found in your system. You still can change the path to it
       </div>
     </div>
@@ -50,7 +52,7 @@ module.exports = {
       vultr_config: null,
       region: null,
       // helper variables
-      ui_token_from_env: false,
+      ui_env_secrets: false,
       ui_loading_check: false,
       ui_loading_regions: false,
       ui_region_options: []
@@ -61,19 +63,29 @@ module.exports = {
     this.load_regions();
   },
   computed: {
+    has_secrets() {
+      return this.ui_env_secrets || this.vultr_config;
+    },
     is_valid() {
-      return this.vultr_config && this.region;
+      return this.has_secrets && this.region;
     }
   },
   methods: {
     check_config() {
       this.ui_loading_check = true;
       fetch("/vultr_config")
-        .then(r => r.json())
+        .then(r => {
+          if (r.status === 200 || r.status === 400) {
+            return r.json();
+          }
+          throw new Error(r.status);
+        })
         .then(response => {
-          if (response.path) {
-            this.vultr_config = response.path;
-            this.ui_token_from_env = true;
+          if (response.has_secret) {
+            this.ui_env_secrets = true;
+            this.load_regions();
+          } else if (response.error) {
+            this.ui_config_error = response.error;
           }
         })
         .finally(() => {
@@ -95,10 +107,13 @@ module.exports = {
         });
     },
     submit() {
-      this.$emit("submit", {
-        vultr_config: this.vultr_config,
+      let submit_value = {
         region: this.region
-      });
+      }
+      if (!this.ui_env_secrets) {
+        submit_value['vultr_config'] = this.vultr_config;
+      }
+      this.$emit("submit", submit_value);
     },
   },
   components: {

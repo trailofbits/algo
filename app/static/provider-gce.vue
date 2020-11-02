@@ -1,5 +1,11 @@
 <template>
   <div>
+    <div v-if="ui_config_error && ui_config_error === 'missing_google'" class="form-text alert alert-danger" role="alert">
+      Python module "google-auth" is missing, please install it to proceed
+    </div>
+    <div v-if="ui_config_error && ui_config_error === 'missing_requests'" class="form-text alert alert-danger" role="alert">
+      Python module "requests" is missing, please install it to proceed
+    </div>
     <div
       class="form-group dropzone"
       v-if="ui_needs_upload"
@@ -31,14 +37,14 @@
         <strong>{{ ui_drop_filename }} loaded successfully</strong>
       </div>
     </div>
-    <input type="file" accept=".json,applciation/json" v-on:change="filechange_handler" />
-
-    <div class="form-group">
-      <region-select v-model="region" v-bind:options="ui_region_options" v-bind:loading="ui_loading_check || ui_loading_regions">
-        <label>Please specify <code>gce.json</code> credentials file to select region</label>
-      </region-select>
+    <div v-else class="form-text alert alert-success" role="alert">
+      Google Compute Engine credentials were found in the project
     </div>
-
+    <input type="file" accept=".json,applciation/json" v-on:change="filechange_handler" />
+    <region-select v-model="region" v-bind:options="ui_region_options" v-bind:loading="ui_loading_check || ui_loading_regions">
+      <label v-if="ui_needs_upload">Please select region</label>
+      <label v-else>Please specify <code>gce.json</code> credentials file to select region</label>
+    </region-select>
     <button
       class="btn btn-primary"
       type="button"
@@ -62,6 +68,7 @@ module.exports = {
       ui_drop_error: null,
       ui_drop_success: null,
       ui_drop_filename: null,
+      ui_config_error: null,
       ui_needs_upload: null,
       ui_loading_regions: false,
       ui_loading_check: false,
@@ -140,12 +147,19 @@ module.exports = {
     check_config() {
       this.ui_loading_check = true;
       fetch("/gce_config")
-        .then(r => r.json())
+        .then(r => {
+          if (r.status === 200 || r.status === 400) {
+            return r.json();
+          }
+          throw new Error(r.status);
+        })
         .then(response => {
           if (response.status === 'ok') {
             this.gce_credentials_file = 'configs/gce.json';
             this.load_regions();
             this.ui_needs_upload = false;
+          }  else if (response.error) {
+            this.ui_config_error = response.error;
           } else {
             this.ui_needs_upload = true;
           }

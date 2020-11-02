@@ -1,7 +1,10 @@
 <template>
   <div>
 
-    <div class="form-group">
+    <div v-if="ui_env_secrets" class="form-text alert alert-success" role="alert">
+      Token was read from the environment variable
+    </div>
+    <div v-else class="form-group">
       <label
         >Enter your auth token
         <a
@@ -17,14 +20,10 @@
         type="text"
         class="form-control"
         name="scaleway_token"
-        v-bind:disabled="ui_loading_check || ui_token_from_env"
+        v-bind:disabled="ui_loading_check"
         v-model="scaleway_token"
       />
-      <div v-if="ui_token_from_env" class="form-text alert alert-success" role="alert">
-        Token was read from the environment variable
-      </div>
     </div>
-
     <div class="form-group">
       <region-select v-model="region" v-bind:options="ui_region_options">
       </region-select>
@@ -48,7 +47,7 @@ module.exports = {
       scaleway_token: null,
       region: null,
       // helper variables
-      ui_token_from_env: false,
+      ui_env_secrets: false,
       ui_loading_check: false,
       ui_region_options: [
         {value: 'Paris 1', key: 'par1'},
@@ -61,17 +60,24 @@ module.exports = {
   },
   computed: {
     is_valid() {
-      return this.region && (this.scaleway_token || this.ui_token_from_env);
+      return this.region && (this.scaleway_token || this.ui_env_secrets);
     }
   },
   methods: {
     check_config() {
       this.ui_loading_check = true;
       fetch("/scaleway_config")
-        .then(r => r.json())
+        .then(r => {
+          if (r.status === 200 || r.status === 400) {
+            return r.json();
+          }
+          throw new Error(r.status);
+        })
         .then(response => {
-          if (response.ok) {
-            this.ui_token_from_env = true;
+          if (response.has_secret) {
+            this.ui_env_secrets = true;
+          } else if (response.error) {
+            this.ui_config_error = response.error;
           }
         })
         .finally(() => {
@@ -79,7 +85,7 @@ module.exports = {
         });
     },
     submit() {
-      if (this.ui_token_from_env) {
+      if (this.ui_env_secrets) {
         this.$emit("submit", {
           region: this.region
         });
