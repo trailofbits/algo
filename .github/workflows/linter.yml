@@ -18,12 +18,11 @@ jobs:
           fetch-depth: 0
 
       - name: Lint Code Base
-        uses: docker://github/super-linter:v3
+        uses: github/super-linter@v3
         env:
           ACTIONS_RUNNER_DEBUG: true
           DEFAULT_BRANCH: master
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ANSIBLE_DIRECTORY: .
-          ANSIBLE_FILE_NAME: .ansible-lint
+          ANSIBLE_DIRECTORY: ${{ github.workspace }}"
           OUTPUT_DETAILS: detailed
           VALIDATE_ALL_CODEBASE: false
