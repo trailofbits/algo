@@ -16,6 +16,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+          path: algo
 
       - name: Lint Code Base
         uses: github/super-linter@v3
@@ -23,6 +24,6 @@ jobs:
           ACTIONS_RUNNER_DEBUG: true
           DEFAULT_BRANCH: master
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ANSIBLE_DIRECTORY: "/github/workspace/"
+          ANSIBLE_DIRECTORY: algo
           OUTPUT_DETAILS: detailed
           VALIDATE_ALL_CODEBASE: false
