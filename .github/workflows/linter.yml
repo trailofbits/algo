@@ -17,18 +17,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Checkout Code 2
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          path: ansible
-
       - name: Lint Code Base
         uses: github/super-linter@v3
         env:
           ACTIONS_RUNNER_DEBUG: true
           DEFAULT_BRANCH: master
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # ANSIBLE_DIRECTORY: .
+          ANSIBLE_DIRECTORY: .
           OUTPUT_DETAILS: detailed
           VALIDATE_ALL_CODEBASE: false
+          VALIDATE_ANSIBLE: true
+          VALIDATE_BASH: true
