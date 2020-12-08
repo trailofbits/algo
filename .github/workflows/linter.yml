@@ -12,11 +12,16 @@ jobs:
     name: Lint Code Base
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Checkout Code 1
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-          path: algo
+
+      - name: Checkout Code 2
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          path: ansible
 
       - name: Lint Code Base
         uses: github/super-linter@v3
@@ -24,6 +29,6 @@ jobs:
           ACTIONS_RUNNER_DEBUG: true
           DEFAULT_BRANCH: master
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ANSIBLE_DIRECTORY: algo
+          # ANSIBLE_DIRECTORY: .
           OUTPUT_DETAILS: detailed
           VALIDATE_ALL_CODEBASE: false
