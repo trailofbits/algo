@@ -20,7 +20,7 @@ jobs:
         env:
           DEFAULT_BRANCH: master
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ANSIBLE_DIRECTORY: .
-          ANSIBLE_FILE_NAME: .ansible-lint
+          # ANSIBLE_DIRECTORY: .
+          # ANSIBLE_FILE_NAME: .ansible-lint
           OUTPUT_DETAILS: detailed
           VALIDATE_ALL_CODEBASE: false
