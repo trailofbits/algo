@@ -18,6 +18,7 @@ jobs:
       - name: Lint Code Base
         uses: docker://github/super-linter:v3
         env:
+          ACTIONS_RUNNER_DEBUG: true
           DEFAULT_BRANCH: master
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ANSIBLE_DIRECTORY: ${{ github.workspace }}"
