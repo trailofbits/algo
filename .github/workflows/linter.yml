@@ -23,3 +23,4 @@ jobs:
           ANSIBLE_DIRECTORY: .
           ANSIBLE_FILE_NAME: .ansible-lint
           OUTPUT_DETAILS: detailed
+          VALIDATE_ALL_CODEBASE: false

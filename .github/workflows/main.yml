@@ -3,28 +3,6 @@ name: Main
 on: [push, pull_request]
 
 jobs:
-  lint:
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2.2.2
-        with:
-          python-version: '3.7'
-
-      - name: Install dependencies
-        run: |
-          sudo apt update -y
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          sudo snap install shellcheck
-          pip install ansible-lint
-
-      - name: Checks and linters
-        run: |
-          /snap/bin/shellcheck algo install.sh
-          ansible-playbook main.yml --syntax-check
-          ansible-lint -x experimental,package-latest,unnamed-task -v *.yml roles/{local,cloud-*}/*/*.yml
-
   scripted-deploy:
     runs-on: ubuntu-16.04
     strategy:
