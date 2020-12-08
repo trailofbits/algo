@@ -23,7 +23,7 @@
       dest: "{{ wireguard_pki_path }}/private/{{ item['item'] }}"
       content: "{{ item['stdout'] }}"
       mode: "0600"
-    no_log: true
+    no_log: "{{ no_log|bool }}"
     when: item.changed
     with_items: "{{ wg_genkey['results'] }}"
     delegate_to: localhost
@@ -62,7 +62,7 @@
       dest: "{{ wireguard_pki_path }}/preshared/{{ item['item'] }}"
       content: "{{ item['stdout'] }}"
       mode: "0600"
-    no_log: true
+    no_log: "{{ no_log|bool }}"
     when: item.changed
     with_items: "{{ wg_genpsk['results'] }}"
     delegate_to: localhost
@@ -95,7 +95,7 @@
     dest: "{{ wireguard_pki_path }}/public/{{ item['item'] }}"
     content: "{{ item['stdout'] }}"
     mode: "0600"
-  no_log: true
+  no_log: "{{ no_log|bool }}"
   with_items: "{{ wg_pubkey['results'] }}"
   delegate_to: localhost
   become: false

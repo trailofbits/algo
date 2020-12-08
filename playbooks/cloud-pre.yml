@@ -18,9 +18,9 @@
 
   - name: Install the requirements
     pip:
-      state: latest
+      state: present
       name:
-        - pyOpenSSL
+        - pyOpenSSL>=0.15
         - jinja2==2.8
         - segno
     tags:

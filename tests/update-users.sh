@@ -2,7 +2,7 @@
 
 set -ex
 
-USER_ARGS="{ 'server': '10.0.8.100', 'users': ['desktop', 'user1', 'user2'], 'local_service_ip': '172.16.0.1' }"
+USER_ARGS="{ 'server': '10.0.8.100', 'users': ['desktop', 'user1', 'user2'], 'local_service_ip': '172.16.0.1', 'no_log': false }"
 
 if [ "${DEPLOY}" == "docker" ]
 then
