@@ -21,7 +21,7 @@ jobs:
           ACTIONS_RUNNER_DEBUG: true
           DEFAULT_BRANCH: master
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ANSIBLE_DIRECTORY: "/github/workspace/algo/"
+          ANSIBLE_DIRECTORY: "algo"
           ANSIBLE_FILE_NAME: .ansible-lint
           OUTPUT_DETAILS: detailed
           VALIDATE_ALL_CODEBASE: false
