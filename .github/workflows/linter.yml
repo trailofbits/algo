@@ -23,6 +23,6 @@ jobs:
           ACTIONS_RUNNER_DEBUG: true
           DEFAULT_BRANCH: master
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ANSIBLE_DIRECTORY: ${{ github.workspace }}"
+          ANSIBLE_DIRECTORY: "/github/workspace/"
           OUTPUT_DETAILS: detailed
           VALIDATE_ALL_CODEBASE: false
