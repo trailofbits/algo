@@ -221,7 +221,7 @@ After this process completes, the Algo VPN server will contain only the users li
 * Deploy to an [unsupported cloud provider](docs/deploy-to-unsupported-cloud.md)
 * Deploy to your own [FreeBSD](docs/deploy-to-freebsd.md) server
 
-If you've read all the documentation and have further questions, [join the chat on Gitter](https://gitter.im/trailofbits/algo).
+If you've read all the documentation and have further questions, [create a new discussion](https://github.com/trailofbits/algo/discussions).
 
 ## Endorsements
 
