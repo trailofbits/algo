@@ -54,10 +54,7 @@ The easiest way to get an Algo server running is to run it on your local system 
             ```bash
             sudo apt install -y --no-install-recommends python3-virtualenv
             ```
-            * RPi ( ubuntu server: install these packages in conjunction with above dependencies ):
-                ```
-                sudo apt install libffi-dev libssl-dev
-                ```
+            On a Raspberry Pi running Ubuntu also install `libffi-dev` and `libssl-dev`.
         * Fedora:
             ```bash
             sudo dnf install -y python3-virtualenv
