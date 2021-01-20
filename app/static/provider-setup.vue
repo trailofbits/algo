@@ -62,7 +62,8 @@ module.exports = {
     'ec2': window.httpVueLoader('/static/provider-ec2.vue'),
     'gce': window.httpVueLoader('/static/provider-gce.vue'),
     'vultr': window.httpVueLoader('/static/provider-vultr.vue'),
-    'scaleway': window.httpVueLoader('/static/provider-scaleway.vue')
+    'scaleway': window.httpVueLoader('/static/provider-scaleway.vue'),
+    'hetzner': window.httpVueLoader('/static/provider-hetzner.vue')
   }
 };
 </script>

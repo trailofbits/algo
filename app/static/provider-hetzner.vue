@@ -6,17 +6,17 @@
       </div>
     </div>
     <div class="form-group" v-else>
-      <label for="id_do_token">
+      <label for="id_hcloud_token">
           Enter your API token. The token must have read and write permissions
-          <a href="https://cloud.digitalocean.com/settings/api/tokens" title="https://cloud.digitalocean.com/settings/api/tokens" class="badge bagde-pill badge-primary" target="_blank" rel="noopener noreferrer">?</a>
+          <a href="https://github.com/trailofbits/algo/blob/master/docs/cloud-hetzner.md" title="https://github.com/trailofbits/algo/blob/master/docs/cloud-hetzner.md" class="badge bagde-pill badge-primary" target="_blank" rel="noopener noreferrer">?</a>
       </label>
       <input
         type="text"
         class="form-control"
-        id="id_do_token"
-        name="do_token"
+        id="id_hcloud_token"
+        name="hcloud_token"
         v-bind:disabled="ui_loading_check"
-        v-model="do_token"
+        v-model="hcloud_token"
         @blur="load_regions"
       />
     </div>
@@ -34,7 +34,7 @@
 module.exports = {
   data: function() {
     return {
-      do_token: null,
+      hcloud_token: null,
       region: null,
       // helper variables
       ui_loading_check: false,
@@ -46,7 +46,7 @@ module.exports = {
   },
   computed: {
     is_valid() {
-      return (this.do_token || this.ui_token_from_env) && this.region;
+      return (this.hcloud_config || this.ui_token_from_env) && this.region;
     }
   },
   created: function() {
@@ -55,7 +55,7 @@ module.exports = {
   methods: {
     check_config() {
       this.ui_loading_check = true;
-      return fetch("/do_config")
+      return fetch("/hetzner_config")
         .then(r => r.json())
         .then(response => {
           if (response.has_secret) {
@@ -68,13 +68,13 @@ module.exports = {
         });
     },
     load_regions() {
-      if (this.ui_token_from_env || this.do_token) {
+      if (this.ui_token_from_env || this.hcloud_token) {
         this.ui_loading_regions = true;
         this.ui_region_error = null;
         const payload = this.ui_token_from_env ? {} : {
-          token: this.do_token
+          token: this.hcloud_token
         };
-        fetch("/do_regions", {
+        fetch("/hetzner_regions", {
           method: 'post',
           headers: {
             'Content-Type': 'application/json'
@@ -88,7 +88,7 @@ module.exports = {
             throw new Error(r.status);
           })
           .then((data) => {
-            this.ui_region_options = data.regions.map(i => ({key: i.slug, value: i.name}));
+            this.ui_region_options = data.datacenters.map(i => ({key: i.location.name, value: i.location.city}));
           })
           .catch((err) => {
             this.ui_region_error = err;
@@ -105,7 +105,7 @@ module.exports = {
         });
       } else {
         this.$emit("submit", {
-          do_token: this.do_token,
+          hcloud_token: this.hcloud_token,
           region: this.region
         });
       }
