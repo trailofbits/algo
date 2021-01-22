@@ -7,6 +7,11 @@
     group: "{{ root_group|default('root') }}"
     mode: 0755
 
+- name: Install cron
+  apt:
+    name: cron
+    state: present
+
 - name: Adblock script added to cron
   cron:
     name: Adblock hosts update
