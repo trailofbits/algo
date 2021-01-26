@@ -63,7 +63,8 @@ module.exports = {
     'gce': window.httpVueLoader('/static/provider-gce.vue'),
     'vultr': window.httpVueLoader('/static/provider-vultr.vue'),
     'scaleway': window.httpVueLoader('/static/provider-scaleway.vue'),
-    'hetzner': window.httpVueLoader('/static/provider-hetzner.vue')
+    'hetzner': window.httpVueLoader('/static/provider-hetzner.vue'),
+    'azure': window.httpVueLoader('/static/provider-azure.vue')
   }
 };
 </script>

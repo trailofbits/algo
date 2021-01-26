@@ -32,6 +32,14 @@ try:
 except ImportError:
     HAS_GOOGLE_LIBRARIES = False
 
+try:
+    from azure.mgmt.automation import AutomationClient
+    import azure.mgmt.automation.models as AutomationModel
+
+    HAS_AZURE_LIBRARIES = True
+except ImportError:
+    HAS_AZURE_LIBRARIES = False
+
 routes = web.RouteTableDef()
 PROJECT_ROOT = dirname(dirname(__file__))
 pool = None
@@ -251,6 +259,46 @@ async def vultr_regions(_):
 @routes.get('/scaleway_config')
 async def check_scaleway_config(_):
     return web.json_response({"has_secret": 'SCW_TOKEN' in os.environ})
+
+
+@routes.get('/hetzner_config')
+async def check_hetzner_config(_):
+    return web.json_response({"has_secret": 'HCLOUD_TOKEN' in os.environ})
+
+
+@routes.post('/hetzner_regions')
+async def hetzner_regions(request):
+    data = await request.json()
+    token = data.get('token', os.environ.get('HCLOUD_TOKEN'))
+    if not token:
+        return web.json_response({'error': 'no token provided'}, status=400)
+
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer {0}'.format(token),
+    }
+    async with ClientSession(headers=headers) as session:
+        async with session.get('https://api.hetzner.cloud/v1/datacenters') as r:
+            json_body = await r.json()
+            return web.json_response(json_body)
+
+
+@routes.get('/azure_config')
+async def azure_config(_):
+    if not HAS_REQUESTS:
+        return web.json_response({'error': 'missing_requests'}, status=400)
+    if not HAS_AZURE_LIBRARIES:
+        return web.json_response({'error': 'missing_azure'}, status=400)
+    response = {'status': 'ok'}
+    return web.json_response(response)
+
+
+@routes.get('/azure_regions')
+async def azure_regions(_):
+    with open(join(PROJECT_ROOT, 'roles', 'cloud-azure', 'defaults', 'main.yml'), 'r') as f:
+        regions_json = yaml.safe_load(f.read())
+        regions = json.loads(regions_json['_azure_regions'])
+        return web.json_response(regions)
 
 
 app = web.Application()
