@@ -34,6 +34,7 @@ module.exports = {
         { name: "Google Compute Engine", alias: "gce" },
         { name: "Hetzner Cloud", alias: "hetzner" },
         { name: "Vultr", alias: "vultr" },
+        { name: "Linode", alias: "linode" },
         { name: "Scaleway", alias: "scaleway" },
         { name: "OpenStack (DreamCompute optimised)", alias: "openstack" },
         { name: "CloudStack (Exoscale optimised)", alias: "cloudstack" },
@@ -64,7 +65,8 @@ module.exports = {
     'vultr': window.httpVueLoader('/static/provider-vultr.vue'),
     'scaleway': window.httpVueLoader('/static/provider-scaleway.vue'),
     'hetzner': window.httpVueLoader('/static/provider-hetzner.vue'),
-    'azure': window.httpVueLoader('/static/provider-azure.vue')
+    'azure': window.httpVueLoader('/static/provider-azure.vue'),
+    'linode': window.httpVueLoader('/static/provider-linode.vue')
   }
 };
 </script>

@@ -301,6 +301,19 @@ async def azure_regions(_):
         return web.json_response(regions)
 
 
+@routes.get('/linode_config')
+async def linode_config(_):
+    return web.json_response({"has_secret": 'LINODE_API_TOKEN' in os.environ})
+
+
+@routes.get('/linode_regions')
+async def linode_config(_):
+    async with ClientSession() as session:
+        async with session.get('https://api.linode.com/v4/regions') as r:
+            json_body = await r.json()
+            return web.json_response(json_body)
+
+
 app = web.Application()
 app.router.add_routes(routes)
 app.add_routes([web.static('/static', join(PROJECT_ROOT, 'app', 'static'))])
