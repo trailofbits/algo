@@ -1,9 +1,14 @@
 import asyncio
+import base64
 import concurrent.futures
+import configparser
+import hashlib
+import hmac
 import json
 import os
 import sys
 from os.path import join, dirname, expanduser
+from urllib.parse import quote, urlencode
 
 import yaml
 from aiohttp import web, ClientSession
@@ -158,7 +163,8 @@ async def do_regions(request):
 async def aws_config(_):
     if not HAS_BOTO3:
         return web.json_response({'error': 'missing_boto'}, status=400)
-    return web.json_response({'has_secret': 'AWS_ACCESS_KEY_ID' in os.environ and 'AWS_SECRET_ACCESS_KEY' in os.environ})
+    return web.json_response(
+        {'has_secret': 'AWS_ACCESS_KEY_ID' in os.environ and 'AWS_SECRET_ACCESS_KEY' in os.environ})
 
 
 @routes.post('/lightsail_regions')
@@ -307,9 +313,104 @@ async def linode_config(_):
 
 
 @routes.get('/linode_regions')
-async def linode_config(_):
+async def linode_regions(_):
     async with ClientSession() as session:
         async with session.get('https://api.linode.com/v4/regions') as r:
+            json_body = await r.json()
+            return web.json_response(json_body)
+
+
+@routes.get('/cloudstack_config')
+async def get_cloudstack_config(_):
+    response = {'has_secret': False}
+    if 'CLOUDSTACK_CONFIG' in os.environ:
+        try:
+            open(os.environ['CLOUDSTACK_CONFIG'], 'r').read()
+            response['has_secret'] = True
+        except IOError:
+            pass
+    # check default path
+    default_path = expanduser(join('~', '.cloudstack.ini'))
+    try:
+        open(default_path, 'r').read()
+        response['has_secret'] = True
+    except IOError:
+        pass
+    return web.json_response(response)
+
+
+@routes.post('/cloudstack_config')
+async def post_cloudstack_config(request):
+    data = await request.json()
+    with open(join(PROJECT_ROOT, 'cloudstack.ini'), 'w') as f:
+        try:
+            config = data.config_text
+        except Exception as e:
+            return web.json_response({'error': {
+                'code': type(e).__name__,
+                'message': e,
+            }}, status=400)
+        else:
+            f.write(config)
+            return web.json_response({'ok': True})
+
+
+def _get_cloudstack_config(path=None):
+    if path:
+        try:
+            return open(os.environ['CLOUDSTACK_CONFIG'], 'r').read()
+        except IOError:
+            pass
+
+    if 'CLOUDSTACK_CONFIG' in os.environ:
+        try:
+            return open(os.environ['CLOUDSTACK_CONFIG'], 'r').read()
+        except IOError:
+            pass
+
+    default_path = expanduser(join('~', '.cloudstack.ini'))
+    return open(default_path, 'r').read()
+
+
+def _sign(command, secret):
+    """Adds the signature bit to a command expressed as a dict"""
+    # order matters
+    arguments = sorted(command.items())
+
+    # urllib.parse.urlencode is not good enough here.
+    # key contains should only contain safe content already.
+    # safe="*" is required when producing the signature.
+    query_string = "&".join("=".join((key, quote(value, safe="*")))
+                            for key, value in arguments)
+
+    # Signing using HMAC-SHA1
+    digest = hmac.new(
+        secret.encode("utf-8"),
+        msg=query_string.lower().encode("utf-8"),
+        digestmod=hashlib.sha1).digest()
+
+    signature = base64.b64encode(digest).decode("utf-8")
+
+    return dict(command, signature=signature)
+
+
+@routes.get('/cloudstack_regions')
+async def cloudstack_regions(request):
+    data = {} #await request.json()
+    config = configparser.ConfigParser()
+    config.read_string(_get_cloudstack_config(data.get('cs_config')))
+    section = config[config.sections()[0]]
+
+    compute_endpoint = section.get('endpoint', '')
+    api_key = section.get('key', '')
+    api_secret = section.get('secret', '')
+    params = _sign({
+        "command": "listZones",
+        "apikey": api_key}, api_secret)
+    query_string = urlencode(params)
+
+    async with ClientSession() as session:
+        async with session.get(f'{compute_endpoint}?{query_string}') as r:
             json_body = await r.json()
             return web.json_response(json_body)
 
