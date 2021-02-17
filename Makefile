@@ -1,10 +1,10 @@
 ## docker-build: Build and tag a docker image
 .PHONY: docker-build
 
-IMAGE          := trailofbits/algo
-TAG	  	       := latest
-DOCKERFILE     := Dockerfile
-CONFIGURATIONS := $(shell pwd)
+IMAGE 		:= trailofbits/algo
+TAG			:= latest
+DOCKERFILE	:= Dockerfile
+PWD			:= $$(pwd)
 
 docker-build:
 	docker build \
@@ -21,10 +21,22 @@ docker-deploy:
 	--cap-drop=all \
 	--rm \
 	-it \
-	-v $(CONFIGURATIONS):/data \
+	-v $(PWD):/data \
 	$(IMAGE):$(TAG)
 
-## docker-clean: Remove images and containers.
+# update the users on existing VPN
+.PHONY: docker-update
+
+docker-update:
+	docker run \
+	--cap-drop=all \
+	--rm \
+	-it \
+	-e "ALGO_ARGS=update-users" \
+	-v $(PWD):/data \
+	$(IMAGE):$(TAG)
+
+## docker-prune: Remove images and containers.
 .PHONY: docker-prune
 
 docker-prune:
