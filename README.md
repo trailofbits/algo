@@ -78,7 +78,7 @@ The easiest way to get an Algo server running is to run it on your local system 
 
 5. **Set your configuration options.** Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list. Create a unique user for each device you plan to connect to your VPN. If you want to be able to add or delete users later, you **must** select `yes` at the `Do you want to retain the keys (PKI)?` prompt during the deployment. You should also review the other options before deployment, as changing your mind about them later [may require you to deploy a brand new server](https://github.com/trailofbits/algo/blob/master/docs/faq.md#i-deployed-an-algo-server-can-you-update-it-with-new-features).
 
-6. **Start the deployment.** Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [here](docs/deploy-from-ansible.md).
+6. **Start the deployment.** Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. Run `sudo ./algo` if you are using [local installation](docs/deploy-to-ubuntu.md) and the target is the same system where you've installed the Algo scripts. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [here](docs/deploy-from-ansible.md).
 
 That's it! You will get the message below when the server deployment process completes. Take note of the p12 (user certificate) password and the CA key in case you need them later, **they will only be displayed this time**.
 
