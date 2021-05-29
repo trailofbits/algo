@@ -67,7 +67,9 @@ module.exports = {
     'hetzner': window.httpVueLoader('/static/provider-hetzner.vue'),
     'azure': window.httpVueLoader('/static/provider-azure.vue'),
     'linode': window.httpVueLoader('/static/provider-linode.vue'),
-    'cloudstack': window.httpVueLoader('/static/provider-cloudstack.vue')
+    'cloudstack': window.httpVueLoader('/static/provider-cloudstack.vue'),
+    'openstack': window.httpVueLoader('/static/provider-openstack.vue'),
+    'local': window.httpVueLoader('/static/provider-local.vue')
   }
 };
 </script>
