@@ -45,6 +45,12 @@ try:
 except ImportError:
     HAS_AZURE_LIBRARIES = False
 
+try:
+    from cs import AIOCloudStack, CloudStackApiException
+    HAS_CS_LIBRARIES = True
+except ImportError:
+    HAS_CS_LIBRARIES = False
+
 routes = web.RouteTableDef()
 PROJECT_ROOT = dirname(dirname(__file__))
 pool = None
@@ -322,97 +328,53 @@ async def linode_regions(_):
 
 @routes.get('/cloudstack_config')
 async def get_cloudstack_config(_):
-    response = {'has_secret': False}
+    if not HAS_REQUESTS:
+        return web.json_response({'error': 'missing_requests'}, status=400)
+    if not HAS_CS_LIBRARIES:
+        return web.json_response({'error': 'missing_cloudstack'}, status=400)
+    response = {'has_secret': _read_cloudstack_config() is not None}
+    return web.json_response(response)
+
+
+def _read_cloudstack_config():
     if 'CLOUDSTACK_CONFIG' in os.environ:
         try:
-            open(os.environ['CLOUDSTACK_CONFIG'], 'r').read()
-            response['has_secret'] = True
+            return open(os.environ['CLOUDSTACK_CONFIG'], 'r').read()
         except IOError:
             pass
     # check default path
     default_path = expanduser(join('~', '.cloudstack.ini'))
     try:
-        open(default_path, 'r').read()
-        response['has_secret'] = True
+        return open(default_path, 'r').read()
     except IOError:
         pass
-    return web.json_response(response)
+    return None
 
 
-@routes.post('/cloudstack_config')
-async def post_cloudstack_config(request):
-    data = await request.json()
-    with open(join(PROJECT_ROOT, 'cloudstack.ini'), 'w') as f:
-        try:
-            config = data.config_text
-        except Exception as e:
-            return web.json_response({'error': {
-                'code': type(e).__name__,
-                'message': e,
-            }}, status=400)
-        else:
-            f.write(config)
-            return web.json_response({'ok': True})
-
-
-def _get_cloudstack_config(path=None):
-    if path:
-        try:
-            return open(os.environ['CLOUDSTACK_CONFIG'], 'r').read()
-        except IOError:
-            pass
-
-    if 'CLOUDSTACK_CONFIG' in os.environ:
-        try:
-            return open(os.environ['CLOUDSTACK_CONFIG'], 'r').read()
-        except IOError:
-            pass
-
-    default_path = expanduser(join('~', '.cloudstack.ini'))
-    return open(default_path, 'r').read()
-
-
-def _sign(command, secret):
-    """Adds the signature bit to a command expressed as a dict"""
-    # order matters
-    arguments = sorted(command.items())
-
-    # urllib.parse.urlencode is not good enough here.
-    # key contains should only contain safe content already.
-    # safe="*" is required when producing the signature.
-    query_string = "&".join("=".join((key, quote(value, safe="*")))
-                            for key, value in arguments)
-
-    # Signing using HMAC-SHA1
-    digest = hmac.new(
-        secret.encode("utf-8"),
-        msg=query_string.lower().encode("utf-8"),
-        digestmod=hashlib.sha1).digest()
-
-    signature = base64.b64encode(digest).decode("utf-8")
-
-    return dict(command, signature=signature)
-
-
-@routes.get('/cloudstack_regions')
+@routes.post('/cloudstack_regions')
 async def cloudstack_regions(request):
-    data = {} #await request.json()
+    data = await request.json()
+    client_config = data.get('token')
     config = configparser.ConfigParser()
-    config.read_string(_get_cloudstack_config(data.get('cs_config')))
+    config.read_string(_read_cloudstack_config() or client_config)
     section = config[config.sections()[0]]
+    client = AIOCloudStack(**section)
+    try:
+        zones = await client.listZones(fetch_list=True)
+    except CloudStackApiException as resp:
+        return web.json_response({
+            'cloud_stack_error': resp.error
+        }, status=400)
+    # if config was passed from client, save it after successful zone retrieval
+    if _read_cloudstack_config() is None:
+        path = os.environ['CLOUDSTACK_CONFIG'] or expanduser(join('~', '.cloudstack.ini'))
+        with open(path, 'w') as f:
+            try:
+                f.write(client_config)
+            except IOError as e:
+                return web.json_response({'error': 'can not save config file'}, status=400)
 
-    compute_endpoint = section.get('endpoint', '')
-    api_key = section.get('key', '')
-    api_secret = section.get('secret', '')
-    params = _sign({
-        "command": "listZones",
-        "apikey": api_key}, api_secret)
-    query_string = urlencode(params)
-
-    async with ClientSession() as session:
-        async with session.get(f'{compute_endpoint}?{query_string}') as r:
-            json_body = await r.json()
-            return web.json_response(json_body)
+    return web.json_response(zones)
 
 
 app = web.Application()

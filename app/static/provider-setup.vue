@@ -66,7 +66,8 @@ module.exports = {
     'scaleway': window.httpVueLoader('/static/provider-scaleway.vue'),
     'hetzner': window.httpVueLoader('/static/provider-hetzner.vue'),
     'azure': window.httpVueLoader('/static/provider-azure.vue'),
-    'linode': window.httpVueLoader('/static/provider-linode.vue')
+    'linode': window.httpVueLoader('/static/provider-linode.vue'),
+    'cloudstack': window.httpVueLoader('/static/provider-cloudstack.vue')
   }
 };
 </script>
