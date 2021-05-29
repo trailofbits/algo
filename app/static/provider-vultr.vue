@@ -1,11 +1,11 @@
 <template>
   <div>
-    <div v-if="ui_env_secrets" class="form-text alert alert-success" role="alert">
+     <div v-if="ui_token_from_env" class="form-text alert alert-success" role="alert">
       Vultr config file was found in your system
     </div>
     <div v-else class="form-group">
       <label
-        >Enter the local path to your configuration INI file
+        >Enter Vultr API Token, it will be saved in your system
         <a
           href="https://trailofbits.github.io/algo/cloud-vultr.html"
           title="https://trailofbits.github.io/algo/cloud-vultr.html"
@@ -18,12 +18,13 @@
       <input
         type="text"
         class="form-control"
-        name="vultr_config"
+        name="vultr_token"
         v-bind:disabled="ui_loading_check"
-        v-model="vultr_config"
+        v-model="ui_token"
+        v-on:blur="save_config"
       />
-      <div v-if="ui_env_secrets" class="form-text alert alert-success" role="alert">
-        Configuration file was found in your system. You still can change the path to it
+      <div v-if="vultr_config" class="form-text alert alert-success" role="alert">
+        The config file was saved on your system
       </div>
     </div>
 
@@ -52,7 +53,8 @@ module.exports = {
       vultr_config: null,
       region: null,
       // helper variables
-      ui_env_secrets: false,
+      ui_token: null,
+      ui_token_from_env: false,
       ui_loading_check: false,
       ui_loading_regions: false,
       ui_region_options: []
@@ -64,7 +66,7 @@ module.exports = {
   },
   computed: {
     has_secrets() {
-      return this.ui_env_secrets || this.vultr_config;
+      return this.ui_token_from_env || this.vultr_config;
     },
     is_valid() {
       return this.has_secrets && this.region;
@@ -82,8 +84,36 @@ module.exports = {
         })
         .then(response => {
           if (response.has_secret) {
-            this.ui_env_secrets = true;
+            this.ui_token_from_env = true;
             this.load_regions();
+          } else if (response.error) {
+            this.ui_config_error = response.error;
+          }
+        })
+        .finally(() => {
+          this.ui_loading_check = false;
+        });
+    },
+    save_config() {
+      this.ui_loading_check = true;
+      fetch("/vultr_config", {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          token: this.ui_token
+        })
+      })
+      .then(r => {
+          if (r.status === 200 || r.status === 400) {
+            return r.json();
+          }
+          throw new Error(r.status);
+        })
+        .then(response => {
+          if ('saved_to' in response) {
+            this.vultr_config = response.saved_to;
           } else if (response.error) {
             this.ui_config_error = response.error;
           }
@@ -99,7 +129,7 @@ module.exports = {
         .then((data) => {
           this.ui_region_options = Object.keys(data).map(k => ({
             value: data[k].name,
-            key: data[k].name
+            key: data[k].DCID
           }));
         })
         .finally(() => {
@@ -110,7 +140,7 @@ module.exports = {
       let submit_value = {
         region: this.region
       }
-      if (!this.ui_env_secrets) {
+      if (!this.ui_token_from_env) {
         submit_value['vultr_config'] = this.vultr_config;
       }
       this.$emit("submit", submit_value);

@@ -243,21 +243,33 @@ async def gce_regions(request):
 
 @routes.get('/vultr_config')
 async def check_vultr_config(request):
-    default_path = expanduser(join('~', '.vultr.ini'))
     response = {'has_secret': False}
-    try:
-        open(default_path, 'r').read()
-        response['has_secret'] = True
-    except IOError:
-        pass
-
     if 'VULTR_API_CONFIG' in os.environ:
         try:
             open(os.environ['VULTR_API_CONFIG'], 'r').read()
             response['has_secret'] = True
         except IOError:
             pass
+    try:
+        default_path = expanduser(join('~', '.vultr.ini'))
+        open(default_path, 'r').read()
+        response['has_secret'] = True
+    except IOError:
+        pass
     return web.json_response(response)
+
+
+@routes.post('/vultr_config')
+async def save_vultr_config(request):
+    data = await request.json()
+    token = data.get('token')
+    path = os.environ.get('VULTR_API_CONFIG') or expanduser(join('~', '.vultr.ini'))
+    with open(path, 'w') as f:
+        try:
+            f.write('[default]\nkey = {0}'.format(token))
+        except IOError:
+            return web.json_response({'error': 'can not save config file'}, status=400)
+    return web.json_response({'saved_to': path})
 
 
 @routes.get('/vultr_regions')
@@ -327,7 +339,7 @@ async def linode_regions(_):
 
 
 @routes.get('/cloudstack_config')
-async def get_cloudstack_config(_):
+async def check_cloudstack_config(_):
     if not HAS_REQUESTS:
         return web.json_response({'error': 'missing_requests'}, status=400)
     if not HAS_CS_LIBRARIES:
@@ -367,7 +379,7 @@ async def cloudstack_regions(request):
         }, status=400)
     # if config was passed from client, save it after successful zone retrieval
     if _read_cloudstack_config() is None:
-        path = os.environ['CLOUDSTACK_CONFIG'] or expanduser(join('~', '.cloudstack.ini'))
+        path = os.environ.get('CLOUDSTACK_CONFIG') or expanduser(join('~', '.cloudstack.ini'))
         with open(path, 'w') as f:
             try:
                 f.write(client_config)
