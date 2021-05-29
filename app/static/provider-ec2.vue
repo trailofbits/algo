@@ -15,7 +15,7 @@
             title="http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html"
             target="_blank"
             rel="noreferrer noopener"
-            class="badge bagde-pill badge-primary"
+            class="badge badge-pill badge-primary"
             >?</a
           >
           <br />

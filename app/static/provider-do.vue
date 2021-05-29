@@ -17,7 +17,7 @@
         name="do_token"
         v-bind:disabled="ui_loading_check"
         v-model="do_token"
-        @blur="load_regions"
+        v-on:blur="load_regions"
       />
     </div>
     <region-select v-model="region"
