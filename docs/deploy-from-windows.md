@@ -23,6 +23,15 @@ Wait a minute for Windows to install a few things in the background (it will eve
 4. The subsystem will be installed, then Windows will require a restart.
 5. Restart Windows and then [install Ubuntu 18.04 LTS from the Windows Store](https://www.microsoft.com/p/ubuntu-1804-lts/9n9tngvndl3q) (at this time Ubuntu 20.04 LTS does not work with Algo when running under WSL).
 6. Run Ubuntu from the Start menu. It will take a few minutes to install. It will have you create a separate user account for the Linux subsystem. Once that's done, you will finally have Ubuntu running somewhat integrated with Windows.
+7. Start Ubuntu Terminal.
+8. Edit /etc/wsl.conf (create it if it doesn't exist). Add the following:
+```
+[automount]
+options = "metadata"
+```
+9. Close all opened Ubuntu Terminals.
+10. Run powershell.
+11. Run `wsl --shutdown` in powershell.
 
 ## Install Algo
 
