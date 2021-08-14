@@ -1,3 +1,4 @@
+ansible-core==2.11.3
 ansible==4.4.0
 jinja2==2.11.3
 netaddr

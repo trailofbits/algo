@@ -24,9 +24,9 @@
     - name: Set required ansible version as a fact
       set_fact:
         required_ansible_version:
-          "{{ item |  regex_replace('^ansible[\\s+]?(?P<op>[=,>,<]+)[\\s+]?(?P<ver>\\d.\\d+(.\\d+)?)$',
+          "{{ item |  regex_replace('^ansible-core[\\s+]?(?P<op>[=,>,<]+)[\\s+]?(?P<ver>\\d.\\d+(.\\d+)?)$',
                       '{\"op\": \"\\g<op>\",\"ver\": \"\\g<ver>\" }') }}"
-      when: '"ansible" in item'
+      when: '"ansible-core" in item'
       with_items: "{{ lookup('file', 'requirements.txt').splitlines() }}"
 
     - name: Verify Python meets Algo VPN requirements
