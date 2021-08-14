@@ -6,10 +6,6 @@
     subscription_id: "{{ azure_subscription_id | default(lookup('env','AZURE_SUBSCRIPTION_ID'), true) }}"
 
 - block:
-  - name: Set facts about the regions
-    set_fact:
-      azure_regions: "{{ _azure_regions|from_json | sort(attribute='name') }}"
-
   - name: Set the default region
     set_fact:
       default_region: >-
@@ -21,7 +17,7 @@
       prompt: |
         What region should the server be located in?
           {% for r in azure_regions %}
-          {{ loop.index }}. {{ r['displayName'] }}
+          {{ loop.index }}. {{ r['regionalDisplayName'] }}
           {% endfor %}
 
         Enter the number of your desired region
