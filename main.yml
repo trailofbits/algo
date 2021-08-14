@@ -9,7 +9,7 @@
 
     - name: Ensure Ansible is not being run in a world writable directory
       assert:
-        that: _playbook_dir.stat.mode|int <= 0775
+        that: _playbook_dir.stat.mode|int <= 775
         msg: >
           Ansible is being run in a world writable directory ({{ playbook_dir }}), ignoring it as an ansible.cfg source.
           For more information see https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-writable-dir
