@@ -14,7 +14,7 @@
 
   /etc/dnscrypt-proxy/** r,
   /usr/bin/dnscrypt-proxy mr,
-  /tmp/public-resolvers.md* rw,
+  /var/cache/{private/,}dnscrypt-proxy/** rw,
 
   /tmp/*.tmp w,
   owner /tmp/*.tmp r,
