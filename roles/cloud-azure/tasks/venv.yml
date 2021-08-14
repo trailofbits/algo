@@ -5,7 +5,7 @@
       - packaging
       - requests[security]
       - xmltodict
-      - azure-cli-core==2.0.35
+      - azure-cli-core==2.16.0
       - azure-cli-nspkg==3.0.2
       - azure-common==1.1.11
       - azure-mgmt-authorization==0.51.1
@@ -32,7 +32,7 @@
       - azure-nspkg==2.0.0
       - azure-storage==0.35.1
       - msrest==0.6.1
-      - msrestazure==0.5.0
+      - msrestazure==0.6.4
       - azure-keyvault==1.0.0a1
       - azure-graphrbac==0.40.0
       - azure-mgmt-cosmosdb==0.5.2
