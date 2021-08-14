@@ -48,22 +48,27 @@ On the final screen, click the Download CSV button. This file includes the AWS a
 
 After you have downloaded Algo and installed its dependencies, the next step is running Algo to provision the VPN server  on your AWS account.
 
-First you will be asked which server type to setup. You would want to enter "2" to use Amazon EC2.
+First you will be asked which server type to setup. You would want to enter "3" to use Amazon EC2.
 
 ```
 $ ./algo
 
   What provider would you like to use?
     1. DigitalOcean
-    2. Amazon EC2
-    3. Microsoft Azure
-    4. Google Compute Engine
-    5. Scaleway
-    6. OpenStack (DreamCompute optimised)
-    7. Install to existing Ubuntu 16.04 server (Advanced)
+    2. Amazon Lightsail
+    3. Amazon EC2
+    4. Microsoft Azure
+    5. Google Compute Engine
+    6. Hetzner Cloud
+    7. Vultr
+    8. Scaleway
+    9. OpenStack (DreamCompute optimised)
+    10. CloudStack (Exoscale optimised)
+    11. Linode
+    12. Install to existing Ubuntu 18.04 or 20.04 server (for more advanced users)
 
 Enter the number of your desired provider
-: 2
+: 3
 ```
 
 Next you will be asked for the AWS Access Key (Access Key ID) and AWS Secret Key (Secret Access Key) that you received in  the CSV file when you setup the account (don't worry if you don't see your text entered in the console; the key input is  hidden here by Algo).
