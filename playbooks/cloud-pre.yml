@@ -21,7 +21,6 @@
       state: present
       name:
         - pyOpenSSL>=0.15
-        - jinja2==2.8
         - segno
     tags:
       - always
