@@ -7,14 +7,14 @@
   import_tasks: venv.yml
 
 - name: Security group created
-  os_security_group:
+  openstack.cloud.security_group:
     state: "{{ state|default('present') }}"
     name: "{{ algo_server_name }}-security_group"
     description: AlgoVPN security group
   register: os_security_group
 
 - name: Security rules created
-  os_security_group_rule:
+  openstack.cloud.security_group_rule:
     state: "{{ state|default('present') }}"
     security_group: "{{ os_security_group.id }}"
     protocol: "{{ item.proto }}"
@@ -29,22 +29,25 @@
     - { proto: udp, port_min: "{{ wireguard_port }}", port_max: "{{ wireguard_port }}", range: 0.0.0.0/0 }
 
 - name: Gather facts about flavors
-  os_flavor_facts:
+  openstack.cloud.compute_flavor_info:
     ram: "{{ cloud_providers.openstack.flavor_ram }}"
+  register: os_flavor
 
 - name: Gather facts about images
-  os_image_facts:
+  openstack.cloud.image_info:
+  register: os_image
 
 - name: Set image as a fact
   set_fact:
     image_id: "{{ item.id }}"
-  loop: "{{ openstack_image }}"
+  loop: "{{ os_image.openstack_image }}"
   when:
     - item.name == cloud_providers.openstack.image
     - item.status == "active"
 
 - name: Gather facts about public networks
-  os_networks_facts:
+  openstack.cloud.networks_info:
+  register: os_network
 
 - name: Set the network as a fact
   set_fact:
@@ -53,15 +56,15 @@
     - item['router:external']|default(omit)
     - item['admin_state_up']|default(omit)
     - item['status'] == 'ACTIVE'
-  with_items: "{{ openstack_networks }}"
+  with_items: "{{ os_network.openstack_networks }}"
 
 - name: Set facts
   set_fact:
-    flavor_id: "{{ (openstack_flavors | sort(attribute='ram'))[0]['id'] }}"
+    flavor_id: "{{ (os_flavor.openstack_flavors | sort(attribute='ram'))[0]['id'] }}"
     security_group_name: "{{ os_security_group['secgroup']['name'] }}"
 
 - name: Server created
-  os_server:
+  openstack.cloud.server:
     state: "{{ state|default('present') }}"
     name: "{{ algo_server_name }}"
     image: "{{ image_id }}"
