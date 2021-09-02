@@ -54,5 +54,6 @@
         ansible_ssh_port: "{{ ssh_port }}"
         cloudinit: true
   environment:
-    CLOUDSTACK_CONFIG: "{{ algo_cs_config }}"
-    CLOUDSTACK_REGION: "{{ algo_cs_region }}"
+    CLOUDSTACK_KEY: "{{ algo_cs_key }}"
+    CLOUDSTACK_SECRET: "{{ algo_cs_token }}"
+    CLOUDSTACK_ENDPOINT: "{{ algo_cs_url }}"
