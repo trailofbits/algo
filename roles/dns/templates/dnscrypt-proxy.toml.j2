@@ -551,5 +551,10 @@ cache_neg_max_ttl = 600
 
 [static]
 
+{% if custom_server_stamps %}{% for name, stamp in custom_server_stamps.items() %}
+  [static.'{{ name }}']
+  stamp = '{{ stamp }}'
+{%- endfor %}{% endif %}
+
   # [static.'myserver']
   # stamp = 'sdns:AQcAAAAAAAAAAAAQMi5kbnNjcnlwdC1jZXJ0Lg'
