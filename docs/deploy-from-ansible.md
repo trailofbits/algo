@@ -110,8 +110,16 @@ Possible options can be gathered via cli `aws ec2 describe-regions`
 
 Additional variables:
 
-- [encrypted](https://aws.amazon.com/blogs/aws/new-encrypted-ebs-boot-volumes/) - Encrypted EBS boot volume. Boolean (Default: false)
+- [encrypted](https://aws.amazon.com/blogs/aws/new-encrypted-ebs-boot-volumes/) - Encrypted EBS boot volume. Boolean (Default: true)
 - [size](https://aws.amazon.com/ec2/instance-types/) - EC2 instance type. String (Default: t2.micro)
+- [image](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/describe-images.html) - AMI `describe-images` search parameters to find the OS for the hosted image. Each OS and architecture has a unique AMI-ID. The OS owner, for example [Ubuntu](https://cloud-images.ubuntu.com/locator/ec2/), updates these images often. If parameters below result in multiple results, the most recent AMI-ID is chosen
+   ```
+   # Example of equivalent cli comand
+   aws ec2 describe-images --owners "099720109477" --filters "Name=architecture,Values=arm64" "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-focal-20.04*"
+   ```
+  - [owners] - The operating system owner id. Default is [Canonical](https://help.ubuntu.com/community/EC2StartersGuide#Official_Ubuntu_Cloud_Guest_Amazon_Machine_Images_.28AMIs.29) (Default: 099720109477)
+  - [arch] - The architecture (Default: x86_64, Optional: arm64)
+  - [name] - The wildcard string to filter available ami names. Algo appends this name with the string "-\*64-server-\*", and prepends with "ubuntu/images/hvm-ssd/" (Default: ubuntu-focal-20.04)
 - [instance_market_type](https://aws.amazon.com/ec2/pricing/) - Two pricing models are supported: on-demand and spot. String (Default: on-demand)
   * If using spot instance types, one additional IAM permission along with the below minimum is required for deployment:
     ```
