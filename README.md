@@ -39,7 +39,7 @@ The easiest way to get an Algo server running is to run it on your local system 
 
 3. **Install Algo's core dependencies.** Algo requires that **Python 3.6 or later** and at least one supporting package are installed on your system.
 
-    - **macOS:** Catalina includes Python 3 as part of the optional Command Line Developer Tools package. From Terminal run:
+    - **macOS:** Catalina (10.15) and higher includes Python 3 as part of the optional Command Line Developer Tools package. From Terminal run:
 
         ```bash
         python3 -m pip install --user --upgrade virtualenv
@@ -47,7 +47,7 @@ The easiest way to get an Algo server running is to run it on your local system 
 
         If prompted, install the Command Line Developer Tools and re-run the above command.
 
-        See [Deploy from macOS](docs/deploy-from-macos.md) for information on installing Python 3 on macOS versions prior to Catalina.
+        For macOS versions prior to Catalina, see [Deploy from macOS](docs/deploy-from-macos.md) for information on installing Python 3 .
 
     - **Linux:** Recent releases of Ubuntu, Debian, and Fedora come with Python 3 already installed. Make sure your system is up-to-date and install the supporting package(s):
         * Ubuntu and Debian:
@@ -65,7 +65,7 @@ The easiest way to get an Algo server running is to run it on your local system 
             sudo yum -y install python36-virtualenv
             ```
 
-    - **Windows:** Use the Windows Subsystem for Linux (WSL) to create your own copy of Ubuntu running under Windows from which to install and run Algo. See the [Windows documentation](docs/deploy-from-windows.md).
+    - **Windows:** Use the Windows Subsystem for Linux (WSL) to create your own copy of Ubuntu running under Windows from which to install and run Algo. See the [Windows documentation](docs/deploy-from-windows.md) for more information.
 
 4. **Install Algo's remaining dependencies.** You'll need to run these commands from the Algo directory each time you download a new copy of Algo. In a Terminal window `cd` into the `algo-master` (ZIP file) or `algo` (`git clone`) directory and run:
     ```bash
@@ -76,9 +76,9 @@ The easiest way to get an Algo server running is to run it on your local system 
     ```
     On Fedora add the option `--system-site-packages` to the first command above. On macOS install the C compiler if prompted.
 
-5. **Set your configuration options.** Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list. Create a unique user for each device you plan to connect to your VPN. If you want to be able to add or delete users later, you **must** select `yes` at the `Do you want to retain the keys (PKI)?` prompt during the deployment. You should also review the other options before deployment, as changing your mind about them later [may require you to deploy a brand new server](https://github.com/trailofbits/algo/blob/master/docs/faq.md#i-deployed-an-algo-server-can-you-update-it-with-new-features).
+5. **Set your configuration options.** Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list. Create a unique user for each device you plan to connect to your VPN. If you want to add or delete users later, you **must** select `yes` at the `Do you want to retain the keys (PKI)?` prompt during the server deployment. You should also review the other options before deployment, as changing your mind about them later [may require you to deploy a brand new server](https://github.com/trailofbits/algo/blob/master/docs/faq.md#i-deployed-an-algo-server-can-you-update-it-with-new-features).
 
-6. **Start the deployment.** Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available. None are required for a fully functional VPN server. These optional features are described in greater detail in [here](docs/deploy-from-ansible.md).
+6. **Start the deployment.** Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available, none of which are required for a fully functional VPN server. These optional features are described in greater detail in [here](docs/deploy-from-ansible.md).
 
 That's it! You will get the message below when the server deployment process completes. Take note of the p12 (user certificate) password and the CA key in case you need them later, **they will only be displayed this time**.
 
