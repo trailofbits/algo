@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   lint:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2.2.2
@@ -26,12 +26,12 @@ jobs:
           ansible-lint -x experimental,package-latest,unnamed-task -v *.yml roles/{local,cloud-*}/*/*.yml
 
   scripted-deploy:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         UBUNTU_VERSION: ["18.04", "20.04"]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-python@v2.2.2
         with:
           python-version: '3.7'
@@ -40,28 +40,19 @@ jobs:
         run: |
           sudo apt update -y
           sudo apt install -y \
-            python3-pip \
-            lxd \
-            expect-dev \
-            debootstrap \
-            tree \
-            bridge-utils \
-            dnsutils \
-            build-essential \
-            libssl-dev \
-            libffi-dev \
-            python3-dev \
-            linux-headers-$(uname -r) \
             wireguard \
             libxml2-utils \
             crudini \
             fping \
             strongswan \
             libstrongswan-standard-plugins \
-            resolvconf
+            openresolv
 
           python3 -m pip install --upgrade pip
           python3 -m pip install -r requirements.txt
+
+          sudo snap refresh lxd
+          sudo lxd init --auto
 
       - name: Provision
         env:
@@ -93,13 +84,13 @@ jobs:
           sudo -E bash -x ./tests/wireguard-client.sh
           sudo env "PATH=$PATH" ./tests/ipsec-client.sh
 
-  local-deploy:
-    runs-on: ubuntu-16.04
+  docker-deploy:
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         UBUNTU_VERSION: ["18.04", "20.04"]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-python@v2.2.2
         with:
           python-version: '3.7'
@@ -107,31 +98,21 @@ jobs:
       - name: Install dependencies
         run: |
           set -x
-          sudo add-apt-repository -yu ppa:ubuntu-lxc/stable
           sudo apt update -y
           sudo apt install -y \
-            python3-pip \
-            lxd \
-            expect-dev \
-            debootstrap \
-            tree \
-            bridge-utils \
-            dnsutils \
-            build-essential \
-            libssl-dev \
-            libffi-dev \
-            python3-dev \
-            linux-headers-$(uname -r) \
             wireguard \
             libxml2-utils \
             crudini \
             fping \
             strongswan \
             libstrongswan-standard-plugins \
-            resolvconf
+            openresolv
 
           python3 -m pip install --upgrade pip
           python3 -m pip install -r requirements.txt
+
+          sudo snap refresh lxd
+          sudo lxd init --auto
 
       - name: Provision
         env:

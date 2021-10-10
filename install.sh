@@ -22,16 +22,7 @@ installRequirements() {
   export DEBIAN_FRONTEND=noninteractive
   apt-get update
   apt-get install \
-    software-properties-common \
-    git \
-    build-essential \
-    libssl-dev \
-    libffi-dev \
-    python3-dev \
-    python3-pip \
-    python3-setuptools \
     python3-virtualenv \
-    bind9-host \
     jq -y
 }
 
