@@ -220,7 +220,7 @@
     when: item.split('@')[0] not in users
     with_items: "{{ valid_certs.stdout_lines }}"
 
-  - name: Genereate new CRL file
+  - name: Generate new CRL file
     shell: >
       {{ openssl_bin }} ca -gencrl
       -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ IP_subject_alt_name }}"))
