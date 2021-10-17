@@ -177,7 +177,8 @@ Additional variables:
                 "ec2:RunInstances",
                 "ec2:DescribeInstances",
                 "ec2:AllocateAddress",
-                "ec2:DescribeAddresses"
+                "ec2:DescribeAddresses",
+                "ec2:CreateLaunchTemplate"
             ],
             "Resource": [
                 "*"
