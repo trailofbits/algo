@@ -55,6 +55,7 @@
   when: region is undefined
 
 - set_fact:
+    stack_name: "{{ algo_server_name | replace('.', '-') }}"
     algo_region: >-
       {% if region is defined %}{{ region }}
       {%- elif _algo_region.user_input %}{{ lightsail_regions[_algo_region.user_input | int -1 ]['name'] }}
