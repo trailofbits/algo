@@ -13,7 +13,7 @@
         'algo_ssh_tunneling "{{ algo_ssh_tunneling }}"' \
         'wireguard_enabled "{{ wireguard_enabled }}"' \
         'dns_encryption "{{ dns_encryption }}"' \
-        > /dev/tty
+        > /dev/tty || true
     tags: debug
 
   - name: Install the requirements

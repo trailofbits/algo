@@ -6,7 +6,7 @@
   import_tasks: prompts.yml
 
 - name: Locate official AMI for region
-  ec2_ami_facts:
+  ec2_ami_info:
     aws_access_key: "{{ access_key }}"
     aws_secret_key: "{{ secret_key }}"
     owners: "{{ cloud_providers.ec2.image.owner }}"
