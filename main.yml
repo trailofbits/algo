@@ -9,7 +9,7 @@
 
     - name: Ensure Ansible is not being run in a world writable directory
       assert:
-        that: _playbook_dir.stat.mode|int <= 0775
+        that: _playbook_dir.stat.mode|int <= 775
         msg: >
           Ansible is being run in a world writable directory ({{ playbook_dir }}), ignoring it as an ansible.cfg source.
           For more information see https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-writable-dir
@@ -24,14 +24,14 @@
     - name: Set required ansible version as a fact
       set_fact:
         required_ansible_version:
-          "{{ item |  regex_replace('^ansible[\\s+]?(?P<op>[=,>,<]+)[\\s+]?(?P<ver>\\d.\\d+(.\\d+)?)$',
+          "{{ item |  regex_replace('^ansible-core[\\s+]?(?P<op>[=,>,<]+)[\\s+]?(?P<ver>\\d.\\d+(.\\d+)?)$',
                       '{\"op\": \"\\g<op>\",\"ver\": \"\\g<ver>\" }') }}"
-      when: '"ansible" in item'
+      when: '"ansible-core" in item'
       with_items: "{{ lookup('file', 'requirements.txt').splitlines() }}"
 
     - name: Verify Python meets Algo VPN requirements
       assert:
-        that: (ansible_python.version.major|string + '.' + ansible_python.version.minor|string)|float is version('3.6', '>=')
+        that: (ansible_python.version.major|string + '.' + ansible_python.version.minor|string) is version('3.6', '>=')
         msg: >
           Python version is not supported.
           You must upgrade to at least Python 3.6 to use this version of Algo.

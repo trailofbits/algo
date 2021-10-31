@@ -119,7 +119,7 @@
       - linux-headers-generic
       - "linux-headers-{{ ansible_kernel }}"
     state: present
-  when: install_headers
+  when: install_headers | bool
 
 - name: Configure the alternative ingress ip
   include_tasks: aip/main.yml

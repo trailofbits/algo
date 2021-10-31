@@ -2,36 +2,47 @@
 - block:
   - pause:
       prompt: |
-        Enter path for cloudstack.ini file (https://trailofbits.github.io/algo/cloud-cloudstack.html)
-        [~/.cloudstack.ini]
-    register: _cs_config
+        Enter the API key (https://trailofbits.github.io/algo/cloud-cloudstack.html):
+      echo: false
+    register: _cs_key
     when:
-      - cs_config is undefined
-      - lookup('env', 'CLOUDSTACK_CONFIG') | length <= 0
+      - cs_key is undefined
+      - lookup('env','CLOUDSTACK_KEY')|length <= 0
 
   - pause:
       prompt: |
-        Specify region to use in cloudstack.ini file
-        [exoscale]
-    register: _cs_region
+        Enter the API ssecret (https://trailofbits.github.io/algo/cloud-cloudstack.html):
+      echo: false
+    register: _cs_secret
     when:
-      - cs_region is undefined
-      - lookup('env', 'CLOUDSTACK_REGION') | length <= 0
+      - cs_secret is undefined
+      - lookup('env','CLOUDSTACK_SECRET')|length <= 0
+
+  - pause:
+      prompt: |
+        Enter the API endpoint (https://trailofbits.github.io/algo/cloud-cloudstack.html)
+        [https://api.exoscale.com/compute]
+    register: _cs_url
+    when:
+      - cs_url is undefined
+      - lookup('env', 'CLOUDSTACK_ENDPOINT') | length <= 0
 
   - set_fact:
-      algo_cs_config: "{{ cs_config | default(_cs_config.user_input|default(None)) | default(lookup('env', 'CLOUDSTACK_CONFIG'), true) | default('~/.cloudstack.ini', true) }}"
-      algo_cs_region:  "{{ cs_region | default(_cs_region.user_input|default(None)) | default(lookup('env', 'CLOUDSTACK_REGION'), true) | default('exoscale', true) }}"
+      algo_cs_key: "{{ cs_key | default(_cs_key.user_input|default(None)) | default(lookup('env', 'CLOUDSTACK_KEY'), true) }}"
+      algo_cs_token: "{{ cs_secret | default(_cs_secret.user_input|default(None)) | default(lookup('env', 'CLOUDSTACK_SECRET'), true) }}"
+      algo_cs_url: "{{ cs_url | default(_cs_url.user_input|default(None)) | default(lookup('env', 'CLOUDSTACK_ENDPOINT'), true) | default('https://api.exoscale.com/compute', true) }}"
 
   - name: Get zones on cloud
-    cloudstack_zones:
+    cs_zone_info:
     register: _cs_zones
     environment:
-      CLOUDSTACK_CONFIG: "{{ algo_cs_config }}"
-      CLOUDSTACK_REGION: "{{ algo_cs_region }}"
+      CLOUDSTACK_KEY: "{{ algo_cs_key }}"
+      CLOUDSTACK_SECRET: "{{ algo_cs_token }}"
+      CLOUDSTACK_ENDPOINT: "{{ algo_cs_url }}"
 
   - name: Extract zones from output
     set_fact:
-      cs_zones: "{{ _cs_zones['zone'] | sort(attribute='name') }}"
+      cs_zones: "{{ _cs_zones['zones'] | sort(attribute='name') }}"
 
   - name: Set the default zone
     set_fact:
