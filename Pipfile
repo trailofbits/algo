@@ -4,10 +4,10 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-ansible-core = "==2.11.3"
-ansible = "==4.4.0"
+ansible-core = "*"
+ansible = "*"
 netaddr = "*"
-Jinja2 = "~=3.0.1"
+Jinja2 = "*"
 
 [dev-packages]
 
