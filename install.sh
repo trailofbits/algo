@@ -41,7 +41,7 @@ publicIpFromInterface() {
   echo "Couldn't find a valid ipv4 address, using the first IP found on the interfaces as the endpoint."
   DEFAULT_INTERFACE="$(ip -4 route list match default | grep -Eo "dev .*" | awk '{print $2}')"
   ENDPOINT=$(ip -4 addr sh dev "$DEFAULT_INTERFACE" | grep -w inet | head -n1 | awk '{print $2}' | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b')
-  export ENDPOINT=$ENDPOINT
+  export ENDPOINT="${ENDPOINT}"
   echo "Using ${ENDPOINT} as the endpoint"
 }
 
@@ -57,7 +57,7 @@ publicIpFromMetadata() {
   fi
 
   if echo "${ENDPOINT}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"; then
-    export ENDPOINT=$ENDPOINT
+    export ENDPOINT="${ENDPOINT}"
     echo "Using ${ENDPOINT} as the endpoint"
   else
     publicIpFromInterface
