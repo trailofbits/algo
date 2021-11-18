@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2.2.2
+      - uses: actions/setup-python@v2.3.0
         with:
           python-version: '3.7'
 
@@ -32,7 +32,7 @@ jobs:
         UBUNTU_VERSION: ["18.04", "20.04"]
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2.2.2
+      - uses: actions/setup-python@v2.3.0
         with:
           python-version: '3.7'
 
@@ -91,7 +91,7 @@ jobs:
         UBUNTU_VERSION: ["18.04", "20.04"]
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2.2.2
+      - uses: actions/setup-python@v2.3.0
         with:
           python-version: '3.7'
 
