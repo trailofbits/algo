@@ -12,6 +12,8 @@ The cheapest EC2 plan you can choose is the "Free Plan" a.k.a. the "AWS Free Tie
 
 As of the time of this writing (July 2018), the Free Tier limits include "750 hours of Amazon EC2 Linux t2.micro instance  usage" per month, 15 GB of bandwidth (outbound) per month, and 30 GB of cloud storage. Algo will not even use 1% of the storage limit, but you may have to monitor your bandwidth usage or keep an eye out for the email from Amazon when you are about to exceed the Free Tier limits.
 
+Addtional configurations are documented in the [EC2 section of the deploy from ansible guide](https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md#amazon-ec2)
+
 ### Create an AWS permissions policy
 
 In the AWS console, find the policies menu: click Services > IAM > Policies. Click Create Policy.
