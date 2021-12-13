@@ -25,6 +25,12 @@ lxc network attach lxdbr0 algo eth0 eth0
 lxc config device set algo eth0 ipv4.address 10.0.8.100
 lxc start algo
 
+ip addr
+
+until dig A +short algo.lxd @10.0.8.1 | grep -vE '^$' > /dev/null; do
+  sleep 3
+done
+
 case ${UBUNTU_VERSION} in
   20.04)
     lxc exec algo -- apt remove snapd --purge -y || true
@@ -33,11 +39,5 @@ case ${UBUNTU_VERSION} in
     lxc exec algo -- apt install python3.8 -y
     ;;
 esac
-
-ip addr
-
-until dig A +short algo.lxd @10.0.8.1 | grep -vE '^$' > /dev/null; do
-  sleep 3
-done
 
 lxc list
