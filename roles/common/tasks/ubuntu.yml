@@ -36,7 +36,7 @@
       become: false
   when: algo_provider != "local"
 
-- name: Include unatteded upgrades configuration
+- name: Include unattended upgrades configuration
   import_tasks: unattended-upgrades.yml
 
 - name: Disable MOTD on login and SSHD
