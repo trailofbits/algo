@@ -37,7 +37,7 @@ The easiest way to get an Algo server running is to run it on your local system 
 
     - Run the command `git clone https://github.com/trailofbits/algo.git` to create a directory named `algo` containing the Algo scripts.
 
-3. **Install Algo's core dependencies.** Algo requires that **Python 3.6 or later** and at least one supporting package are installed on your system.
+3. **Install Algo's core dependencies.** Algo requires that **Python 3.8 or later** and at least one supporting package are installed on your system.
 
     - **macOS:** Catalina (10.15) and higher includes Python 3 as part of the optional Command Line Developer Tools package. From Terminal run:
 

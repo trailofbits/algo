@@ -31,10 +31,10 @@
 
     - name: Verify Python meets Algo VPN requirements
       assert:
-        that: (ansible_python.version.major|string + '.' + ansible_python.version.minor|string) is version('3.6', '>=')
+        that: (ansible_python.version.major|string + '.' + ansible_python.version.minor|string) is version('3.8', '>=')
         msg: >
           Python version is not supported.
-          You must upgrade to at least Python 3.6 to use this version of Algo.
+          You must upgrade to at least Python 3.8 to use this version of Algo.
           See for more details - https://trailofbits.github.io/algo/troubleshooting.html#python-version-is-not-supported
 
     - name: Verify Ansible meets Algo VPN requirements
