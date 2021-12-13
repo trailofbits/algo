@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        UBUNTU_VERSION: ["18.04", "20.04"]
+        UBUNTU_VERSION: ["20.04"]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2.3.1
@@ -90,7 +90,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        UBUNTU_VERSION: ["18.04", "20.04"]
+        UBUNTU_VERSION: ["20.04"]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2.3.1
