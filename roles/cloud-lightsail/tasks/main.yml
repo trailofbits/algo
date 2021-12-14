@@ -5,36 +5,11 @@
 - name: Include prompts
   import_tasks: prompts.yml
 
-- name: Create an instance
-  lightsail:
-    aws_access_key: "{{ access_key }}"
-    aws_secret_key: "{{ secret_key }}"
-    name: "{{ algo_server_name }}"
-    state: present
-    region: "{{ algo_region }}"
-    zone: "{{ algo_region }}a"
-    blueprint_id: "{{ cloud_providers.lightsail.image }}"
-    bundle_id: "{{ cloud_providers.lightsail.size }}"
-    wait_timeout: "300"
-    open_ports:
-      - from_port: "{{ ssh_port }}"
-        to_port:  "{{ ssh_port }}"
-        protocol: tcp
-      - from_port: 4500
-        to_port: 4500
-        protocol: udp
-      - from_port: 500
-        to_port: 500
-        protocol: udp
-      - from_port: "{{ wireguard_port }}"
-        to_port: "{{ wireguard_port }}"
-        protocol: udp
-    user_data: |
-      {{ lookup('template', 'files/cloud-init/base.sh') }}
-  register: algo_instance
+- name: Deploy the stack
+  import_tasks: cloudformation.yml
 
 - set_fact:
-    cloud_instance_ip: "{{ algo_instance['instance']['public_ip_address'] }}"
+    cloud_instance_ip: "{{ stack.stack_outputs.IpAddress }}"
     ansible_ssh_user: algo
     ansible_ssh_port: "{{ ssh_port }}"
     cloudinit: true

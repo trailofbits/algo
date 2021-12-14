@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Algo VPN stack (LightSail)'
+Parameters:
+  InstanceTypeParameter:
+    Type: String
+    Default: 'nano_2_0'
+  ImageIdParameter:
+    Type: String
+    Default: 'ubuntu_20_04'
+  WireGuardPort:
+    Type: String
+    Default: '51820'
+  SshPort:
+    Type: String
+    Default: '4160'
+  UserData:
+    Type: String
+    Default: 'true'
+Resources:
+  Instance:
+    Type: AWS::Lightsail::Instance
+    Properties: 
+      BlueprintId:
+        Ref: ImageIdParameter
+      BundleId: 
+        Ref: InstanceTypeParameter
+      InstanceName: !Ref AWS::StackName
+      Networking: 
+        Ports: 
+          - AccessDirection: inbound
+            Cidrs: ['0.0.0.0/0']
+            Ipv6Cidrs: ['::/0']
+            CommonName: SSH
+            FromPort: !Ref SshPort
+            ToPort: !Ref SshPort
+            Protocol: tcp
+          - AccessDirection: inbound
+            Cidrs: ['0.0.0.0/0']
+            Ipv6Cidrs: ['::/0']
+            CommonName: WireGuard
+            FromPort: !Ref WireGuardPort
+            ToPort: !Ref WireGuardPort
+            Protocol: udp
+          - AccessDirection: inbound
+            Cidrs: ['0.0.0.0/0']
+            Ipv6Cidrs: ['::/0']
+            CommonName: IPSec-4500
+            FromPort: 4500
+            ToPort: 4500
+            Protocol: udp
+          - AccessDirection: inbound
+            Cidrs: ['0.0.0.0/0']
+            Ipv6Cidrs: ['::/0']
+            CommonName: IPSec-500
+            FromPort: 500
+            ToPort: 500
+            Protocol: udp  
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+      UserData: !Ref UserData
+
+  StaticIP:
+    Type: AWS::Lightsail::StaticIp
+    Properties: 
+      AttachedTo: !Ref Instance
+      StaticIpName: !Join [ "-", [ !Ref AWS::StackName, "ip" ] ]
+    DependsOn:
+      - Instance
+
+Outputs:
+  IpAddress:
+    Value: !GetAtt [StaticIP, IpAddress]
