@@ -25,14 +25,19 @@ lxc network attach lxdbr0 algo eth0 eth0
 lxc config device set algo eth0 ipv4.address 10.0.8.100
 lxc start algo
 
-if [[ ${UBUNTU_VERSION} == "20.04" ]]; then
-  lxc exec algo -- apt remove snapd --purge -y || true
-fi
-
 ip addr
 
 until dig A +short algo.lxd @10.0.8.1 | grep -vE '^$' > /dev/null; do
   sleep 3
 done
+
+case ${UBUNTU_VERSION} in
+  20.04)
+    lxc exec algo -- apt remove snapd --purge -y || true
+    ;;
+  18.04)
+    lxc exec algo -- apt install python3.8 -y
+    ;;
+esac
 
 lxc list

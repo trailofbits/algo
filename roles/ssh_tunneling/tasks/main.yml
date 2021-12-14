@@ -64,7 +64,7 @@
       openssl_privatekey:
         path: "{{ ssh_tunnels_config_path }}/{{ item.item }}.pem"
         passphrase: "{{ p12_export_password }}"
-        cipher: aes256
+        cipher: auto
         force: false
       no_log: "{{ no_log|bool }}"
       when: not item.stat.exists
