@@ -28,9 +28,7 @@
     vultr_startup_script:
       name: algo-startup
       script:  |
-        {{ lookup('template', 'files/cloud-init/base.sh') }}
-        mkdir -p /var/lib/cloud/data/ || true
-        touch /var/lib/cloud/data/result.json
+        {{ lookup('template', 'files/cloud-init/base.yml') }}
 
   - name: Creating a server
     vultr_server:

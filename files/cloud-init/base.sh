@@ -19,6 +19,8 @@ EOF
 test -d /home/algo/.ssh || sudo -u algo mkdir -m 0700 /home/algo/.ssh
 echo "{{ lookup('file', '{{ SSH_keys.public }}') }}" | (sudo -u algo tee /home/algo/.ssh/authorized_keys && chmod 0600 /home/algo/.ssh/authorized_keys)
 
+ufw --force reset
+
 # shellcheck disable=SC2015
 dpkg -l sshguard && until apt-get remove -y --purge sshguard; do
   sleep 3
