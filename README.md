@@ -132,6 +132,10 @@ WireGuard works great with Linux clients. See [this page](docs/client-linux-wire
 
 Please see [this page](docs/client-linux-ipsec.md).
 
+### OpenWrt Wireguard Clients
+
+Please see [this page](docs/client-openwrt-router-wireguard.md).
+
 ### Other Devices
 
 Depending on the platform, you may need one or multiple of the following files.
