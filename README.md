@@ -35,7 +35,10 @@ The easiest way to get an Algo server running is to run it on your local system 
 
     - Download the [ZIP file](https://github.com/trailofbits/algo/archive/master.zip). Unzip the file to create a directory named `algo-master` containing the Algo scripts.
 
-    - Run the command `git clone https://github.com/trailofbits/algo.git` to create a directory named `algo` containing the Algo scripts.
+    - Use `git clone` to create a directory named `algo` containing the Algo scripts:
+        ```bash
+        git clone https://github.com/trailofbits/algo.git
+        ```
 
 3. **Install Algo's core dependencies.** Algo requires that **Python 3.8 or later** and at least one supporting package are installed on your system.
 
@@ -55,14 +58,10 @@ The easiest way to get an Algo server running is to run it on your local system 
             sudo apt install -y --no-install-recommends python3-virtualenv
             ```
             On a Raspberry Pi running Ubuntu also install `libffi-dev` and `libssl-dev`.
+
         * Fedora:
             ```bash
             sudo dnf install -y python3-virtualenv
-            ```
-        * Red Hat and CentOS 7 and later (for earlier versions see this [documentation](docs/deploy-from-redhat-centos6.md)):
-            ```bash
-            sudo yum -y install epel-release
-            sudo yum -y install python36-virtualenv
             ```
 
     - **Windows:** Use the Windows Subsystem for Linux (WSL) to create your own copy of Ubuntu running under Windows from which to install and run Algo. See the [Windows documentation](docs/deploy-from-windows.md) for more information.
@@ -74,7 +73,7 @@ The easiest way to get an Algo server running is to run it on your local system 
       python3 -m pip install -U pip virtualenv &&
       python3 -m pip install -r requirements.txt
     ```
-    On Fedora add the option `--system-site-packages` to the first command above. On macOS install the C compiler if prompted.
+    On Fedora first run `export TMPDIR=/var/tmp`, then add the option `--system-site-packages` to the first command above (after `python3 -m virtualenv`). On macOS install the C compiler if prompted.
 
 5. **Set your configuration options.** Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list. Create a unique user for each device you plan to connect to your VPN. If you want to add or delete users later, you **must** select `yes` at the `Do you want to retain the keys (PKI)?` prompt during the server deployment. You should also review the other options before deployment, as changing your mind about them later [may require you to deploy a brand new server](https://github.com/trailofbits/algo/blob/master/docs/faq.md#i-deployed-an-algo-server-can-you-update-it-with-new-features).
 
