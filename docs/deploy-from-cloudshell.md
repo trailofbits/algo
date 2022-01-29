@@ -1,4 +1,5 @@
 # Deploy from Google Cloud Shell
+**IMPORTANT NOTE: As of 2021-12-14 Algo requires Python 3.8, but Google Cloud Shell only provides Python 3.7.3. The instructions below will not work until Google updates Cloud Shell to have at least Python 3.8.**
 
 If you want to try Algo but don't wish to install the software on your own system you can use the **free** [Google Cloud Shell](https://cloud.google.com/shell/) to deploy a VPN to any supported cloud provider. Note that you cannot choose `Install to existing Ubuntu server` to turn Google Cloud Shell into your VPN server.
 
