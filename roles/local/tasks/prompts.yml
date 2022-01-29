@@ -1,5 +1,14 @@
 ---
 - pause:
+    prompt: "{{ item }}"
+  when: not tests|default(false)|bool
+  with_items: |
+    Local installation might break your server. Use at your own risk.
+    (https://trailofbits.github.io/algo/deploy-to-ubuntu.html)
+
+    Proceed? Press ENTER to continue or CTRL+C and A to abort...
+
+- pause:
     prompt: |
       Enter the IP address of your server: (or use localhost for local installation):
       [localhost]
