@@ -2,6 +2,8 @@
 - pause:
     prompt: "{{ item }}"
   when: not tests|default(false)|bool
+  tags:
+    - skip_ansible_lint
   with_items: |
     https://trailofbits.github.io/algo/deploy-to-ubuntu.html
 
