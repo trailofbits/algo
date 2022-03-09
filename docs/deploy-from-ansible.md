@@ -248,6 +248,7 @@ Possible options can be gathered via cli `aws lightsail get-regions`
                 "lightsail:DisableAddOn",
                 "lightsail:PutInstancePublicPorts",
                 "lightsail:StartInstance",
+                "lightsail:TagResource",
                 "lightsail:GetStaticIp",
                 "lightsail:AllocateStaticIp",
                 "lightsail:AttachStaticIp"
@@ -261,6 +262,7 @@ Possible options can be gathered via cli `aws lightsail get-regions`
             "Effect": "Allow",
             "Action": [
                 "cloudformation:CreateStack",
+                "cloudformation:UpdateStack",
                 "cloudformation:DescribeStacks",
                 "cloudformation:DescribeStackEvents",
                 "cloudformation:ListStackResources"
