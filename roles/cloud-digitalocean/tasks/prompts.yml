@@ -24,7 +24,7 @@
 
 - name: Set facts about the regions
   set_fact:
-    do_regions: "{{ _do_regions.json.regions | sort(attribute='slug') }}"
+    do_regions: "{{ _do_regions.json.regions | selectattr('available', 'true') | sort(attribute='slug') }}"
 
 - name: Set default region
   set_fact:
