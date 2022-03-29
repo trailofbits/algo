@@ -1,5 +1,17 @@
 ---
 - pause:
+    prompt: "{{ item }}"
+  when: not tests|default(false)|bool
+  tags:
+    - skip_ansible_lint
+  with_items: |
+    https://trailofbits.github.io/algo/deploy-to-ubuntu.html
+
+    Local installation might break your server. Use at your own risk.
+
+    Proceed? Press ENTER to continue or CTRL+C and A to abort...
+
+- pause:
     prompt: |
       Enter the IP address of your server: (or use localhost for local installation):
       [localhost]

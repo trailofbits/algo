@@ -16,6 +16,7 @@
       EbsEncrypted: "{{ encrypted }}"
       UserData: "{{ lookup('template', 'files/cloud-init/base.yml') | b64encode }}"
       SshPort: "{{ ssh_port }}"
+      InstanceMarketTypeParameter: "{{ cloud_providers.ec2.instance_market_type }}"
     tags:
       Environment: Algo
   register: stack

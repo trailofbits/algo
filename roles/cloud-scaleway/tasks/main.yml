@@ -3,17 +3,19 @@
 
 - block:
   - name: Gather Scaleway organizations facts
-    scaleway_organization_facts:
+    scaleway_organization_info:
+    register: scaleway_org
 
   - name: Get images
-    scaleway_image_facts:
+    scaleway_image_info:
       region: "{{ algo_region }}"
+    register: scaleway_image
 
   - name: Set cloud specific facts
     set_fact:
-      organization_id: "{{ scaleway_organization_facts[0]['id'] }}"
+      organization_id: "{{ scaleway_org.scaleway_organization_info[0]['id'] }}"
       images: >-
-        [{% for i in scaleway_image_facts -%}
+        [{% for i in scaleway_image.scaleway_image_info -%}
           {% if i.name == cloud_providers.scaleway.image and
                 i.arch == cloud_providers.scaleway.arch -%}
           '{{ i.id }}'{% if not loop.last %},{% endif %}

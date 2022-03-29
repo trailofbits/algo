@@ -1,242 +1,211 @@
 ---
-_azure_regions: >
-  [
-    {
-      "displayName": "East Asia",
-      "latitude": "22.267",
-      "longitude": "114.188",
-      "name": "eastasia",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "Southeast Asia",
-      "latitude": "1.283",
-      "longitude": "103.833",
-      "name": "southeastasia",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "Central US",
-      "latitude": "41.5908",
-      "longitude": "-93.6208",
-      "name": "centralus",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "East US",
-      "latitude": "37.3719",
-      "longitude": "-79.8164",
-      "name": "eastus",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "East US 2",
-      "latitude": "36.6681",
-      "longitude": "-78.3889",
-      "name": "eastus2",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "West US",
-      "latitude": "37.783",
-      "longitude": "-122.417",
-      "name": "westus",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "North Central US",
-      "latitude": "41.8819",
-      "longitude": "-87.6278",
-      "name": "northcentralus",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "South Central US",
-      "latitude": "29.4167",
-      "longitude": "-98.5",
-      "name": "southcentralus",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "North Europe",
-      "latitude": "53.3478",
-      "longitude": "-6.2597",
-      "name": "northeurope",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "West Europe",
-      "latitude": "52.3667",
-      "longitude": "4.9",
-      "name": "westeurope",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "Japan West",
-      "latitude": "34.6939",
-      "longitude": "135.5022",
-      "name": "japanwest",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "Japan East",
-      "latitude": "35.68",
-      "longitude": "139.77",
-      "name": "japaneast",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "Brazil South",
-      "latitude": "-23.55",
-      "longitude": "-46.633",
-      "name": "brazilsouth",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "Australia East",
-      "latitude": "-33.86",
-      "longitude": "151.2094",
-      "name": "australiaeast",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "Australia Southeast",
-      "latitude": "-37.8136",
-      "longitude": "144.9631",
-      "name": "australiasoutheast",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "South India",
-      "latitude": "12.9822",
-      "longitude": "80.1636",
-      "name": "southindia",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "Central India",
-      "latitude": "18.5822",
-      "longitude": "73.9197",
-      "name": "centralindia",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "West India",
-      "latitude": "19.088",
-      "longitude": "72.868",
-      "name": "westindia",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "Canada Central",
-      "latitude": "43.653",
-      "longitude": "-79.383",
-      "name": "canadacentral",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "Canada East",
-      "latitude": "46.817",
-      "longitude": "-71.217",
-      "name": "canadaeast",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "UK South",
-      "latitude": "50.941",
-      "longitude": "-0.799",
-      "name": "uksouth",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "UK West",
-      "latitude": "53.427",
-      "longitude": "-3.084",
-      "name": "ukwest",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "West Central US",
-      "latitude": "40.890",
-      "longitude": "-110.234",
-      "name": "westcentralus",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "West US 2",
-      "latitude": "47.233",
-      "longitude": "-119.852",
-      "name": "westus2",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "Korea Central",
-      "latitude": "37.5665",
-      "longitude": "126.9780",
-      "name": "koreacentral",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "Korea South",
-      "latitude": "35.1796",
-      "longitude": "129.0756",
-      "name": "koreasouth",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "France Central",
-      "latitude": "46.3772",
-      "longitude": "2.3730",
-      "name": "francecentral",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "France South",
-      "latitude": "43.8345",
-      "longitude": "2.1972",
-      "name": "francesouth",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "Australia Central",
-      "latitude": "-35.3075",
-      "longitude": "149.1244",
-      "name": "australiacentral",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "Australia Central 2",
-      "latitude": "-35.3075",
-      "longitude": "149.1244",
-      "name": "australiacentral2",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "UAE Central",
-      "latitude": "‎24.466667",
-      "longitude": "‎54.366669",
-      "name": "uaecentral",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "UAE North",
-      "latitude": "25.266666",
-      "longitude": "55.316666",
-      "name": "uaenorth",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "South Africa North",
-      "latitude": "-25.731340",
-      "longitude": "28.218370",
-      "name": "southafricanorth",
-      "subscriptionId": null
-    },
-    {
-      "displayName": "South Africa West",
-      "latitude": "-34.075691",
-      "longitude": "18.843266",
-      "name": "southafricawest",
-      "subscriptionId": null
-    }
-  ]
+# az account list-locations --query 'sort_by([].{name:name,displayName:displayName,regionalDisplayName:regionalDisplayName}, &name)' -o yaml
+azure_regions:
+  - displayName: Asia
+    name: asia
+    regionalDisplayName: Asia
+  - displayName: Asia Pacific
+    name: asiapacific
+    regionalDisplayName: Asia Pacific
+  - displayName: Australia
+    name: australia
+    regionalDisplayName: Australia
+  - displayName: Australia Central
+    name: australiacentral
+    regionalDisplayName: (Asia Pacific) Australia Central
+  - displayName: Australia Central 2
+    name: australiacentral2
+    regionalDisplayName: (Asia Pacific) Australia Central 2
+  - displayName: Australia East
+    name: australiaeast
+    regionalDisplayName: (Asia Pacific) Australia East
+  - displayName: Australia Southeast
+    name: australiasoutheast
+    regionalDisplayName: (Asia Pacific) Australia Southeast
+  - displayName: Brazil
+    name: brazil
+    regionalDisplayName: Brazil
+  - displayName: Brazil South
+    name: brazilsouth
+    regionalDisplayName: (South America) Brazil South
+  - displayName: Brazil Southeast
+    name: brazilsoutheast
+    regionalDisplayName: (South America) Brazil Southeast
+  - displayName: Canada
+    name: canada
+    regionalDisplayName: Canada
+  - displayName: Canada Central
+    name: canadacentral
+    regionalDisplayName: (Canada) Canada Central
+  - displayName: Canada East
+    name: canadaeast
+    regionalDisplayName: (Canada) Canada East
+  - displayName: Central India
+    name: centralindia
+    regionalDisplayName: (Asia Pacific) Central India
+  - displayName: Central US
+    name: centralus
+    regionalDisplayName: (US) Central US
+  - displayName: Central US EUAP
+    name: centraluseuap
+    regionalDisplayName: (US) Central US EUAP
+  - displayName: Central US (Stage)
+    name: centralusstage
+    regionalDisplayName: (US) Central US (Stage)
+  - displayName: East Asia
+    name: eastasia
+    regionalDisplayName: (Asia Pacific) East Asia
+  - displayName: East Asia (Stage)
+    name: eastasiastage
+    regionalDisplayName: (Asia Pacific) East Asia (Stage)
+  - displayName: East US
+    name: eastus
+    regionalDisplayName: (US) East US
+  - displayName: East US 2
+    name: eastus2
+    regionalDisplayName: (US) East US 2
+  - displayName: East US 2 EUAP
+    name: eastus2euap
+    regionalDisplayName: (US) East US 2 EUAP
+  - displayName: East US 2 (Stage)
+    name: eastus2stage
+    regionalDisplayName: (US) East US 2 (Stage)
+  - displayName: East US (Stage)
+    name: eastusstage
+    regionalDisplayName: (US) East US (Stage)
+  - displayName: Europe
+    name: europe
+    regionalDisplayName: Europe
+  - displayName: France Central
+    name: francecentral
+    regionalDisplayName: (Europe) France Central
+  - displayName: France South
+    name: francesouth
+    regionalDisplayName: (Europe) France South
+  - displayName: Germany North
+    name: germanynorth
+    regionalDisplayName: (Europe) Germany North
+  - displayName: Germany West Central
+    name: germanywestcentral
+    regionalDisplayName: (Europe) Germany West Central
+  - displayName: Global
+    name: global
+    regionalDisplayName: Global
+  - displayName: India
+    name: india
+    regionalDisplayName: India
+  - displayName: Japan
+    name: japan
+    regionalDisplayName: Japan
+  - displayName: Japan East
+    name: japaneast
+    regionalDisplayName: (Asia Pacific) Japan East
+  - displayName: Japan West
+    name: japanwest
+    regionalDisplayName: (Asia Pacific) Japan West
+  - displayName: Jio India Central
+    name: jioindiacentral
+    regionalDisplayName: (Asia Pacific) Jio India Central
+  - displayName: Jio India West
+    name: jioindiawest
+    regionalDisplayName: (Asia Pacific) Jio India West
+  - displayName: Korea Central
+    name: koreacentral
+    regionalDisplayName: (Asia Pacific) Korea Central
+  - displayName: Korea South
+    name: koreasouth
+    regionalDisplayName: (Asia Pacific) Korea South
+  - displayName: North Central US
+    name: northcentralus
+    regionalDisplayName: (US) North Central US
+  - displayName: North Central US (Stage)
+    name: northcentralusstage
+    regionalDisplayName: (US) North Central US (Stage)
+  - displayName: North Europe
+    name: northeurope
+    regionalDisplayName: (Europe) North Europe
+  - displayName: Norway East
+    name: norwayeast
+    regionalDisplayName: (Europe) Norway East
+  - displayName: Norway West
+    name: norwaywest
+    regionalDisplayName: (Europe) Norway West
+  - displayName: Qatar Central
+    name: qatarcentral
+    regionalDisplayName: (Europe) Qatar Central
+  - displayName: South Africa North
+    name: southafricanorth
+    regionalDisplayName: (Africa) South Africa North
+  - displayName: South Africa West
+    name: southafricawest
+    regionalDisplayName: (Africa) South Africa West
+  - displayName: South Central US
+    name: southcentralus
+    regionalDisplayName: (US) South Central US
+  - displayName: South Central US (Stage)
+    name: southcentralusstage
+    regionalDisplayName: (US) South Central US (Stage)
+  - displayName: Southeast Asia
+    name: southeastasia
+    regionalDisplayName: (Asia Pacific) Southeast Asia
+  - displayName: Southeast Asia (Stage)
+    name: southeastasiastage
+    regionalDisplayName: (Asia Pacific) Southeast Asia (Stage)
+  - displayName: South India
+    name: southindia
+    regionalDisplayName: (Asia Pacific) South India
+  - displayName: Sweden Central
+    name: swedencentral
+    regionalDisplayName: (Europe) Sweden Central
+  - displayName: Sweden South
+    name: swedensouth
+    regionalDisplayName: (Europe) Sweden South
+  - displayName: Switzerland North
+    name: switzerlandnorth
+    regionalDisplayName: (Europe) Switzerland North
+  - displayName: Switzerland West
+    name: switzerlandwest
+    regionalDisplayName: (Europe) Switzerland West
+  - displayName: UAE Central
+    name: uaecentral
+    regionalDisplayName: (Middle East) UAE Central
+  - displayName: UAE North
+    name: uaenorth
+    regionalDisplayName: (Middle East) UAE North
+  - displayName: United Kingdom
+    name: uk
+    regionalDisplayName: United Kingdom
+  - displayName: UK South
+    name: uksouth
+    regionalDisplayName: (Europe) UK South
+  - displayName: UK West
+    name: ukwest
+    regionalDisplayName: (Europe) UK West
+  - displayName: United States
+    name: unitedstates
+    regionalDisplayName: United States
+  - displayName: West Central US
+    name: westcentralus
+    regionalDisplayName: (US) West Central US
+  - displayName: West Europe
+    name: westeurope
+    regionalDisplayName: (Europe) West Europe
+  - displayName: West India
+    name: westindia
+    regionalDisplayName: (Asia Pacific) West India
+  - displayName: West US
+    name: westus
+    regionalDisplayName: (US) West US
+  - displayName: West US 2
+    name: westus2
+    regionalDisplayName: (US) West US 2
+  - displayName: West US 2 (Stage)
+    name: westus2stage
+    regionalDisplayName: (US) West US 2 (Stage)
+  - displayName: West US 3
+    name: westus3
+    regionalDisplayName: (US) West US 3
+  - displayName: West US (Stage)
+    name: westusstage
+    regionalDisplayName: (US) West US (Stage)
+

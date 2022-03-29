@@ -25,5 +25,6 @@ write_files:
 
 runcmd:
   - set -x
+  - ufw --force reset
   - sudo apt-get remove -y --purge sshguard || true
   - systemctl restart sshd.service

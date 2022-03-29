@@ -6,6 +6,9 @@
   tags:
     - update-users
 
+- fail:
+  when: cloud_test|default(false)|bool
+
 - include_tasks: ubuntu.yml
   when: '"Ubuntu" in OS.stdout or "Linux" in OS.stdout'
   tags:
