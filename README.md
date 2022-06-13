@@ -207,7 +207,6 @@ After this process completes, the Algo VPN server will contain only the users li
 * Deploy from [macOS](docs/deploy-from-macos.md)
 * Deploy from [Windows](docs/deploy-from-windows.md)
 * Deploy from [Google Cloud Shell](docs/deploy-from-cloudshell.md)
-* Deploy from [RedHat/CentOS 6.x](docs/deploy-from-redhat-centos6.md)
 * Deploy from a [Docker container](docs/deploy-from-docker.md)
 
 ### Setup VPN Clients to Connect to the Server
