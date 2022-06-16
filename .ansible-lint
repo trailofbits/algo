@@ -1,6 +1,10 @@
 skip_list:
+  - yaml
   - '204'
 verbosity: 1
 
 warn_list:
   - no-changed-when
+  - no-handler
+  - fqcn-builtins
+  - var-spacing

@@ -18,127 +18,126 @@
       - { name: Google Compute Engine, alias: gce }
       - { name: Hetzner Cloud, alias: hetzner }
       - { name: Vultr, alias: vultr }
-      - { name: Scaleway, alias: scaleway}
+      - { name: Scaleway, alias: scaleway }
       - { name: OpenStack (DreamCompute optimised), alias: openstack }
       - { name: CloudStack (Exoscale optimised), alias: cloudstack }
       - { name: Linode, alias: linode }
-      - { name: "Install to existing Ubuntu 18.04 or 20.04 server (for more advanced users)", alias: local }
+      - { name: Install to existing Ubuntu 18.04 or 20.04 server (for more advanced users), alias: local }
   vars_files:
     - config.cfg
 
   tasks:
     - block:
-      - name: Cloud prompt
-        pause:
-          prompt: |
-            What provider would you like to use?
-              {% for p in providers_map %}
-              {{ loop.index }}. {{ p['name'] }}
-              {% endfor %}
+        - name: Cloud prompt
+          pause:
+            prompt: |
+              What provider would you like to use?
+                {% for p in providers_map %}
+                {{ loop.index }}. {{ p['name'] }}
+                {% endfor %}
 
-            Enter the number of your desired provider
-        register: _algo_provider
-        when: provider is undefined
+              Enter the number of your desired provider
+          register: _algo_provider
+          when: provider is undefined
 
-      - name: Set facts based on the input
-        set_fact:
-          algo_provider: "{{ provider | default(providers_map[_algo_provider.user_input|default(omit)|int - 1]['alias']) }}"
+        - name: Set facts based on the input
+          set_fact:
+            algo_provider: "{{ provider | default(providers_map[_algo_provider.user_input|default(omit)|int - 1]['alias']) }}"
 
-      - name: VPN server name prompt
-        pause:
-          prompt: |
-            Name the vpn server
-            [algo]
-        register: _algo_server_name
-        when:
-          - server_name is undefined
-          - algo_provider != "local"
+        - name: VPN server name prompt
+          pause:
+            prompt: |
+              Name the vpn server
+              [algo]
+          register: _algo_server_name
+          when:
+            - server_name is undefined
+            - algo_provider != "local"
 
-      - name: Cellular On Demand prompt
-        pause:
-          prompt: |
-            Do you want macOS/iOS clients to enable "Connect On Demand" when connected to cellular networks?
-            [y/N]
-        register: _ondemand_cellular
-        when: ondemand_cellular is undefined
+        - name: Cellular On Demand prompt
+          pause:
+            prompt: |
+              Do you want macOS/iOS clients to enable "Connect On Demand" when connected to cellular networks?
+              [y/N]
+          register: _ondemand_cellular
+          when: ondemand_cellular is undefined
 
-      - name: Wi-Fi On Demand prompt
-        pause:
-          prompt: |
-            Do you want macOS/iOS clients to enable "Connect On Demand" when connected to Wi-Fi?
-            [y/N]
-        register: _ondemand_wifi
-        when: ondemand_wifi is undefined
+        - name: Wi-Fi On Demand prompt
+          pause:
+            prompt: |
+              Do you want macOS/iOS clients to enable "Connect On Demand" when connected to Wi-Fi?
+              [y/N]
+          register: _ondemand_wifi
+          when: ondemand_wifi is undefined
 
-      - name: Trusted Wi-Fi networks prompt
-        pause:
-          prompt: |
-            List the names of any trusted Wi-Fi networks where macOS/iOS clients should not use "Connect On Demand"
-            (e.g., your home network. Comma-separated value, e.g., HomeNet,OfficeWifi,AlgoWiFi)
-        register: _ondemand_wifi_exclude
-        when:
-          - ondemand_wifi_exclude is undefined
-          - (ondemand_wifi|default(false)|bool) or
-            (booleans_map[_ondemand_wifi.user_input|default(omit)]|default(false))
+        - name: Trusted Wi-Fi networks prompt
+          pause:
+            prompt: |
+              List the names of any trusted Wi-Fi networks where macOS/iOS clients should not use "Connect On Demand"
+              (e.g., your home network. Comma-separated value, e.g., HomeNet,OfficeWifi,AlgoWiFi)
+          register: _ondemand_wifi_exclude
+          when:
+            - ondemand_wifi_exclude is undefined
+            - (ondemand_wifi|default(false)|bool) or (booleans_map[_ondemand_wifi.user_input|default(omit)]|default(false))
 
-      - name: Retain the PKI prompt
-        pause:
-          prompt: |
-            Do you want to retain the keys (PKI)? (required to add users in the future, but less secure)
-            [y/N]
-        register: _store_pki
-        when:
-          - store_pki is undefined
-          - ipsec_enabled
+        - name: Retain the PKI prompt
+          pause:
+            prompt: |
+              Do you want to retain the keys (PKI)? (required to add users in the future, but less secure)
+              [y/N]
+          register: _store_pki
+          when:
+            - store_pki is undefined
+            - ipsec_enabled
 
-      - name: DNS adblocking prompt
-        pause:
-          prompt: |
-            Do you want to enable DNS ad blocking on this VPN server?
-            [y/N]
-        register: _dns_adblocking
-        when: dns_adblocking is undefined
+        - name: DNS adblocking prompt
+          pause:
+            prompt: |
+              Do you want to enable DNS ad blocking on this VPN server?
+              [y/N]
+          register: _dns_adblocking
+          when: dns_adblocking is undefined
 
-      - name: SSH tunneling prompt
-        pause:
-          prompt: |
-            Do you want each user to have their own account for SSH tunneling?
-            [y/N]
-        register: _ssh_tunneling
-        when: ssh_tunneling is undefined
+        - name: SSH tunneling prompt
+          pause:
+            prompt: |
+              Do you want each user to have their own account for SSH tunneling?
+              [y/N]
+          register: _ssh_tunneling
+          when: ssh_tunneling is undefined
 
-      - name: Set facts based on the input
-        set_fact:
-          algo_server_name: >-
-            {% if server_name is defined %}{% set _server = server_name %}
-            {%- elif _algo_server_name.user_input is defined and _algo_server_name.user_input|length > 0 -%}
-            {%- set _server = _algo_server_name.user_input -%}
-            {%- else %}{% set _server = defaults['server_name'] %}{% endif -%}
-            {{ _server | regex_replace('(?!\.)(\W|_)', '-') }}
-          algo_ondemand_cellular: >-
-            {% if ondemand_cellular is defined %}{{ ondemand_cellular | bool }}
-            {%- elif _ondemand_cellular.user_input is defined %}{{ booleans_map[_ondemand_cellular.user_input] | default(defaults['ondemand_cellular']) }}
-            {%- else %}false{% endif %}
-          algo_ondemand_wifi: >-
-            {% if ondemand_wifi is defined %}{{ ondemand_wifi | bool }}
-            {%- elif _ondemand_wifi.user_input is defined %}{{ booleans_map[_ondemand_wifi.user_input] | default(defaults['ondemand_wifi']) }}
-            {%- else %}false{% endif %}
-          algo_ondemand_wifi_exclude: >-
-            {% if ondemand_wifi_exclude is defined %}{{ ondemand_wifi_exclude | b64encode }}
-            {%- elif _ondemand_wifi_exclude.user_input is defined and _ondemand_wifi_exclude.user_input|length > 0 -%}
-            {{ _ondemand_wifi_exclude.user_input | b64encode }}
-            {%- else %}{{ '_null' | b64encode }}{% endif %}
-          algo_dns_adblocking: >-
-            {% if dns_adblocking is defined %}{{ dns_adblocking | bool }}
-            {%- elif _dns_adblocking.user_input is defined %}{{ booleans_map[_dns_adblocking.user_input] | default(defaults['dns_adblocking']) }}
-            {%- else %}false{% endif %}
-          algo_ssh_tunneling: >-
-            {% if ssh_tunneling is defined %}{{ ssh_tunneling | bool }}
-            {%- elif _ssh_tunneling.user_input is defined %}{{ booleans_map[_ssh_tunneling.user_input] | default(defaults['ssh_tunneling']) }}
-            {%- else %}false{% endif %}
-          algo_store_pki: >-
-            {% if ipsec_enabled %}{%- if store_pki is defined %}{{ store_pki | bool }}
-            {%- elif _store_pki.user_input is defined  %}{{ booleans_map[_store_pki.user_input] | default(defaults['store_pki']) }}
-            {%- else %}false{% endif %}{% endif %}
+        - name: Set facts based on the input
+          set_fact:
+            algo_server_name: >-
+              {% if server_name is defined %}{% set _server = server_name %}
+              {%- elif _algo_server_name.user_input is defined and _algo_server_name.user_input|length > 0 -%}
+              {%- set _server = _algo_server_name.user_input -%}
+              {%- else %}{% set _server = defaults['server_name'] %}{% endif -%}
+              {{ _server | regex_replace('(?!\.)(\W|_)', '-') }}
+            algo_ondemand_cellular: >-
+              {% if ondemand_cellular is defined %}{{ ondemand_cellular | bool }}
+              {%- elif _ondemand_cellular.user_input is defined %}{{ booleans_map[_ondemand_cellular.user_input] | default(defaults['ondemand_cellular']) }}
+              {%- else %}false{% endif %}
+            algo_ondemand_wifi: >-
+              {% if ondemand_wifi is defined %}{{ ondemand_wifi | bool }}
+              {%- elif _ondemand_wifi.user_input is defined %}{{ booleans_map[_ondemand_wifi.user_input] | default(defaults['ondemand_wifi']) }}
+              {%- else %}false{% endif %}
+            algo_ondemand_wifi_exclude: >-
+              {% if ondemand_wifi_exclude is defined %}{{ ondemand_wifi_exclude | b64encode }}
+              {%- elif _ondemand_wifi_exclude.user_input is defined and _ondemand_wifi_exclude.user_input|length > 0 -%}
+              {{ _ondemand_wifi_exclude.user_input | b64encode }}
+              {%- else %}{{ '_null' | b64encode }}{% endif %}
+            algo_dns_adblocking: >-
+              {% if dns_adblocking is defined %}{{ dns_adblocking | bool }}
+              {%- elif _dns_adblocking.user_input is defined %}{{ booleans_map[_dns_adblocking.user_input] | default(defaults['dns_adblocking']) }}
+              {%- else %}false{% endif %}
+            algo_ssh_tunneling: >-
+              {% if ssh_tunneling is defined %}{{ ssh_tunneling | bool }}
+              {%- elif _ssh_tunneling.user_input is defined %}{{ booleans_map[_ssh_tunneling.user_input] | default(defaults['ssh_tunneling']) }}
+              {%- else %}false{% endif %}
+            algo_store_pki: >-
+              {% if ipsec_enabled %}{%- if store_pki is defined %}{{ store_pki | bool }}
+              {%- elif _store_pki.user_input is defined  %}{{ booleans_map[_store_pki.user_input] | default(defaults['store_pki']) }}
+              {%- else %}false{% endif %}{% endif %}
       rescue:
         - include_tasks: playbooks/rescue.yml

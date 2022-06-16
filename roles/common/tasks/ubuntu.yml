@@ -1,7 +1,6 @@
 ---
 - name: Gather facts
   setup:
-
 - name: Cloud only tasks
   block:
     - name: Install software updates
@@ -42,8 +41,8 @@
 - name: Disable MOTD on login and SSHD
   replace: dest="{{ item.file }}" regexp="{{ item.regexp }}" replace="{{ item.line }}"
   with_items:
-    - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/login' }
-    - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/sshd' }
+    - { regexp: ^session.*optional.*pam_motd.so.*, line: "# MOTD DISABLED", file: /etc/pam.d/login }
+    - { regexp: ^session.*optional.*pam_motd.so.*, line: "# MOTD DISABLED", file: /etc/pam.d/sshd }
 
 - name: Ensure fallback resolvers are set
   ini_file:
@@ -75,7 +74,7 @@
 
 - name: Check apparmor support
   command: apparmor_status
-  ignore_errors: yes
+  ignore_errors: true
   changed_when: false
   register: apparmor_status
 
@@ -117,7 +116,7 @@
   apt:
     name:
       - linux-headers-generic
-      - "linux-headers-{{ ansible_kernel }}"
+      - linux-headers-{{ ansible_kernel }}
     state: present
   when: install_headers | bool
 

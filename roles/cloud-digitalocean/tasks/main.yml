@@ -2,14 +2,14 @@
 - name: Include prompts
   import_tasks: prompts.yml
 
-- name: "Upload the SSH key"
+- name: Upload the SSH key
   digital_ocean_sshkey:
     oauth_token: "{{ algo_do_token }}"
     name: "{{ SSH_keys.comment }}"
     ssh_pub_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
   register: do_ssh_key
 
-- name: "Creating a droplet..."
+- name: Creating a droplet...
   digital_ocean_droplet:
     state: present
     name: "{{ algo_server_name }}"
@@ -31,16 +31,16 @@
     droplet: "{{ digital_ocean_droplet.data.droplet | default(digital_ocean_droplet.data) }}"
 
 - block:
-  - name: "Create a Floating IP"
-    digital_ocean_floating_ip:
-      state: present
-      oauth_token: "{{ algo_do_token }}"
-      droplet_id: "{{ droplet.id }}"
-    register: digital_ocean_floating_ip
+    - name: Create a Floating IP
+      digital_ocean_floating_ip:
+        state: present
+        oauth_token: "{{ algo_do_token }}"
+        droplet_id: "{{ droplet.id }}"
+      register: digital_ocean_floating_ip
 
-  - name: Set the static ip as a fact
-    set_fact:
-      cloud_alternative_ingress_ip: "{{ digital_ocean_floating_ip.data.floating_ip.ip }}"
+    - name: Set the static ip as a fact
+      set_fact:
+        cloud_alternative_ingress_ip: "{{ digital_ocean_floating_ip.data.floating_ip.ip }}"
   when: alternative_ingress_ip
 
 - set_fact:

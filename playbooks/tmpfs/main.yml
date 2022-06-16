@@ -9,7 +9,7 @@
 
 - name: Set config paths as facts
   set_fact:
-    ipsec_pki_path: "/{{ tmpfs_volume_path }}/{{ tmpfs_volume_name }}/IPsec/"
+    ipsec_pki_path: /{{ tmpfs_volume_path }}/{{ tmpfs_volume_name }}/IPsec/
 
 - name: Update config paths
   add_host:

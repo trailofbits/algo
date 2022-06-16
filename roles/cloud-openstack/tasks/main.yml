@@ -22,7 +22,7 @@
     port_range_max: "{{ item.port_max }}"
     remote_ip_prefix: "{{ item.range }}"
   with_items:
-    - { proto: tcp, port_min: '{{ ssh_port }}', port_max: '{{ ssh_port }}', range: 0.0.0.0/0 }
+    - { proto: tcp, port_min: "{{ ssh_port }}", port_max: "{{ ssh_port }}", range: 0.0.0.0/0 }
     - { proto: icmp, port_min: -1, port_max: -1, range: 0.0.0.0/0 }
     - { proto: udp, port_min: 4500, port_max: 4500, range: 0.0.0.0/0 }
     - { proto: udp, port_min: 500, port_max: 500, range: 0.0.0.0/0 }

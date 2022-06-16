@@ -24,7 +24,7 @@ jobs:
         run: |
           /snap/bin/shellcheck algo install.sh
           ansible-playbook main.yml --syntax-check
-          ansible-lint -x experimental,package-latest,unnamed-task -v *.yml roles/{local,cloud-*}/*/*.yml
+          ansible-lint==6.3.0 -x experimental,package-latest,unnamed-task -v *.yml roles/{local,cloud-*}/*/*.yml
 
   scripted-deploy:
     runs-on: ubuntu-20.04
