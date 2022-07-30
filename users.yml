@@ -1,6 +1,6 @@
 ---
 - hosts: localhost
-  gather_facts: False
+  gather_facts: false
   tags: always
   vars_files:
     - config.cfg
@@ -13,7 +13,7 @@
             depth: 2
             recurse: true
             hidden: true
-            patterns: ".config.yml"
+            patterns: .config.yml
           register: _configs_list
 
         - name: Verify servers
@@ -50,23 +50,23 @@
 
         - name: Import host specific variables
           include_vars:
-            file: "configs/{{ algo_server }}/.config.yml"
+            file: configs/{{ algo_server }}/.config.yml
 
         - when: ipsec_enabled
           block:
-          - name: CA password prompt
-            pause:
-              prompt: Enter the password for the private CA key
-              echo: false
-            register: _ca_password
-            when: ca_password is undefined
+            - name: CA password prompt
+              pause:
+                prompt: Enter the password for the private CA key
+                echo: false
+              register: _ca_password
+              when: ca_password is undefined
 
-          - name: Set facts based on the input
-            set_fact:
-              CA_password: >-
-                {% if ca_password is defined %}{{ ca_password }}
-                {%- elif _ca_password.user_input %}{{ _ca_password.user_input }}
-                {%- else %}omit{% endif %}
+            - name: Set facts based on the input
+              set_fact:
+                CA_password: >-
+                  {% if ca_password is defined %}{{ ca_password }}
+                  {%- elif _ca_password.user_input %}{{ _ca_password.user_input }}
+                  {%- else %}omit{% endif %}
 
         - name: Local pre-tasks
           import_tasks: playbooks/cloud-pre.yml
@@ -78,7 +78,7 @@
             groups: vpn-host
             ansible_ssh_user: "{{ server_user|default('root') }}"
             ansible_connection: "{% if algo_server == 'localhost' %}local{% else %}ssh{% endif %}"
-            ansible_python_interpreter: "/usr/bin/python3"
+            ansible_python_interpreter: /usr/bin/python3
             CA_password: "{{ CA_password|default(omit) }}"
       rescue:
         - include_tasks: playbooks/rescue.yml
@@ -89,32 +89,32 @@
   become: true
   vars_files:
     - config.cfg
-    - "configs/{{ inventory_hostname }}/.config.yml"
+    - configs/{{ inventory_hostname }}/.config.yml
 
   tasks:
     - block:
-      - import_role:
-          name: common
+        - import_role:
+            name: common
 
-      - import_role:
-          name: wireguard
-        when: wireguard_enabled
+        - import_role:
+            name: wireguard
+          when: wireguard_enabled
 
-      - import_role:
-          name: strongswan
-        when: ipsec_enabled
-        tags: ipsec
+        - import_role:
+            name: strongswan
+          when: ipsec_enabled
+          tags: ipsec
 
-      - import_role:
-          name: ssh_tunneling
-        when: algo_ssh_tunneling
+        - import_role:
+            name: ssh_tunneling
+          when: algo_ssh_tunneling
 
-      - debug:
-          msg:
-            - "{{ congrats.common.split('\n') }}"
-            - "    {{ congrats.p12_pass if algo_ssh_tunneling or ipsec_enabled else '' }}"
-            - "    {{ congrats.ca_key_pass if algo_store_pki and ipsec_enabled else '' }}"
-            - "    {{ congrats.ssh_access if algo_provider != 'local' else ''}}"
-        tags: always
+        - debug:
+            msg:
+              - "{{ congrats.common.split('\n') }}"
+              - "    {{ congrats.p12_pass if algo_ssh_tunneling or ipsec_enabled else '' }}"
+              - "    {{ congrats.ca_key_pass if algo_store_pki and ipsec_enabled else '' }}"
+              - "    {{ congrats.ssh_access if algo_provider != 'local' else ''}}"
+          tags: always
       rescue:
         - include_tasks: playbooks/rescue.yml

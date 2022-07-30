@@ -1,239 +1,239 @@
 ---
 - block:
-  - debug: var=subjectAltName
+    - debug: var=subjectAltName
 
-  - name: Ensure the pki directory does not exist
-    file:
-      dest: "{{ ipsec_pki_path }}"
-      state: absent
-    when: keys_clean_all|bool
+    - name: Ensure the pki directory does not exist
+      file:
+        dest: "{{ ipsec_pki_path }}"
+        state: absent
+      when: keys_clean_all|bool
 
-  - name: Ensure the pki directories exist
-    file:
-      dest: "{{ ipsec_pki_path }}/{{ item }}"
-      state: directory
-      recurse: yes
-      mode: '0700'
-    with_items:
-      - ecparams
-      - certs
-      - crl
-      - newcerts
-      - private
-      - public
-      - reqs
+    - name: Ensure the pki directories exist
+      file:
+        dest: "{{ ipsec_pki_path }}/{{ item }}"
+        state: directory
+        recurse: true
+        mode: "0700"
+      with_items:
+        - ecparams
+        - certs
+        - crl
+        - newcerts
+        - private
+        - public
+        - reqs
 
-  - name: Ensure the config directories exist
-    file:
-      dest: "{{ ipsec_config_path }}/{{ item }}"
-      state: directory
-      recurse: yes
-      mode: '0700'
-    with_items:
-      - apple
-      - manual
+    - name: Ensure the config directories exist
+      file:
+        dest: "{{ ipsec_config_path }}/{{ item }}"
+        state: directory
+        recurse: true
+        mode: "0700"
+      with_items:
+        - apple
+        - manual
 
-  - name: Ensure the files exist
-    file:
-      dest: "{{ ipsec_pki_path }}/{{ item }}"
-      state: touch
-    with_items:
-      - ".rnd"
-      - "private/.rnd"
-      - "index.txt"
-      - "index.txt.attr"
-      - "serial"
+    - name: Ensure the files exist
+      file:
+        dest: "{{ ipsec_pki_path }}/{{ item }}"
+        state: touch
+      with_items:
+        - .rnd
+        - private/.rnd
+        - index.txt
+        - index.txt.attr
+        - serial
 
-  - name: Generate the openssl server configs
-    template:
-      src: openssl.cnf.j2
-      dest: "{{ ipsec_pki_path }}/openssl.cnf"
+    - name: Generate the openssl server configs
+      template:
+        src: openssl.cnf.j2
+        dest: "{{ ipsec_pki_path }}/openssl.cnf"
 
-  - name: Build the CA pair
-    shell: >
-      umask 077;
-      {{ openssl_bin }} ecparam -name secp384r1 -out ecparams/secp384r1.pem &&
-      {{ openssl_bin }} req -utf8 -new
-      -newkey ec:ecparams/secp384r1.pem
-      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName }}"))
-      -keyout private/cakey.pem
-      -out cacert.pem -x509 -days 3650
-      -batch
-      -passout pass:"{{ CA_password }}" &&
-      touch {{ IP_subject_alt_name }}_ca_generated
-    args:
-      chdir: "{{ ipsec_pki_path }}"
-      creates: "{{ IP_subject_alt_name }}_ca_generated"
-      executable: bash
+    - name: Build the CA pair
+      shell: >
+        umask 077;
+        {{ openssl_bin }} ecparam -name secp384r1 -out ecparams/secp384r1.pem &&
+        {{ openssl_bin }} req -utf8 -new
+        -newkey ec:ecparams/secp384r1.pem
+        -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName }}"))
+        -keyout private/cakey.pem
+        -out cacert.pem -x509 -days 3650
+        -batch
+        -passout pass:"{{ CA_password }}" &&
+        touch {{ IP_subject_alt_name }}_ca_generated
+      args:
+        chdir: "{{ ipsec_pki_path }}"
+        creates: "{{ IP_subject_alt_name }}_ca_generated"
+        executable: bash
 
-  - name: Copy the CA certificate
-    copy:
-      src: "{{ ipsec_pki_path }}/cacert.pem"
-      dest: "{{ ipsec_config_path }}/manual/cacert.pem"
+    - name: Copy the CA certificate
+      copy:
+        src: "{{ ipsec_pki_path }}/cacert.pem"
+        dest: "{{ ipsec_config_path }}/manual/cacert.pem"
 
-  - name: Generate the serial number
-    shell: echo 01 > serial && touch serial_generated
-    args:
-      chdir: "{{ ipsec_pki_path }}"
-      creates: serial_generated
+    - name: Generate the serial number
+      shell: echo 01 > serial && touch serial_generated
+      args:
+        chdir: "{{ ipsec_pki_path }}"
+        creates: serial_generated
 
-  - name: Build the server pair
-    shell: >
-      umask 077;
-      {{ openssl_bin }} req -utf8 -new
-      -newkey ec:ecparams/secp384r1.pem
-      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName }}"))
-      -keyout private/{{ IP_subject_alt_name }}.key
-      -out reqs/{{ IP_subject_alt_name }}.req -nodes
-      -passin pass:"{{ CA_password }}"
-      -subj "/CN={{ IP_subject_alt_name }}" -batch &&
-      {{ openssl_bin }} ca -utf8
-      -in reqs/{{ IP_subject_alt_name }}.req
-      -out certs/{{ IP_subject_alt_name }}.crt
-      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName }}"))
-      -days 3650 -batch
-      -passin pass:"{{ CA_password }}"
-      -subj "/CN={{ IP_subject_alt_name }}" &&
-      touch certs/{{ IP_subject_alt_name }}_crt_generated
-    args:
-      chdir: "{{ ipsec_pki_path }}"
-      creates: certs/{{ IP_subject_alt_name }}_crt_generated
-      executable: bash
+    - name: Build the server pair
+      shell: >
+        umask 077;
+        {{ openssl_bin }} req -utf8 -new
+        -newkey ec:ecparams/secp384r1.pem
+        -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName }}"))
+        -keyout private/{{ IP_subject_alt_name }}.key
+        -out reqs/{{ IP_subject_alt_name }}.req -nodes
+        -passin pass:"{{ CA_password }}"
+        -subj "/CN={{ IP_subject_alt_name }}" -batch &&
+        {{ openssl_bin }} ca -utf8
+        -in reqs/{{ IP_subject_alt_name }}.req
+        -out certs/{{ IP_subject_alt_name }}.crt
+        -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName }}"))
+        -days 3650 -batch
+        -passin pass:"{{ CA_password }}"
+        -subj "/CN={{ IP_subject_alt_name }}" &&
+        touch certs/{{ IP_subject_alt_name }}_crt_generated
+      args:
+        chdir: "{{ ipsec_pki_path }}"
+        creates: certs/{{ IP_subject_alt_name }}_crt_generated
+        executable: bash
 
-  - name: Build the client's pair
-    shell: >
-      umask 077;
-      {{ openssl_bin }} req -utf8 -new
-      -newkey ec:ecparams/secp384r1.pem
-      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName_USER }}"))
-      -keyout private/{{ item }}.key
-      -out reqs/{{ item }}.req -nodes
-      -passin pass:"{{ CA_password }}"
-      -subj "/CN={{ item }}" -batch &&
-      {{ openssl_bin }} ca -utf8
-      -in reqs/{{ item }}.req
-      -out certs/{{ item }}.crt
-      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName_USER }}"))
-      -days 3650 -batch
-      -passin pass:"{{ CA_password }}"
-      -subj "/CN={{ item }}" &&
-      touch certs/{{ item }}_crt_generated
-    args:
-      chdir: "{{ ipsec_pki_path }}"
-      creates: certs/{{ item }}_crt_generated
-      executable: bash
-    with_items: "{{ users }}"
+    - name: Build the client's pair
+      shell: >
+        umask 077;
+        {{ openssl_bin }} req -utf8 -new
+        -newkey ec:ecparams/secp384r1.pem
+        -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName_USER }}"))
+        -keyout private/{{ item }}.key
+        -out reqs/{{ item }}.req -nodes
+        -passin pass:"{{ CA_password }}"
+        -subj "/CN={{ item }}" -batch &&
+        {{ openssl_bin }} ca -utf8
+        -in reqs/{{ item }}.req
+        -out certs/{{ item }}.crt
+        -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName_USER }}"))
+        -days 3650 -batch
+        -passin pass:"{{ CA_password }}"
+        -subj "/CN={{ item }}" &&
+        touch certs/{{ item }}_crt_generated
+      args:
+        chdir: "{{ ipsec_pki_path }}"
+        creates: certs/{{ item }}_crt_generated
+        executable: bash
+      with_items: "{{ users }}"
 
-  - name: Build the tests pair
-    shell: >
-      umask 077;
-      {{ openssl_bin }} req -utf8 -new
-      -newkey ec:ecparams/secp384r1.pem
-      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:google-algo-test-pair.com"))
-      -keyout private/google-algo-test-pair.com.key
-      -out reqs/google-algo-test-pair.com.req -nodes
-      -passin pass:"{{ CA_password }}"
-      -subj "/CN=google-algo-test-pair.com" -batch &&
-      {{ openssl_bin }} ca -utf8
-      -in reqs/google-algo-test-pair.com.req
-      -out certs/google-algo-test-pair.com.crt
-      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:google-algo-test-pair.com"))
-      -days 3650 -batch
-      -passin pass:"{{ CA_password }}"
-      -subj "/CN=google-algo-test-pair.com" &&
-      touch certs/google-algo-test-pair.com_crt_generated
-    args:
-      chdir: "{{ ipsec_pki_path }}"
-      creates: certs/google-algo-test-pair.com_crt_generated
-      executable: bash
-    when: tests|default(false)|bool
+    - name: Build the tests pair
+      shell: >
+        umask 077;
+        {{ openssl_bin }} req -utf8 -new
+        -newkey ec:ecparams/secp384r1.pem
+        -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:google-algo-test-pair.com"))
+        -keyout private/google-algo-test-pair.com.key
+        -out reqs/google-algo-test-pair.com.req -nodes
+        -passin pass:"{{ CA_password }}"
+        -subj "/CN=google-algo-test-pair.com" -batch &&
+        {{ openssl_bin }} ca -utf8
+        -in reqs/google-algo-test-pair.com.req
+        -out certs/google-algo-test-pair.com.crt
+        -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:google-algo-test-pair.com"))
+        -days 3650 -batch
+        -passin pass:"{{ CA_password }}"
+        -subj "/CN=google-algo-test-pair.com" &&
+        touch certs/google-algo-test-pair.com_crt_generated
+      args:
+        chdir: "{{ ipsec_pki_path }}"
+        creates: certs/google-algo-test-pair.com_crt_generated
+        executable: bash
+      when: tests|default(false)|bool
 
-  - name: Build openssh public keys
-    openssl_publickey:
-      path:  "{{ ipsec_pki_path }}/public/{{ item }}.pub"
-      privatekey_path: "{{ ipsec_pki_path }}/private/{{ item }}.key"
-      format: OpenSSH
-    with_items: "{{ users }}"
+    - name: Build openssh public keys
+      openssl_publickey:
+        path: "{{ ipsec_pki_path }}/public/{{ item }}.pub"
+        privatekey_path: "{{ ipsec_pki_path }}/private/{{ item }}.key"
+        format: OpenSSH
+      with_items: "{{ users }}"
 
-  - name: Build the client's p12
-    shell: >
-      umask 077;
-      {{ openssl_bin }} pkcs12
-      -in certs/{{ item }}.crt
-      -inkey private/{{ item }}.key
-      -export
-      -name {{ item }}
-      -out private/{{ item }}.p12
-      -passout pass:"{{ p12_export_password }}"
-    args:
-      chdir: "{{ ipsec_pki_path }}"
-      executable: bash
-    with_items: "{{ users }}"
-    register: p12
+    - name: Build the client's p12
+      shell: >
+        umask 077;
+        {{ openssl_bin }} pkcs12
+        -in certs/{{ item }}.crt
+        -inkey private/{{ item }}.key
+        -export
+        -name {{ item }}
+        -out private/{{ item }}.p12
+        -passout pass:"{{ p12_export_password }}"
+      args:
+        chdir: "{{ ipsec_pki_path }}"
+        executable: bash
+      with_items: "{{ users }}"
+      register: p12
 
-  - name: Build the client's p12 with the CA cert included
-    shell: >
-      umask 077;
-      {{ openssl_bin }} pkcs12
-      -in certs/{{ item }}.crt
-      -inkey private/{{ item }}.key
-      -export
-      -name {{ item }}
-      -out private/{{ item }}_ca.p12
-      -certfile cacert.pem
-      -passout pass:"{{ p12_export_password }}"
-    args:
-      chdir: "{{ ipsec_pki_path }}"
-      executable: bash
-    with_items: "{{ users }}"
-    register: p12
+    - name: Build the client's p12 with the CA cert included
+      shell: >
+        umask 077;
+        {{ openssl_bin }} pkcs12
+        -in certs/{{ item }}.crt
+        -inkey private/{{ item }}.key
+        -export
+        -name {{ item }}
+        -out private/{{ item }}_ca.p12
+        -certfile cacert.pem
+        -passout pass:"{{ p12_export_password }}"
+      args:
+        chdir: "{{ ipsec_pki_path }}"
+        executable: bash
+      with_items: "{{ users }}"
+      register: p12
 
-  - name: Copy the p12 certificates
-    copy:
-      src: "{{ ipsec_pki_path }}/private/{{ item }}.p12"
-      dest: "{{ ipsec_config_path }}/manual/{{ item }}.p12"
-    with_items:
-      - "{{ users }}"
+    - name: Copy the p12 certificates
+      copy:
+        src: "{{ ipsec_pki_path }}/private/{{ item }}.p12"
+        dest: "{{ ipsec_config_path }}/manual/{{ item }}.p12"
+      with_items:
+        - "{{ users }}"
 
-  - name: Get active users
-    shell: >
-      grep ^V index.txt |
-      grep -v "{{ IP_subject_alt_name }}" |
-      awk '{print $5}' |
-      sed 's/\/CN=//g'
-    args:
-      chdir: "{{ ipsec_pki_path }}"
-    register: valid_certs
+    - name: Get active users
+      shell: >
+        grep ^V index.txt |
+        grep -v "{{ IP_subject_alt_name }}" |
+        awk '{print $5}' |
+        sed 's/\/CN=//g'
+      args:
+        chdir: "{{ ipsec_pki_path }}"
+      register: valid_certs
 
-  - name: Revoke non-existing users
-    shell: >
-      {{ openssl_bin }} ca -gencrl
-      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName_USER }}"))
-      -passin pass:"{{ CA_password }}"
-      -revoke certs/{{ item }}.crt
-      -out crl/{{ item }}.crt
-    register: gencrl
-    args:
-      chdir: "{{ ipsec_pki_path }}"
-      creates: crl/{{ item }}.crt
-      executable: bash
-    when: item.split('@')[0] not in users
-    with_items: "{{ valid_certs.stdout_lines }}"
+    - name: Revoke non-existing users
+      shell: >
+        {{ openssl_bin }} ca -gencrl
+        -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName_USER }}"))
+        -passin pass:"{{ CA_password }}"
+        -revoke certs/{{ item }}.crt
+        -out crl/{{ item }}.crt
+      register: gencrl
+      args:
+        chdir: "{{ ipsec_pki_path }}"
+        creates: crl/{{ item }}.crt
+        executable: bash
+      when: item.split('@')[0] not in users
+      with_items: "{{ valid_certs.stdout_lines }}"
 
-  - name: Generate new CRL file
-    shell: >
-      {{ openssl_bin }} ca -gencrl
-      -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ IP_subject_alt_name }}"))
-      -passin pass:"{{ CA_password }}"
-      -out crl/algo.root.pem
-    when:
-      - gencrl is defined
-      - gencrl.changed
-    args:
-      chdir: "{{ ipsec_pki_path }}"
-      executable: bash
+    - name: Generate new CRL file
+      shell: >
+        {{ openssl_bin }} ca -gencrl
+        -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ IP_subject_alt_name }}"))
+        -passin pass:"{{ CA_password }}"
+        -out crl/algo.root.pem
+      when:
+        - gencrl is defined
+        - gencrl.changed
+      args:
+        chdir: "{{ ipsec_pki_path }}"
+        executable: bash
   delegate_to: localhost
-  become: no
+  become: false
   vars:
     ansible_python_interpreter: "{{ ansible_playbook_python }}"
 

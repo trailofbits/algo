@@ -18,7 +18,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           sudo snap install shellcheck
-          pip install ansible-lint
+          pip install ansible-lint==6.3.0
 
       - name: Checks and linters
         run: |

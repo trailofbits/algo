@@ -26,7 +26,7 @@
 
 - name: Update the stackscript
   uri:
-    url: "https://api.linode.com/v4/linode/stackscripts/{{ _linode_stackscript.stackscript.id }}"
+    url: https://api.linode.com/v4/linode/stackscripts/{{ _linode_stackscript.stackscript.id }}
     method: PUT
     body_format: json
     body:
@@ -34,10 +34,10 @@
         {{ stackscript }}
     headers:
       Content-Type: application/json
-      Authorization: "Bearer {{ algo_linode_token }}"
+      Authorization: Bearer {{ algo_linode_token }}
   when: (_linode_stackscript.stackscript.script | hash('md5')) != (stackscript | hash('md5'))
 
-- name: "Creating an instance..."
+- name: Creating an instance...
   linode_v4:
     access_token: "{{ algo_linode_token }}"
     label: "{{ algo_server_name }}"

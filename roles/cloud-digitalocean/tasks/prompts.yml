@@ -18,8 +18,8 @@
     method: GET
     status_code: 200
     headers:
-      Content-Type: "application/json"
-      Authorization: "Bearer {{ algo_do_token }}"
+      Content-Type: application/json
+      Authorization: Bearer {{ algo_do_token }}
   register: _do_regions
 
 - name: Set facts about the regions

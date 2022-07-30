@@ -1,5 +1,5 @@
 ---
-ipsec_config_path: "configs/{{ IP_subject_alt_name }}/ipsec/"
+ipsec_config_path: configs/{{ IP_subject_alt_name }}/ipsec/
 ipsec_pki_path: "{{ ipsec_config_path }}/.pki/"
 strongswan_shell: /usr/sbin/nologin
 strongswan_home: /var/lib/strongswan
@@ -7,7 +7,7 @@ strongswan_service: "{{ 'strongswan-starter' if ansible_facts['distribution_vers
 BetweenClients_DROP: true
 algo_ondemand_cellular: false
 algo_ondemand_wifi: false
-algo_ondemand_wifi_exclude: '_null'
+algo_ondemand_wifi_exclude: _null
 algo_dns_adblocking: false
 ipv6_support: false
 dns_encryption: true
@@ -16,7 +16,7 @@ subjectAltName_type: "{{ 'DNS' if IP_subject_alt_name|regex_search('[a-z]') else
 subjectAltName: >-
   {{ subjectAltName_type }}:{{ IP_subject_alt_name }}
   {%- if ipv6_support -%},IP:{{ ansible_default_ipv6['address'] }}{%- endif -%}
-subjectAltName_USER: "email:{{ item }}@{{ openssl_constraint_random_id }}"
+subjectAltName_USER: email:{{ item }}@{{ openssl_constraint_random_id }}
 nameConstraints: >-
   critical,permitted;{{ subjectAltName_type }}:{{ IP_subject_alt_name }}{{- '/255.255.255.255' if subjectAltName_type == 'IP' else '' -}}
   {%- if subjectAltName_type == 'IP' -%}

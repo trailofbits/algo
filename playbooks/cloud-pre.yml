@@ -1,53 +1,53 @@
 ---
 - block:
-  - name: Display the invocation environment
-    shell: >
-      ./algo-showenv.sh \
-        'algo_provider "{{ algo_provider }}"' \
-        {% if ipsec_enabled %}
-        'algo_ondemand_cellular "{{ algo_ondemand_cellular }}"' \
-        'algo_ondemand_wifi "{{ algo_ondemand_wifi }}"' \
-        'algo_ondemand_wifi_exclude "{{ algo_ondemand_wifi_exclude }}"' \
-        {% endif %}
-        'algo_dns_adblocking "{{ algo_dns_adblocking }}"' \
-        'algo_ssh_tunneling "{{ algo_ssh_tunneling }}"' \
-        'wireguard_enabled "{{ wireguard_enabled }}"' \
-        'dns_encryption "{{ dns_encryption }}"' \
-        > /dev/tty || true
-    tags: debug
+    - name: Display the invocation environment
+      shell: >
+        ./algo-showenv.sh \
+          'algo_provider "{{ algo_provider }}"' \
+          {% if ipsec_enabled %}
+          'algo_ondemand_cellular "{{ algo_ondemand_cellular }}"' \
+          'algo_ondemand_wifi "{{ algo_ondemand_wifi }}"' \
+          'algo_ondemand_wifi_exclude "{{ algo_ondemand_wifi_exclude }}"' \
+          {% endif %}
+          'algo_dns_adblocking "{{ algo_dns_adblocking }}"' \
+          'algo_ssh_tunneling "{{ algo_ssh_tunneling }}"' \
+          'wireguard_enabled "{{ wireguard_enabled }}"' \
+          'dns_encryption "{{ dns_encryption }}"' \
+          > /dev/tty || true
+      tags: debug
 
-  - name: Install the requirements
-    pip:
-      state: present
-      name:
-        - pyOpenSSL>=0.15
-        - segno
-    tags:
-      - always
-      - skip_ansible_lint
+    - name: Install the requirements
+      pip:
+        state: present
+        name:
+          - pyOpenSSL>=0.15
+          - segno
+      tags:
+        - always
+        - skip_ansible_lint
   delegate_to: localhost
   become: false
 
 - block:
-  - name: Generate the SSH private key
-    openssl_privatekey:
-      path: "{{ SSH_keys.private }}"
-      size: 2048
-      mode: "0600"
-      type: RSA
+    - name: Generate the SSH private key
+      openssl_privatekey:
+        path: "{{ SSH_keys.private }}"
+        size: 2048
+        mode: "0600"
+        type: RSA
 
-  - name: Generate the SSH public key
-    openssl_publickey:
-      path: "{{ SSH_keys.public }}"
-      privatekey_path: "{{ SSH_keys.private }}"
-      format: OpenSSH
+    - name: Generate the SSH public key
+      openssl_publickey:
+        path: "{{ SSH_keys.public }}"
+        privatekey_path: "{{ SSH_keys.private }}"
+        format: OpenSSH
 
-  - name: Copy the private SSH key to /tmp
-    copy:
-      src: "{{ SSH_keys.private }}"
-      dest: "{{ SSH_keys.private_tmp }}"
-      force: true
-      mode: '0600'
-    delegate_to: localhost
-    become: false
+    - name: Copy the private SSH key to /tmp
+      copy:
+        src: "{{ SSH_keys.private }}"
+        dest: "{{ SSH_keys.private_tmp }}"
+        force: true
+        mode: "0600"
+      delegate_to: localhost
+      become: false
   when: algo_provider != "local"

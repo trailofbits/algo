@@ -13,13 +13,12 @@
 
 - name: Gather facts
   setup:
-
 - name: Gather additional facts
   import_tasks: facts.yml
 
 - name: Set OS specific facts
   set_fact:
-    config_prefix: "/usr/local/"
+    config_prefix: /usr/local/
     strongswan_shell: /usr/sbin/nologin
     strongswan_home: /var/empty
     root_group: wheel
@@ -50,7 +49,7 @@
 - name: Loopback included into the rc config
   blockinfile:
     dest: /etc/rc.conf
-    create: yes
+    create: true
     block: |
       cloned_interfaces="lo100"
       ifconfig_lo100="inet {{ local_service_ip }} netmask 255.255.255.255"

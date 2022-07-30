@@ -1,73 +1,74 @@
+---
 - name: Include prompts
   import_tasks: prompts.yml
 
 - block:
-  - name: Gather Scaleway organizations facts
-    scaleway_organization_info:
-    register: scaleway_org
+    - name: Gather Scaleway organizations facts
+      scaleway_organization_info:
+      register: scaleway_org
 
-  - name: Get images
-    scaleway_image_info:
-      region: "{{ algo_region }}"
-    register: scaleway_image
+    - name: Get images
+      scaleway_image_info:
+        region: "{{ algo_region }}"
+      register: scaleway_image
 
-  - name: Set cloud specific facts
-    set_fact:
-      organization_id: "{{ scaleway_org.scaleway_organization_info[0]['id'] }}"
-      images: >-
-        [{% for i in scaleway_image.scaleway_image_info -%}
-          {% if i.name == cloud_providers.scaleway.image and
-                i.arch == cloud_providers.scaleway.arch -%}
-          '{{ i.id }}'{% if not loop.last %},{% endif %}
-          {%- endif -%}
-        {%- endfor -%}]
+    - name: Set cloud specific facts
+      set_fact:
+        organization_id: "{{ scaleway_org.scaleway_organization_info[0]['id'] }}"
+        images: >-
+          [{% for i in scaleway_image.scaleway_image_info -%}
+            {% if i.name == cloud_providers.scaleway.image and
+                  i.arch == cloud_providers.scaleway.arch -%}
+            '{{ i.id }}'{% if not loop.last %},{% endif %}
+            {%- endif -%}
+          {%- endfor -%}]
 
-  - name: Create a server
-    scaleway_compute:
-      name: "{{ algo_server_name }}"
-      enable_ipv6: true
-      public_ip: dynamic
-      boot_type: local
-      state: present
-      image: "{{ images[0] }}"
-      organization: "{{ organization_id }}"
-      region: "{{ algo_region }}"
-      commercial_type: "{{ cloud_providers.scaleway.size }}"
-      wait: true
-      tags:
-        - Environment:Algo
-        - AUTHORIZED_KEY={{ lookup('file', SSH_keys.public)|regex_replace(' ', '_') }}
-    register: scaleway_compute
+    - name: Create a server
+      scaleway_compute:
+        name: "{{ algo_server_name }}"
+        enable_ipv6: true
+        public_ip: dynamic
+        boot_type: local
+        state: present
+        image: "{{ images[0] }}"
+        organization: "{{ organization_id }}"
+        region: "{{ algo_region }}"
+        commercial_type: "{{ cloud_providers.scaleway.size }}"
+        wait: true
+        tags:
+          - Environment:Algo
+          - AUTHORIZED_KEY={{ lookup('file', SSH_keys.public)|regex_replace(' ', '_') }}
+      register: scaleway_compute
 
-  - name: Patch the cloud-init
-    uri:
-      url: "https://cp-{{ algo_region }}.scaleway.com/servers/{{ scaleway_compute.msg.id }}/user_data/cloud-init"
-      method: PATCH
-      body: "{{ lookup('template', 'files/cloud-init/base.yml') }}"
-      status_code: 204
-      headers:
-        Content-Type: "text/plain"
-        X-Auth-Token: "{{ algo_scaleway_token }}"
+    - name: Patch the cloud-init
+      uri:
+        url: https://cp-{{ algo_region }}.scaleway.com/servers/{{ scaleway_compute.msg.id }}/user_data/cloud-init
+        method: PATCH
+        body: "{{ lookup('template', 'files/cloud-init/base.yml') }}"
+        status_code: 204
+        headers:
+          Content-Type: text/plain
+          X-Auth-Token: "{{ algo_scaleway_token }}"
 
-  - name: Start the server
-    scaleway_compute:
-      name: "{{ algo_server_name }}"
-      enable_ipv6: true
-      public_ip: dynamic
-      boot_type: local
-      state: running
-      image: "{{ images[0] }}"
-      organization: "{{ organization_id }}"
-      region: "{{ algo_region }}"
-      commercial_type: "{{ cloud_providers.scaleway.size }}"
-      wait: true
-      tags:
-        - Environment:Algo
-        - AUTHORIZED_KEY={{ lookup('file', SSH_keys.public)|regex_replace(' ', '_') }}
-    register: algo_instance
-    until: algo_instance.msg.public_ip
-    retries: 3
-    delay: 3
+    - name: Start the server
+      scaleway_compute:
+        name: "{{ algo_server_name }}"
+        enable_ipv6: true
+        public_ip: dynamic
+        boot_type: local
+        state: running
+        image: "{{ images[0] }}"
+        organization: "{{ organization_id }}"
+        region: "{{ algo_region }}"
+        commercial_type: "{{ cloud_providers.scaleway.size }}"
+        wait: true
+        tags:
+          - Environment:Algo
+          - AUTHORIZED_KEY={{ lookup('file', SSH_keys.public)|regex_replace(' ', '_') }}
+      register: algo_instance
+      until: algo_instance.msg.public_ip
+      retries: 3
+      delay: 3
   environment:
     SCW_TOKEN: "{{ algo_scaleway_token }}"
 

@@ -7,7 +7,7 @@
 
 - name: Create an ssh key
   hcloud_ssh_key:
-    name: "algo-{{ 999999 | random(seed=lookup('file', SSH_keys.public)) }}"
+    name: algo-{{ 999999 | random(seed=lookup('file', SSH_keys.public)) }}
     public_key: "{{ lookup('file', SSH_keys.public) }}"
     state: present
     api_token: "{{ algo_hcloud_token }}"

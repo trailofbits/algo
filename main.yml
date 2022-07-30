@@ -23,11 +23,14 @@
 
     - name: Set required ansible version as a fact
       set_fact:
-        required_ansible_version:
-          "{{ item |  regex_replace('^ansible-core[\\s+]?(?P<op>[=,>,<]+)[\\s+]?(?P<ver>\\d.\\d+(.\\d+)?)$',
-                      '{\"op\": \"\\g<op>\",\"ver\": \"\\g<ver>\" }') }}"
-      when: '"ansible-core" in item'
+        required_ansible_version: "{{ item |  regex_replace('^ansible[\\s+]?(?P<op>[=,>,<]+)[\\s+]?(?P<ver>\\d.\\d+(.\\d+)?)$', '{\"op\": \"\\g<op>\",\"ver\"\
+          : \"\\g<ver>\" }') }}"
+      when: '"ansible" in item'
       with_items: "{{ lookup('file', 'requirements.txt').splitlines() }}"
+
+    - name: Just get the list from default pip
+      community.general.pip_package_info:
+      register: pip_package_info
 
     - name: Verify Python meets Algo VPN requirements
       assert:
@@ -40,10 +43,10 @@
     - name: Verify Ansible meets Algo VPN requirements
       assert:
         that:
-          - ansible_version.full is version(required_ansible_version.ver, required_ansible_version.op)
+          - pip_package_info.packages.pip.ansible.0.version is version(required_ansible_version.ver, required_ansible_version.op)
           - not ipaddr.failed
         msg: >
-          Ansible version is {{ ansible_version.full }}.
+          Ansible version is {{ pip_package_info.packages.pip.ansible.0.version }}.
           You must update the requirements to use this version of Algo.
           Try to run python3 -m pip install -U -r requirements.txt
 

@@ -1,6 +1,6 @@
 ---
 - name: Install requirements
   pip:
-    requirements: https://raw.githubusercontent.com/ansible-collections/azure/v1.9.0/requirements-azure.txt
+    requirements: https://raw.githubusercontent.com/ansible-collections/azure/v1.13.0/requirements-azure.txt
     state: latest
     virtualenv_python: python3
