@@ -10,10 +10,9 @@ import sys
 from os.path import join, dirname, expanduser
 from urllib.parse import quote, urlencode
 
+import ansible_runner
 import yaml
 from aiohttp import web, ClientSession
-
-from playbook import PlaybookCLI
 
 try:
     import boto3
@@ -47,6 +46,7 @@ except ImportError:
 
 try:
     from cs import AIOCloudStack, CloudStackApiException
+
     HAS_CS_LIBRARIES = True
 except ImportError:
     HAS_CS_LIBRARIES = False
@@ -58,12 +58,49 @@ task_future = None
 task_program = ''
 
 
-def run_playbook(data):
-    global task_program
-    extra_vars = ' '.join(['{0}={1}'.format(key, data[key])
-                           for key in data.keys()])
-    task_program = ['ansible-playbook', 'main.yml', '--extra-vars', extra_vars]
-    return PlaybookCLI(task_program).run()
+class Status:
+    RUNNING = 'run'
+    ERROR = 'error'
+    CANCELLED = 'cancelled'
+    DONE = 'done'
+    NEW = None
+
+
+class Playbook:
+
+    def __init__(self):
+        self.status = Status.NEW
+        self.want_cancel = False
+        self.events = []
+        self._runner = None
+
+    def event_handler(self, data: dict) -> None:
+        self.events.append(data)
+
+    def cancel_handler(self) -> bool:
+        if self.want_cancel:
+            self.status = Status.CANCELLED
+        return self.want_cancel
+
+    def cancel(self) -> None:
+        self.want_cancel = True
+
+    def run(self, extra_vars: dict) -> None:
+        self.want_cancel = False
+        self.status = Status.RUNNING
+        _, runner = ansible_runner.run_async(private_data_dir='.',
+                                             playbook='main.yml',
+                                             extravars=extra_vars,
+                                             cancel_callback=self.cancel_handler,
+                                             event_handler=self.event_handler)
+        self._runner = runner
+
+
+playbook = Playbook()
+
+
+def run_playbook(data: dict):
+    return playbook.run(data)
 
 
 @routes.get('/')
@@ -73,43 +110,24 @@ async def handle_index(_):
 
 
 @routes.get('/playbook')
-async def playbook_get_handler(request):
-    if not task_future:
-        return web.json_response({'status': None})
-
-    if task_future.done():
-        try:
-            return web.json_response({'status': 'done', 'program': task_program, 'result': task_future.result()})
-        except ValueError as e:
-            return web.json_response({'status': 'error', 'program': task_program, 'result': str(e)})
-    elif task_future.cancelled():
-        return web.json_response({'status': 'cancelled', 'program': task_program})
-    else:
-        return web.json_response({'status': 'running', 'program': task_program})
+async def playbook_get_handler(_):
+    return web.json_response({
+        'status': playbook.status,
+        'events': playbook.events,
+    })
 
 
 @routes.post('/playbook')
 async def playbook_post_handler(request):
-    global task_future
-    global pool
     data = await request.json()
-    loop = asyncio.get_running_loop()
-
-    pool = concurrent.futures.ThreadPoolExecutor()
-    task_future = loop.run_in_executor(pool, run_playbook, data)
+    run_playbook(data)
     return web.json_response({'ok': True})
 
 
 @routes.delete('/playbook')
 async def playbook_delete_handler(_):
-    global task_future
-    if not task_future:
-        return web.json_response({'ok': False})
-
-    cancelled = task_future.cancel()
-    pool.shutdown(wait=False)
-    task_future = None
-    return web.json_response({'ok': cancelled})
+    playbook.cancel()
+    return web.json_response({'ok': True})
 
 
 @routes.get('/config')
