@@ -8,14 +8,14 @@
 
   tasks:
     - block:
-      - name: Local pre-tasks
-        import_tasks: playbooks/cloud-pre.yml
+        - name: Local pre-tasks
+          import_tasks: playbooks/cloud-pre.yml
 
-      - name: Include a provisioning role
-        include_role:
-          name: "{{ 'local' if algo_provider == 'local' else 'cloud-' + algo_provider }}"
+        - name: Include a provisioning role
+          include_role:
+            name: "{{ 'local' if algo_provider == 'local' else 'cloud-' + algo_provider }}"
 
-      - name: Local post-tasks
-        import_tasks: playbooks/cloud-post.yml
+        - name: Local post-tasks
+          import_tasks: playbooks/cloud-post.yml
       rescue:
         - include_tasks: playbooks/rescue.yml

@@ -17,7 +17,7 @@
     api_token: "{{ algo_hcloud_token }}"
   register: _hcloud_regions
 
-- name: Set facts about thre regions
+- name: Set facts about the regions
   set_fact:
     hcloud_regions: "{{ hcloud_datacenter_facts | sort(attribute='location') }}"
 

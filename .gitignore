@@ -7,3 +7,4 @@ inventory_users
 .DS_Store
 venvs/*
 !venvs/.gitinit
+.vagrant

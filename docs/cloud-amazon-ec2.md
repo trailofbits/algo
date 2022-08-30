@@ -12,6 +12,8 @@ The cheapest EC2 plan you can choose is the "Free Plan" a.k.a. the "AWS Free Tie
 
 As of the time of this writing (July 2018), the Free Tier limits include "750 hours of Amazon EC2 Linux t2.micro instance  usage" per month, 15 GB of bandwidth (outbound) per month, and 30 GB of cloud storage. Algo will not even use 1% of the storage limit, but you may have to monitor your bandwidth usage or keep an eye out for the email from Amazon when you are about to exceed the Free Tier limits.
 
+Addtional configurations are documented in the [EC2 section of the deploy from ansible guide](https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md#amazon-ec2)
+
 ### Create an AWS permissions policy
 
 In the AWS console, find the policies menu: click Services > IAM > Policies. Click Create Policy.
@@ -48,22 +50,27 @@ On the final screen, click the Download CSV button. This file includes the AWS a
 
 After you have downloaded Algo and installed its dependencies, the next step is running Algo to provision the VPN server  on your AWS account.
 
-First you will be asked which server type to setup. You would want to enter "2" to use Amazon EC2.
+First you will be asked which server type to setup. You would want to enter "3" to use Amazon EC2.
 
 ```
 $ ./algo
 
   What provider would you like to use?
     1. DigitalOcean
-    2. Amazon EC2
-    3. Microsoft Azure
-    4. Google Compute Engine
-    5. Scaleway
-    6. OpenStack (DreamCompute optimised)
-    7. Install to existing Ubuntu 16.04 server (Advanced)
+    2. Amazon Lightsail
+    3. Amazon EC2
+    4. Microsoft Azure
+    5. Google Compute Engine
+    6. Hetzner Cloud
+    7. Vultr
+    8. Scaleway
+    9. OpenStack (DreamCompute optimised)
+    10. CloudStack (Exoscale optimised)
+    11. Linode
+    12. Install to existing Ubuntu 18.04 or 20.04 server (for more advanced users)
 
 Enter the number of your desired provider
-: 2
+: 3
 ```
 
 Next you will be asked for the AWS Access Key (Access Key ID) and AWS Secret Key (Secret Access Key) that you received in  the CSV file when you setup the account (don't worry if you don't see your text entered in the console; the key input is  hidden here by Algo).

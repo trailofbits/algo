@@ -2,32 +2,31 @@
 - name: Set OS specific facts
   set_fact:
     strongswan_additional_plugins: []
-
 - name: Ubuntu | Install strongSwan
   apt:
     name: strongswan
     state: present
-    update_cache: yes
-    install_recommends: yes
+    update_cache: true
+    install_recommends: true
 
 - block:
-  # https://bugs.launchpad.net/ubuntu/+source/strongswan/+bug/1826238
-  - name: Ubuntu | Charon profile for apparmor configured
-    copy:
-      dest: /etc/apparmor.d/local/usr.lib.ipsec.charon
-      content: ' capability setpcap,'
-      owner: root
-      group: root
-      mode: 0644
-    notify: restart strongswan
+    # https://bugs.launchpad.net/ubuntu/+source/strongswan/+bug/1826238
+    - name: Ubuntu | Charon profile for apparmor configured
+      copy:
+        dest: /etc/apparmor.d/local/usr.lib.ipsec.charon
+        content: " capability setpcap,"
+        owner: root
+        group: root
+        mode: 0644
+      notify: restart strongswan
 
-  - name: Ubuntu | Enforcing ipsec with apparmor
-    command: aa-enforce "{{ item }}"
-    changed_when: false
-    with_items:
-      - /usr/lib/ipsec/charon
-      - /usr/lib/ipsec/lookip
-      - /usr/lib/ipsec/stroke
+    - name: Ubuntu | Enforcing ipsec with apparmor
+      command: aa-enforce "{{ item }}"
+      changed_when: false
+      with_items:
+        - /usr/lib/ipsec/charon
+        - /usr/lib/ipsec/lookip
+        - /usr/lib/ipsec/stroke
   tags: apparmor
   when: apparmor_enabled|default(false)|bool
 

@@ -6,4 +6,4 @@
 - name: Enable mac_portacl
   lineinfile:
     path: /etc/rc.conf
-    line: 'dnscrypt_proxy_mac_portacl_enable="YES"'
+    line: dnscrypt_proxy_mac_portacl_enable="YES"

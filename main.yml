@@ -9,7 +9,7 @@
 
     - name: Ensure Ansible is not being run in a world writable directory
       assert:
-        that: _playbook_dir.stat.mode|int <= 0775
+        that: _playbook_dir.stat.mode|int <= 775
         msg: >
           Ansible is being run in a world writable directory ({{ playbook_dir }}), ignoring it as an ansible.cfg source.
           For more information see https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-writable-dir
@@ -23,27 +23,30 @@
 
     - name: Set required ansible version as a fact
       set_fact:
-        required_ansible_version:
-          "{{ item |  regex_replace('^ansible[\\s+]?(?P<op>[=,>,<]+)[\\s+]?(?P<ver>\\d.\\d+(.\\d+)?)$',
-                      '{\"op\": \"\\g<op>\",\"ver\": \"\\g<ver>\" }') }}"
+        required_ansible_version: "{{ item |  regex_replace('^ansible[\\s+]?(?P<op>[=,>,<]+)[\\s+]?(?P<ver>\\d.\\d+(.\\d+)?)$', '{\"op\": \"\\g<op>\",\"ver\"\
+          : \"\\g<ver>\" }') }}"
       when: '"ansible" in item'
       with_items: "{{ lookup('file', 'requirements.txt').splitlines() }}"
 
+    - name: Just get the list from default pip
+      community.general.pip_package_info:
+      register: pip_package_info
+
     - name: Verify Python meets Algo VPN requirements
       assert:
-        that: (ansible_python.version.major|string + '.' + ansible_python.version.minor|string)|float is version('3.6', '>=')
+        that: (ansible_python.version.major|string + '.' + ansible_python.version.minor|string) is version('3.8', '>=')
         msg: >
           Python version is not supported.
-          You must upgrade to at least Python 3.6 to use this version of Algo.
+          You must upgrade to at least Python 3.8 to use this version of Algo.
           See for more details - https://trailofbits.github.io/algo/troubleshooting.html#python-version-is-not-supported
 
     - name: Verify Ansible meets Algo VPN requirements
       assert:
         that:
-          - ansible_version.full is version(required_ansible_version.ver, required_ansible_version.op)
+          - pip_package_info.packages.pip.ansible.0.version is version(required_ansible_version.ver, required_ansible_version.op)
           - not ipaddr.failed
         msg: >
-          Ansible version is {{ ansible_version.full }}.
+          Ansible version is {{ pip_package_info.packages.pip.ansible.0.version }}.
           You must update the requirements to use this version of Algo.
           Try to run python3 -m pip install -U -r requirements.txt
 

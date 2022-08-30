@@ -10,7 +10,7 @@
     ansible_connection: "{% if cloud_instance_ip == 'localhost' %}local{% else %}ssh{% endif %}"
     ansible_ssh_user: "{{ ansible_ssh_user|default('root') }}"
     ansible_ssh_port: "{{ ansible_ssh_port|default(22) }}"
-    ansible_python_interpreter: "/usr/bin/python3"
+    ansible_python_interpreter: /usr/bin/python3
     algo_provider: "{{ algo_provider }}"
     algo_server_name: "{{ algo_server_name }}"
     algo_ondemand_cellular: "{{ algo_ondemand_cellular }}"
@@ -33,7 +33,7 @@
   wait_for:
     port: "{{ ansible_ssh_port|default(22) }}"
     host: "{{ cloud_instance_ip }}"
-    search_regex: "OpenSSH"
+    search_regex: OpenSSH
     delay: 10
     timeout: 320
     state: present
@@ -44,8 +44,7 @@
   when:
     - pki_in_tmpfs
     - not algo_store_pki
-    - ansible_system == "Darwin" or
-      ansible_system == "Linux"
+    - ansible_system == "Darwin" or ansible_system == "Linux"
 
 - debug:
     var: IP_subject_alt_name

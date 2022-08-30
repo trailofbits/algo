@@ -1,0 +1,19 @@
+---
+- name: Deploy the template
+  cloudformation:
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
+    stack_name: "{{ stack_name }}"
+    state: present
+    region: "{{ algo_region }}"
+    template: roles/cloud-lightsail/files/stack.yaml
+    template_parameters:
+      InstanceTypeParameter: "{{ cloud_providers.lightsail.size }}"
+      ImageIdParameter: "{{ cloud_providers.lightsail.image }}"
+      WireGuardPort: "{{ wireguard_port }}"
+      SshPort: "{{ ssh_port }}"
+      UserData: "{{ lookup('template', 'files/cloud-init/base.sh') }}"
+    tags:
+      Environment: Algo
+      Lightsail: true
+  register: stack

@@ -4,7 +4,7 @@
     set -o pipefail
     cat private/{{ item }}.p12 |
     base64
-  register:  PayloadContent
+  register: PayloadContent
   changed_when: false
   args:
     executable: bash

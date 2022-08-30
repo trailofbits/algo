@@ -9,7 +9,8 @@
     - lookup('env','GCE_CREDENTIALS_FILE_PATH')|length <= 0
 
 - set_fact:
-    credentials_file_path: "{{ gce_credentials_file | default(_gce_credentials_file.user_input|default(None)) | default(lookup('env','GCE_CREDENTIALS_FILE_PATH'), true) }}"
+    credentials_file_path: "{{ gce_credentials_file | default(_gce_credentials_file.user_input|default(None)) | default(lookup('env','GCE_CREDENTIALS_FILE_PATH'),\
+      \ true) }}"
     ssh_public_key_lookup: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
 
 - set_fact:
@@ -20,40 +21,40 @@
     project_id: "{{ credentials_file_lookup.project_id | default(lookup('env','GCE_PROJECT')) }}"
 
 - block:
-  - name: Get regions
-    gcp_compute_location_info:
-      auth_kind: serviceaccount
-      service_account_file: "{{ credentials_file_path }}"
-      project: "{{ project_id }}"
-      scope: regions
-      filters: status=UP
-    register: gcp_compute_regions_info
+    - name: Get regions
+      gcp_compute_location_info:
+        auth_kind: serviceaccount
+        service_account_file: "{{ credentials_file_path }}"
+        project: "{{ project_id }}"
+        scope: regions
+        filters: status=UP
+      register: gcp_compute_regions_info
 
-  - name: Set facts about the regions
-    set_fact:
-      gce_regions: >-
-        [{%- for region in gcp_compute_regions_info.resources | sort(attribute='name') -%}
-            '{{ region.name }}'{% if not loop.last %},{% endif %}
-        {%- endfor -%}]
+    - name: Set facts about the regions
+      set_fact:
+        gce_regions: >-
+          [{%- for region in gcp_compute_regions_info.resources | sort(attribute='name') -%}
+              '{{ region.name }}'{% if not loop.last %},{% endif %}
+          {%- endfor -%}]
 
-  - name: Set facts about the default region
-    set_fact:
-      default_region: >-
-        {% for region in gce_regions %}
-          {%- if region == "us-east1" %}{{ loop.index }}{% endif %}
-        {%- endfor %}
+    - name: Set facts about the default region
+      set_fact:
+        default_region: >-
+          {% for region in gce_regions %}
+            {%- if region == "us-east1" %}{{ loop.index }}{% endif %}
+          {%- endfor %}
 
-  - pause:
-      prompt: |
-        What region should the server be located in?
-        (https://cloud.google.com/compute/docs/regions-zones/#locations)
-          {% for r in gce_regions %}
-          {{ loop.index }}. {{ r }}
-          {% endfor %}
+    - pause:
+        prompt: |
+          What region should the server be located in?
+          (https://cloud.google.com/compute/docs/regions-zones/#locations)
+            {% for r in gce_regions %}
+            {{ loop.index }}. {{ r }}
+            {% endfor %}
 
-        Enter the number of your desired region
-        [{{ default_region }}]
-    register: _gce_region
+          Enter the number of your desired region
+          [{{ default_region }}]
+      register: _gce_region
   when: region is undefined
 
 - name: Set region as a fact
@@ -70,8 +71,8 @@
     project: "{{ project_id }}"
     scope: zones
     filters:
-      - "name={{ algo_region }}-*"
-      - "status=UP"
+      - name={{ algo_region }}-*
+      - status=UP
   register: gcp_compute_zone_info
 
 - name: Set random available zone as a fact

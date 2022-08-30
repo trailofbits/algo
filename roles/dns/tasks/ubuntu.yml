@@ -1,22 +1,22 @@
 ---
 - block:
-  - name: Add the repository
-    apt_repository:
-      state: present
-      codename: "{{ ansible_distribution_release }}"
-      repo: ppa:shevchuk/dnscrypt-proxy
-    register: result
-    until: result is succeeded
-    retries: 10
-    delay: 3
+    - name: Add the repository
+      apt_repository:
+        state: present
+        codename: "{{ ansible_distribution_release }}"
+        repo: ppa:shevchuk/dnscrypt-proxy
+      register: result
+      until: result is succeeded
+      retries: 10
+      delay: 3
 
-  - name: Configure unattended-upgrades
-    copy:
-      src: 50-dnscrypt-proxy-unattended-upgrades
-      dest: /etc/apt/apt.conf.d/50-dnscrypt-proxy-unattended-upgrades
-      owner: root
-      group: root
-      mode: 0644
+    - name: Configure unattended-upgrades
+      copy:
+        src: 50-dnscrypt-proxy-unattended-upgrades
+        dest: /etc/apt/apt.conf.d/50-dnscrypt-proxy-unattended-upgrades
+        owner: root
+        group: root
+        mode: 0644
   when: ansible_facts['distribution_version'] is version('20.04', '<')
 
 - name: Install dnscrypt-proxy
@@ -26,18 +26,18 @@
     update_cache: true
 
 - block:
-  - name: Ubuntu | Configure AppArmor policy for dnscrypt-proxy
-    copy:
-      src: apparmor.profile.dnscrypt-proxy
-      dest: /etc/apparmor.d/usr.bin.dnscrypt-proxy
-      owner: root
-      group: root
-      mode: 0600
-    notify: restart dnscrypt-proxy
+    - name: Ubuntu | Configure AppArmor policy for dnscrypt-proxy
+      copy:
+        src: apparmor.profile.dnscrypt-proxy
+        dest: /etc/apparmor.d/usr.bin.dnscrypt-proxy
+        owner: root
+        group: root
+        mode: 0600
+      notify: restart dnscrypt-proxy
 
-  - name: Ubuntu | Enforce the dnscrypt-proxy AppArmor policy
-    command: aa-enforce usr.bin.dnscrypt-proxy
-    changed_when: false
+    - name: Ubuntu | Enforce the dnscrypt-proxy AppArmor policy
+      command: aa-enforce usr.bin.dnscrypt-proxy
+      changed_when: false
   tags: apparmor
   when: apparmor_enabled|default(false)|bool
 
@@ -60,4 +60,4 @@
       [Service]
       AmbientCapabilities=CAP_NET_BIND_SERVICE
   notify:
-   - restart dnscrypt-proxy
+    - restart dnscrypt-proxy

@@ -18,24 +18,24 @@
     - "{{ IP_subject_alt_name }}"
 
 - block:
-  - name: Save private keys
-    copy:
-      dest: "{{ wireguard_pki_path }}/private/{{ item['item'] }}"
-      content: "{{ item['stdout'] }}"
-      mode: "0600"
-    no_log: "{{ no_log|bool }}"
-    when: item.changed
-    with_items: "{{ wg_genkey['results'] }}"
-    delegate_to: localhost
-    become: false
+    - name: Save private keys
+      copy:
+        dest: "{{ wireguard_pki_path }}/private/{{ item['item'] }}"
+        content: "{{ item['stdout'] }}"
+        mode: "0600"
+      no_log: "{{ no_log|bool }}"
+      when: item.changed
+      with_items: "{{ wg_genkey['results'] }}"
+      delegate_to: localhost
+      become: false
 
-  - name: Touch the lock file
-    file:
-      dest: "{{ config_prefix|default('/') }}etc/wireguard/private_{{ item }}.lock"
-      state: touch
-    with_items:
-      - "{{ users }}"
-      - "{{ IP_subject_alt_name }}"
+    - name: Touch the lock file
+      file:
+        dest: "{{ config_prefix|default('/') }}etc/wireguard/private_{{ item }}.lock"
+        state: touch
+      with_items:
+        - "{{ users }}"
+        - "{{ IP_subject_alt_name }}"
   when: wg_genkey.changed
 
 - name: Delete the preshared lock files
@@ -57,24 +57,24 @@
     - "{{ IP_subject_alt_name }}"
 
 - block:
-  - name: Save preshared keys
-    copy:
-      dest: "{{ wireguard_pki_path }}/preshared/{{ item['item'] }}"
-      content: "{{ item['stdout'] }}"
-      mode: "0600"
-    no_log: "{{ no_log|bool }}"
-    when: item.changed
-    with_items: "{{ wg_genpsk['results'] }}"
-    delegate_to: localhost
-    become: false
+    - name: Save preshared keys
+      copy:
+        dest: "{{ wireguard_pki_path }}/preshared/{{ item['item'] }}"
+        content: "{{ item['stdout'] }}"
+        mode: "0600"
+      no_log: "{{ no_log|bool }}"
+      when: item.changed
+      with_items: "{{ wg_genpsk['results'] }}"
+      delegate_to: localhost
+      become: false
 
-  - name: Touch the preshared lock file
-    file:
-      dest: "{{ config_prefix|default('/') }}etc/wireguard/preshared_{{ item }}.lock"
-      state: touch
-    with_items:
-      - "{{ users }}"
-      - "{{ IP_subject_alt_name }}"
+    - name: Touch the preshared lock file
+      file:
+        dest: "{{ config_prefix|default('/') }}etc/wireguard/preshared_{{ item }}.lock"
+        state: touch
+      with_items:
+        - "{{ users }}"
+        - "{{ IP_subject_alt_name }}"
   when: wg_genpsk.changed
 
 - name: Generate public keys

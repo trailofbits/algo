@@ -1,5 +1,4 @@
 ---
-
 - name: Iptables configured
   template:
     src: "{{ item.src }}"
