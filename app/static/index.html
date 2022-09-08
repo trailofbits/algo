@@ -18,6 +18,20 @@
     .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
       opacity: 0;
     }
+    .console-item {
+        display: block;
+        max-height: 10em;
+    }
+    .console-enter-active, .console-leave-active {
+        transition: all 500ms;
+    }
+    .console-leave-to {
+        opacity: 0;
+        max-height: 0;
+    }
+    .console-enter {
+        opacity: 0;
+    }
     .back-button {
       position: absolute;
       border-radius: 50%;

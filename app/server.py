@@ -1,14 +1,9 @@
-import asyncio
-import base64
-import concurrent.futures
 import configparser
-import hashlib
-import hmac
 import json
 import os
+import re
 import sys
 from os.path import join, dirname, expanduser
-from urllib.parse import quote, urlencode
 
 import ansible_runner
 import yaml
@@ -59,7 +54,7 @@ task_program = ''
 
 
 class Status:
-    RUNNING = 'run'
+    RUNNING = 'running'
     ERROR = 'error'
     CANCELLED = 'cancelled'
     DONE = 'done'
@@ -72,10 +67,30 @@ class Playbook:
         self.status = Status.NEW
         self.want_cancel = False
         self.events = []
+        self.config_vars = {}
         self._runner = None
 
     def event_handler(self, data: dict) -> None:
-        self.events.append(data)
+        if data['event'] == 'runner_on_ok':
+            # Looking for '-passout pass:"{{ CA_password }}"'
+            if 'Build the CA pair' in data['event_data']['task']:
+                m = re.match(r'-passout pass:\"(?P<password>.*)\"', data['event_data']['cmd'])
+                if m:
+                    self.config_vars['CA_password'] = m.group('password')
+
+            # Looking for '-passout pass:"{{ p12_export_password }}"'
+            if "Build the client's p12" in data['event_data']['task']:
+                m = re.match(r'-passout pass:\"(?P<password>.*)\"', data['event_data']['cmd'])
+                if m:
+                    self.config_vars['p12_export_password'] = m.group('password')
+
+            # Looking for 'DNS = {{ wireguard_dns_servers }}'
+            if "Generate QR codes" in data['event_data']['task']:
+                self.config_vars['host'] = data['event_data']['host']
+                m = re.match(r'DNS = (?P<dns>.*)\n\n', data['event_data']['cmd'])
+                if m:
+                    self.config_vars['local_service_ip'] = m.group('dns')
+            self.events.append(data)
 
     def cancel_handler(self) -> bool:
         if self.want_cancel:
@@ -113,6 +128,7 @@ async def handle_index(_):
 async def playbook_get_handler(_):
     return web.json_response({
         'status': playbook.status,
+        'result': playbook.config_vars if playbook.status == Status.DONE else {},
         'events': playbook.events,
     })
 
