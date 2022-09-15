@@ -85,6 +85,7 @@ module.exports = {
         .then(response => {
           if (response.has_secret) {
             this.ui_token_from_env = true;
+            this.vultr_config = response.saved_to;
             this.load_regions();
           } else if (response.error) {
             this.ui_config_error = response.error;
@@ -138,10 +139,8 @@ module.exports = {
     },
     submit() {
       let submit_value = {
-        region: this.region
-      }
-      if (!this.ui_token_from_env) {
-        submit_value['vultr_config'] = this.vultr_config;
+        region: this.region,
+        vultr_config: this.vultr_config
       }
       this.$emit("submit", submit_value);
     },

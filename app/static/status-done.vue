@@ -7,7 +7,7 @@
       <p v-if="result.local_service_ip">Local DNS resolver {{result.local_service_ip}}</p>
       <p v-if="result.p12_export_password">The p12 and SSH keys password for new users is <code>{{result.p12_export_password}}</code></p>
       <p v-if="result.CA_password">The CA key password is <code>{{result.CA_password}}</code></p>
-      <p v-if="result.ssh_access">Shell access: <code>ssh -F configs/{{result.ansible_ssh_host}}/ssh_config {{config.server_name}}</code></p>
+      <p v-if="result.ansible_ssh_host">Shell access: <code>ssh -F configs/{{result.ansible_ssh_host}}/ssh_config {{config.server_name}}</code></p>
       <p>Read more on how to set up clients at the <a href="https://github.com/trailofbits/algo" target="_blank" rel="noopener noopener">Algo home page</a></p>
     </section>
     <section>

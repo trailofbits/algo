@@ -1,9 +1,9 @@
 import configparser
 import json
 import os
-import re
 import sys
 from os.path import join, dirname, expanduser
+from functools import reduce
 
 import ansible_runner
 import yaml
@@ -55,11 +55,26 @@ task_program = ''
 
 class Status:
     RUNNING = 'running'
-    ERROR = 'error'
-    CANCELLED = 'cancelled'
-    DONE = 'done'
+    ERROR = 'failed'
+    TIMEOUT = 'timeout'
+    CANCELLED = 'canceled'
+    DONE = 'successful'
     NEW = None
 
+
+def by_path(data: dict, path: str):
+    def get(obj, attr):
+        if type(obj) is dict:
+            return obj.get(attr, None)
+        elif type(obj) is list:
+            try:
+                return obj[int(attr)]
+            except ValueError:
+                return None
+        else:
+            return None
+
+    return reduce(get, path.split('.'), data)
 
 class Playbook:
 
@@ -69,28 +84,40 @@ class Playbook:
         self.events = []
         self.config_vars = {}
         self._runner = None
+    
+    def parse(self, event: dict):
+        data = {}
+        if by_path(event, 'event_data.task') == 'Set subjectAltName as a fact':
+            ansible_ssh_host = by_path(event, 'event_data.res.ansible_facts.IP_subject_alt_name')
+            if ansible_ssh_host:
+                data['ansible_ssh_host'] = ansible_ssh_host
+
+        if by_path(event, 'event_data.play') == 'Configure the server and install required software':
+            local_service_ip = by_path(event, 'event_data.res.ansible_facts.ansible_lo.ipv4_secondaries.0.address')
+            ipv6 = by_path(event, 'event_data.res.ansible_facts.ansible_lo.ipv6.0.address')
+            p12_export_password = by_path(event, 'event_data.res.ansible_facts.p12_export_password')
+            if local_service_ip:
+                data['local_service_ip'] = local_service_ip
+            if ipv6:
+                data['ipv6'] = ipv6
+            if p12_export_password:
+                data['p12_export_password'] = p12_export_password
+
+        if by_path(event, 'event_data.play') == 'Provision the server':
+            host_name = by_path(event, 'event_data.res.add_host.host_name')
+            if host_name:
+                data['host_name'] = host_name
+        
+        return data if data else None
 
     def event_handler(self, data: dict) -> None:
-        if data['event'] == 'runner_on_ok':
-            # Looking for '-passout pass:"{{ CA_password }}"'
-            if 'Build the CA pair' in data['event_data']['task']:
-                m = re.match(r'-passout pass:\"(?P<password>.*)\"', data['event_data']['cmd'])
-                if m:
-                    self.config_vars['CA_password'] = m.group('password')
+        if self.parse(data):
+            self.config_vars.update(self.parse(data))
 
-            # Looking for '-passout pass:"{{ p12_export_password }}"'
-            if "Build the client's p12" in data['event_data']['task']:
-                m = re.match(r'-passout pass:\"(?P<password>.*)\"', data['event_data']['cmd'])
-                if m:
-                    self.config_vars['p12_export_password'] = m.group('password')
+        self.events.append(data)
 
-            # Looking for 'DNS = {{ wireguard_dns_servers }}'
-            if "Generate QR codes" in data['event_data']['task']:
-                self.config_vars['host'] = data['event_data']['host']
-                m = re.match(r'DNS = (?P<dns>.*)\n\n', data['event_data']['cmd'])
-                if m:
-                    self.config_vars['local_service_ip'] = m.group('dns')
-            self.events.append(data)
+    def status_handler(self, status_data: dict, *args, **kwargs) -> None:
+        self.status = status_data.get('status')
 
     def cancel_handler(self) -> bool:
         if self.want_cancel:
@@ -103,11 +130,14 @@ class Playbook:
     def run(self, extra_vars: dict) -> None:
         self.want_cancel = False
         self.status = Status.RUNNING
-        _, runner = ansible_runner.run_async(private_data_dir='.',
-                                             playbook='main.yml',
-                                             extravars=extra_vars,
-                                             cancel_callback=self.cancel_handler,
-                                             event_handler=self.event_handler)
+        _, runner = ansible_runner.run_async(
+            private_data_dir='.',
+            playbook='main.yml',
+            extravars=extra_vars,
+            status_handler=self.status_handler,
+            cancel_callback=self.cancel_handler,
+            event_handler=self.event_handler
+        )
         self._runner = runner
 
 
@@ -282,12 +312,14 @@ async def check_vultr_config(request):
         try:
             open(os.environ['VULTR_API_CONFIG'], 'r').read()
             response['has_secret'] = True
+            response['saved_to'] = os.environ.get('VULTR_API_CONFIG')
         except IOError:
             pass
     try:
         default_path = expanduser(join('~', '.vultr.ini'))
         open(default_path, 'r').read()
         response['has_secret'] = True
+        response['saved_to'] = default_path
     except IOError:
         pass
     return web.json_response(response)

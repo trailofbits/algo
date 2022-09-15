@@ -71,10 +71,10 @@
       <h1 class="mb-5 text-center" v-if="step === 'status-running'">
         <span class="spin">🙂</span> Please be patient
       </h1>
-      <h1 class="mb-5 text-center" v-if="step === 'status-error'">
+      <h1 class="mb-5 text-center" v-if="step === 'status-failed'">
         😢 Set up failed
       </h1>
-      <h1 class="mb-5 text-center" v-if="step === 'status-done'">
+      <h1 class="mb-5 text-center" v-if="step === 'status-successful'">
          🥳 Congratulations, your Algo server is running!
       </h1>
       <h1 class="mb-5 text-center" v-if="step === 'status-exit'">
@@ -82,7 +82,7 @@
       </h1>
     </h1>
     <transition name="fade">
-      <div class="row" v-if="step == 'setup'">
+      <div class="row" v-if="step === 'setup'">
         <user-config class="col-md-4 order-md-2 mb-4"></user-config>
         <vpn-setup class="col-md-8 order-md-1"
           v-bind:extra_args="extra_args"
@@ -90,35 +90,35 @@
       </div>
     </transition>
     <transition name="fade">
-      <provider-setup v-if="step == 'provider'"
+      <provider-setup v-if="step === 'provider'"
                       v-bind:extra_args="extra_args"
                       v-on:submit="step = 'command'">
       </provider-setup>
     </transition>
     <transition name="fade">
-      <command-preview v-if="step == 'command'"
+      <command-preview v-if="step === 'command'"
                       v-bind:extra_args="extra_args"
                       v-on:submit="start(); step = 'status-running';">
       </command-preview>
     </transition>
     <transition name="fade">
-      <status-running v-if="step == 'status-running'"
+      <status-running v-if="step === 'status-running'"
                       v-on:submit="stop(); step = 'setup';"
-                      v-on:done="step = 'status-done'"
-                      v-on:error="step = 'status-error'"
+                      v-on:successful="step = 'status-successful'"
+                      v-on:error="step = 'status-failed'"
                       v-on:cancelled="step = 'setup'">
       </status-running>
     </transition>
     <transition name="fade">
-      <section v-if="step == 'status-error'" class="text-center">
+      <section v-if="step === 'status-failed'" class="text-center">
         <p>Now it’s time to inspect console output</p>
         <p>Restart console process to try again</p>
       </section>
     </transition>
     <transition name="fade">
-      <status-done v-if="step == 'status-done'"
+      <status-successful v-if="step === 'status-successful'"
                    v-on:submit="exit(); step = 'status-exit'" >
-      </status-done>
+      </status-successful>
     </transition>
   </div>
 
@@ -144,13 +144,13 @@
         'provider-setup': window.httpVueLoader('/static/provider-setup.vue'),
         'command-preview': window.httpVueLoader('/static/command-preview.vue'),
         'status-running': window.httpVueLoader('/static/status-running.vue'),
-        'status-done': window.httpVueLoader('/static/status-done.vue')
+        'status-successful': window.httpVueLoader('/static/status-done.vue')
       },
       created() {
         fetch("/playbook")
           .then(r => r.json())
           .catch(() => {
-            this.step = 'status-error';
+            this.step = 'status-failed';
           })
           .then(data => {
             if (data.status && data.status !== 'cancelled'){

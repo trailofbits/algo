@@ -8,7 +8,7 @@
     </p>
     <p>Don’t close terminal!</p>
     <transition-group name="console" tag="div">
-      <code class="console-item" v-for="(event, i) in last_n_events" v-bind:key="event.counter">[{{ event.counter }}]: {{ event.stdout }}</code>
+      <code class="console-item" v-for="(event, i) in last_n_events" v-bind:key="event.counter">{{ event.stdout }}</code>
     </transition-group>
   </section>
 </template>
@@ -43,8 +43,12 @@ module.exports = {
           })
           .then(data => {
             this.events = data.events;
-            if (data.status && data.status === 'done') {
-              this.$emit('done');
+            if (data.status && data.status === 'successful') {
+              this.$emit('successful');
+              throw new Error();
+            }
+            if (data.status && data.status === 'failed') {
+              this.$emit('error');
               throw new Error();
             }
             if (!data.status || data.status === 'cancelled') {
