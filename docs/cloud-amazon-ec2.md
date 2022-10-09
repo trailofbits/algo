@@ -6,13 +6,17 @@ Creating an Amazon AWS account requires giving Amazon a phone number that can re
 
 ### Select an EC2 plan
 
-The cheapest EC2 plan you can choose is the "Free Plan" a.k.a. the "AWS Free Tier." It is only available to new AWS customers, it has limits on usage, and it converts to standard pricing after 12 months (the "introductory period"). After you exceed the usage limits, after the 12 month period, or if you are an existing AWS customer, then you will pay standard pay-as-you-go service prices.
+The default EC2 plan (`t4g.nano` arm64) is the cheapest non "Free Plan" option. If you have a new AWS account or are eligible for the "AWS Free Tier" plan and would like to use that plan follow the instructions below.
+
+The "Free Plan" a.k.a. the ["AWS Free Tier"](https://aws.amazon.com/free/) is only available to new AWS customers, it has limits on usage, and it converts to standard pricing after 12 months (the "introductory period"). After you exceed the usage limits, after the 12 month period, or if you are an existing AWS customer, then you will pay standard pay-as-you-go service prices. To use your free tier credits change the following values in the ec2 section of your `config.cfg` file:
+* Set the `size` to `t2.micro`
+* Set the `arch` to `x86_64`
 
 *Note*: Your Algo instance will not stop working when you hit the bandwidth limit, you will just start accumulating service charges on your AWS account.
 
 As of the time of this writing (July 2018), the Free Tier limits include "750 hours of Amazon EC2 Linux t2.micro instance  usage" per month, 15 GB of bandwidth (outbound) per month, and 30 GB of cloud storage. Algo will not even use 1% of the storage limit, but you may have to monitor your bandwidth usage or keep an eye out for the email from Amazon when you are about to exceed the Free Tier limits.
 
-Addtional configurations are documented in the [EC2 section of the deploy from ansible guide](https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md#amazon-ec2)
+Additional configurations are documented in the [EC2 section of the deploy from ansible guide](https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md#amazon-ec2)
 
 ### Create an AWS permissions policy
 
@@ -81,11 +85,11 @@ Next you will be asked for the AWS Access Key (Access Key ID) and AWS Secret Key
 Enter your aws_access_key (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
 Note: Make sure to use an IAM user with an acceptable policy attached (see https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md).
 [pasted values will not be displayed]
-[AKIA...]: 
+[AKIA...]:
 
 Enter your aws_secret_key (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
 [pasted values will not be displayed]
-[ABCD...]: 
+[ABCD...]:
 ```
 
 You will be prompted for the server name to enter. Feel free to leave this as the default ("algo") if you are not certain  how this will affect your setup. Here we chose to call it "algovpn".
@@ -116,7 +120,7 @@ What region should the server be located in?
     14. us-east-2
     15. us-west-1
     16. us-west-2
-  
+
 Enter the number of your desired region
 [13]
 :
