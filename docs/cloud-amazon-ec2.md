@@ -18,7 +18,9 @@ Addtional configurations are documented in the [EC2 section of the deploy from a
 
 In the AWS console, find the policies menu: click Services > IAM > Policies. Click Create Policy.
 
-Here, you have the policy editor. Switch to the JSON tab and copy-paste over the existing empty policy with [the minimum required AWS policy needed for Algo deployment](https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md#minimum-required-iam-permissions-for-deployment).
+Here, you have the policy editor. Switch to the JSON tab and copy-paste over the existing empty policy with [the minimum required AWS policy needed for Algo deployment](https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md#minimum-required-iam-permissions-for-deployment). 
+
+When prompted to name the policy, name it `AlgoVPN_Provisioning`.
 
 ![Creating a new permissions policy in the AWS console.](/docs/images/aws-ec2-new-policy.png)
 
