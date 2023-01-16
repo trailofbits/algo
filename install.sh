@@ -30,9 +30,9 @@ getAlgo() {
   [ ! -d "algo" ] && git clone "https://github.com/${REPO_SLUG}" -b "${REPO_BRANCH}" algo
   cd algo
 
-  python3 -m virtualenv --python="$(command -v python3)" .venv
+  python3 -m virtualenv --python="$(command -v python3)" .env
   # shellcheck source=/dev/null
-  . .venv/bin/activate
+  . .env/bin/activate
   python3 -m pip install -U pip virtualenv
   python3 -m pip install -r requirements.txt
 }
@@ -69,7 +69,7 @@ deployAlgo() {
 
   cd /opt/algo
   # shellcheck source=/dev/null
-  . .venv/bin/activate
+  . .env/bin/activate
 
   export HOME=/root
   export ANSIBLE_LOCAL_TEMP=/root/.ansible/tmp
