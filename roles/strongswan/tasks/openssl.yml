@@ -155,10 +155,19 @@
         format: OpenSSH
       with_items: "{{ users }}"
 
+    - name: Gather the package facts
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: Get OpenSSL version
+      set_fact:
+        openssl_version: "{{ ansible_facts.packages['openssl'][0]['version'] }}"
+
     - name: Build the client's p12
       shell: >
         umask 077;
         {{ openssl_bin }} pkcs12
+        {{ (openssl_version is version('3', '>=')) | ternary('-legacy', '') }}
         -in certs/{{ item }}.crt
         -inkey private/{{ item }}.key
         -export
@@ -175,6 +184,7 @@
       shell: >
         umask 077;
         {{ openssl_bin }} pkcs12
+        {{ (openssl_version is version('3', '>=')) | ternary('-legacy', '') }}
         -in certs/{{ item }}.crt
         -inkey private/{{ item }}.key
         -export
