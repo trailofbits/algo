@@ -12,3 +12,7 @@ docs
 .env
 logo.png
 tests
+CHANGELOG.md
+PULL_REQUEST_TEMPLATE.md
+Vagrantfile
+Makefile
