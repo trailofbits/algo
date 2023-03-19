@@ -75,7 +75,8 @@ The easiest way to get an Algo server running is to run it on your local system 
     ```
     On Fedora first run `export TMPDIR=/var/tmp`, then add the option `--system-site-packages` to the first command above (after `python3 -m virtualenv`). On macOS install the C compiler if prompted.
 
-5. **Set your configuration options.** Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list. Create a unique user for each device you plan to connect to your VPN. If you want to add or delete users later, you **must** select `yes` at the `Do you want to retain the keys (PKI)?` prompt during the server deployment. You should also review the other options before deployment, as changing your mind about them later [may require you to deploy a brand new server](https://github.com/trailofbits/algo/blob/master/docs/faq.md#i-deployed-an-algo-server-can-you-update-it-with-new-features).
+5. **Set your configuration options.** Open the file `config.cfg` in your favorite text editor. Specify the users you wish to create in the `users` list. Create a unique user for each device you plan to connect to your VPN. 
+ > Note: [IKEv2 Only] If you want to add or delete users later, you **must** select `yes` at the `Do you want to retain the keys (PKI)?` prompt during the server deployment. You should also review the other options before deployment, as changing your mind about them later [may require you to deploy a brand new server](https://github.com/trailofbits/algo/blob/master/docs/faq.md#i-deployed-an-algo-server-can-you-update-it-with-new-features).
 
 6. **Start the deployment.** Return to your terminal. In the Algo directory, run `./algo` and follow the instructions. There are several optional features available, none of which are required for a fully functional VPN server. These optional features are described in greater detail in [here](docs/deploy-from-ansible.md).
 
