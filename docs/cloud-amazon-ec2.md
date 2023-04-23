@@ -6,15 +6,17 @@ Creating an Amazon AWS account requires giving Amazon a phone number that can re
 
 ### Select an EC2 plan
 
-The default EC2 plan (`t4g.nano` arm64) is the cheapest non "Free Plan" option. If you have a new AWS account or are eligible for the "AWS Free Tier" plan and would like to use that plan follow the instructions below.
-
-The "Free Plan" a.k.a. the ["AWS Free Tier"](https://aws.amazon.com/free/) is only available to new AWS customers, it has limits on usage, and it converts to standard pricing after 12 months (the "introductory period"). After you exceed the usage limits, after the 12 month period, or if you are an existing AWS customer, then you will pay standard pay-as-you-go service prices. To use your free tier credits change the following values in the ec2 section of your `config.cfg` file:
-* Set the `size` to `t2.micro`
-* Set the `arch` to `x86_64`
+The cheapest EC2 plan you can choose is the "Free Plan" a.k.a. the ["AWS Free Tier"](https://aws.amazon.com/free/). It is only available to new AWS customers, it has limits on usage, and it converts to standard pricing after 12 months (the "introductory period"). After you exceed the usage limits, after the 12 month period, or if you are an existing AWS customer, then you will pay standard pay-as-you-go service prices.
 
 *Note*: Your Algo instance will not stop working when you hit the bandwidth limit, you will just start accumulating service charges on your AWS account.
 
 As of the time of this writing (July 2018), the Free Tier limits include "750 hours of Amazon EC2 Linux t2.micro instance  usage" per month, 15 GB of bandwidth (outbound) per month, and 30 GB of cloud storage. Algo will not even use 1% of the storage limit, but you may have to monitor your bandwidth usage or keep an eye out for the email from Amazon when you are about to exceed the Free Tier limits.
+
+If you are not eligible for the free tier plan or have passed the 12 months of the introductory period, you can switch to [AWS Graviton](https://aws.amazon.com/ec2/graviton/) instances that are generally cheaper. To use the graviton instances, make the following changes in the ec2 section of your `config.cfg` file:
+* Set the `size` to `t4g.nano`
+* Set the `arch` to `arm64`
+
+> Currently, among all the instance sizes available on AWS, the t4g.nano instance is the least expensive option that does not require any promotional offers. However, AWS is currently running a promotion that provides a free trial of the `t4g.small` instance until December 31, 2023, which is available to all customers. For more information about this promotion, please refer to the [documentation](https://aws.amazon.com/ec2/faqs/#t4g-instances).
 
 Additional configurations are documented in the [EC2 section of the deploy from ansible guide](https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md#amazon-ec2)
 
@@ -22,7 +24,7 @@ Additional configurations are documented in the [EC2 section of the deploy from 
 
 In the AWS console, find the policies menu: click Services > IAM > Policies. Click Create Policy.
 
-Here, you have the policy editor. Switch to the JSON tab and copy-paste over the existing empty policy with [the minimum required AWS policy needed for Algo deployment](https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md#minimum-required-iam-permissions-for-deployment). 
+Here, you have the policy editor. Switch to the JSON tab and copy-paste over the existing empty policy with [the minimum required AWS policy needed for Algo deployment](https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md#minimum-required-iam-permissions-for-deployment).
 
 When prompted to name the policy, name it `AlgoVPN_Provisioning`.
 
