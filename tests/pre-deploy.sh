@@ -32,7 +32,7 @@ until dig A +short algo.lxd @10.0.8.1 | grep -vE '^$' > /dev/null; do
 done
 
 case ${UBUNTU_VERSION} in
-  20.04)
+  20.04|22.04)
     lxc exec algo -- apt remove snapd --purge -y || true
     ;;
   18.04)
