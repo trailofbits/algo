@@ -160,7 +160,10 @@
         manager: auto
 
     - name: Get OpenSSL version
-      shell: openssl version | cut -f 2 -d ' '
+      shell: |
+        set -o pipefail
+        {{ openssl_bin }} version |
+        cut -f 2 -d ' '
       register: ssl_version
       run_once: true
 
