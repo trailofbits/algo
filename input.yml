@@ -22,7 +22,7 @@
       - { name: OpenStack (DreamCompute optimised), alias: openstack }
       - { name: CloudStack (Exoscale optimised), alias: cloudstack }
       - { name: Linode, alias: linode }
-      - { name: Install to existing Ubuntu 18.04 or 20.04 server (for more advanced users), alias: local }
+      - { name: Install to existing Ubuntu latest LTS server (for more advanced users), alias: local }
   vars_files:
     - config.cfg
 

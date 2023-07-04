@@ -11,7 +11,7 @@ usage() {
     retcode="${1:-0}"
     echo "To run algo from Docker:"
     echo ""
-    echo "docker run --cap-drop=all -it -v <path to configurations>:"${DATA_DIR}" trailofbits/algo:latest"
+    echo "docker run --cap-drop=all -it -v <path to configurations>:"${DATA_DIR}" ghcr.io/trailofbits/algo:latest"
     echo ""
     exit ${retcode}
 }
