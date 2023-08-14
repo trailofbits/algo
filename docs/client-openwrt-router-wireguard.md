@@ -1,4 +1,4 @@
-# Using Router wıth OpenWRT as a Client with WireGuard
+# Using Router with OpenWRT as a Client with WireGuard
 This scenario is useful in case you want to use vpn with devices which has no vpn capability like smart tv, or make vpn connection available via router for multiple devices.
 This is a tested, working scenario with following environment: 
 
@@ -16,12 +16,12 @@ Make sure that you have
 - router and device in front of router does not have same ip . By default openwrt have 192.168.1.1 if so change it to something like 192.168.2.1 
 ### Install required packages(WebUI)
 - Open router web UI (mostly http://192.168.1.1 )
-- Login. (by default username: root, password:<empt
+- Login. (by default username: root, password:<empty>
 - System -> Software, click "Update lists"
 - Install following packages wireguard-tools, kmod-wireguard, luci-app-wireguard, wireguard, kmod-crypto-sha256, kmod-crypto-sha1, kmod-crypto-md5
 - restart router
 
-### Aluternative Install required packages(ssh)
+### Alternative Install required packages(ssh)
 - Open router web UI (mostly http://192.168.1.1 )
 - ssh root@192.168.1.1
 - opkg update
