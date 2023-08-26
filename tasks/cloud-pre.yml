@@ -1,5 +1,7 @@
 ---
 - name: cloud-pre
+  delegate_to: localhost
+  become: false
   block:
     - name: Display the invocation environment
       ansible.builtin.shell: >
@@ -26,21 +28,19 @@
       tags:
         - always
         - skip_ansible_lint
-  delegate_to: localhost
-  become: false
 
 - name: Provider not local
   when: algo_provider != "local"
   block:
     - name: Generate the SSH private key
-      ansible.builtin.openssl_privatekey:
+      community.crypto.openssl_privatekey:
         path: "{{ SSH_keys.private }}"
         size: 2048
         mode: "0600"
         type: RSA
 
     - name: Generate the SSH public key
-      ansible.builtin.openssl_publickey:
+      community.crypto.openssl_publickey:
         path: "{{ SSH_keys.public }}"
         privatekey_path: "{{ SSH_keys.private }}"
         format: OpenSSH

@@ -1,10 +1,10 @@
 ---
 - name: Gather facts
-  setup:
+  ansible.builtin.setup:
 - name: Cloud only tasks
   block:
     - name: Install software updates
-      apt:
+      ansible.builtin.apt:
         update_cache: true
         install_recommends: true
         upgrade: dist
@@ -14,21 +14,21 @@
       delay: 10
 
     - name: Check if reboot is required
-      shell: >
+      ansible.builtin.shell: >
         if [[ -e /var/run/reboot-required ]]; then echo "required"; else echo "no"; fi
       args:
         executable: /bin/bash
       register: reboot_required
 
     - name: Reboot
-      shell: sleep 2 && shutdown -r now "Ansible updates triggered"
+      ansible.builtin.shell: sleep 2 && shutdown -r now "Ansible updates triggered"
       async: 1
       poll: 0
       when: reboot_required is defined and reboot_required.stdout == 'required'
       ignore_errors: true
 
     - name: Wait until the server becomes ready...
-      wait_for_connection:
+      ansible.builtin.wait_for_connection:
         delay: 20
         timeout: 320
       when: reboot_required is defined and reboot_required.stdout == 'required'
@@ -36,16 +36,19 @@
   when: algo_provider != "local"
 
 - name: Include unattended upgrades configuration
-  import_tasks: unattended-upgrades.yml
+  ansible.builtin.import_tasks: unattended-upgrades.yml
 
 - name: Disable MOTD on login and SSHD
-  replace: dest="{{ item.file }}" regexp="{{ item.regexp }}" replace="{{ item.line }}"
+  ansible.builtin.replace:
+    dest: "{{ item.file }}"
+    regexp: "{{ item.regexp }}"
+    replace: "{{ item.line }}"
   with_items:
     - { regexp: ^session.*optional.*pam_motd.so.*, line: "# MOTD DISABLED", file: /etc/pam.d/login }
     - { regexp: ^session.*optional.*pam_motd.so.*, line: "# MOTD DISABLED", file: /etc/pam.d/sshd }
 
 - name: Ensure fallback resolvers are set
-  ini_file:
+  community.general.ini_file:
     path: /etc/systemd/resolved.conf
     section: Resolve
     option: FallbackDNS
@@ -54,14 +57,14 @@
     - restart systemd-resolved
 
 - name: Loopback for services configured
-  template:
+  ansible.builtin.template:
     src: 10-algo-lo100.network.j2
     dest: /etc/systemd/network/10-algo-lo100.network
   notify:
     - restart systemd-networkd
 
 - name: systemd services enabled and started
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ item }}"
     state: started
     enabled: true
@@ -70,24 +73,24 @@
     - systemd-networkd
     - systemd-resolved
 
-- meta: flush_handlers
+- ansible.builtin.meta: flush_handlers
 
 - name: Check apparmor support
-  command: apparmor_status
+  ansible.builtin.command: apparmor_status
   ignore_errors: true
   changed_when: false
   register: apparmor_status
 
 - name: Set fact if apparmor enabled
-  set_fact:
+  ansible.builtin.set_fact:
     apparmor_enabled: true
   when: '"profiles are in enforce mode" in apparmor_status.stdout'
 
 - name: Gather additional facts
-  import_tasks: facts.yml
+  ansible.builtin.import_tasks: facts.yml
 
 - name: Set OS specific facts
-  set_fact:
+  ansible.builtin.set_fact:
     tools:
       - git
       - screen
@@ -107,13 +110,13 @@
         value: 1
 
 - name: Install tools
-  apt:
+  ansible.builtin.apt:
     name: "{{ tools|default([]) }}"
     state: present
     update_cache: true
 
 - name: Install headers
-  apt:
+  ansible.builtin.apt:
     name:
       - linux-headers-generic
       - linux-headers-{{ ansible_kernel }}
@@ -121,8 +124,9 @@
   when: install_headers | bool
 
 - name: Configure the alternative ingress ip
-  include_tasks: aip/main.yml
+  ansible.builtin.include_tasks: aip/main.yml
   when: alternative_ingress_ip
 
-- include_tasks: iptables.yml
+- name: Include iptables
+  ansible.builtin.include_tasks: iptables.yml
   tags: iptables

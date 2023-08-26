@@ -1,19 +1,22 @@
 ---
 - name: Linux | Delete the PKI directory
-  file:
+  ansible.builtin.file:
     path: /{{ facts.tmpfs_volume_path }}/{{ facts.tmpfs_volume_name }}/
     state: absent
   when: facts.ansible_system == "Linux"
 
-- block:
+- name: Darwin
+  when:
+    - facts.ansible_system == "Darwin"
+  block:
     - name: MacOS | check fs the ramdisk exists
-      command: /usr/sbin/diskutil info "{{ facts.tmpfs_volume_name }}"
+      ansible.builtin.command: /usr/sbin/diskutil info "{{ facts.tmpfs_volume_name }}"
       ignore_errors: true
       changed_when: false
       register: diskutil_info
 
     - name: MacOS | unmount and eject the ram disk
-      shell: >
+      ansible.builtin.shell: >
         /usr/sbin/diskutil umount force "/{{ facts.tmpfs_volume_path }}/{{ facts.tmpfs_volume_name }}/" &&
         /usr/sbin/diskutil eject "{{ facts.tmpfs_volume_name }}"
       changed_when: false
@@ -22,5 +25,4 @@
       until: result.rc == 0
       retries: 5
       delay: 3
-  when:
-    - facts.ansible_system == "Darwin"
+

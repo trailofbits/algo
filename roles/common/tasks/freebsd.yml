@@ -1,6 +1,6 @@
 ---
 - name: FreeBSD | Install prerequisites
-  package:
+  ansible.builtin.package:
     name:
       - python3
       - sudo
@@ -8,16 +8,16 @@
     ansible_python_interpreter: /usr/local/bin/python2.7
 
 - name: Set python3 as the interpreter to use
-  set_fact:
+  ansible.builtin.set_fact:
     ansible_python_interpreter: /usr/local/bin/python3
 
 - name: Gather facts
-  setup:
+  ansible.builtin.setup:
 - name: Gather additional facts
-  import_tasks: facts.yml
+  ansible.builtin.import_tasks: facts.yml
 
 - name: Set OS specific facts
-  set_fact:
+  ansible.builtin.set_fact:
     config_prefix: /usr/local/
     strongswan_shell: /usr/sbin/nologin
     strongswan_home: /var/empty
@@ -42,12 +42,14 @@
         value: 1
 
 - name: Install tools
-  package: name="{{ item }}" state=present
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
   with_items:
     - "{{ tools|default([]) }}"
 
 - name: Loopback included into the rc config
-  blockinfile:
+  ansible.builtin.blockinfile:
     dest: /etc/rc.conf
     create: true
     block: |
@@ -58,7 +60,10 @@
     - restart loopback bsd
 
 - name: Enable the gateway features
-  lineinfile: dest=/etc/rc.conf regexp='^{{ item.param }}.*' line='{{ item.param }}={{ item.value }}'
+  ansible.builtin.lineinfile:
+    dest: /etc/rc.conf
+    regexp: '^{{ item.param }}.*'
+    line: '{{ item.param }}={{ item.value }}'
   with_items:
     - { param: firewall_enable, value: '"YES"' }
     - { param: firewall_type, value: '"open"' }
@@ -70,9 +75,10 @@
     - restart ipfw
 
 - name: FreeBSD | Activate IPFW
-  shell: >
+  ansible.builtin.shell: >
     kldstat -n ipfw.ko || kldload ipfw ; sysctl net.inet.ip.fw.enable=0 &&
     bash /etc/rc.firewall && sysctl net.inet.ip.fw.enable=1
   changed_when: false
 
-- meta: flush_handlers
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers

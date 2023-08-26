@@ -1,6 +1,6 @@
 ---
 - name: Set OS specific facts
-  set_fact:
+  ansible.builtin.set_fact:
     prerequisites:
       - libstrongswan-standard-plugins
     configs_prefix: /etc

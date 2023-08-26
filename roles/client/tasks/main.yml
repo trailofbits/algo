@@ -1,11 +1,13 @@
 ---
 - name: Gather Facts
-  setup:
+  ansible.builtin.setup:
 - name: Include system based facts and tasks
-  import_tasks: systems/main.yml
+  ansible.builtin.import_tasks: systems/main.yml
 
 - name: Install prerequisites
-  package: name="{{ item }}" state=present
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
   with_items:
     - "{{ prerequisites }}"
   register: result
@@ -14,34 +16,36 @@
   delay: 3
 
 - name: Install strongSwan
-  package: name=strongswan state=present
+  ansible.builtin.package:
+    name: strongswan
+    state: present
   register: result
   until: result is succeeded
   retries: 10
   delay: 3
 
 - name: Setup the ipsec config
-  template:
+  ansible.builtin.template:
     src: roles/strongswan/templates/client_ipsec.conf.j2
     dest: "{{ configs_prefix }}/ipsec.{{ IP_subject_alt_name }}.conf"
     mode: "0644"
   with_items:
     - "{{ vpn_user }}"
   notify:
-    - restart strongswan
+    - Restart strongswan
 
 - name: Setup the ipsec secrets
-  template:
+  ansible.builtin.template:
     src: roles/strongswan/templates/client_ipsec.secrets.j2
     dest: "{{ configs_prefix }}/ipsec.{{ IP_subject_alt_name }}.secrets"
     mode: "0600"
   with_items:
     - "{{ vpn_user }}"
   notify:
-    - restart strongswan
+    - Restart strongswan
 
 - name: Include additional ipsec config
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: "{{ item.dest }}"
     line: "{{ item.line }}"
     create: true
@@ -51,26 +55,30 @@
     - dest: "{{ configs_prefix }}/ipsec.secrets"
       line: include ipsec.{{ IP_subject_alt_name }}.secrets
   notify:
-    - restart strongswan
+    - Restart strongswan
 
 - name: Configure libstrongswan to relax CA constraints
-  copy:
+  ansible.builtin.copy:
     src: libstrongswan-relax-constraints.conf
     dest: "{{ configs_prefix }}/strongswan.d/relax-ca-constraints.conf"
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
 
 - name: Setup the certificates and keys
-  template:
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
   with_items:
     - src: configs/{{ IP_subject_alt_name }}/ipsec/.pki/certs/{{ vpn_user }}.crt
       dest: "{{ configs_prefix }}/ipsec.d/certs/{{ vpn_user }}.crt"
+      mode: "0644"
     - src: configs/{{ IP_subject_alt_name }}/ipsec/.pki/cacert.pem
       dest: "{{ configs_prefix }}/ipsec.d/cacerts/{{ IP_subject_alt_name }}.pem"
+      mode: "0644"
     - src: configs/{{ IP_subject_alt_name }}/ipsec/.pki/private/{{ vpn_user }}.key
       dest: "{{ configs_prefix }}/ipsec.d/private/{{ vpn_user }}.key"
+      mode: "0600"
   notify:
-    - restart strongswan
+    - Restart strongswan

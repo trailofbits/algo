@@ -7,7 +7,7 @@
 
   tasks:
     - name: Add the droplet to an inventory group
-      add_host:
+      ansible.builtin.add_host:
         name: "{{ client_ip }}"
         groups: client-host
         ansible_ssh_user: "{{ 'root' if client_ip == 'localhost' else ssh_user }}"

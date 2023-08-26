@@ -141,4 +141,4 @@
               {%- elif _store_pki.user_input is defined  %}{{ booleans_map[_store_pki.user_input] | default(defaults['store_pki']) }}
               {%- else %}false{% endif %}{% endif %}
       rescue:
-        - ansible.builtin.include_tasks: playbooks/rescue.yml
+        - ansible.builtin.include_tasks: tasks/rescue.yml

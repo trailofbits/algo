@@ -98,23 +98,28 @@
   tasks:
     - name: Play roles
       block:
-        - ansible.builtin.import_role:
+        - name: Import common
+          ansible.builtin.import_role:
             name: common
 
-        - ansible.builtin.import_role:
+        - name: Import wireguard
+          ansible.builtin.import_role:
             name: wireguard
           when: wireguard_enabled
 
-        - ansible.builtin.import_role:
+        - name: Import strongswan
+          ansible.builtin.import_role:
             name: strongswan
           when: ipsec_enabled
           tags: ipsec
 
-        - ansible.builtin.import_role:
+        - name: Import ssh_tunneling
+          ansible.builtin.import_role:
             name: ssh_tunneling
           when: algo_ssh_tunneling
 
-        - ansible.builtin.debug:
+        - name: End message
+          ansible.builtin.debug:
             msg:
               - "{{ congrats.common.split('\n') }}"
               - "    {{ congrats.p12_pass if algo_ssh_tunneling or ipsec_enabled else '' }}"
