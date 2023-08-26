@@ -1,0 +1,12 @@
+---
+
+collections:
+  - community.general
+  - community.aws
+  - community.digitalocean
+  - amazon.aws
+  - azure.azcollection
+  - google.cloud
+  - hetzner.hcloud
+  - ngine_io.cloudstack
+  - vultr.cloud

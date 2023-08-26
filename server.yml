@@ -6,9 +6,10 @@
   vars_files:
     - config.cfg
   tasks:
-    - block:
+    - name: Play server
+      block:
         - name: Wait until the cloud-init completed
-          wait_for:
+          ansible.builtin.wait_for:
             path: /var/lib/cloud/data/result.json
             delay: 10
             timeout: 600
@@ -16,15 +17,19 @@
           become: false
           when: cloudinit
 
-        - block:
+        - name: Not localhost
+          when: inventory_hostname != 'localhost'
+          become: false
+          delegate_to: localhost
+          block:
             - name: Ensure the config directory exists
-              file:
+              ansible.builtin.file:
                 dest: configs/{{ IP_subject_alt_name }}
                 state: directory
                 mode: "0700"
 
             - name: Dump the ssh config
-              copy:
+              ansible.builtin.copy:
                 dest: configs/{{ IP_subject_alt_name }}/ssh_config
                 mode: "0600"
                 content: |
@@ -35,38 +40,36 @@
                     IdentityFile {{ SSH_keys.private | realpath }}
                     KeepAlive yes
                     ServerAliveInterval 30
-          when: inventory_hostname != 'localhost'
-          become: false
-          delegate_to: localhost
 
-        - import_role:
+        - ansible.builtin.import_role:
             name: common
           tags: common
 
-        - import_role:
+        - ansible.builtin.import_role:
             name: dns
           when:
             - algo_dns_adblocking or dns_encryption
           tags: dns
 
-        - import_role:
+        - ansible.builtin.import_role:
             name: wireguard
           when: wireguard_enabled
           tags: wireguard
 
-        - import_role:
+        - ansible.builtin.import_role:
             name: strongswan
           when: ipsec_enabled
           tags: ipsec
 
-        - import_role:
+        - ansible.builtin.import_role:
             name: ssh_tunneling
           when: algo_ssh_tunneling
           tags: ssh_tunneling
 
-        - block:
+        - name: Set configuration
+          block:
             - name: Dump the configuration
-              copy:
+              ansible.builtin.copy:
                 dest: configs/{{ IP_subject_alt_name }}/.config.yml
                 content: |
                   server: {{ 'localhost' if inventory_hostname == 'localhost' else inventory_hostname }}
@@ -94,7 +97,7 @@
               delegate_to: localhost
 
             - name: Create a symlink if deploying to localhost
-              file:
+              ansible.builtin.file:
                 src: "{{ IP_subject_alt_name }}"
                 dest: configs/localhost
                 state: link
@@ -102,7 +105,7 @@
               when: inventory_hostname == 'localhost'
 
             - name: Import tmpfs tasks
-              import_tasks: playbooks/tmpfs/umount.yml
+              ansible.builtin.import_tasks: tasks/tmpfs/umount.yml
               become: false
               delegate_to: localhost
               vars:
@@ -111,7 +114,7 @@
                 - pki_in_tmpfs
                 - not algo_store_pki
 
-            - debug:
+            - ansible.builtin.debug:
                 msg:
                   - "{{ congrats.common.split('\n') }}"
                   - "    {{ congrats.p12_pass if algo_ssh_tunneling or ipsec_enabled else '' }}"
@@ -119,4 +122,4 @@
                   - "    {{ congrats.ssh_access if algo_provider != 'local' else ''}}"
           tags: always
       rescue:
-        - include_tasks: playbooks/rescue.yml
+        - ansible.builtin.include_tasks: tasks/rescue.yml

@@ -1,6 +1,6 @@
 ---
 - name: Install requirements
-  pip:
+  ansible.builtin.pip:
     name:
       - boto>=2.5
       - boto3

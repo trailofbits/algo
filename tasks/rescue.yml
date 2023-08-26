@@ -1,0 +1,7 @@
+---
+- name: Debug | var fail_hint
+  ansible.builtin.debug:
+    var: fail_hint
+
+- name: Fail the installation
+  ansible.builtin.fail:

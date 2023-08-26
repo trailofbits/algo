@@ -1,12 +1,12 @@
 ---
 - name: Build python virtual environment
-  import_tasks: venv.yml
+  ansible.builtin.import_tasks: venv.yml
 
 - name: Include prompts
-  import_tasks: prompts.yml
+  ansible.builtin.import_tasks: prompts.yml
 
 - name: Locate official AMI for region
-  ec2_ami_info:
+  amazon.aws.ec2_ami_info:
     aws_access_key: "{{ access_key }}"
     aws_secret_key: "{{ secret_key }}"
     owners: "{{ cloud_providers.ec2.image.owner }}"
@@ -17,13 +17,14 @@
   register: ami_search
 
 - name: Set the ami id as a fact
-  set_fact:
+  ansible.builtin.set_fact:
     ami_image: "{{ (ami_search.images | sort(attribute='creation_date') | last)['image_id'] }}"
 
 - name: Deploy the stack
-  import_tasks: cloudformation.yml
+  ansible.builtin.import_tasks: cloudformation.yml
 
-- set_fact:
+- name: Set facts
+  ansible.builtin.set_fact:
     cloud_instance_ip: "{{ stack.stack_outputs.ElasticIP }}"
     ansible_ssh_user: algo
     ansible_ssh_port: "{{ ssh_port }}"

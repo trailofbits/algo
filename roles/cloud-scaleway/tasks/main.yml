@@ -1,19 +1,24 @@
 ---
 - name: Include prompts
-  import_tasks: prompts.yml
+  ansible.builtin.import_tasks: prompts.yml
 
-- block:
+- name: Scaleway
+  environment:
+    SCW_TOKEN: "{{ algo_scaleway_token }}"
+  block:
     - name: Gather Scaleway organizations facts
-      scaleway_organization_info:
+      community.general.scaleway_organization_info:
+        api_token: "{{ algo_scaleway_token }}"
       register: scaleway_org
 
     - name: Get images
-      scaleway_image_info:
+      community.general.scaleway_image_info:
         region: "{{ algo_region }}"
+        api_token: "{{ algo_scaleway_token }}"
       register: scaleway_image
 
     - name: Set cloud specific facts
-      set_fact:
+      ansible.builtin.set_fact:
         organization_id: "{{ scaleway_org.scaleway_organization_info[0]['id'] }}"
         images: >-
           [{% for i in scaleway_image.scaleway_image_info -%}
@@ -24,7 +29,8 @@
           {%- endfor -%}]
 
     - name: Create a server
-      scaleway_compute:
+      community.general.scaleway_compute:
+        api_token: "{{ algo_scaleway_token }}"
         name: "{{ algo_server_name }}"
         enable_ipv6: true
         public_ip: dynamic
@@ -41,7 +47,7 @@
       register: scaleway_compute
 
     - name: Patch the cloud-init
-      uri:
+      ansible.builtin.uri:
         url: https://cp-{{ algo_region }}.scaleway.com/servers/{{ scaleway_compute.msg.id }}/user_data/cloud-init
         method: PATCH
         body: "{{ lookup('template', 'files/cloud-init/base.yml') }}"
@@ -51,7 +57,8 @@
           X-Auth-Token: "{{ algo_scaleway_token }}"
 
     - name: Start the server
-      scaleway_compute:
+      community.general.scaleway_compute:
+        api_token: "{{ algo_scaleway_token }}"
         name: "{{ algo_server_name }}"
         enable_ipv6: true
         public_ip: dynamic
@@ -69,10 +76,9 @@
       until: algo_instance.msg.public_ip
       retries: 3
       delay: 3
-  environment:
-    SCW_TOKEN: "{{ algo_scaleway_token }}"
 
-- set_fact:
+- name: Set facts
+  ansible.builtin.set_fact:
     cloud_instance_ip: "{{ algo_instance.msg.public_ip.address }}"
     ansible_ssh_user: algo
     ansible_ssh_port: "{{ ssh_port }}"

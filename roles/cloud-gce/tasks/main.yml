@@ -1,12 +1,12 @@
 ---
 - name: Build python virtual environment
-  import_tasks: venv.yml
+  ansible.builtin.import_tasks: venv.yml
 
 - name: Include prompts
-  import_tasks: prompts.yml
+  ansible.builtin.import_tasks: prompts.yml
 
 - name: Network configured
-  gcp_compute_network:
+  google.cloud.gcp_compute_network:
     auth_kind: serviceaccount
     service_account_file: "{{ credentials_file_path }}"
     project: "{{ project_id }}"
@@ -17,7 +17,7 @@
   register: gcp_compute_network
 
 - name: Firewall configured
-  gcp_compute_firewall:
+  google.cloud.gcp_compute_firewall:
     auth_kind: serviceaccount
     service_account_file: "{{ credentials_file_path }}"
     project: "{{ project_id }}"
@@ -35,9 +35,11 @@
           - "{{ ssh_port }}"
       - ip_protocol: icmp
 
-- block:
+- name: External IP
+  when: cloud_providers.gce.external_static_ip
+  block:
     - name: External IP allocated
-      gcp_compute_address:
+      google.cloud.gcp_compute_address:
         auth_kind: serviceaccount
         service_account_file: "{{ credentials_file_path }}"
         project: "{{ project_id }}"
@@ -46,12 +48,11 @@
       register: gcp_compute_address
 
     - name: Set External IP as a fact
-      set_fact:
+      ansible.builtin.set_fact:
         external_ip: "{{ gcp_compute_address.address }}"
-  when: cloud_providers.gce.external_static_ip
 
 - name: Instance created
-  gcp_compute_instance:
+  google.cloud.gcp_compute_instance:
     auth_kind: serviceaccount
     service_account_file: "{{ credentials_file_path }}"
     project: "{{ project_id }}"
@@ -77,7 +78,8 @@
         - environment-algo
   register: gcp_compute_instance
 
-- set_fact:
+- name: Set facts
+  ansible.builtin.set_fact:
     cloud_instance_ip: "{{ gcp_compute_instance.networkInterfaces[0].accessConfigs[0].natIP }}"
     ansible_ssh_user: algo
     ansible_ssh_port: "{{ ssh_port }}"

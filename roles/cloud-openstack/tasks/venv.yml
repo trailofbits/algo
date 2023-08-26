@@ -1,6 +1,6 @@
 ---
 - name: Install requirements
-  pip:
+  ansible.builtin.pip:
     name: shade
     state: latest
     virtualenv_python: python3

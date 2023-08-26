@@ -25,8 +25,9 @@ jobs:
       - name: Checks and linters
         run: |
           /snap/bin/shellcheck algo install.sh
+          [ -f requirements.yml ] && ansible-galaxy install -r requirements.yml
           ansible-playbook main.yml --syntax-check
-          ansible-lint -x experimental,package-latest,unnamed-task -v *.yml roles/{local,cloud-*}/*/*.yml || true
+          ansible-lint *.yml roles/{local,cloud-*}/*/*.yml || true
 
   scripted-deploy:
     runs-on: ubuntu-20.04

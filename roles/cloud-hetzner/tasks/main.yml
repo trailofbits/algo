@@ -1,12 +1,12 @@
 ---
 - name: Build python virtual environment
-  import_tasks: venv.yml
+  ansible.builtin.import_tasks: venv.yml
 
 - name: Include prompts
-  import_tasks: prompts.yml
+  ansible.builtin.import_tasks: prompts.yml
 
 - name: Create an ssh key
-  hcloud_ssh_key:
+  hetzner.hcloud.hcloud_ssh_key:
     name: algo-{{ 999999 | random(seed=lookup('file', SSH_keys.public)) }}
     public_key: "{{ lookup('file', SSH_keys.public) }}"
     state: present
@@ -14,7 +14,7 @@
   register: hcloud_ssh_key
 
 - name: Create a server...
-  hcloud_server:
+  hetzner.hcloud.hcloud_server:
     name: "{{ algo_server_name }}"
     location: "{{ algo_hcloud_region }}"
     server_type: "{{ cloud_providers.hetzner.server_type }}"
@@ -27,7 +27,8 @@
       Environment: algo
   register: hcloud_server
 
-- set_fact:
+- name: Set facts
+  ansible.builtin.set_fact:
     cloud_instance_ip: "{{ hcloud_server.hcloud_server.ipv4_address }}"
     ansible_ssh_user: algo
     ansible_ssh_port: "{{ ssh_port }}"

@@ -1,6 +1,0 @@
----
-- debug:
-    var: fail_hint
-
-- name: Fail the installation
-  fail:

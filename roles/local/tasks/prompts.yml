@@ -1,17 +1,18 @@
 ---
-- pause:
-    prompt: "{{ item }}"
+- name: Starting warning
+  ansible.builtin.pause:
+    prompt: |
+      https://trailofbits.github.io/algo/deploy-to-ubuntu.html
+
+      Local installation might break your server. Use at your own risk.
+
+      Proceed? Press ENTER to continue or CTRL+C and A to abort...
   when: not tests|default(false)|bool
   tags:
     - skip_ansible_lint
-  with_items: |
-    https://trailofbits.github.io/algo/deploy-to-ubuntu.html
 
-    Local installation might break your server. Use at your own risk.
-
-    Proceed? Press ENTER to continue or CTRL+C and A to abort...
-
-- pause:
+- name: Read IP address
+  ansible.builtin.pause:
     prompt: |
       Enter the IP address of your server: (or use localhost for local installation):
       [localhost]
@@ -19,14 +20,17 @@
   when: server is undefined
 
 - name: Set the facts
-  set_fact:
+  ansible.builtin.set_fact:
     cloud_instance_ip: >-
       {% if server is defined %}{{ server }}
       {%- elif _algo_server.user_input %}{{ _algo_server.user_input }}
       {%- else %}localhost{% endif %}
 
-- block:
-    - pause:
+- name: Var cloud_instance_ip not localhost
+  when: cloud_instance_ip != "localhost"
+  block:
+    - name: Read user
+      ansible.builtin.pause:
         prompt: |
           What user should we use to login on the server? (note: passwordless login required, or ignore if you're deploying to localhost)
           [root]
@@ -34,14 +38,14 @@
       when: ssh_user is undefined
 
     - name: Set the facts
-      set_fact:
+      ansible.builtin.set_fact:
         ansible_ssh_user: >-
           {% if ssh_user is defined %}{{ ssh_user }}
           {%- elif _algo_ssh_user.user_input %}{{ _algo_ssh_user.user_input }}
           {%- else %}root{% endif %}
-  when: cloud_instance_ip != "localhost"
 
-- pause:
+- name: Read public IP address
+  ansible.builtin.pause:
     prompt: |
       Enter the public IP address or domain name of your server: (IMPORTANT! This is used to verify the certificate)
       [{{ cloud_instance_ip }}]
@@ -49,7 +53,7 @@
   when: endpoint is undefined
 
 - name: Set the facts
-  set_fact:
+  ansible.builtin.set_fact:
     IP_subject_alt_name: >-
       {% if endpoint is defined %}{{ endpoint }}
       {%- elif _endpoint.user_input %}{{ _endpoint.user_input }}

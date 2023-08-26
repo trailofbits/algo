@@ -1,18 +1,19 @@
 ---
 - name: Build python virtual environment
-  import_tasks: venv.yml
+  ansible.builtin.import_tasks: venv.yml
 
 - name: Include prompts
-  import_tasks: prompts.yml
+  ansible.builtin.import_tasks: prompts.yml
 
-- set_fact:
+- name: Set fact
+  ansible.builtin.set_fact:
     algo_region: >-
       {% if region is defined %}{{ region }}
       {%- elif _algo_region.user_input %}{{ azure_regions[_algo_region.user_input | int -1 ]['name'] }}
       {%- else %}{{ azure_regions[default_region | int - 1]['name'] }}{% endif %}
 
 - name: Create AlgoVPN Server
-  azure_rm_deployment:
+  azure.azcollection.azure_rm_deployment:
     state: present
     deployment_name: "{{ algo_server_name }}"
     template: "{{ lookup('file', role_path + '/files/deployment.json') }}"
@@ -45,7 +46,8 @@
         value: "{{ lookup('template', 'files/cloud-init/base.yml') | b64encode }}"
   register: azure_rm_deployment
 
-- set_fact:
+- name: Set fact
+  ansible.builtin.set_fact:
     cloud_instance_ip: "{{ azure_rm_deployment.deployment.outputs.publicIPAddresses.value }}"
     ansible_ssh_user: algo
     ansible_ssh_port: "{{ ssh_port }}"

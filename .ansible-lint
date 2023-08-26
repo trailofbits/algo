@@ -1,10 +1,15 @@
+---
 skip_list:
-  - yaml
-  - '204'
+  - package-latest
+  - jinja[spacing]
 verbosity: 1
 
 warn_list:
-  - no-changed-when
-  - no-handler
-  - fqcn-builtins
-  - var-spacing
+  - experimental
+  - var-naming[pattern]
+  - yaml[line-length]
+  # - no-changed-when
+  # - var-spacing
+exclude_paths:
+  - .github/workflows/
+  - roles/cloud-*/files/stack.yaml

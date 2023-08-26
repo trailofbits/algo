@@ -1,6 +1,6 @@
 ---
 - name: Install requirements
-  pip:
+  ansible.builtin.pip:
     name:
       - cs
       - sshpubkeys

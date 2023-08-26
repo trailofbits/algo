@@ -1,5 +1,6 @@
 ---
-- pause:
+- name: Read API token
+  ansible.builtin.pause:
     prompt: |
       Enter your API token. The token must have read and write permissions (https://cloud.digitalocean.com/settings/api/tokens):
     echo: false
@@ -9,11 +10,11 @@
     - lookup('env','DO_API_TOKEN')|length <= 0
 
 - name: Set the token as a fact
-  set_fact:
+  ansible.builtin.set_fact:
     algo_do_token: "{{ do_token | default(_do_token.user_input|default(None)) | default(lookup('env','DO_API_TOKEN'), true) }}"
 
 - name: Get regions
-  uri:
+  ansible.builtin.uri:
     url: https://api.digitalocean.com/v2/regions
     method: GET
     status_code: 200
@@ -23,17 +24,18 @@
   register: _do_regions
 
 - name: Set facts about the regions
-  set_fact:
+  ansible.builtin.set_fact:
     do_regions: "{{ _do_regions.json.regions | selectattr('available', 'true') | sort(attribute='slug') }}"
 
 - name: Set default region
-  set_fact:
+  ansible.builtin.set_fact:
     default_region: >-
       {% for r in do_regions %}
       {%- if r['slug'] == "nyc3" %}{{ loop.index }}{% endif %}
       {%- endfor %}
 
-- pause:
+- name: Read region
+  ansible.builtin.pause:
     prompt: |
       What region should the server be located in?
         {% for r in do_regions %}
@@ -46,7 +48,7 @@
   when: region is undefined
 
 - name: Set additional facts
-  set_fact:
+  ansible.builtin.set_fact:
     algo_do_region: >-
       {% if region is defined %}{{ region }}
       {%- elif _algo_region.user_input %}{{ do_regions[_algo_region.user_input | int -1 ]['slug'] }}

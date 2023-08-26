@@ -1,10 +1,11 @@
 ---
-- fail:
+- name: Fail on credentials
+  ansible.builtin.fail:
     msg: "OpenStack credentials are not set. Download it from the OpenStack dashboard->Compute->API Access and source it in the shell (eg: source /tmp/dhc-openrc.sh)"
   when: lookup('env', 'OS_AUTH_URL')|length <= 0
 
 - name: Build python virtual environment
-  import_tasks: venv.yml
+  ansible.builtin.import_tasks: venv.yml
 
 - name: Security group created
   openstack.cloud.security_group:
@@ -38,7 +39,7 @@
   register: os_image
 
 - name: Set image as a fact
-  set_fact:
+  ansible.builtin.set_fact:
     image_id: "{{ item.id }}"
   loop: "{{ os_image.openstack_image }}"
   when:
@@ -50,7 +51,7 @@
   register: os_network
 
 - name: Set the network as a fact
-  set_fact:
+  ansible.builtin.set_fact:
     public_network_id: "{{ item.id }}"
   when:
     - item['router:external']|default(omit)
@@ -59,7 +60,7 @@
   with_items: "{{ os_network.openstack_networks }}"
 
 - name: Set facts
-  set_fact:
+  ansible.builtin.set_fact:
     flavor_id: "{{ (os_flavor.openstack_flavors | sort(attribute='ram'))[0]['id'] }}"
     security_group_name: "{{ os_security_group['secgroup']['name'] }}"
 
@@ -75,7 +76,8 @@
       - net-id: "{{ public_network_id }}"
   register: os_server
 
-- set_fact:
+- name: Set facts
+  ansible.builtin.set_fact:
     cloud_instance_ip: "{{ os_server['openstack']['public_v4'] }}"
     ansible_ssh_user: algo
     ansible_ssh_port: "{{ ssh_port }}"

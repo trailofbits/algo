@@ -1,7 +1,8 @@
 ---
-- block:
+- name: cloud-pre
+  block:
     - name: Display the invocation environment
-      shell: >
+      ansible.builtin.shell: >
         ./algo-showenv.sh \
           'algo_provider "{{ algo_provider }}"' \
           {% if ipsec_enabled %}
@@ -17,7 +18,7 @@
       tags: debug
 
     - name: Install the requirements
-      pip:
+      ansible.builtin.pip:
         state: present
         name:
           - pyOpenSSL>=0.15
@@ -28,26 +29,27 @@
   delegate_to: localhost
   become: false
 
-- block:
+- name: Provider not local
+  when: algo_provider != "local"
+  block:
     - name: Generate the SSH private key
-      openssl_privatekey:
+      ansible.builtin.openssl_privatekey:
         path: "{{ SSH_keys.private }}"
         size: 2048
         mode: "0600"
         type: RSA
 
     - name: Generate the SSH public key
-      openssl_publickey:
+      ansible.builtin.openssl_publickey:
         path: "{{ SSH_keys.public }}"
         privatekey_path: "{{ SSH_keys.private }}"
         format: OpenSSH
 
     - name: Copy the private SSH key to /tmp
-      copy:
+      ansible.builtin.copy:
         src: "{{ SSH_keys.private }}"
         dest: "{{ SSH_keys.private_tmp }}"
         force: true
         mode: "0600"
       delegate_to: localhost
       become: false
-  when: algo_provider != "local"

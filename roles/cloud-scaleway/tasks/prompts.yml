@@ -1,5 +1,6 @@
 ---
-- pause:
+- name: Read auth token
+  ansible.builtin.pause:
     prompt: |
       Enter your auth token (https://trailofbits.github.io/algo/cloud-scaleway.html)
     echo: false
@@ -8,7 +9,8 @@
     - scaleway_token is undefined
     - lookup('env','SCW_TOKEN')|length <= 0
 
-- pause:
+- name: Read region
+  ansible.builtin.pause:
     prompt: |
       What region should the server be located in?
         {% for r in scaleway_regions %}
@@ -21,7 +23,7 @@
   when: region is undefined
 
 - name: Set scaleway facts
-  set_fact:
+  ansible.builtin.set_fact:
     algo_scaleway_token: "{{ scaleway_token | default(_scaleway_token.user_input) | default(lookup('env','SCW_TOKEN'), true) }}"
     algo_region: >-
       {% if region is defined %}{{ region }}
