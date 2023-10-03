@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v2.3.2
+      - uses: actions/setup-python@v4.7.1
         with:
           python-version: '3.9'
           cache: 'pip'
@@ -35,7 +35,7 @@ jobs:
         UBUNTU_VERSION: ["22.04"]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v2.3.2
+      - uses: actions/setup-python@v4.7.1
         with:
           python-version: '3.9'
           cache: 'pip'
@@ -99,7 +99,7 @@ jobs:
         UBUNTU_VERSION: ["22.04"]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v2.3.2
+      - uses: actions/setup-python@v4.7.1
         with:
           python-version: '3.9'
           cache: 'pip'
