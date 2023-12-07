@@ -1,4 +1,4 @@
-FROM python:3-alpine
+FROM python:3.11-alpine
 
 ARG VERSION="git"
 ARG PACKAGES="bash libffi openssh-client openssl rsync tini gcc libffi-dev linux-headers make musl-dev openssl-dev rust cargo"
