@@ -32,7 +32,7 @@
     - name: Generate the SSH private key
       openssl_privatekey:
         path: "{{ SSH_keys.private }}"
-        size: 2048
+        size: 4096
         mode: "0600"
         type: RSA
 
