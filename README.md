@@ -40,7 +40,7 @@ The easiest way to get an Algo server running is to run it on your local system 
         git clone https://github.com/trailofbits/algo.git
         ```
 
-3. **Install Algo's core dependencies.** Algo requires that **Python 3.8 or later** and at least one supporting package are installed on your system.
+3. **Install Algo's core dependencies.** Algo requires that **Python 3.10 or later** and at least one supporting package are installed on your system.
 
     - **macOS:** Catalina (10.15) and higher includes Python 3 as part of the optional Command Line Developer Tools package. From Terminal run:
 
@@ -52,7 +52,7 @@ The easiest way to get an Algo server running is to run it on your local system 
 
         For macOS versions prior to Catalina, see [Deploy from macOS](docs/deploy-from-macos.md) for information on installing Python 3 .
 
-    - **Linux:** Recent releases of Ubuntu, Debian, and Fedora come with Python 3 already installed. Make sure your system is up-to-date and install the supporting package(s):
+    - **Linux:** Recent releases of Ubuntu, Debian, and Fedora come with Python 3 already installed. If your Python version is not 3.10, then you will need to use pyenv to install Python 3.10. Make sure your system is up-to-date and install the supporting package(s):
         * Ubuntu and Debian:
             ```bash
             sudo apt install -y --no-install-recommends python3-virtualenv file lookup
