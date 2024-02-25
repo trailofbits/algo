@@ -9,7 +9,7 @@ While it is not possible to run your Algo server from within a Docker container,
 
 ## Deploying an Algo Server with Docker
 
-1. Install [Docker](https://www.docker.com/community-edition#/download) --  setup and configuration is not covered here
+1. Install [Docker](https://www.docker.com/community-edition#/download) -- setup and configuration is not covered here
 2. Create a local directory to hold your VPN configs (e.g. `C:\Users\trailofbits\Documents\VPNs\`)
 3. Create a local copy of [config.cfg](https://github.com/trailofbits/algo/blob/master/config.cfg), with required modifications (e.g. `C:\Users\trailofbits\Documents\VPNs\config.cfg`)
 4. Run the Docker container, mounting your configurations appropriately (assuming the container is named `trailofbits/algo` with a tag `latest`):
@@ -97,7 +97,7 @@ Docker themselves provide a concept of [Content Trust](https://docs.docker.com/e
 
 1. Even though we're taking care to drop all capabilities to minimize the impact of running as root, we can probably include not only a `seccomp` profile, but also AppArmor and/or SELinux profiles as well.
 2. The Docker image doesn't natively support [advanced](deploy-from-ansible.md) Algo deployments, which is useful for scripting. This can be done by launching an interactive shell and running the commands yourself.
-3. The way configuration is passed into and out of the container is a bit kludgy. Hopefully future improvements in Docker volumes will make this a bit easier to handle.
+3. The way configuration is passed into and out of the container is a bit kludgy. Hopefully, future improvements in Docker volumes will make this a bit easier to handle.
 
 ## Advanced Usage
 
