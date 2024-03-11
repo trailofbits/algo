@@ -32,6 +32,7 @@
                     HostName {{ IP_subject_alt_name }}
                     User {{ ansible_ssh_user }}
                     Port {{ ansible_ssh_port }}
+                    IdentitiesOnly yes
                     IdentityFile {{ SSH_keys.private | realpath }}
                     KeepAlive yes
                     ServerAliveInterval 30

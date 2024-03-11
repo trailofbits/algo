@@ -75,7 +75,7 @@ $ ./algo
     9. OpenStack (DreamCompute optimised)
     10. CloudStack (Exoscale optimised)
     11. Linode
-    12. Install to existing Ubuntu 18.04 or 20.04 server (for more advanced users)
+    12. Install to existing Ubuntu server (for more advanced users)
 
 Enter the number of your desired provider
 : 3
@@ -131,4 +131,5 @@ Enter the number of your desired region
 You will then be asked the remainder of the standard Algo setup questions.
 
 ## Cleanup
+
 If you've installed Algo onto EC2 multiple times, your AWS account may become cluttered with unused or deleted resources e.g. instances, VPCs, subnets, etc. This may cause future installs to fail. The easiest way to clean up after you're done with a server is to go to "CloudFormation" from the console and delete the CloudFormation stack associated with that server. Please note that unless you've enabled termination protection on your instance, deleting the stack this way will delete your instance without warning, so be sure you are deleting the correct stack.

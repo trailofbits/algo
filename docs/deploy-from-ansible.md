@@ -56,19 +56,19 @@ Cloud roles:
 Server roles:
 
 - role: strongswan
-  * Installs [strongSwan](https://www.strongswan.org/)
-  * Enables AppArmor, limits CPU and memory access, and drops user privileges
-  * Builds a Certificate Authority (CA) with [easy-rsa-ipsec](https://github.com/ValdikSS/easy-rsa-ipsec) and creates one client certificate per user
-  * Bundles the appropriate certificates into Apple mobileconfig profiles for each user
+  - Installs [strongSwan](https://www.strongswan.org/)
+  - Enables AppArmor, limits CPU and memory access, and drops user privileges
+  - Builds a Certificate Authority (CA) with [easy-rsa-ipsec](https://github.com/ValdikSS/easy-rsa-ipsec) and creates one client certificate per user
+  - Bundles the appropriate certificates into Apple mobileconfig profiles for each user
 - role: dns_adblocking
-  * Installs DNS encryption through [dnscrypt-proxy](https://github.com/jedisct1/dnscrypt-proxy) with blacklists to be updated daily from `adblock_lists` in `config.cfg` - note this will occur even if `dns_encryption` in `config.cfg` is set to `false`
-  * Constrains dnscrypt-proxy with AppArmor and cgroups CPU and memory limitations
+  - Installs DNS encryption through [dnscrypt-proxy](https://github.com/jedisct1/dnscrypt-proxy) with blacklists to be updated daily from `adblock_lists` in `config.cfg` - note this will occur even if `dns_encryption` in `config.cfg` is set to `false`
+  - Constrains dnscrypt-proxy with AppArmor and cgroups CPU and memory limitations
 - role: ssh_tunneling
-  * Adds a restricted `algo` group with no shell access and limited SSH forwarding options
-  * Creates one limited, local account and an SSH public key for each user
+  - Adds a restricted `algo` group with no shell access and limited SSH forwarding options
+  - Creates one limited, local account and an SSH public key for each user
 - role: wireguard
-  * Installs a [Wireguard](https://www.wireguard.com/) server, with a startup script, and automatic checks for upgrades
-  * Creates wireguard.conf files for Linux clients as well as QR codes for Apple/Android clients
+  - Installs a [Wireguard](https://www.wireguard.com/) server, with a startup script, and automatic checks for upgrades
+  - Creates wireguard.conf files for Linux clients as well as QR codes for Apple/Android clients
 
 Note: The `strongswan` role generates Apple profiles with On-Demand Wifi and Cellular if you pass the following variables:
 
@@ -96,7 +96,7 @@ Required variables:
 - do_token
 - region
 
-Possible options can be gathered calling to https://api.digitalocean.com/v2/regions
+Possible options can be gathered calling to <https://api.digitalocean.com/v2/regions>
 
 ### Amazon EC2
 
@@ -113,20 +113,23 @@ Additional variables:
 - [encrypted](https://aws.amazon.com/blogs/aws/new-encrypted-ebs-boot-volumes/) - Encrypted EBS boot volume. Boolean (Default: true)
 - [size](https://aws.amazon.com/ec2/instance-types/) - EC2 instance type. String (Default: t2.micro)
 - [image](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/describe-images.html) - AMI `describe-images` search parameters to find the OS for the hosted image. Each OS and architecture has a unique AMI-ID. The OS owner, for example [Ubuntu](https://cloud-images.ubuntu.com/locator/ec2/), updates these images often. If parameters below result in multiple results, the most recent AMI-ID is chosen
+
    ```
-   # Example of equivalent cli comand
-   aws ec2 describe-images --owners "099720109477" --filters "Name=architecture,Values=arm64" "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-focal-20.04*"
+   # Example of equivalent cli command
+   aws ec2 describe-images --owners "099720109477" --filters "Name=architecture,Values=arm64" "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-jammy-22.04*"
    ```
+
   - [owners] - The operating system owner id. Default is [Canonical](https://help.ubuntu.com/community/EC2StartersGuide#Official_Ubuntu_Cloud_Guest_Amazon_Machine_Images_.28AMIs.29) (Default: 099720109477)
   - [arch] - The architecture (Default: x86_64, Optional: arm64)
-  - [name] - The wildcard string to filter available ami names. Algo appends this name with the string "-\*64-server-\*", and prepends with "ubuntu/images/hvm-ssd/" (Default: ubuntu-focal-20.04)
+  - [name] - The wildcard string to filter available ami names. Algo appends this name with the string "-\*64-server-\*", and prepends with "ubuntu/images/hvm-ssd/" (Default: Ubuntu latest LTS)
 - [instance_market_type](https://aws.amazon.com/ec2/pricing/) - Two pricing models are supported: on-demand and spot. String (Default: on-demand)
-  * If using spot instance types, one additional IAM permission along with the below minimum is required for deployment:
+  - If using spot instance types, one additional IAM permission along with the below minimum is required for deployment:
+
     ```
       "ec2:CreateLaunchTemplate"
     ```
 
-#### Minimum required IAM permissions for deployment:
+#### Minimum required IAM permissions for deployment
 
 ```
 {
@@ -232,7 +235,7 @@ Required variables:
 
 Possible options can be gathered via cli `aws lightsail get-regions`
 
-#### Minimum required IAM permissions for deployment:
+#### Minimum required IAM permissions for deployment
 
 ```
 {
