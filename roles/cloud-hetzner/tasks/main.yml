@@ -1,4 +1,7 @@
 ---
+- name: Build python virtual environment
+  import_tasks: venv.yml
+
 - name: Include prompts
   import_tasks: prompts.yml
 
