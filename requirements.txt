@@ -1,3 +1,3 @@
-ansible==9.1.0
+ansible==9.3.0
 jinja2~=3.0.3
 netaddr
