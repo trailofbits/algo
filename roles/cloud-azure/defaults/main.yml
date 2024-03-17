@@ -31,6 +31,9 @@ azure_regions:
   - displayName: Brazil Southeast
     name: brazilsoutheast
     regionalDisplayName: (South America) Brazil Southeast
+  - displayName: Brazil US
+    name: brazilus
+    regionalDisplayName: (South America) Brazil US
   - displayName: Canada
     name: canada
     regionalDisplayName: Canada
@@ -73,15 +76,24 @@ azure_regions:
   - displayName: East US (Stage)
     name: eastusstage
     regionalDisplayName: (US) East US (Stage)
+  - displayName: East US STG
+    name: eastusstg
+    regionalDisplayName: (US) East US STG
   - displayName: Europe
     name: europe
     regionalDisplayName: Europe
+  - displayName: France
+    name: france
+    regionalDisplayName: France
   - displayName: France Central
     name: francecentral
     regionalDisplayName: (Europe) France Central
   - displayName: France South
     name: francesouth
     regionalDisplayName: (Europe) France South
+  - displayName: Germany
+    name: germany
+    regionalDisplayName: Germany
   - displayName: Germany North
     name: germanynorth
     regionalDisplayName: (Europe) Germany North
@@ -94,6 +106,18 @@ azure_regions:
   - displayName: India
     name: india
     regionalDisplayName: India
+  - displayName: Israel
+    name: israel
+    regionalDisplayName: Israel
+  - displayName: Israel Central
+    name: israelcentral
+    regionalDisplayName: (Middle East) Israel Central
+  - displayName: Italy
+    name: italy
+    regionalDisplayName: Italy
+  - displayName: Italy North
+    name: italynorth
+    regionalDisplayName: (Europe) Italy North
   - displayName: Japan
     name: japan
     regionalDisplayName: Japan
@@ -109,12 +133,18 @@ azure_regions:
   - displayName: Jio India West
     name: jioindiawest
     regionalDisplayName: (Asia Pacific) Jio India West
+  - displayName: Korea
+    name: korea
+    regionalDisplayName: Korea
   - displayName: Korea Central
     name: koreacentral
     regionalDisplayName: (Asia Pacific) Korea Central
   - displayName: Korea South
     name: koreasouth
     regionalDisplayName: (Asia Pacific) Korea South
+  - displayName: New Zealand
+    name: newzealand
+    regionalDisplayName: New Zealand
   - displayName: North Central US
     name: northcentralus
     regionalDisplayName: (US) North Central US
@@ -124,15 +154,33 @@ azure_regions:
   - displayName: North Europe
     name: northeurope
     regionalDisplayName: (Europe) North Europe
+  - displayName: Norway
+    name: norway
+    regionalDisplayName: Norway
   - displayName: Norway East
     name: norwayeast
     regionalDisplayName: (Europe) Norway East
   - displayName: Norway West
     name: norwaywest
     regionalDisplayName: (Europe) Norway West
+  - displayName: Poland
+    name: poland
+    regionalDisplayName: Poland
+  - displayName: Poland Central
+    name: polandcentral
+    regionalDisplayName: (Europe) Poland Central
+  - displayName: Qatar
+    name: qatar
+    regionalDisplayName: Qatar
   - displayName: Qatar Central
     name: qatarcentral
-    regionalDisplayName: (Europe) Qatar Central
+    regionalDisplayName: (Middle East) Qatar Central
+  - displayName: Singapore
+    name: singapore
+    regionalDisplayName: Singapore
+  - displayName: South Africa
+    name: southafrica
+    regionalDisplayName: South Africa
   - displayName: South Africa North
     name: southafricanorth
     regionalDisplayName: (Africa) South Africa North
@@ -154,18 +202,24 @@ azure_regions:
   - displayName: South India
     name: southindia
     regionalDisplayName: (Asia Pacific) South India
+  - displayName: Sweden
+    name: sweden
+    regionalDisplayName: Sweden
   - displayName: Sweden Central
     name: swedencentral
     regionalDisplayName: (Europe) Sweden Central
-  - displayName: Sweden South
-    name: swedensouth
-    regionalDisplayName: (Europe) Sweden South
+  - displayName: Switzerland
+    name: switzerland
+    regionalDisplayName: Switzerland
   - displayName: Switzerland North
     name: switzerlandnorth
     regionalDisplayName: (Europe) Switzerland North
   - displayName: Switzerland West
     name: switzerlandwest
     regionalDisplayName: (Europe) Switzerland West
+  - displayName: United Arab Emirates
+    name: uae
+    regionalDisplayName: United Arab Emirates
   - displayName: UAE Central
     name: uaecentral
     regionalDisplayName: (Middle East) UAE Central
@@ -184,6 +238,9 @@ azure_regions:
   - displayName: United States
     name: unitedstates
     regionalDisplayName: United States
+  - displayName: United States EUAP
+    name: unitedstateseuap
+    regionalDisplayName: United States EUAP
   - displayName: West Central US
     name: westcentralus
     regionalDisplayName: (US) West Central US
