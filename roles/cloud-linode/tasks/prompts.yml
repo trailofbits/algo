@@ -1,0 +1,51 @@
+---
+- pause:
+    prompt: |
+      Enter your ACCESS token. (https://developers.linode.com/api/v4/#access-and-authentication):
+    echo: false
+  register: _linode_token
+  when:
+    - linode_token is undefined
+    - lookup('env','LINODE_API_TOKEN')|length <= 0
+
+- name: Set the token as a fact
+  set_fact:
+    algo_linode_token: "{{ linode_token | default(_linode_token.user_input|default(None)) | default(lookup('env','LINODE_API_TOKEN'), true) }}"
+
+- name: Get regions
+  uri:
+    url: https://api.linode.com/v4/regions
+    method: GET
+    status_code: 200
+  register: _linode_regions
+
+- name: Set facts about the regions
+  set_fact:
+    linode_regions: "{{ _linode_regions.json.data | sort(attribute='id') }}"
+
+- name: Set default region
+  set_fact:
+    default_region: >-
+      {% for r in linode_regions %}
+      {%- if r['id'] == "us-east" %}{{ loop.index }}{% endif %}
+      {%- endfor %}
+
+- pause:
+    prompt: |
+      What region should the server be located in?
+        {% for r in linode_regions %}
+        {{ loop.index }}. {{ r['id'] }}
+        {% endfor %}
+
+      Enter the number of your desired region
+      [{{ default_region }}]
+  register: _algo_region
+  when: region is undefined
+
+- name: Set additional facts
+  set_fact:
+    algo_linode_region: >-
+      {% if region is defined %}{{ region }}
+      {%- elif _algo_region.user_input %}{{ linode_regions[_algo_region.user_input | int -1 ]['id'] }}
+      {%- else %}{{ linode_regions[default_region | int - 1]['id'] }}{% endif %}
+    public_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"

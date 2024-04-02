@@ -7,117 +7,117 @@
     - config.cfg
   tasks:
     - block:
-      - name: Wait until the cloud-init completed
-        wait_for:
-          path: /var/lib/cloud/data/result.json
-          delay: 10
-          timeout: 600
-          state: present
-        become: false
-        when: cloudinit
+        - name: Wait until the cloud-init completed
+          wait_for:
+            path: /var/lib/cloud/data/result.json
+            delay: 10
+            timeout: 600
+            state: present
+          become: false
+          when: cloudinit
 
-      - block:
-        - name: Ensure the config directory exists
-          file:
-            dest: "configs/{{ IP_subject_alt_name }}"
-            state: directory
-            mode: "0700"
+        - block:
+            - name: Ensure the config directory exists
+              file:
+                dest: configs/{{ IP_subject_alt_name }}
+                state: directory
+                mode: "0700"
 
-        - name: Dump the ssh config
-          copy:
-            dest: "configs/{{ IP_subject_alt_name }}/ssh_config"
-            mode: "0600"
-            content: |
-              Host {{ IP_subject_alt_name }} {{ algo_server_name }}
-                HostName {{ IP_subject_alt_name }}
-                User {{ ansible_ssh_user }}
-                Port {{ ansible_ssh_port }}
-                IdentityFile {{ SSH_keys.private | realpath }}
-                KeepAlive yes
-                ServerAliveInterval 30
-        when: inventory_hostname != 'localhost'
-        become: false
-        delegate_to: localhost
-
-      - import_role:
-          name: common
-        tags: common
-
-      - import_role:
-          name: dns
-        when:
-          - algo_dns_adblocking or
-            dns_encryption
-        tags: dns
-
-      - import_role:
-          name: wireguard
-        when: wireguard_enabled
-        tags: wireguard
-
-      - import_role:
-          name: strongswan
-        when: ipsec_enabled
-        tags: ipsec
-
-      - import_role:
-          name: ssh_tunneling
-        when: algo_ssh_tunneling
-        tags: ssh_tunneling
-
-      - block:
-        - name: Dump the configuration
-          copy:
-            dest: "configs/{{ IP_subject_alt_name }}/.config.yml"
-            content: |
-              server: {{ 'localhost' if inventory_hostname == 'localhost' else inventory_hostname }}
-              server_user: {{ ansible_ssh_user }}
-              ansible_ssh_port: "{{ ansible_ssh_port|default(22) }}"
-              {% if algo_provider != "local" %}
-              ansible_ssh_private_key_file: {{ SSH_keys.private }}
-              {% endif %}
-              algo_provider: {{ algo_provider }}
-              algo_server_name: {{ algo_server_name }}
-              algo_ondemand_cellular: {{ algo_ondemand_cellular }}
-              algo_ondemand_wifi: {{ algo_ondemand_wifi }}
-              algo_ondemand_wifi_exclude: {{ algo_ondemand_wifi_exclude }}
-              algo_dns_adblocking: {{ algo_dns_adblocking }}
-              algo_ssh_tunneling: {{ algo_ssh_tunneling }}
-              algo_store_pki: {{ algo_store_pki }}
-              IP_subject_alt_name: {{ IP_subject_alt_name }}
-              ipsec_enabled: {{ ipsec_enabled }}
-              wireguard_enabled: {{ wireguard_enabled }}
-              {% if tests|default(false)|bool %}
-              ca_password: '{{ CA_password }}'
-              p12_password: '{{ p12_export_password }}'
-              {% endif %}
+            - name: Dump the ssh config
+              copy:
+                dest: configs/{{ IP_subject_alt_name }}/ssh_config
+                mode: "0600"
+                content: |
+                  Host {{ IP_subject_alt_name }} {{ algo_server_name }}
+                    HostName {{ IP_subject_alt_name }}
+                    User {{ ansible_ssh_user }}
+                    Port {{ ansible_ssh_port }}
+                    IdentitiesOnly yes
+                    IdentityFile {{ SSH_keys.private | realpath }}
+                    KeepAlive yes
+                    ServerAliveInterval 30
+          when: inventory_hostname != 'localhost'
           become: false
           delegate_to: localhost
 
-        - name: Create a symlink if deploying to localhost
-          file:
-            src: "{{ IP_subject_alt_name }}"
-            dest: configs/localhost
-            state: link
-            force: true
-          when: inventory_hostname == 'localhost'
+        - import_role:
+            name: common
+          tags: common
 
-        - name: Import tmpfs tasks
-          import_tasks: playbooks/tmpfs/umount.yml
-          become: false
-          delegate_to: localhost
-          vars:
-            facts: "{{ hostvars['localhost'] }}"
+        - import_role:
+            name: dns
           when:
-            - pki_in_tmpfs
-            - not algo_store_pki
+            - algo_dns_adblocking or dns_encryption
+          tags: dns
 
-        - debug:
-            msg:
-              - "{{ congrats.common.split('\n') }}"
-              - "    {{ congrats.p12_pass if algo_ssh_tunneling or ipsec_enabled else '' }}"
-              - "    {{ congrats.ca_key_pass if algo_store_pki and ipsec_enabled else '' }}"
-              - "    {{ congrats.ssh_access if algo_provider != 'local' else ''}}"
-        tags: always
+        - import_role:
+            name: wireguard
+          when: wireguard_enabled
+          tags: wireguard
+
+        - import_role:
+            name: strongswan
+          when: ipsec_enabled
+          tags: ipsec
+
+        - import_role:
+            name: ssh_tunneling
+          when: algo_ssh_tunneling
+          tags: ssh_tunneling
+
+        - block:
+            - name: Dump the configuration
+              copy:
+                dest: configs/{{ IP_subject_alt_name }}/.config.yml
+                content: |
+                  server: {{ 'localhost' if inventory_hostname == 'localhost' else inventory_hostname }}
+                  server_user: {{ ansible_ssh_user }}
+                  ansible_ssh_port: "{{ ansible_ssh_port|default(22) }}"
+                  {% if algo_provider != "local" %}
+                  ansible_ssh_private_key_file: {{ SSH_keys.private }}
+                  {% endif %}
+                  algo_provider: {{ algo_provider }}
+                  algo_server_name: {{ algo_server_name }}
+                  algo_ondemand_cellular: {{ algo_ondemand_cellular }}
+                  algo_ondemand_wifi: {{ algo_ondemand_wifi }}
+                  algo_ondemand_wifi_exclude: {{ algo_ondemand_wifi_exclude }}
+                  algo_dns_adblocking: {{ algo_dns_adblocking }}
+                  algo_ssh_tunneling: {{ algo_ssh_tunneling }}
+                  algo_store_pki: {{ algo_store_pki }}
+                  IP_subject_alt_name: {{ IP_subject_alt_name }}
+                  ipsec_enabled: {{ ipsec_enabled }}
+                  wireguard_enabled: {{ wireguard_enabled }}
+                  {% if tests|default(false)|bool %}
+                  ca_password: '{{ CA_password }}'
+                  p12_password: '{{ p12_export_password }}'
+                  {% endif %}
+              become: false
+              delegate_to: localhost
+
+            - name: Create a symlink if deploying to localhost
+              file:
+                src: "{{ IP_subject_alt_name }}"
+                dest: configs/localhost
+                state: link
+                force: true
+              when: inventory_hostname == 'localhost'
+
+            - name: Import tmpfs tasks
+              import_tasks: playbooks/tmpfs/umount.yml
+              become: false
+              delegate_to: localhost
+              vars:
+                facts: "{{ hostvars['localhost'] }}"
+              when:
+                - pki_in_tmpfs
+                - not algo_store_pki
+
+            - debug:
+                msg:
+                  - "{{ congrats.common.split('\n') }}"
+                  - "    {{ congrats.p12_pass if algo_ssh_tunneling or ipsec_enabled else '' }}"
+                  - "    {{ congrats.ca_key_pass if algo_store_pki and ipsec_enabled else '' }}"
+                  - "    {{ congrats.ssh_access if algo_provider != 'local' else ''}}"
+          tags: always
       rescue:
         - include_tasks: playbooks/rescue.yml

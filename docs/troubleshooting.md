@@ -22,6 +22,8 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
      * [Error: Failed to create symlinks for deploying to localhost](#error-failed-to-create-symlinks-for-deploying-to-localhost)
      * [Wireguard: Unable to find 'configs/...' in expected paths](#wireguard-unable-to-find-configs-in-expected-paths)
      * [Ubuntu Error: "unable to write 'random state'" when generating CA password](#ubuntu-error-unable-to-write-random-state-when-generating-ca-password)
+     * [Timeout when waiting for search string OpenSSH in xxx.xxx.xxx.xxx:4160](#old-networking-firewall-in-place)
+     * [Linode Error: "Unable to query the Linode API. Saw: 400: The requested distribution is not supported by this stackscript.; "](#linode-error-uable-to-query-the-linode-api-saw-400-the-requested-distribution-is-not-supported-by-this-stackscript)
   * [Connection Problems](#connection-problems)
      * [I'm blocked or get CAPTCHAs when I access certain websites](#im-blocked-or-get-captchas-when-i-access-certain-websites)
      * [I want to change the list of trusted Wifi networks on my Apple device](#i-want-to-change-the-list-of-trusted-wifi-networks-on-my-apple-device)
@@ -41,7 +43,7 @@ Look here if you have a problem running the installer to set up a new Algo serve
 
 ### Python version is not supported
 
-The minimum Python version required to run Algo is 3.6. Most modern operation systems should have it by default, but if the OS you are using doesn't meet the requirements, you have to upgrade. See the official documentation for your OS, or manual download it from https://www.python.org/downloads/. Otherwise, you may [deploy from docker](deploy-from-docker.md)
+The minimum Python version required to run Algo is 3.8. Most modern operation systems should have it by default, but if the OS you are using doesn't meet the requirements, you have to upgrade. See the official documentation for your OS, or manual download it from https://www.python.org/downloads/. Otherwise, you may [deploy from docker](deploy-from-docker.md)
 
 ### Error: "You have not agreed to the Xcode license agreements"
 
@@ -362,6 +364,32 @@ sudo chown $USER:$USER $HOME/.rnd
 
 Now, run Algo again.
 
+### Old Networking Firewall In Place
+
+You may see the following output when attemptint to run ./algo from your localhost:
+
+```
+TASK [Wait until SSH becomes ready...] **********************************************************************************************************************
+fatal: [localhost]: FAILED! => {"changed": false, "elapsed": 321, "msg": "Timeout when waiting for search string OpenSSH in xxx.xxx.xxx.xxx:4160"}
+included: /home/<username>/algo/algo/playbooks/rescue.yml for localhost
+
+TASK [debug] ************************************************************************************************************************************************
+ok: [localhost] => {
+    "fail_hint": [
+        "Sorry, but something went wrong!",
+        "Please check the troubleshooting guide.",
+        "https://trailofbits.github.io/algo/troubleshooting.html"
+    ]
+}
+```
+
+If you see this error then one possible explanation is that you have a previous firewall configured in your cloud hosting provider which needs to be either updated or ideally removed. Removing this can often fix this issue.
+
+### Linode Error: "Unable to query the Linode API. Saw: 400: The requested distribution is not supported by this stackscript.; "
+
+StackScript is a custom deployment script that defines a set of configurations for a Linode instance (e.g. which distribution, specs, etc.). if you used algo with default values in the past deployments, a stackscript that would've been created is 're-used' in the deployment process (in fact, go see 'create Linodes' and under 'StackScripts' tab). Thus, there's a little chance that your deployment process will generate this 'unsupported stackscript' error due to a pre-existing StackScript that doesn't support a particular configuration setting or value due to an 'old' stackscript. The quickest solution is just to change the name of your deployment from the default value of 'algo' (or any other name that you've used before, again see the dashboard) and re-run the deployment.
+
+
 ## Connection Problems
 
 Look here if you deployed an Algo server but now have a problem connecting to it with a client.
@@ -502,4 +530,4 @@ If your router runs [pfSense](https://www.pfsense.org) and a single IPsec client
 
 ## I have a problem not covered here
 
-If you have an issue that you cannot solve with the guidance here, [join our Gitter](https://gitter.im/trailofbits/algo) and ask for help. If you think you found a new issue in Algo, [file an issue](https://github.com/trailofbits/algo/issues/new).
+If you have an issue that you cannot solve with the guidance here, [create a new discussion](https://github.com/trailofbits/algo/discussions) and ask for help. If you think you found a new issue in Algo, [file an issue](https://github.com/trailofbits/algo/issues/new).

@@ -37,6 +37,8 @@
         value: "{{ cloud_providers.azure.image.sku }}"
       imageReferenceVersion:
         value: "{{ cloud_providers.azure.image.version }}"
+      osDiskType:
+        value: "{{ cloud_providers.azure.osDisk.type }}"
       SshPort:
         value: "{{ ssh_port }}"
       UserData:

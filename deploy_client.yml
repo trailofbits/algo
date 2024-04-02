@@ -13,7 +13,7 @@
         ansible_ssh_user: "{{ 'root' if client_ip == 'localhost' else ssh_user }}"
         vpn_user: "{{ vpn_user }}"
         IP_subject_alt_name: "{{ server_ip }}"
-        ansible_python_interpreter: "/usr/bin/python3"
+        ansible_python_interpreter: /usr/bin/python3
 
 - name: Configure the client and install required software
   hosts: client-host

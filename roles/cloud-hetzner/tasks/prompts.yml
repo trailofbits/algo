@@ -13,13 +13,13 @@
     algo_hcloud_token: "{{ hcloud_token | default(_hcloud_token.user_input|default(None)) | default(lookup('env','HCLOUD_TOKEN'), true) }}"
 
 - name: Get regions
-  hcloud_datacenter_facts:
+  hetzner.hcloud.datacenter_info:
     api_token: "{{ algo_hcloud_token }}"
   register: _hcloud_regions
 
-- name: Set facts about thre regions
+- name: Set facts about the regions
   set_fact:
-    hcloud_regions: "{{ hcloud_datacenter_facts | sort(attribute='location') }}"
+    hcloud_regions: "{{ _hcloud_regions.hcloud_datacenter_info | sort(attribute='location') }}"
 
 - name: Set default region
   set_fact:

@@ -6,8 +6,8 @@
     echo: false
   register: _aws_access_key
   when:
-     - aws_access_key is undefined
-     - lookup('env','AWS_ACCESS_KEY_ID')|length <= 0
+    - aws_access_key is undefined
+    - lookup('env','AWS_ACCESS_KEY_ID')|length <= 0
 
 - pause:
     prompt: |
@@ -23,38 +23,39 @@
     secret_key: "{{ aws_secret_key | default(_aws_secret_key.user_input|default(None)) | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true) }}"
 
 - block:
-  - name: Get regions
-    lightsail_region_facts:
-      aws_access_key: "{{ access_key }}"
-      aws_secret_key: "{{ secret_key }}"
-      region: us-east-1
-    register: _lightsail_regions
+    - name: Get regions
+      lightsail_region_facts:
+        aws_access_key: "{{ access_key }}"
+        aws_secret_key: "{{ secret_key }}"
+        region: us-east-1
+      register: _lightsail_regions
 
-  - name: Set facts about the regions
-    set_fact:
-      lightsail_regions: "{{ _lightsail_regions.data.regions | sort(attribute='name') }}"
+    - name: Set facts about the regions
+      set_fact:
+        lightsail_regions: "{{ _lightsail_regions.data.regions | sort(attribute='name') }}"
 
-  - name: Set the default region
-    set_fact:
-      default_region: >-
-        {% for r in lightsail_regions %}
-        {%- if r['name'] == "us-east-1" %}{{ loop.index }}{% endif %}
-        {%- endfor %}
-
-  - pause:
-      prompt: |
-        What region should the server be located in?
-        (https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/)
+    - name: Set the default region
+      set_fact:
+        default_region: >-
           {% for r in lightsail_regions %}
-          {{ (loop.index|string + '.').ljust(3) }} {{ r['name'].ljust(20) }} {{ r['displayName'] }}
-          {% endfor %}
+          {%- if r['name'] == "us-east-1" %}{{ loop.index }}{% endif %}
+          {%- endfor %}
 
-        Enter the number of your desired region
-        [{{ default_region }}]
-    register: _algo_region
+    - pause:
+        prompt: |
+          What region should the server be located in?
+          (https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/)
+            {% for r in lightsail_regions %}
+            {{ (loop.index|string + '.').ljust(3) }} {{ r['name'].ljust(20) }} {{ r['displayName'] }}
+            {% endfor %}
+
+          Enter the number of your desired region
+          [{{ default_region }}]
+      register: _algo_region
   when: region is undefined
 
 - set_fact:
+    stack_name: "{{ algo_server_name | replace('.', '-') }}"
     algo_region: >-
       {% if region is defined %}{{ region }}
       {%- elif _algo_region.user_input %}{{ lightsail_regions[_algo_region.user_input | int -1 ]['name'] }}

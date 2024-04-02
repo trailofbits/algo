@@ -6,13 +6,14 @@
   import_tasks: prompts.yml
 
 - name: Locate official AMI for region
-  ec2_ami_facts:
+  ec2_ami_info:
     aws_access_key: "{{ access_key }}"
     aws_secret_key: "{{ secret_key }}"
     owners: "{{ cloud_providers.ec2.image.owner }}"
     region: "{{ algo_region }}"
     filters:
-      name: "ubuntu/images/hvm-ssd/{{ cloud_providers.ec2.image.name }}-amd64-server-*"
+      architecture: "{{ cloud_providers.ec2.image.arch }}"
+      name: ubuntu/images/hvm-ssd/{{ cloud_providers.ec2.image.name }}-*64-server-*
   register: ami_search
 
 - name: Set the ami id as a fact

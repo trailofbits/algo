@@ -4,7 +4,7 @@
     set -o pipefail
     cat private/{{ item }}.p12 |
     base64
-  register:  PayloadContent
+  register: PayloadContent
   changed_when: false
   args:
     executable: bash
@@ -23,7 +23,7 @@
   with_together:
     - "{{ users }}"
     - "{{ PayloadContent.results }}"
-  no_log: True
+  no_log: "{{ no_log|bool }}"
 
 - name: Build the client ipsec config file
   template:

@@ -23,6 +23,9 @@
     "imageReferenceVersion": {
       "type": "string"
     },
+    "osDiskType": {
+      "type": "string"
+    },
     "SshPort": {
       "type": "int"
     },
@@ -197,7 +200,10 @@
             "version": "[parameters('imageReferenceVersion')]"
           },
           "osDisk": {
-            "createOption": "FromImage"
+            "createOption": "FromImage",
+            "managedDisk": {
+              "storageAccountType": "[parameters('osDiskType')]"
+            }
           }
         },
         "networkProfile": {

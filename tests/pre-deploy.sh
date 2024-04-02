@@ -4,10 +4,6 @@ set -euxo pipefail
 
 sysctl net.ipv6.conf.all.disable_ipv6=0
 
-tar xf $HOME/lxc/cache.tar -C / || echo "Didn't extract cache."
-cp -f tests/lxd-bridge /etc/default/lxd-bridge
-cp -f tests/algo.conf /etc/default/algo.conf
-
 export REPOSITORY=${REPOSITORY:-${GITHUB_REPOSITORY}}
 export _BRANCH=${BRANCH#refs/heads/}
 export BRANCH=${_BRANCH:-${GITHUB_REF#refs/heads/}}
@@ -18,21 +14,30 @@ else
   echo -e "#cloud-config\nssh_authorized_keys:\n - $(cat ~/.ssh/id_rsa.pub)" | lxc profile set default user.user-data -
 fi
 
-systemctl restart lxd-bridge.service lxd-containers.service lxd.service
+lxc network set lxdbr0 ipv4.address 10.0.8.1/24
 
-lxc profile set default raw.lxc lxc.aa_profile=unconfined
+lxc profile set default raw.lxc 'lxc.apparmor.profile = unconfined'
 lxc profile set default security.privileged true
 lxc profile show default
-lxc launch ubuntu:${UBUNTU_VERSION} algo
 
-if [[ ${UBUNTU_VERSION} == "20.04" ]]; then
-  lxc exec algo -- apt remove snapd --purge -y || true
-fi
+lxc init ubuntu:${UBUNTU_VERSION} algo
+lxc network attach lxdbr0 algo eth0 eth0
+lxc config device set algo eth0 ipv4.address 10.0.8.100
+lxc start algo
 
 ip addr
 
 until dig A +short algo.lxd @10.0.8.1 | grep -vE '^$' > /dev/null; do
   sleep 3
 done
+
+case ${UBUNTU_VERSION} in
+  20.04|22.04)
+    lxc exec algo -- apt remove snapd --purge -y || true
+    ;;
+  18.04)
+    lxc exec algo -- apt install python3.8 -y
+    ;;
+esac
 
 lxc list

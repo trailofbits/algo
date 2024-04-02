@@ -1,0 +1,56 @@
+---
+- name: Build python virtual environment
+  import_tasks: venv.yml
+
+- name: Include prompts
+  import_tasks: prompts.yml
+
+- name: Set facts
+  set_fact:
+    stackscript: |
+      {{ lookup('template', 'files/cloud-init/base.sh') }}
+      mkdir -p /var/lib/cloud/data/ || true
+      touch /var/lib/cloud/data/result.json
+
+- name: Create a stackscript
+  linode_stackscript_v4:
+    access_token: "{{ algo_linode_token }}"
+    label: "{{ algo_server_name }}"
+    state: present
+    description: Environment:Algo
+    images:
+      - "{{ cloud_providers.linode.image }}"
+    script: |
+      {{ stackscript }}
+  register: _linode_stackscript
+
+- name: Update the stackscript
+  uri:
+    url: https://api.linode.com/v4/linode/stackscripts/{{ _linode_stackscript.stackscript.id }}
+    method: PUT
+    body_format: json
+    body:
+      script: |
+        {{ stackscript }}
+    headers:
+      Content-Type: application/json
+      Authorization: Bearer {{ algo_linode_token }}
+  when: (_linode_stackscript.stackscript.script | hash('md5')) != (stackscript | hash('md5'))
+
+- name: Creating an instance...
+  linode_v4:
+    access_token: "{{ algo_linode_token }}"
+    label: "{{ algo_server_name }}"
+    state: present
+    region: "{{ algo_linode_region }}"
+    image: "{{ cloud_providers.linode.image }}"
+    type: "{{ cloud_providers.linode.type }}"
+    authorized_keys: "{{ public_key }}"
+    stackscript_id: "{{ _linode_stackscript.stackscript.id }}"
+  register: _linode
+
+- set_fact:
+    cloud_instance_ip: "{{ _linode.instance.ipv4[0] }}"
+    ansible_ssh_user: algo
+    ansible_ssh_port: "{{ ssh_port }}"
+    cloudinit: true

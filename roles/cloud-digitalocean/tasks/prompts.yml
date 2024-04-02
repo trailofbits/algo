@@ -18,13 +18,13 @@
     method: GET
     status_code: 200
     headers:
-      Content-Type: "application/json"
-      Authorization: "Bearer {{ algo_do_token }}"
+      Content-Type: application/json
+      Authorization: Bearer {{ algo_do_token }}
   register: _do_regions
 
 - name: Set facts about the regions
   set_fact:
-    do_regions: "{{ _do_regions.json.regions | sort(attribute='slug') }}"
+    do_regions: "{{ _do_regions.json.regions | selectattr('available', 'true') | sort(attribute='slug') }}"
 
 - name: Set default region
   set_fact:

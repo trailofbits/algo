@@ -7,5 +7,5 @@
 
 - name: Set OS specific facts
   set_fact:
-    service_name: "wg-quick@{{ wireguard_interface }}"
+    service_name: wg-quick@{{ wireguard_interface }}
   tags: always

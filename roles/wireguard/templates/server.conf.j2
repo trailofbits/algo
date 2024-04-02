@@ -12,6 +12,6 @@ SaveConfig = false
 # {{ u }}
 PublicKey = {{ lookup('file', wireguard_pki_path + '/public/' + u) }}
 PresharedKey = {{ lookup('file', wireguard_pki_path + '/preshared/' + u) }}
-AllowedIPs = {{ wireguard_network_ipv4 | ipaddr(index|int+1) | ipv4('address') }}/32{{ ',' + wireguard_network_ipv6 | ipaddr(index|int+1) | ipv6('address') + '/128' if ipv6_support else '' }}
+AllowedIPs = {{ wireguard_network_ipv4 | ipmath(index|int+1) | ipv4('address') }}/32{{ ',' + wireguard_network_ipv6 | ipmath(index|int+1) | ipv6('address') + '/128' if ipv6_support else '' }}
 {% endif %}
 {% endfor %}

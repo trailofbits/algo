@@ -1,6 +1,6 @@
+---
 - name: Gather Facts
   setup:
-
 - name: Include system based facts and tasks
   import_tasks: systems/main.yml
 
@@ -22,9 +22,9 @@
 
 - name: Setup the ipsec config
   template:
-    src: "roles/strongswan/templates/client_ipsec.conf.j2"
+    src: roles/strongswan/templates/client_ipsec.conf.j2
     dest: "{{ configs_prefix }}/ipsec.{{ IP_subject_alt_name }}.conf"
-    mode: '0644'
+    mode: "0644"
   with_items:
     - "{{ vpn_user }}"
   notify:
@@ -32,9 +32,9 @@
 
 - name: Setup the ipsec secrets
   template:
-    src: "roles/strongswan/templates/client_ipsec.secrets.j2"
+    src: roles/strongswan/templates/client_ipsec.secrets.j2
     dest: "{{ configs_prefix }}/ipsec.{{ IP_subject_alt_name }}.secrets"
-    mode: '0600'
+    mode: "0600"
   with_items:
     - "{{ vpn_user }}"
   notify:
@@ -44,12 +44,12 @@
   lineinfile:
     dest: "{{ item.dest }}"
     line: "{{ item.line }}"
-    create: yes
+    create: true
   with_items:
     - dest: "{{ configs_prefix }}/ipsec.conf"
-      line: "include ipsec.{{ IP_subject_alt_name }}.conf"
+      line: include ipsec.{{ IP_subject_alt_name }}.conf
     - dest: "{{ configs_prefix }}/ipsec.secrets"
-      line: "include ipsec.{{ IP_subject_alt_name }}.secrets"
+      line: include ipsec.{{ IP_subject_alt_name }}.secrets
   notify:
     - restart strongswan
 
@@ -66,11 +66,11 @@
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   with_items:
-    - src: "configs/{{ IP_subject_alt_name }}/ipsec/.pki/certs/{{ vpn_user }}.crt"
+    - src: configs/{{ IP_subject_alt_name }}/ipsec/.pki/certs/{{ vpn_user }}.crt
       dest: "{{ configs_prefix }}/ipsec.d/certs/{{ vpn_user }}.crt"
-    - src: "configs/{{ IP_subject_alt_name }}/ipsec/.pki/cacert.pem"
+    - src: configs/{{ IP_subject_alt_name }}/ipsec/.pki/cacert.pem
       dest: "{{ configs_prefix }}/ipsec.d/cacerts/{{ IP_subject_alt_name }}.pem"
-    - src: "configs/{{ IP_subject_alt_name }}/ipsec/.pki/private/{{ vpn_user }}.key"
+    - src: configs/{{ IP_subject_alt_name }}/ipsec/.pki/private/{{ vpn_user }}.key
       dest: "{{ configs_prefix }}/ipsec.d/private/{{ vpn_user }}.key"
   notify:
     - restart strongswan

@@ -27,27 +27,27 @@
     allowed:
       - ip_protocol: udp
         ports:
-          - '500'
-          - '4500'
-          - '{{ wireguard_port|string }}'
+          - "500"
+          - "4500"
+          - "{{ wireguard_port|string }}"
       - ip_protocol: tcp
         ports:
-          - '{{ ssh_port }}'
+          - "{{ ssh_port }}"
       - ip_protocol: icmp
 
 - block:
-  - name: External IP allocated
-    gcp_compute_address:
-      auth_kind: serviceaccount
-      service_account_file: "{{ credentials_file_path }}"
-      project: "{{ project_id }}"
-      name: "{{ algo_server_name }}"
-      region: "{{ algo_region }}"
-    register: gcp_compute_address
+    - name: External IP allocated
+      gcp_compute_address:
+        auth_kind: serviceaccount
+        service_account_file: "{{ credentials_file_path }}"
+        project: "{{ project_id }}"
+        name: "{{ algo_server_name }}"
+        region: "{{ algo_region }}"
+      register: gcp_compute_address
 
-  - name: Set External IP as a fact
-    set_fact:
-      external_ip: "{{ gcp_compute_address.address }}"
+    - name: Set External IP as a fact
+      set_fact:
+        external_ip: "{{ gcp_compute_address.address }}"
   when: cloud_providers.gce.external_static_ip
 
 - name: Instance created
@@ -62,9 +62,9 @@
       - auto_delete: true
         boot: true
         initialize_params:
-          source_image: "projects/ubuntu-os-cloud/global/images/family/{{ cloud_providers.gce.image }}"
+          source_image: projects/ubuntu-os-cloud/global/images/family/{{ cloud_providers.gce.image }}
     metadata:
-      ssh-keys: "algo:{{ ssh_public_key_lookup }}"
+      ssh-keys: algo:{{ ssh_public_key_lookup }}
       user-data: "{{ lookup('template', 'files/cloud-init/base.yml') }}"
     network_interfaces:
       - network: "{{ gcp_compute_network }}"
@@ -74,7 +74,7 @@
             type: ONE_TO_ONE_NAT
     tags:
       items:
-        - "environment-algo"
+        - environment-algo
   register: gcp_compute_instance
 
 - set_fact:
