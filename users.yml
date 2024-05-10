@@ -27,6 +27,7 @@
               [{% for i in _configs_list.files %}
                 {% set config  = lookup('file', i.path)|from_yaml %}
                 '{{ config.server }}'
+                '{{ config.IP_subject_alt_name }}'
                 {{ ',' if not loop.last else '' }}
               {% endfor %}]
 
