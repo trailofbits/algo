@@ -156,14 +156,14 @@
       with_items: "{{ users }}"
 
     - name: Get OpenSSL version
-    shell: |
-          set -o pipefail
-          {{ openssl_bin }} version |
-          cut -f 2 -d ' '
-    args:
-      executable: bash
-    register: ssl_version
-    run_once: true
+      shell: |
+        set -o pipefail
+        {{ openssl_bin }} version |
+        cut -f 2 -d ' '
+      args:
+        executable: bash
+      register: ssl_version
+      run_once: true
 
     - name: Set OpenSSL version fact
       set_fact:
