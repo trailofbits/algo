@@ -155,10 +155,25 @@
         format: OpenSSH
       with_items: "{{ users }}"
 
+    - name: Get OpenSSL version
+      shell: |
+        set -o pipefail
+        {{ openssl_bin }} version |
+        cut -f 2 -d ' '
+      args:
+        executable: bash
+      register: ssl_version
+      run_once: true
+
+    - name: Set OpenSSL version fact
+      set_fact:
+        openssl_version: "{{ ssl_version.stdout }}"
+
     - name: Build the client's p12
       shell: >
         umask 077;
         {{ openssl_bin }} pkcs12
+        {{ (openssl_version is version('3', '>=')) | ternary('-legacy', '') }}
         -in certs/{{ item }}.crt
         -inkey private/{{ item }}.key
         -export
@@ -175,6 +190,7 @@
       shell: >
         umask 077;
         {{ openssl_bin }} pkcs12
+        {{ (openssl_version is version('3', '>=')) | ternary('-legacy', '') }}
         -in certs/{{ item }}.crt
         -inkey private/{{ item }}.key
         -export
