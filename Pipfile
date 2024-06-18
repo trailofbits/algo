@@ -1,0 +1,15 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+ansible-core = "*"
+ansible = "*"
+netaddr = "*"
+Jinja2 = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3"
