@@ -67,7 +67,7 @@ Enter your API token. The token must have read and write permissions (https://cl
  (output is hidden):
 ```
 
-Finally you will be asked the region in which you wish to setup your new Algo server. This list is dynamic and can change based on availability of resources. Enter the number next to name of the region:
+Finally, you will be asked the region in which you wish to setup your new Algo server. This list is dynamic and can change based on availability of resources. Enter the number next to name of the region:
 
 ```
 What region should the server be located in?
