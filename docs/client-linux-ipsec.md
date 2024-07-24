@@ -27,7 +27,7 @@ To configure the connection to come up at boot time replace `auto=add` with `aut
 
 ## Notes on SELinux
 
-If you use a system with SELinux enabled you might need to set appropriate file contexts:
+If you use a system with SELinux enabled, you might need to set appropriate file contexts:
 
 ````
 semanage fcontext -a -t ipsec_key_file_t "$(pwd)(/.*)?"

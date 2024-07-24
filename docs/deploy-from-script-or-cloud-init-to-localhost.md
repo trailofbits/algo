@@ -13,11 +13,11 @@ For now this has only been successfully tested on [DigitalOcean](https://www.dig
 #!/bin/bash
 curl -s https://raw.githubusercontent.com/trailofbits/algo/master/install.sh | sudo -E bash -x
 ```
-The command will prepare the environment and install AlgoVPN with the default parameters below. If you want to modify the behavior you may define additional variables.
+The command will prepare the environment and install AlgoVPN with the default parameters below. If you want to modify the behavior, you may define additional variables.
 
 ## Variables
 
-- `METHOD`: which method of the deployment to use. Possible values are local and cloud. Default: cloud. The cloud method is intended to use in cloud-init deployments only. If you are not using cloud-init to deploy the server you have to use the local method.
+- `METHOD`: which method of the deployment to use. Possible values are local and cloud. Default: cloud. The cloud method is intended to use in cloud-init deployments only. If you are not using cloud-init to deploy the server, you have to use the local method.
 
 - `ONDEMAND_CELLULAR`: "Connect On Demand" when connected to cellular networks. Boolean. Default: false.
 
@@ -31,7 +31,7 @@ The command will prepare the environment and install AlgoVPN with the default pa
 
 - `SSH_TUNNELING`: Enable SSH tunneling for each user. Default: false.
 
-- `ENDPOINT`: The public IP address or domain name of your server: (IMPORTANT! This is used to verify the certificate). It will be gathered automatically for DigitalOcean, AWS, GCE, Azure or Vultr if the `METHOD` is cloud. Otherwise you need to define this variable according to your public IP address.
+- `ENDPOINT`: The public IP address or domain name of your server: (IMPORTANT! This is used to verify the certificate). It will be gathered automatically for DigitalOcean, AWS, GCE, Azure or Vultr if the `METHOD` is cloud. Otherwise, you need to define this variable according to your public IP address.
 
 - `USERS`: list of VPN users. Comma-separated list. Default: user1.
 
