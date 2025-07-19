@@ -1,0 +1,55 @@
+---
+# Quantum-safe cryptography role defaults
+
+# liboqs configuration
+liboqs_version: "0.13.0"
+liboqs_repo_url: "https://github.com/open-quantum-safe/liboqs"
+liboqs_install_dir: "/opt/liboqs"
+liboqs_build_dir: "{{ liboqs_install_dir }}/build"
+liboqs_shared_libs: true
+liboqs_build_parallel_jobs: "{{ ansible_processor_vcpus | default(4) }}"
+
+# strongSwan quantum-safe configuration
+strongswan_version: "6.0.2"
+strongswan_repo_url: "https://github.com/strongswan/strongswan"
+strongswan_install_dir: "/opt/strongswan"
+strongswan_build_dir: "{{ strongswan_install_dir }}/build"
+strongswan_enable_oqs: true
+strongswan_enable_ml_plugin: true
+
+# Supported post-quantum algorithms
+quantum_safe_algorithms:
+  ml_kem:
+    - "ML-KEM-512"
+    - "ML-KEM-768"
+    - "ML-KEM-1024"
+  ml_dsa:
+    - "ML-DSA-44"
+    - "ML-DSA-65"
+    - "ML-DSA-87"
+
+# Default security levels
+default_security_level: "ML-KEM-768"  # 192-bit security
+default_signature_level: "ML-DSA-65"  # 192-bit security
+
+# Development and testing flags
+quantum_safe_dev_mode: true
+quantum_safe_testing: true
+quantum_safe_benchmarks: false
+
+# Performance tuning
+quantum_safe_optimization: "generic"  # generic, avx2, aarch64
+quantum_safe_deterministic_keys: false  # Only for testing
+
+# Integration settings
+integrate_with_strongswan: true
+integrate_with_wireguard: false  # Phase 3
+create_hybrid_configs: true
+
+# Backup and rollback
+backup_classical_configs: true
+enable_fallback_mode: true
+
+# Monitoring and logging
+quantum_safe_logging: "info"  # debug, info, warn, error
+performance_monitoring: true

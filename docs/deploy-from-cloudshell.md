@@ -7,6 +7,7 @@ If you want to try Algo but don't wish to install the software on your own syste
 2. Follow the [Algo installation instructions](https://github.com/trailofbits/algo#deploy-the-algo-server) as shown but skip step **3. Install Algo's core dependencies** as they are already installed. Run Algo to deploy to a supported cloud provider.
 
 3. Once Algo has completed, retrieve a copy of the configuration files that were created to your local system. While still in the Algo directory, run:
+
     ```
     zip -r configs configs
     dl configs.zip

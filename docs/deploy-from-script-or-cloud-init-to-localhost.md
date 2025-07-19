@@ -1,11 +1,11 @@
 # Deploy from script or cloud-init
 
-You can use `install.sh` to prepare the environment and deploy AlgoVPN on the local Ubuntu server in one shot using cloud-init, or run the script directly on the server after it's been created. 
+You can use `install.sh` to prepare the environment and deploy AlgoVPN on the local Ubuntu server in one shot using cloud-init, or run the script directly on the server after it's been created.
 The script doesn't configure any parameters in your cloud, so you're on your own to configure related [firewall rules](/docs/firewalls.md), a floating IP address and other resources you may need. The output of the install script (including the p12 and CA passwords) can be found at `/var/log/algo.log`, and user config files will be installed into the `/opt/algo/configs/localhost` directory. If you need to update users later, `cd /opt/algo`, change the user list in `config.cfg`, install additional dependencies as in step 4 of the [main README](https://github.com/trailofbits/algo/blob/master/README.md), and run `./algo update-users` from that directory.
 
 ## Cloud init deployment
 
-You can copy-paste the snippet below to the user data (cloud-init or startup script) field when creating a new server. 
+You can copy-paste the snippet below to the user data (cloud-init or startup script) field when creating a new server.
 
 For now this has only been successfully tested on [DigitalOcean](https://www.digitalocean.com/docs/droplets/resources/metadata/), Amazon [EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) and [Lightsail](https://lightsail.aws.amazon.com/ls/docs/en/articles/lightsail-how-to-configure-server-additional-data-shell-script), [Google Cloud](https://cloud.google.com/compute/docs/startupscript), [Azure](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/using-cloud-init) and [Vultr](https://my.vultr.com/startup/), although Vultr doesn't [officially support cloud-init](https://www.vultr.com/docs/getting-started-with-cloud-init).
 
@@ -13,6 +13,7 @@ For now this has only been successfully tested on [DigitalOcean](https://www.dig
 #!/bin/bash
 curl -s https://raw.githubusercontent.com/trailofbits/algo/master/install.sh | sudo -E bash -x
 ```
+
 The command will prepare the environment and install AlgoVPN with the default parameters below. If you want to modify the behavior you may define additional variables.
 
 ## Variables

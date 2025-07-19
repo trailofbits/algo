@@ -13,6 +13,7 @@ The cheapest EC2 plan you can choose is the "Free Plan" a.k.a. the ["AWS Free Ti
 As of the time of this writing (July 2018), the Free Tier limits include "750 hours of Amazon EC2 Linux t2.micro instance  usage" per month, 15 GB of bandwidth (outbound) per month, and 30 GB of cloud storage. Algo will not even use 1% of the storage limit, but you may have to monitor your bandwidth usage or keep an eye out for the email from Amazon when you are about to exceed the Free Tier limits.
 
 If you are not eligible for the free tier plan or have passed the 12 months of the introductory period, you can switch to [AWS Graviton](https://aws.amazon.com/ec2/graviton/) instances that are generally cheaper. To use the graviton instances, make the following changes in the ec2 section of your `config.cfg` file:
+
 * Set the `size` to `t4g.nano`
 * Set the `arch` to `arm64`
 

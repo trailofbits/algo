@@ -1,0 +1,40 @@
+---
+# Main task file for quantum-safe cryptography setup
+
+- name: Include OS-specific variables
+  include_vars: "{{ ansible_os_family }}.yml"
+  when: ansible_os_family in ['Debian', 'RedHat']
+
+- name: Validate quantum-safe configuration
+  assert:
+    that:
+      - liboqs_version is defined
+      - strongswan_version is defined
+      - default_security_level in quantum_safe_algorithms.ml_kem
+    msg: "Invalid quantum-safe configuration"
+
+- name: Install system dependencies
+  include_tasks: dependencies.yml
+
+- name: Setup liboqs library
+  include_tasks: liboqs.yml
+  when: integrate_with_strongswan or quantum_safe_dev_mode
+
+- name: Setup strongSwan with quantum-safe support
+  include_tasks: strongswan-pq.yml
+  when: integrate_with_strongswan
+
+- name: Create quantum-safe test infrastructure
+  include_tasks: testing.yml
+  when: quantum_safe_testing
+
+- name: Generate quantum-safe configurations
+  include_tasks: configs.yml
+  when: create_hybrid_configs
+
+- name: Setup monitoring and benchmarking
+  include_tasks: monitoring.yml
+  when: performance_monitoring
+
+- name: Validate quantum-safe installation
+  include_tasks: validation.yml

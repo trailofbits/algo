@@ -1,0 +1,18 @@
+---
+# Handlers for quantum-safe cryptography role
+
+- name: update library cache
+  command: ldconfig
+  become: yes
+
+- name: reload environment
+  shell: source /etc/profile.d/quantum-safe.sh
+  become: yes
+
+- name: restart strongswan
+  systemd:
+    name: strongswan
+    state: restarted
+    daemon_reload: yes
+  become: yes
+  when: ansible_service_mgr == "systemd"

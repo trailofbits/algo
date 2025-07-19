@@ -1,0 +1,139 @@
+name: Auto Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  auto-release:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Need full history for version calculation
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+        cache-dependency-path: 'requirements.txt'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Configure git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Determine next version
+      id: version
+      run: |
+        # Get the current version from the last tag
+        CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+        echo "Current version: $CURRENT_VERSION"
+
+        # Remove 'v' prefix for processing
+        CURRENT_VERSION_NUM=${CURRENT_VERSION#v}
+
+        # Extract PR labels to determine version bump type
+        PR_LABELS='${{ toJson(github.event.pull_request.labels.*.name) }}'
+        echo "PR Labels: $PR_LABELS"
+
+        # Parse current version
+        IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION_NUM"
+        MAJOR=${MAJOR:-0}
+        MINOR=${MINOR:-0}
+        PATCH=${PATCH:-0}
+
+        # Determine version bump based on PR labels
+        if echo "$PR_LABELS" | grep -q "breaking"; then
+          # Major version bump for breaking changes
+          MAJOR=$((MAJOR + 1))
+          MINOR=0
+          PATCH=0
+        elif echo "$PR_LABELS" | grep -q "feature\|enhancement"; then
+          # Minor version bump for new features
+          MINOR=$((MINOR + 1))
+          PATCH=0
+        else
+          # Patch version bump for bug fixes and other changes
+          PATCH=$((PATCH + 1))
+        fi
+
+        NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+        echo "New version: $NEW_VERSION"
+        echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+    - name: Create release
+      run: |
+        # Make the release script executable
+        chmod +x scripts/create_release.sh
+
+        # Check git status and clean up any changes
+        git status --porcelain
+
+        # Create the release using our existing script
+        ./scripts/create_release.sh --push ${{ steps.version.outputs.version }}
+
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.version.outputs.version }}
+        release_name: Release v${{ steps.version.outputs.version }}
+        body: |
+          ## Changes in this release
+
+          This release was automatically created from PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}
+
+          **PR Description:**
+          ${{ github.event.pull_request.body }}
+
+          **Merged by:** @${{ github.event.pull_request.user.login }}
+          **Merge commit:** ${{ github.event.pull_request.merge_commit_sha }}
+
+          ### Release Assets
+
+          - Source code archives are available below
+          - Release created automatically by GitHub Actions
+
+          ---
+
+          🤖 Generated with GitHub Actions
+        draft: false
+        prerelease: false
+
+    - name: Upload release assets
+      if: success()
+      run: |
+        # Upload the generated archives to the GitHub release
+        VERSION=${{ steps.version.outputs.version }}
+
+        # Check if release archives exist
+        if [ -f "releases/algo-quantum-v${VERSION}.tar.gz" ]; then
+          echo "Uploading tar.gz archive..."
+          gh release upload "v${VERSION}" "releases/algo-quantum-v${VERSION}.tar.gz"
+        fi
+
+        if [ -f "releases/algo-quantum-v${VERSION}.zip" ]; then
+          echo "Uploading zip archive..."
+          gh release upload "v${VERSION}" "releases/algo-quantum-v${VERSION}.zip"
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

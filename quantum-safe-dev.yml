@@ -1,0 +1,83 @@
+---
+# Development playbook for quantum-safe cryptography setup
+# This playbook sets up the development environment for Phase 1
+
+- hosts: localhost
+  become: yes
+  vars_files:
+    - config.cfg
+  vars:
+    # Override default settings for development
+    quantum_safe_dev_mode: true
+    quantum_safe_testing: true
+    quantum_safe_benchmarks: false
+    integrate_with_strongswan: false  # Phase 2
+    create_hybrid_configs: false     # Phase 2
+
+  tasks:
+    - name: Display Phase 1 development setup message
+      debug:
+        msg: |
+          ======================================
+          Algo Quantum VPN - Phase 1 Development Setup
+          ======================================
+          Setting up quantum-safe development environment...
+          - liboqs {{ liboqs_version }} with ML-KEM/ML-DSA support
+          - Development tools and testing infrastructure
+          - Performance benchmarking capabilities
+          ======================================
+
+    - name: Validate system requirements
+      assert:
+        that:
+          - ansible_python.version.major >= 3
+          - ansible_python.version.minor >= 8
+        msg: "Python 3.8+ required for quantum-safe development"
+
+    - name: Check available system memory
+      assert:
+        that:
+          - ansible_memory_mb.real.total >= 2048
+        msg: "At least 2GB RAM recommended for liboqs compilation"
+
+    - name: Setup quantum-safe development environment
+      include_role:
+        name: quantum-safe
+
+    - name: Create development shortcuts
+      template:
+        src: quantum-safe-shortcuts.sh.j2
+        dest: /opt/quantum-safe/shortcuts.sh
+        mode: '0755'
+      vars:
+        shortcuts_content: |
+          #!/bin/bash
+          # Quantum-safe development shortcuts
+
+          alias pq-test="sudo /opt/quantum-safe/tests/test-liboqs-algorithms.sh"
+          alias pq-bench="sudo /opt/quantum-safe/tests/benchmark-quantum-safe.sh"
+          alias pq-validate="sudo /opt/quantum-safe/tests/run-all-tests.sh"
+          alias pq-logs="tail -f /opt/quantum-safe/logs/*.log"
+
+          export LIBOQS_BUILD_DIR="{{ liboqs_build_dir }}"
+          export PATH="/opt/quantum-safe/tests:$PATH"
+
+    - name: Display setup completion message
+      debug:
+        msg: |
+          ======================================
+          Phase 1 Development Environment Ready!
+          ======================================
+
+          Next steps:
+          1. Source environment: source /etc/profile.d/quantum-safe.sh
+          2. Run tests: /opt/quantum-safe/tests/test-liboqs-algorithms.sh
+          3. Check logs: tail -f /opt/quantum-safe/logs/*.log
+
+          Available commands:
+          - pq-test: Run liboqs algorithm tests
+          - pq-validate: Run all validation tests
+          - pq-logs: Monitor quantum-safe logs
+
+          Ready for Phase 2: strongSwan integration!
+          ======================================

@@ -1,0 +1,27 @@
+#!/bin/bash
+# Quantum-safe cryptography environment variables
+
+# liboqs paths
+export LIBOQS_INSTALL_DIR="{{ liboqs_install_dir }}"
+export LIBOQS_BUILD_DIR="{{ liboqs_build_dir }}"
+
+# Library paths
+export LD_LIBRARY_PATH="/usr/local/lib:{{ liboqs_build_dir }}/lib:$LD_LIBRARY_PATH"
+export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH"
+
+# strongSwan paths
+export STRONGSWAN_INSTALL_DIR="{{ strongswan_install_dir }}"
+export STRONGSWAN_BUILD_DIR="{{ strongswan_build_dir }}"
+
+# Quantum-safe configuration
+export QUANTUM_SAFE_MODE="{{ 'enabled' if quantum_safe_dev_mode else 'disabled' }}"
+export QUANTUM_SAFE_ALGORITHMS="{{ quantum_safe_algorithms.ml_kem | join(',') }}"
+export QUANTUM_SAFE_DEFAULT_LEVEL="{{ default_security_level }}"
+
+# Development flags
+export QUANTUM_SAFE_TESTING="{{ 'enabled' if quantum_safe_testing else 'disabled' }}"
+export QUANTUM_SAFE_LOGGING="{{ quantum_safe_logging }}"
+
+# Performance settings
+export QUANTUM_SAFE_OPTIMIZATION="{{ quantum_safe_optimization }}"
+export QUANTUM_SAFE_PARALLEL_JOBS="{{ liboqs_build_parallel_jobs }}"

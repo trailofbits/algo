@@ -30,8 +30,10 @@
     - set_fact:
         algo_cs_key: "{{ cs_key | default(_cs_key.user_input|default(None)) | default(lookup('env', 'CLOUDSTACK_KEY'), true) }}"
         algo_cs_token: "{{ cs_secret | default(_cs_secret.user_input|default(None)) | default(lookup('env', 'CLOUDSTACK_SECRET'), true) }}"
-        algo_cs_url: "{{ cs_url | default(_cs_url.user_input|default(None)) | default(lookup('env', 'CLOUDSTACK_ENDPOINT'), true) | default('https://api.exoscale.com/compute',\
-          \ true) }}"
+        algo_cs_url: >-
+          {{ cs_url | default(_cs_url.user_input|default(None)) |
+          default(lookup('env', 'CLOUDSTACK_ENDPOINT'), true) |
+          default('https://api.exoscale.com/compute', true) }}
 
     - name: Get zones on cloud
       cs_zone_info:

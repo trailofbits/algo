@@ -8,12 +8,14 @@ LABEL name="algo" \
       description="Set up a personal IPsec VPN in the cloud" \
       maintainer="Trail of Bits <http://github.com/trailofbits/algo>"
 
-RUN apk --no-cache add ${PACKAGES}
-RUN adduser -D -H -u 19857 algo
+# hadolint ignore=DL3018
+RUN apk --no-cache add ${PACKAGES} && \
+    adduser -D -H -u 19857 algo
 RUN mkdir -p /algo && mkdir -p /algo/configs
 
 WORKDIR /algo
 COPY requirements.txt .
+# hadolint ignore=SC1091
 RUN python3 -m pip --no-cache-dir install -U pip && \
     python3 -m pip --no-cache-dir install virtualenv && \
     python3 -m virtualenv .env && \
@@ -28,6 +30,7 @@ RUN chmod 0755 /algo/algo-docker.sh
 # before userns becomes default
 # Note that not running as root will break if we don't have a matching userid
 # in the container. The filesystem has also been set up to assume root.
+# hadolint ignore=DL3002
 USER root
 CMD [ "/algo/algo-docker.sh" ]
 ENTRYPOINT [ "/sbin/tini", "--" ]

@@ -1,0 +1,60 @@
+---
+# Create quantum-safe test infrastructure
+
+- name: Create test script directory
+  file:
+    path: /opt/quantum-safe/tests
+    state: directory
+    mode: '0755'
+
+- name: Generate liboqs algorithm test script
+  template:
+    src: test-liboqs-algorithms.sh.j2
+    dest: /opt/quantum-safe/tests/test-liboqs-algorithms.sh
+    mode: '0755'
+
+- name: Generate strongSwan quantum-safe test script
+  template:
+    src: test-strongswan-pq.sh.j2
+    dest: /opt/quantum-safe/tests/test-strongswan-pq.sh
+    mode: '0755'
+
+- name: Generate performance benchmark script
+  template:
+    src: benchmark-quantum-safe.sh.j2
+    dest: /opt/quantum-safe/tests/benchmark-quantum-safe.sh
+    mode: '0755'
+  when: quantum_safe_benchmarks
+
+- name: Create test configuration files
+  template:
+    src: "{{ item }}.j2"
+    dest: "/opt/quantum-safe/tests/{{ item }}"
+    mode: '0644'
+  loop:
+    - test-swanctl.conf
+    - test-strongswan.conf
+    - test-ipsec.secrets
+
+- name: Generate quantum-safe validation report
+  template:
+    src: validation-report.py.j2
+    dest: /opt/quantum-safe/tests/validation-report.py
+    mode: '0755'
+
+- name: Create test runner script
+  template:
+    src: run-all-tests.sh.j2
+    dest: /opt/quantum-safe/tests/run-all-tests.sh
+    mode: '0755'
+
+- name: Run initial quantum-safe validation
+  command: /opt/quantum-safe/tests/test-liboqs-algorithms.sh
+  register: pq_validation
+  changed_when: false
+  when: quantum_safe_testing
+
+- name: Display validation results
+  debug:
+    msg: "Quantum-safe validation: {{ 'PASSED' if pq_validation.rc == 0 else 'FAILED' }}"
+  when: quantum_safe_testing

@@ -33,12 +33,15 @@ First install Homebrew using the instructions on the [Homebrew](https://brew.sh)
 The install command below takes care of initializing the CA certificate store.
 
 ##### Installation
+
 ```
 brew install python3
 ```
+
 After installation open a new tab or window in Terminal and verify that the command `which python3` returns `/usr/local/bin/python3`.
 
 ##### Removal
+
 ```
 brew uninstall python3
 ```
@@ -60,7 +63,7 @@ After installation open a new tab or window in Terminal and verify that the comm
 Unfortunately the python.org package does not include an uninstaller and removing it requires several steps:
 
 1. In Finder, delete the package folder found in `/Applications`.
-2. In Finder, delete the *rest* of the package found under ` /Library/Frameworks/Python.framework/Versions`.
+2. In Finder, delete the *rest* of the package found under `/Library/Frameworks/Python.framework/Versions`.
 3. In Terminal, undo the changes to your `PATH` by running:
 ```mv ~/.bash_profile.pysave ~/.bash_profile```
 4. In Terminal, remove the dozen or so symbolic links the package created in `/usr/local/bin`. Or just leave them because installing another version of Python will overwrite most of them.

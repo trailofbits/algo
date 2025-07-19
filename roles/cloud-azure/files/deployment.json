@@ -1,20 +1,26 @@
 {
   "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json",
   "contentVersion": "1.0.0.0",
+  "outputs": {
+    "publicIPAddresses": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses',resourceGroup().name),providers('Microsoft.Network', 'publicIPAddresses').apiVersions[0]).ipAddress]"
+    }
+  },
   "parameters": {
-    "sshKeyData": {
+    "SshPort": {
+      "type": "int"
+    },
+    "UserData": {
       "type": "string"
     },
     "WireGuardPort": {
       "type": "int"
     },
-    "vmSize": {
+    "imageReferenceOffer": {
       "type": "string"
     },
     "imageReferencePublisher": {
-      "type": "string"
-    },
-    "imageReferenceOffer": {
       "type": "string"
     },
     "imageReferenceSku": {
@@ -26,98 +32,93 @@
     "osDiskType": {
       "type": "string"
     },
-    "SshPort": {
-      "type": "int"
+    "sshKeyData": {
+      "type": "string"
     },
-    "UserData": {
+    "vmSize": {
       "type": "string"
     }
-  },
-  "variables": {
-    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', resourceGroup().name)]",
-    "subnet1Ref": "[concat(variables('vnetID'),'/subnets/', resourceGroup().name)]"
   },
   "resources": [
     {
       "apiVersion": "2015-06-15",
-      "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[resourceGroup().name]",
       "location": "[resourceGroup().location]",
+      "name": "[resourceGroup().name]",
       "properties": {
         "securityRules": [
           {
             "name": "AllowSSH",
             "properties": {
-              "description": "Allow SSH",
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "[parameters('SshPort')]",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "*",
               "access": "Allow",
+              "description": "Allow SSH",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "[parameters('SshPort')]",
+              "direction": "Inbound",
               "priority": 100,
-              "direction": "Inbound"
+              "protocol": "Tcp",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*"
             }
           },
           {
             "name": "AllowIPSEC500",
             "properties": {
-              "description": "Allow UDP to port 500",
-              "protocol": "Udp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "500",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "*",
               "access": "Allow",
+              "description": "Allow UDP to port 500",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "500",
+              "direction": "Inbound",
               "priority": 110,
-              "direction": "Inbound"
+              "protocol": "Udp",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*"
             }
           },
           {
             "name": "AllowIPSEC4500",
             "properties": {
-              "description": "Allow UDP to port 4500",
-              "protocol": "Udp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "4500",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "*",
               "access": "Allow",
+              "description": "Allow UDP to port 4500",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "4500",
+              "direction": "Inbound",
               "priority": 120,
-              "direction": "Inbound"
+              "protocol": "Udp",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*"
             }
           },
           {
             "name": "AllowWireGuard",
             "properties": {
-              "description": "Locks inbound down to ssh default port 22.",
-              "protocol": "Udp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "[parameters('WireGuardPort')]",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "*",
               "access": "Allow",
+              "description": "Locks inbound down to ssh default port 22.",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "[parameters('WireGuardPort')]",
+              "direction": "Inbound",
               "priority": 130,
-              "direction": "Inbound"
+              "protocol": "Udp",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*"
             }
           }
         ]
-      }
+      },
+      "type": "Microsoft.Network/networkSecurityGroups"
     },
     {
       "apiVersion": "2015-06-15",
-      "type": "Microsoft.Network/publicIPAddresses",
-      "name": "[resourceGroup().name]",
       "location": "[resourceGroup().location]",
+      "name": "[resourceGroup().name]",
       "properties": {
         "publicIPAllocationMethod": "Static"
-      }
+      },
+      "type": "Microsoft.Network/publicIPAddresses"
     },
     {
       "apiVersion": "2015-06-15",
-      "type": "Microsoft.Network/virtualNetworks",
-      "name": "[resourceGroup().name]",
       "location": "[resourceGroup().location]",
+      "name": "[resourceGroup().name]",
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
@@ -132,22 +133,19 @@
             }
           }
         ]
-      }
+      },
+      "type": "Microsoft.Network/virtualNetworks"
     },
     {
       "apiVersion": "2015-06-15",
-      "type": "Microsoft.Network/networkInterfaces",
-      "name": "[resourceGroup().name]",
-      "location": "[resourceGroup().location]",
       "dependsOn": [
         "[concat('Microsoft.Network/networkSecurityGroups/', resourceGroup().name)]",
         "[concat('Microsoft.Network/publicIPAddresses/', resourceGroup().name)]",
         "[concat('Microsoft.Network/virtualNetworks/', resourceGroup().name)]"
       ],
+      "location": "[resourceGroup().location]",
+      "name": "[resourceGroup().name]",
       "properties": {
-        "networkSecurityGroup": {
-          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', resourceGroup().name)]"
-        },
         "ipConfigurations": [
           {
             "name": "ipconfig1",
@@ -161,32 +159,42 @@
               }
             }
           }
-        ]
-      }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', resourceGroup().name)]"
+        }
+      },
+      "type": "Microsoft.Network/networkInterfaces"
     },
     {
       "apiVersion": "2016-04-30-preview",
-      "type": "Microsoft.Compute/virtualMachines",
-      "name": "[resourceGroup().name]",
-      "location": "[resourceGroup().location]",
       "dependsOn": [
         "[concat('Microsoft.Network/networkInterfaces/', resourceGroup().name)]"
       ],
+      "location": "[resourceGroup().location]",
+      "name": "[resourceGroup().name]",
       "properties": {
         "hardwareProfile": {
           "vmSize": "[parameters('vmSize')]"
         },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', resourceGroup().name)]"
+            }
+          ]
+        },
         "osProfile": {
+          "adminUsername": "algo",
           "computerName": "[resourceGroup().name]",
           "customData": "[parameters('UserData')]",
-          "adminUsername": "algo",
           "linuxConfiguration": {
             "disablePasswordAuthentication": true,
             "ssh": {
               "publicKeys": [
                 {
-                  "path": "/home/algo/.ssh/authorized_keys",
-                  "keyData": "[parameters('sshKeyData')]"
+                  "keyData": "[parameters('sshKeyData')]",
+                  "path": "/home/algo/.ssh/authorized_keys"
                 }
               ]
             }
@@ -194,8 +202,8 @@
         },
         "storageProfile": {
           "imageReference": {
-            "publisher": "[parameters('imageReferencePublisher')]",
             "offer": "[parameters('imageReferenceOffer')]",
+            "publisher": "[parameters('imageReferencePublisher')]",
             "sku": "[parameters('imageReferenceSku')]",
             "version": "[parameters('imageReferenceVersion')]"
           },
@@ -205,21 +213,13 @@
               "storageAccountType": "[parameters('osDiskType')]"
             }
           }
-        },
-        "networkProfile": {
-          "networkInterfaces": [
-            {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', resourceGroup().name)]"
-            }
-          ]
         }
-      }
+      },
+      "type": "Microsoft.Compute/virtualMachines"
     }
   ],
-  "outputs": {
-    "publicIPAddresses": {
-      "type": "string",
-      "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses',resourceGroup().name),providers('Microsoft.Network', 'publicIPAddresses').apiVersions[0]).ipAddress]",
-    }
+  "variables": {
+    "subnet1Ref": "[concat(variables('vnetID'),'/subnets/', resourceGroup().name)]",
+    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', resourceGroup().name)]"
   }
 }

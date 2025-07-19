@@ -1,0 +1,34 @@
+---
+# Generate quantum-safe configuration files
+
+- name: Create quantum-safe configuration templates directory
+  file:
+    path: /opt/quantum-safe/configs
+    state: directory
+    mode: '0755'
+
+- name: Generate liboqs algorithm configuration
+  template:
+    src: algorithms.conf.j2
+    dest: /opt/quantum-safe/configs/algorithms.conf
+    mode: '0644'
+
+- name: Create quantum-safe policy template
+  template:
+    src: quantum-safe-policy.yaml.j2
+    dest: /opt/quantum-safe/configs/quantum-safe-policy.yaml
+    mode: '0644'
+
+- name: Generate development configuration file
+  template:
+    src: dev-config.json.j2
+    dest: /opt/quantum-safe/configs/dev-config.json
+    mode: '0644'
+  when: quantum_safe_dev_mode
+
+- name: Create backup configuration script
+  template:
+    src: backup-configs.sh.j2
+    dest: /opt/quantum-safe/configs/backup-configs.sh
+    mode: '0755'
+  when: backup_classical_configs

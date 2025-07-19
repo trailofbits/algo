@@ -9,8 +9,9 @@
     - lookup('env','GCE_CREDENTIALS_FILE_PATH')|length <= 0
 
 - set_fact:
-    credentials_file_path: "{{ gce_credentials_file | default(_gce_credentials_file.user_input|default(None)) | default(lookup('env','GCE_CREDENTIALS_FILE_PATH'),\
-      \ true) }}"
+    credentials_file_path: >-
+      {{ gce_credentials_file | default(_gce_credentials_file.user_input|default(None)) |
+      default(lookup('env','GCE_CREDENTIALS_FILE_PATH'), true) }}
     ssh_public_key_lookup: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
 
 - set_fact:

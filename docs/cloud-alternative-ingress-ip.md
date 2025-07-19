@@ -6,9 +6,6 @@ This feature allows you to configure the Algo server to send outbound traffic th
 
 Additional info might be found in [this issue](https://github.com/trailofbits/algo/issues/1047)
 
-
-
-
 #### Caveats
 
 ##### Extra charges

@@ -1,0 +1,57 @@
+---
+# Monitoring and logging setup for quantum-safe cryptography
+
+- name: Create monitoring directory structure
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /opt/quantum-safe/monitoring
+    - /opt/quantum-safe/logs
+    - /opt/quantum-safe/metrics
+
+- name: Generate system monitoring script
+  template:
+    src: monitor-quantum-safe.sh.j2
+    dest: /opt/quantum-safe/monitoring/monitor-quantum-safe.sh
+    mode: '0755'
+
+- name: Create log rotation configuration
+  template:
+    src: quantum-safe-logrotate.conf.j2
+    dest: /etc/logrotate.d/quantum-safe
+    mode: '0644'
+  become: yes
+
+- name: Generate performance monitoring script
+  template:
+    src: performance-monitor.py.j2
+    dest: /opt/quantum-safe/monitoring/performance-monitor.py
+    mode: '0755'
+  when: performance_monitoring
+
+- name: Create monitoring cron job
+  cron:
+    name: "quantum-safe monitoring"
+    minute: "*/15"
+    job: "/opt/quantum-safe/monitoring/monitor-quantum-safe.sh >/dev/null 2>&1"
+    state: present
+  when: performance_monitoring
+
+- name: Generate log analysis script
+  template:
+    src: analyze-logs.sh.j2
+    dest: /opt/quantum-safe/monitoring/analyze-logs.sh
+    mode: '0755'
+
+- name: Initialize monitoring log
+  copy:
+    content: |
+      # Quantum-Safe Monitoring Log
+      # Started: {{ ansible_date_time.iso8601 }}
+      # Host: {{ ansible_hostname }}
+      # Version: {{ liboqs_version }}
+    dest: /opt/quantum-safe/logs/monitoring.log
+    mode: '0644'
+    force: no

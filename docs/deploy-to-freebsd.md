@@ -8,9 +8,9 @@ Ensure that the following kernel options are enabled:
 
 ```
 # sysctl kern.conftxt | grep -iE "IPSEC|crypto"
-options	IPSEC
+options IPSEC
 options IPSEC_NAT_T
-device	crypto
+device crypto
 ```
 
 ## Available roles

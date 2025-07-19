@@ -7,4 +7,4 @@ You'll be ask for to specify a purpose for your API key before it is created. Yo
 Enter the "Secret key" when Algo prompts you for the `auth token`. You won't need the "Access key".
 This information will be pass as the `algo_scaleway_token` variable when asked for in the Algo prompt.
 
-Your organization ID is also on this page: https://console.scaleway.com/account/credentials
+Your organization ID is also on this page: <https://console.scaleway.com/account/credentials>

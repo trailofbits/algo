@@ -2,40 +2,40 @@
 
 First of all, check [this](https://github.com/trailofbits/algo#features) and ensure that you are deploying to the supported ubuntu version.
 
-  * [Installation Problems](#installation-problems)
-     * [Error: "You have not agreed to the Xcode license agreements"](#error-you-have-not-agreed-to-the-xcode-license-agreements)
-     * [Error: checking whether the C compiler works... no](#error-checking-whether-the-c-compiler-works-no)
-     * [Error: "fatal error: 'openssl/opensslv.h' file not found"](#error-fatal-error-opensslopensslvh-file-not-found)
-     * [Error: "TypeError: must be str, not bytes"](#error-typeerror-must-be-str-not-bytes)
-     * [Error: "ansible-playbook: command not found"](#error-ansible-playbook-command-not-found)
-     * [Error: "Could not fetch URL ... TLSV1_ALERT_PROTOCOL_VERSION](#could-not-fetch-url--tlsv1_alert_protocol_version)
-     * [Fatal: "Failed to validate the SSL certificate for ..."](#fatal-failed-to-validate-the-SSL-certificate)
-     * [Bad owner or permissions on .ssh](#bad-owner-or-permissions-on-ssh)
-     * [The region you want is not available](#the-region-you-want-is-not-available)
-     * [AWS: SSH permission denied with an ECDSA key](#aws-ssh-permission-denied-with-an-ecdsa-key)
-     * [AWS: "Deploy the template" fails with CREATE_FAILED](#aws-deploy-the-template-fails-with-create_failed)
-     * [AWS: not authorized to perform: cloudformation:UpdateStack](#aws-not-authorized-to-perform-cloudformationupdatestack)
-     * [DigitalOcean: error tagging resource 'xxxxxxxx': param is missing or the value is empty: resources](#digitalocean-error-tagging-resource)
-     * [Azure: The client xxx with object id xxx does not have authorization to perform action Microsoft.Resources/subscriptions/resourcegroups/write' over scope](#azure-deployment-permissions-error)
-     * [Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid](#windows-the-value-of-parameter-linuxconfigurationsshpublickeyskeydata-is-invalid)
-     * [Docker: Failed to connect to the host via ssh](#docker-failed-to-connect-to-the-host-via-ssh)
-     * [Error: Failed to create symlinks for deploying to localhost](#error-failed-to-create-symlinks-for-deploying-to-localhost)
-     * [Wireguard: Unable to find 'configs/...' in expected paths](#wireguard-unable-to-find-configs-in-expected-paths)
-     * [Ubuntu Error: "unable to write 'random state'" when generating CA password](#ubuntu-error-unable-to-write-random-state-when-generating-ca-password)
-     * [Timeout when waiting for search string OpenSSH in xxx.xxx.xxx.xxx:4160](#old-networking-firewall-in-place)
-     * [Linode Error: "Unable to query the Linode API. Saw: 400: The requested distribution is not supported by this stackscript.; "](#linode-error-uable-to-query-the-linode-api-saw-400-the-requested-distribution-is-not-supported-by-this-stackscript)
-  * [Connection Problems](#connection-problems)
-     * [I'm blocked or get CAPTCHAs when I access certain websites](#im-blocked-or-get-captchas-when-i-access-certain-websites)
-     * [I want to change the list of trusted Wifi networks on my Apple device](#i-want-to-change-the-list-of-trusted-wifi-networks-on-my-apple-device)
-     * [Error: "The VPN Service payload could not be installed."](#error-the-vpn-service-payload-could-not-be-installed)
-     * [Little Snitch is broken when connected to the VPN](#little-snitch-is-broken-when-connected-to-the-vpn)
-     * [I can't get my router to connect to the Algo server](#i-cant-get-my-router-to-connect-to-the-algo-server)
-     * [I can't get Network Manager to connect to the Algo server](#i-cant-get-network-manager-to-connect-to-the-algo-server)
-     * [Various websites appear to be offline through the VPN](#various-websites-appear-to-be-offline-through-the-vpn)
-     * [Clients appear stuck in a reconnection loop](#clients-appear-stuck-in-a-reconnection-loop)
-     * [Wireguard: clients can connect on Wifi but not LTE](#wireguard-clients-can-connect-on-wifi-but-not-lte)
-     * [IPsec: Difficulty connecting through router](#ipsec-difficulty-connecting-through-router)
-  * [I have a problem not covered here](#i-have-a-problem-not-covered-here)
+* [Installation Problems](#installation-problems)
+  * [Error: "You have not agreed to the Xcode license agreements"](#error-you-have-not-agreed-to-the-xcode-license-agreements)
+  * [Error: checking whether the C compiler works... no](#error-checking-whether-the-c-compiler-works-no)
+  * [Error: "fatal error: 'openssl/opensslv.h' file not found"](#error-fatal-error-opensslopensslvh-file-not-found)
+  * [Error: "TypeError: must be str, not bytes"](#error-typeerror-must-be-str-not-bytes)
+  * [Error: "ansible-playbook: command not found"](#error-ansible-playbook-command-not-found)
+  * [Error: "Could not fetch URL ... TLSV1_ALERT_PROTOCOL_VERSION](#could-not-fetch-url--tlsv1_alert_protocol_version)
+  * [Fatal: "Failed to validate the SSL certificate for ..."](#fatal-failed-to-validate-the-ssl-certificate)
+  * [Bad owner or permissions on .ssh](#bad-owner-or-permissions-on-ssh)
+  * [The region you want is not available](#the-region-you-want-is-not-available)
+  * [AWS: SSH permission denied with an ECDSA key](#aws-ssh-permission-denied-with-an-ecdsa-key)
+  * [AWS: "Deploy the template" fails with CREATE_FAILED](#aws-deploy-the-template-fails-with-create_failed)
+  * [AWS: not authorized to perform: cloudformation:UpdateStack](#aws-not-authorized-to-perform-cloudformationupdatestack)
+  * [DigitalOcean: error tagging resource 'xxxxxxxx': param is missing or the value is empty: resources](#digitalocean-error-tagging-resource)
+  * [Azure: The client xxx with object id xxx does not have authorization to perform action Microsoft.Resources/subscriptions/resourcegroups/write' over scope](#azure-deployment-permissions-error)
+  * [Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid](#windows-the-value-of-parameter-linuxconfigurationsshpublickeyskeydata-is-invalid)
+  * [Docker: Failed to connect to the host via ssh](#docker-failed-to-connect-to-the-host-via-ssh)
+  * [Error: Failed to create symlinks for deploying to localhost](#error-failed-to-create-symlinks-for-deploying-to-localhost)
+  * [Wireguard: Unable to find 'configs/...' in expected paths](#wireguard-unable-to-find-configs-in-expected-paths)
+  * [Ubuntu Error: "unable to write 'random state'" when generating CA password](#ubuntu-error-unable-to-write-random-state-when-generating-ca-password)
+  * [Timeout when waiting for search string OpenSSH in xxx.xxx.xxx.xxx:4160](#old-networking-firewall-in-place)
+  * [Linode Error: "Unable to query the Linode API. Saw: 400: The requested distribution is not supported by this stackscript.; "](#linode-error-uable-to-query-the-linode-api-saw-400-the-requested-distribution-is-not-supported-by-this-stackscript)
+* [Connection Problems](#connection-problems)
+  * [I'm blocked or get CAPTCHAs when I access certain websites](#im-blocked-or-get-captchas-when-i-access-certain-websites)
+  * [I want to change the list of trusted Wifi networks on my Apple device](#i-want-to-change-the-list-of-trusted-wifi-networks-on-my-apple-device)
+  * [Error: "The VPN Service payload could not be installed."](#error-the-vpn-service-payload-could-not-be-installed)
+  * [Little Snitch is broken when connected to the VPN](#little-snitch-is-broken-when-connected-to-the-vpn)
+  * [I can't get my router to connect to the Algo server](#i-cant-get-my-router-to-connect-to-the-algo-server)
+  * [I can't get Network Manager to connect to the Algo server](#i-cant-get-network-manager-to-connect-to-the-algo-server)
+  * [Various websites appear to be offline through the VPN](#various-websites-appear-to-be-offline-through-the-vpn)
+  * [Clients appear stuck in a reconnection loop](#clients-appear-stuck-in-a-reconnection-loop)
+  * [Wireguard: clients can connect on Wifi but not LTE](#wireguard-clients-can-connect-on-wifi-but-not-lte)
+  * [IPsec: Difficulty connecting through router](#ipsec-difficulty-connecting-through-router)
+* [I have a problem not covered here](#i-have-a-problem-not-covered-here)
 
 ## Installation Problems
 
@@ -43,7 +43,7 @@ Look here if you have a problem running the installer to set up a new Algo serve
 
 ### Python version is not supported
 
-The minimum Python version required to run Algo is 3.8. Most modern operation systems should have it by default, but if the OS you are using doesn't meet the requirements, you have to upgrade. See the official documentation for your OS, or manual download it from https://www.python.org/downloads/. Otherwise, you may [deploy from docker](deploy-from-docker.md)
+The minimum Python version required to run Algo is 3.8. Most modern operation systems should have it by default, but if the OS you are using doesn't meet the requirements, you have to upgrade. See the official documentation for your OS, or manual download it from <https://www.python.org/downloads/>. Otherwise, you may [deploy from docker](deploy-from-docker.md)
 
 ### Error: "You have not agreed to the Xcode license agreements"
 
@@ -125,6 +125,7 @@ You did not finish step 4 in the installation instructions, "[Install Algo's rem
 ### Fatal: "Failed to validate the SSL certificate"
 
 You received a message like this:
+
 ```
 fatal: [localhost]: FAILED! => {"changed": false, "msg": "Failed to validate the SSL certificate for api.digitalocean.com:443. Make sure your managed systems have a valid CA certificate installed. You can use validate_certs=False if you do not need to confirm the servers identity but this is unsafe and not recommended. Paths checked for this platform: /etc/ssl/certs, /etc/ansible, /usr/local/etc/openssl. The exception msg was: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1076).", "status": -1, "url": "https://api.digitalocean.com/v2/regions"}
 ```
@@ -195,7 +196,7 @@ fatal: [localhost]: FAILED! => {"changed": true, "events": ["StackEvent AWS::Clo
 
 Algo builds a [Cloudformation](https://aws.amazon.com/cloudformation/) template to deploy to AWS. You can find the entire contents of the Cloudformation template in `configs/algo.yml`. In order to troubleshoot this issue, login to the AWS console, go to the Cloudformation service, find the failed deployment, click the events tab, and find the corresponding "CREATE_FAILED" events. Note that all AWS resources created by Algo are tagged with `Environment => Algo` for easy identification.
 
-In many cases, failed deployments are the result of [service limits](http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html) being reached, such as "CREATE_FAILED	AWS::EC2::VPC	VPC	The maximum number of VPCs has been reached." In these cases, you must either [delete the VPCs from previous deployments](https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/working-with-vpcs.html#VPC_Deleting), or [contact AWS support](https://console.aws.amazon.com/support/home?region=us-east-1#/case/create?issueType=service-limit-increase&limitType=service-code-direct-connect) to increase the limits on your account.
+In many cases, failed deployments are the result of [service limits](http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html) being reached, such as "CREATE_FAILED AWS::EC2::VPC VPC The maximum number of VPCs has been reached." In these cases, you must either [delete the VPCs from previous deployments](https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/working-with-vpcs.html#VPC_Deleting), or [contact AWS support](https://console.aws.amazon.com/support/home?region=us-east-1#/case/create?issueType=service-limit-increase&limitType=service-code-direct-connect) to increase the limits on your account.
 
 ### AWS: not authorized to perform: cloudformation:UpdateStack
 
@@ -228,10 +229,10 @@ The error is caused because Digital Ocean changed its API to treat the tag argum
 6. Run algo as directed
 
 ### Azure: No such file or directory: '/home/username/.azure/azureProfile.json'
- 
+
  ```
  TASK [cloud-azure : Create AlgoVPN Server] *****************************************************************************************************************************************************************
-An exception occurred during task execution. To see the full traceback, use -vvv. 
+An exception occurred during task execution. To see the full traceback, use -vvv.
 The error was: FileNotFoundError: [Errno 2] No such file or directory: '/home/ubuntu/.azure/azureProfile.json'
 fatal: [localhost]: FAILED! => {"changed": false, "module_stderr": "Traceback (most recent call last):
 File \"/usr/local/lib/python3.6/dist-packages/azure/cli/core/_session.py\", line 39, in load
@@ -259,7 +260,6 @@ az role assignment create --assignee-object-id THE_OBJECT_ID --scope subscriptio
 ```
 
 After this is applied, the Service Principal has permissions to create the resources and you can re-run `ansible-playbook main.yml` to complete the deployment.
-
 
 ### Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid
 
@@ -314,7 +314,9 @@ ok: [localhost] => {
 
 TASK [Fail the installation] *****************************************************************************************
 ```
+
 This error is usually encountered when using the local install option and `localhost` is provided in answer to this question, which is expecting an IP address or domain name of your server:
+
 ```
 Enter the public IP address or domain name of your server: (IMPORTANT! This is used to verify the certificate)
 [localhost]
@@ -322,12 +324,13 @@ Enter the public IP address or domain name of your server: (IMPORTANT! This is u
 ```
 
 You should remove the files in /etc/wireguard/ and configs/ as follows:
+
 ```ssh
 sudo rm -rf /etc/wireguard/*
 rm -rf configs/*
-``` 
+```
 
-And then immediately re-run `./algo` and provide a domain name or IP address in response to the question referenced above. 
+And then immediately re-run `./algo` and provide a domain name or IP address in response to the question referenced above.
 
 ### Wireguard: Unable to find 'configs/...' in expected paths
 
@@ -339,12 +342,14 @@ TASK [wireguard : Generate public keys] ****************************************
 
 fatal: [localhost]: FAILED! => {"msg": "An unhandled exception occurred while running the lookup plugin 'file'. Error was a <class 'ansible.errors.AnsibleError'>, original message: could not locate file in lookup: configs/xxx.xxx.xxx.xxx/wireguard//private/dan"}
 ```
+
 This error is usually hit when using the local install option on a server that isn't Ubuntu 18.04 or later. You should upgrade your server to Ubuntu 18.04 or later. If this doesn't work, try removing files in /etc/wireguard/ and the configs directories as follows:
 
 ```ssh
 sudo rm -rf /etc/wireguard/*
 rm -rf configs/*
 ```
+
 Then immediately re-run `./algo`.
 
 ### Ubuntu Error: "unable to write 'random state'" when generating CA password
@@ -388,7 +393,6 @@ If you see this error then one possible explanation is that you have a previous 
 ### Linode Error: "Unable to query the Linode API. Saw: 400: The requested distribution is not supported by this stackscript.; "
 
 StackScript is a custom deployment script that defines a set of configurations for a Linode instance (e.g. which distribution, specs, etc.). if you used algo with default values in the past deployments, a stackscript that would've been created is 're-used' in the deployment process (in fact, go see 'create Linodes' and under 'StackScripts' tab). Thus, there's a little chance that your deployment process will generate this 'unsupported stackscript' error due to a pre-existing StackScript that doesn't support a particular configuration setting or value due to an 'old' stackscript. The quickest solution is just to change the name of your deployment from the default value of 'algo' (or any other name that you've used before, again see the dashboard) and re-run the deployment.
-
 
 ## Connection Problems
 
@@ -435,9 +439,11 @@ To determine the value for `reduce_mtu` you should examine the MTU on your Algo 
 #### Check the MTU on the Algo VPN server
 
 To check the MTU on your server, SSH in to it, run the command `ifconfig`, and look for the MTU of the main network interface. For example:
+
 ```
 ens4: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1460
 ```
+
 The MTU shown here is 1460 instead of 1500. Therefore set `reduce_mtu: 40` in `config.cfg`. Algo should do this automatically.
 
 #### Determine the MTU using `ping`
@@ -445,6 +451,7 @@ The MTU shown here is 1460 instead of 1500. Therefore set `reduce_mtu: 40` in `c
 When using `ping` you increase the payload size with the "Don't Fragment" option set until it fails. The largest payload size that works, plus the `ping` overhead of 28, is the MTU of the connection.
 
 ##### Example: Test on your Algo VPN server (Ubuntu)
+
 ```
 $ ping -4 -s 1432 -c 1 -M do github.com
 PING github.com (192.30.253.112) 1432(1460) bytes of data.
@@ -461,9 +468,11 @@ ping: local error: Message too long, mtu=1460
 --- github.com ping statistics ---
 1 packets transmitted, 0 received, +1 errors, 100% packet loss, time 0ms
 ```
+
 In this example the largest payload size that works is 1432. The `ping` overhead is 28 so the MTU is 1432 + 28 = 1460, which is 40 lower than the normal MTU of 1500. Therefore set `reduce_mtu: 40` in `config.cfg`.
 
 ##### Example: Test on a macOS client *not connected to your Algo VPN*
+
 ```
 $ ping -c 1 -D -s 1464 github.com
 PING github.com (192.30.253.113): 1464 data bytes
@@ -479,6 +488,7 @@ PING github.com (192.30.253.113): 1465 data bytes
 --- github.com ping statistics ---
 1 packets transmitted, 0 packets received, 100.0% packet loss
 ```
+
 In this example the largest payload size that works is 1464. The `ping` overhead is 28 so the MTU is 1464 + 28 = 1492, which is typical for a PPPoE Internet connection and does not require an MTU adjustment. Therefore use the default of `reduce_mtu: 0` in `config.cfg`.
 
 #### Change the client MTU without redeploying the Algo VPN
@@ -490,9 +500,11 @@ For WireGuard on Linux, or macOS (when installed with `brew`), you can specify t
 For WireGuard on iOS and Android you can change the MTU in the app.
 
 For IPsec on Linux you can change the MTU of your network interface to match the required MTU. For example:
+
 ```
 sudo ifconfig eth0 mtu 1440
 ```
+
 To make the change take affect after a reboot, on Ubuntu 18.04 and later edit the relevant file in the `/etc/netplan` directory (see `man netplan`).
 
 #### Note for WireGuard iOS users
@@ -506,6 +518,7 @@ If you're using 'Connect on Demand' on iOS and your client device appears stuck 
 The configuration value can be found in `/etc/strongswan.d/charon.conf`. After making the change you must reload or restart ipsec.
 
 Example command:
+
 ```
 sed -i -e 's/#*.dos_protection = yes/dos_protection = no/' /etc/strongswan.d/charon.conf && ipsec restart
 ```

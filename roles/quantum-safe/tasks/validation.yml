@@ -1,0 +1,78 @@
+---
+# Validation tasks for quantum-safe installation
+
+- name: Validate liboqs installation
+  stat:
+    path: "{{ liboqs_build_dir }}/lib/liboqs.{{ 'so' if liboqs_shared_libs else 'a' }}"
+  register: liboqs_lib_check
+
+- name: Ensure liboqs library exists
+  assert:
+    that: liboqs_lib_check.stat.exists
+    msg: "liboqs library not found at expected location"
+
+- name: Test liboqs shared library loading
+  command: ldd "{{ liboqs_build_dir }}/lib/liboqs.so"
+  register: liboqs_ldd_check
+  changed_when: false
+  when: liboqs_shared_libs
+
+- name: Validate quantum-safe environment variables
+  shell: source /etc/profile.d/quantum-safe.sh && echo $LIBOQS_BUILD_DIR
+  register: env_check
+  changed_when: false
+
+- name: Ensure environment variables are set
+  assert:
+    that: env_check.stdout == liboqs_build_dir
+    msg: "Quantum-safe environment variables not properly set"
+
+- name: Run basic algorithm availability test
+  command: "{{ liboqs_build_dir }}/tests/test_kem {{ default_security_level }}"
+  register: basic_test
+  changed_when: false
+
+- name: Ensure basic algorithm test passes
+  assert:
+    that: basic_test.rc == 0
+    msg: "Basic quantum-safe algorithm test failed"
+
+- name: Validate configuration files
+  stat:
+    path: /opt/quantum-safe/liboqs-config.yaml
+  register: config_file_check
+
+- name: Ensure configuration file exists
+  assert:
+    that: config_file_check.stat.exists
+    msg: "Quantum-safe configuration file not found"
+
+- name: Validate YAML configuration syntax
+  command: python3 -c "import yaml; yaml.safe_load(open('/opt/quantum-safe/liboqs-config.yaml'))"
+  changed_when: false
+
+- name: Check test infrastructure
+  stat:
+    path: "{{ item }}"
+  register: test_files
+  loop:
+    - /opt/quantum-safe/tests/test-liboqs-algorithms.sh
+    - /opt/quantum-safe/tests/run-all-tests.sh
+
+- name: Ensure test files are executable
+  assert:
+    that: item.stat.executable
+    msg: "Test file {{ item.item }} is not executable"
+  loop: "{{ test_files.results }}"
+
+- name: Display validation summary
+  debug:
+    msg: |
+      Quantum-safe installation validation completed successfully:
+      ✅ liboqs library installed and functional
+      ✅ Environment variables configured
+      ✅ Basic algorithm test passed
+      ✅ Configuration files valid
+      ✅ Test infrastructure ready
+
+      Ready for quantum-safe development!

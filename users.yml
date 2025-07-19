@@ -32,7 +32,7 @@
         - name: Server address prompt
           pause:
             prompt: |
-              Select the server to update user list below: 
+              Select the server to update user list below:
                 {% for r in server_list %}
                   {{ loop.index }}. {{ r.server }} ({{ r.IP_subject_alt_name }})
               {% endfor %}

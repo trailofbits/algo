@@ -37,5 +37,4 @@ gcloud services enable compute.googleapis.com
 
 **Attention:** take care of the `configs/gce.json` file, which contains the credentials to manage your Google Cloud account, including create and delete servers on this project.
 
-
 There are more advanced arguments available for deployment [using ansible](deploy-from-ansible.md).

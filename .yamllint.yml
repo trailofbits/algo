@@ -1,0 +1,48 @@
+---
+extends: default
+
+rules:
+  # Disable line length check as Ansible can have long lines
+  line-length:
+    max: 160
+    level: warning
+
+  # Allow truthy values in YAML (common in Ansible)
+  truthy:
+    allowed-values: ['true', 'false', 'yes', 'no', 'on', 'off']
+    check-keys: false
+
+  # Allow comments to be indented
+  comments:
+    min-spaces-from-content: 1
+
+  # Allow empty values (common in Ansible variables)
+  empty-values:
+    forbid-in-block-mappings: false
+    forbid-in-flow-mappings: false
+
+  # Relax indentation rules for Ansible compatibility
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+
+  # Allow key duplicates (sometimes needed in Ansible)
+  key-duplicates: disable
+
+  # Allow flexible braces spacing (common in Ansible)
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+  # Allow document start/end indicators
+  document-start: disable
+
+  document-end: disable
+
+# Ignore certain files that don't need strict YAML linting
+ignore: |
+  .github/workflows/
+  venvs/
+  configs/
+  roles/cloud-*/files/stack.yaml

@@ -8,11 +8,15 @@
 . /etc/rc.subr
 
 name="wg"
+# shellcheck disable=SC2034
 rcvar=wg_enable
 
 command="/usr/local/bin/wg-quick"
+# shellcheck disable=SC2034
 start_cmd=wg_up
+# shellcheck disable=SC2034
 stop_cmd=wg_down
+# shellcheck disable=SC2034
 status_cmd=wg_status
 pidfile="/var/run/$name.pid"
 load_rc_config "$name"

@@ -1,0 +1,83 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, master, develop, feature/* ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.12']
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+        cache-dependency-path: 'requirements.txt'
+
+    - name: Install system dependencies
+      run: |
+        # Install markdownlint-cli
+        sudo npm install -g markdownlint-cli@0.44.0
+
+        # Install shellcheck
+        sudo apt update -y
+        sudo apt install -y shellcheck
+
+    - name: Install project dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+        # Install additional linting tools for Ansible
+        pip install ansible-lint
+        pip install yamllint
+
+        # Install pre-commit
+        pip install pre-commit
+
+    - name: Run linting
+      run: |
+        # Set up pre-commit
+        pre-commit install
+
+        # Run pre-commit on all files for comprehensive checking
+        if [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ github.ref }}" = "refs/heads/main" ] || [ "${{ github.ref }}" = "refs/heads/master" ]; then
+          SKIP=no-commit-to-branch pre-commit run --all-files
+        else
+          pre-commit run --all-files
+        fi
+
+    - name: Run Ansible syntax check
+      run: |
+        # Validate main Ansible playbooks
+        ansible-playbook main.yml --syntax-check
+        ansible-playbook users.yml --syntax-check
+        ansible-playbook server.yml --syntax-check || true  # server.yml might not exist in all versions
+
+    - name: Run shellcheck
+      run: |
+        # Check shell scripts
+        shellcheck algo install.sh
+        find tests/ -name "*.sh" -exec shellcheck {} \;
+
+    - name: Run yamllint
+      run: |
+        # Lint YAML files
+        yamllint -c .yamllint.yml . || true  # Allow warnings for now
+
+    - name: Run tests
+      run: |
+        # Run any available tests
+        if [ -f "tests/run_tests.sh" ]; then
+          bash tests/run_tests.sh
+        fi

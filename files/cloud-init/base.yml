@@ -1,11 +1,11 @@
-#cloud-config
+# cloud-config
 output: {all: '| tee -a /var/log/cloud-init-output.log'}
 
 package_update: true
 package_upgrade: true
 
 packages:
- - sudo
+  - sudo
 
 users:
   - default

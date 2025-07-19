@@ -1,10 +1,10 @@
-Vagrant.configure("2") do |config| 
-  config.vm.box = "bento/ubuntu-20.04" 
-  
-  config.vm.provider "virtualbox" do |v| 
+Vagrant.configure("2") do |config|
+  config.vm.box = "bento/ubuntu-20.04"
+
+  config.vm.provider "virtualbox" do |v|
     v.name = "algo-20.04"
-    v.memory = "512" 
-    v.cpus = "1" 
+    v.memory = "512"
+    v.cpus = "1"
   end
 
   config.vm.synced_folder "./", "/opt/algo", create: true

@@ -1,0 +1,71 @@
+---
+# Install and configure liboqs library
+
+- name: Check if liboqs is already installed
+  stat:
+    path: "{{ liboqs_build_dir }}/lib/liboqs.so"
+  register: liboqs_installed
+
+- name: Clone liboqs repository
+  git:
+    repo: "{{ liboqs_repo_url }}"
+    dest: "{{ liboqs_install_dir }}"
+    version: "{{ liboqs_version }}"
+    depth: 1
+    force: yes
+  when: not liboqs_installed.stat.exists
+
+- name: Configure liboqs build
+  command: >
+    cmake -S {{ liboqs_install_dir }} -B {{ liboqs_build_dir }}
+    -DBUILD_SHARED_LIBS={{ 'ON' if liboqs_shared_libs else 'OFF' }}
+    -DCMAKE_BUILD_TYPE=Release
+    -DOQS_BUILD_ONLY_LIB=ON
+    -DOQS_DIST_BUILD=ON
+    {% if quantum_safe_optimization == 'avx2' %}
+    -DOQS_USE_AVX2_INSTRUCTIONS=ON
+    {% endif %}
+    {% if quantum_safe_optimization == 'aarch64' %}
+    -DOQS_USE_ARM_NEON_INSTRUCTIONS=ON
+    {% endif %}
+  args:
+    creates: "{{ liboqs_build_dir }}/CMakeCache.txt"
+
+- name: Build liboqs
+  command: >
+    cmake --build {{ liboqs_build_dir }} --parallel {{ liboqs_build_parallel_jobs }}
+  args:
+    creates: "{{ liboqs_build_dir }}/lib/liboqs.{{ 'so' if liboqs_shared_libs else 'a' }}"
+
+- name: Install liboqs system-wide
+  command: >
+    cmake --build {{ liboqs_build_dir }} --target install
+  args:
+    creates: /usr/local/lib/liboqs.{{ 'so' if liboqs_shared_libs else 'a' }}
+  notify: update library cache
+
+- name: Create liboqs symlinks
+  file:
+    src: "/usr/local/lib/liboqs.so"
+    dest: "/usr/lib/x86_64-linux-gnu/liboqs.so"
+    state: link
+  when:
+    - liboqs_shared_libs
+    - ansible_architecture == "x86_64"
+
+- name: Generate liboqs configuration file
+  template:
+    src: liboqs-config.yaml.j2
+    dest: /opt/quantum-safe/liboqs-config.yaml
+    mode: '0644'
+
+- name: Test liboqs installation
+  command: >
+    {{ liboqs_build_dir }}/tests/test_kem ML-KEM-768
+  register: liboqs_test
+  changed_when: false
+  failed_when: liboqs_test.rc != 0
+
+- name: Display liboqs test results
+  debug:
+    msg: "liboqs ML-KEM-768 test: {{ 'PASSED' if liboqs_test.rc == 0 else 'FAILED' }}"

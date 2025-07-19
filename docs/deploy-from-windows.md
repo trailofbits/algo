@@ -45,21 +45,23 @@ These steps should be only if you clone the Algo repository to the host machine 
 
 ### Allow git to change files metadata
 
-By default git cannot change files metadata (using chmod for example) for files stored at host machine disks (https://docs.microsoft.com/en-us/windows/wsl/wsl-config#set-wsl-launch-settings). Allow it:
+By default git cannot change files metadata (using chmod for example) for files stored at host machine disks (<https://docs.microsoft.com/en-us/windows/wsl/wsl-config#set-wsl-launch-settings>). Allow it:
 
 1. Start Ubuntu Terminal.
 2. Edit /etc/wsl.conf (create it if it doesn't exist). Add the following:
+
 ```
 [automount]
 options = "metadata"
 ```
+
 3. Close all Ubuntu Terminals.
 4. Run powershell.
 5. Run `wsl --shutdown` in powershell.
 
 ### Allow  run Ansible in a world writable directory
 
-Ansible threat host machine directories as world writable directory and do not load .cfg from it by default (https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-writable-dir). For fix run inside `algo` directory:
+Ansible threat host machine directories as world writable directory and do not load .cfg from it by default (<https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-writable-dir>). For fix run inside `algo` directory:
 
 ```shell
 chmod 744 .
@@ -68,7 +70,9 @@ chmod 744 .
 Now you can continue by following the [README](https://github.com/trailofbits/algo#deploy-the-algo-server) from the 4th step to deploy your Algo server!
 
 You'll be instructed to edit the file `config.cfg` in order to specify the Algo user accounts to be created. If you're new to Linux the simplest editor to use is `nano`. To edit the file while in the `algo` directory, run:
+
 ```shell
 nano config.cfg
 ```
+
 Once `./algo` has finished you can use the `cp` command to copy the configuration files from the `configs` directory into your Windows directory under `/mnt/c/Users` for easier access.

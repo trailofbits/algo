@@ -10,8 +10,8 @@ wireguard_dns_servers: >-
   {% if algo_dns_adblocking|default(false)|bool or dns_encryption|default(false)|bool %}
   {{ local_service_ip }}{{ ', ' + local_service_ipv6 if ipv6_support else '' }}
   {% else %}
-  {% for host in dns_servers.ipv4 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% if ipv6_support %},{% for host in dns_servers.ipv6 %}{{ host }}{% if
-  not loop.last %},{% endif %}{% endfor %}{% endif %}
+  {% for host in dns_servers.ipv4 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}
+  {%- if ipv6_support %},{% for host in dns_servers.ipv6 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}
   {% endif %}
 wireguard_client_ip: >-
   {{ wireguard_network_ipv4 | ipmath(index|int+2) }}

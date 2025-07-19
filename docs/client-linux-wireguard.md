@@ -51,10 +51,13 @@ If your Linux distribution does not use `systemd` you can bring up WireGuard wit
 ## Using a DNS Search Domain
 
 As of the `v1.0.20200510` release of `wireguard-tools` WireGuard supports setting a DNS search domain. In your `wg0.conf` file a non-numeric entry on the `DNS` line will be used as a search domain. For example this:
+
 ```
 DNS =  172.27.153.31, fd00::b:991f, mydomain.com
 ```
+
 will cause your `/etc/resolv.conf` to contain:
+
 ```
 search mydomain.com
 nameserver 172.27.153.31

@@ -1,0 +1,135 @@
+---
+repos:
+  # Dockerfile Linting
+  # Lints Dockerfiles to ensure they adhere to best practices.
+  - repo: https://github.com/petalmd/dockerfile-pre-commit
+    rev: v1.0
+    hooks:
+      - id: dockerlint
+
+  # Python Code Formatting
+  # Automatically formats Python code to conform to the PEP 8 style guide.
+  # Using this mirror lets us use mypyc-compiled black, which is about 2x faster
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 25.1.0
+    hooks:
+      - id: black
+        # It is recommended to specify the latest version of Python
+        # supported by your project here, or alternatively use
+        # pre-commit's default_language_version, see
+        # https://pre-commit.com/#top_level-default_language_version
+        language_version: python3.12
+        files: \.(py)$
+
+  # General Pre-commit Hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files              # prevents giant files from being committed.
+      - id: check-ast                            # simply checks whether the files parse as valid python.
+      - id: check-byte-order-marker              # forbids files which have a utf-8 byte-order marker.
+      - id: check-builtin-literals               # requires literal syntax when initializing empty or zero python builtin types.
+      - id: check-case-conflict                  # checks for files that would conflict in case-insensitive filesystems.
+      - id: check-docstring-first                # checks a common error of defining a docstring after code.
+      - id: check-executables-have-shebangs      # ensures that (non-binary) executables have a shebang.
+      - id: check-json                           # checks json files for parseable syntax.
+      - id: check-shebang-scripts-are-executable # ensures that (non-binary) files with a shebang are executable.
+      - id: pretty-format-json                   # sets a standard for formatting json files.
+        args: [--autofix]
+      - id: check-merge-conflict                 # checks for files that contain merge conflict strings.
+      - id: check-symlinks                       # checks for symlinks which do not point to anything.
+      - id: check-toml                           # checks toml files for parseable syntax.
+      - id: check-vcs-permalinks                 # ensures that links to vcs websites are permalinks.
+      - id: check-xml                            # checks xml files for parseable syntax.
+      - id: check-yaml                           # checks yaml files for parseable syntax.
+        exclude: roles/cloud-.*/files/stack\.yaml
+      - id: debug-statements                     # checks for debugger imports and py37+ `breakpoint()` calls in python source.
+      - id: destroyed-symlinks                   # detects symlinks which are changed to regular files
+      - id: detect-aws-credentials               # detects *your* aws credentials from the aws cli credentials file.
+        args: [--allow-missing-credentials]
+      - id: detect-private-key                   # detects the presence of private keys.
+      - id: end-of-file-fixer                    # ensures that a file is either empty, or ends with one newline.
+      - id: file-contents-sorter                 # sorts the lines in specified files (defaults to alphabetical).
+      - id: fix-byte-order-marker                # removes utf-8 byte order marker.
+      - id: forbid-new-submodules                # prevents addition of new git submodules.
+      - id: forbid-submodules                    # forbids any submodules in the repository
+      - id: mixed-line-ending                    # replaces or checks mixed line ending.
+      - id: name-tests-test                      # verifies that test files are named correctly.
+      - id: no-commit-to-branch                  # don't commit to main/master
+        args:
+          - --branch
+          - main
+          - --branch
+          - master
+      - id: requirements-txt-fixer               # sorts entries in requirements.txt.
+      - id: sort-simple-yaml                     # sorts simple yaml files which consist only of top-level keys
+      - id: trailing-whitespace                  # trims trailing whitespace.
+
+  # Python Security Linting
+  # Finds common security issues in Python code.
+  - repo: https://github.com/PyCQA/bandit.git
+    rev: 1.8.3
+    hooks:
+      - id: bandit
+        files: .py$
+        exclude: ^tests/
+
+  # Python Linting
+  # Checks Python code against some of the style conventions in PEP 8.
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.2.0
+    hooks:
+      - id: flake8
+        args: [--max-line-length=120]
+        files: \.(py)$
+
+  # Shell Script Linting
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        args: [--severity=warning]
+
+  # YAML Linting
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.37.0
+    hooks:
+      - id: yamllint
+        args: [-c=.yamllint.yml]
+
+  # Ansible Linting
+  # Checks Ansible playbooks for practices and behavior that could potentially be improved.
+  - repo: https://github.com/ansible-community/ansible-lint.git
+    rev: v25.5.0
+    hooks:
+      - id: ansible-lint
+        name: Ansible-lint
+        description: This hook runs ansible-lint.
+        entry: ansible-lint --force-color .
+        language: python
+        # do not pass files to ansible-lint, see:
+        # https://github.com/ansible-community/ansible-lint/issues/611
+        pass_filenames: false
+        always_run: true
+
+  # Check Markdown
+  - repo: https://github.com/igorshubovych/markdownlint-cli.git
+    rev: v0.45.0
+    hooks:
+      - id: markdownlint-fix
+        exclude: ^(docs/|\.github/|CHANGELOG\.md|CONTRIBUTING\.md|PULL_REQUEST_TEMPLATE\.md|README\.md)
+
+
+  # Check pre-commit was run
+  - repo: https://gitlab.com/adam-moss/pre-commit-trailer.git
+    rev: v1.1.0
+    hooks:
+      - id: add-pre-commit-config-trailer
+      - id: add-pre-commit-user-skipped-trailer
+
+  # Check Make
+  - repo: https://github.com/mrtazz/checkmake.git
+    rev: 0.2.2
+    hooks:
+      - id: checkmake
+        args: [--config=checkmake.ini]

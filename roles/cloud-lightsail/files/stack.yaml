@@ -19,14 +19,14 @@ Parameters:
 Resources:
   Instance:
     Type: AWS::Lightsail::Instance
-    Properties: 
+    Properties:
       BlueprintId:
         Ref: ImageIdParameter
-      BundleId: 
+      BundleId:
         Ref: InstanceTypeParameter
       InstanceName: !Ref AWS::StackName
-      Networking: 
-        Ports: 
+      Networking:
+        Ports:
           - AccessDirection: inbound
             Cidrs: ['0.0.0.0/0']
             Ipv6Cidrs: ['::/0']
@@ -54,7 +54,7 @@ Resources:
             CommonName: IPSec-500
             FromPort: 500
             ToPort: 500
-            Protocol: udp  
+            Protocol: udp
       Tags:
         - Key: Name
           Value: !Ref AWS::StackName
@@ -62,9 +62,9 @@ Resources:
 
   StaticIP:
     Type: AWS::Lightsail::StaticIp
-    Properties: 
+    Properties:
       AttachedTo: !Ref Instance
-      StaticIpName: !Join [ "-", [ !Ref AWS::StackName, "ip" ] ]
+      StaticIpName: !Join ["-", [!Ref "AWS::StackName", "ip"]]
     DependsOn:
       - Instance
 

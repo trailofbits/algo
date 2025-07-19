@@ -1,0 +1,25 @@
+# Development requirements for Algo Quantum VPN
+# Post-quantum cryptography development dependencies
+
+# Core Ansible requirements (from requirements.txt)
+ansible==9.1.0
+ansible-lint>=25.5.0
+bandit>=1.8.3
+black>=25.1.0
+cryptography>=42.0.0
+flake8>=7.2.0
+jinja2~=3.0.3
+
+# Documentation and reporting
+markdown>=3.5.0
+netaddr
+
+# Development and testing tools
+pre-commit>=3.6.0
+pytest>=8.0.0
+pytest-xdist>=3.5.0
+
+# Post-quantum cryptography research and testing
+pyyaml>=6.0
+requests>=2.31.0
+yamllint>=1.37.0

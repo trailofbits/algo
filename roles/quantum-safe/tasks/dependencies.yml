@@ -1,0 +1,91 @@
+---
+# Install system dependencies for quantum-safe cryptography
+
+- name: Install build dependencies (Debian/Ubuntu)
+  package:
+    name:
+      - build-essential
+      - cmake
+      - ninja-build
+      - git
+      - wget
+      - curl
+      - unzip
+      - libssl-dev
+      - python3-dev
+      - python3-pip
+      - python3-pytest
+      - python3-pytest-xdist
+      - python3-yaml
+      - doxygen
+      - graphviz
+      - astyle
+      - valgrind
+      - pkg-config
+      - autotools-dev
+      - debhelper
+      - dh-systemd
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Install build dependencies (RedHat/CentOS)
+  package:
+    name:
+      - gcc
+      - gcc-c++
+      - cmake
+      - ninja-build
+      - git
+      - wget
+      - curl
+      - unzip
+      - openssl-devel
+      - python3-devel
+      - python3-pip
+      - python3-pytest
+      - python3-PyYAML
+      - doxygen
+      - graphviz
+      - astyle
+      - valgrind
+      - pkgconfig
+      - autoconf
+      - automake
+      - libtool
+      - systemd-devel
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Install Python development dependencies
+  pip:
+    name:
+      - pytest
+      - pytest-xdist
+      - pyyaml
+      - cryptography
+      - requests
+    state: present
+    executable: pip3
+
+- name: Create quantum-safe directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  loop:
+    - "{{ liboqs_install_dir }}"
+    - "{{ strongswan_install_dir }}"
+    - "/opt/quantum-safe"
+    - "/opt/quantum-safe/logs"
+    - "/opt/quantum-safe/tests"
+    - "/opt/quantum-safe/benchmarks"
+
+- name: Set up quantum-safe environment variables
+  template:
+    src: quantum-safe-env.sh.j2
+    dest: /etc/profile.d/quantum-safe.sh
+    mode: '0644'
+  notify: reload environment

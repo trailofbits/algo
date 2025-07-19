@@ -10,6 +10,6 @@ ssh -o StrictHostKeyChecking=no -D 127.0.0.1:1080 -f -q -C -N desktop@10.0.8.100
 
 git config --global http.proxy 'socks5://127.0.0.1:1080'
 
-for i in {1..10}; do git clone -vv https://github.com/trailofbits/algo /tmp/ssh-tunnel-check && break || sleep 1; done
+for _ in {1..10}; do git clone -vv https://github.com/trailofbits/algo /tmp/ssh-tunnel-check && break || sleep 1; done
 
 echo "SSH tunneling tests passed"
