@@ -109,8 +109,23 @@ jobs:
       - name: Tests
         run: |
           set -x
-          sudo -E bash -x ./tests/wireguard-client.sh
-          sudo env "PATH=$PATH" ./tests/ipsec-client.sh
+          # Run tests in parallel
+          sudo -E bash -x ./tests/wireguard-client.sh &
+          WG_PID=$!
+          sudo env "PATH=$PATH" ./tests/ipsec-client.sh &
+          IPSEC_PID=$!
+          
+          # Wait for all tests to complete
+          wait $WG_PID
+          WG_EXIT=$?
+          wait $IPSEC_PID
+          IPSEC_EXIT=$?
+          
+          # Check if any test failed
+          if [ $WG_EXIT -ne 0 ] || [ $IPSEC_EXIT -ne 0 ]; then
+            echo "One or more tests failed"
+            exit 1
+          fi
 
   docker-deploy:
     runs-on: ubuntu-20.04
@@ -172,6 +187,24 @@ jobs:
       - name: Tests
         run: |
           set -x
-          sudo bash -x ./tests/wireguard-client.sh
-          sudo env "PATH=$PATH" bash -x ./tests/ipsec-client.sh
-          sudo bash -x ./tests/ssh-tunnel.sh
+          # Run tests in parallel
+          sudo bash -x ./tests/wireguard-client.sh &
+          WG_PID=$!
+          sudo env "PATH=$PATH" bash -x ./tests/ipsec-client.sh &
+          IPSEC_PID=$!
+          sudo bash -x ./tests/ssh-tunnel.sh &
+          SSH_PID=$!
+          
+          # Wait for all tests to complete
+          wait $WG_PID
+          WG_EXIT=$?
+          wait $IPSEC_PID
+          IPSEC_EXIT=$?
+          wait $SSH_PID
+          SSH_EXIT=$?
+          
+          # Check if any test failed
+          if [ $WG_EXIT -ne 0 ] || [ $IPSEC_EXIT -ne 0 ] || [ $SSH_EXIT -ne 0 ]; then
+            echo "One or more tests failed"
+            exit 1
+          fi
