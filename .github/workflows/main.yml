@@ -7,7 +7,7 @@ permissions:
 
 jobs:
   lint:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
     steps:
@@ -19,6 +19,13 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
+      - name: Cache shellcheck
+        id: cache-shellcheck
+        uses: actions/cache@v4
+        with:
+          path: /snap/bin/shellcheck
+          key: ${{ runner.os }}-shellcheck-v1
+
       - name: Install dependencies
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -26,7 +33,9 @@ jobs:
           sudo apt update -y
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          sudo snap install shellcheck
+          if [ "${{ steps.cache-shellcheck.outputs.cache-hit }}" != "true" ]; then
+            sudo snap install shellcheck
+          fi
           pip install ansible-lint
 
       - name: Checks and linters
@@ -36,7 +45,7 @@ jobs:
           ansible-lint -x experimental,package-latest,unnamed-task -v *.yml roles/{local,cloud-*}/*/*.yml || true
 
   scripted-deploy:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
     strategy:
@@ -104,7 +113,7 @@ jobs:
           sudo env "PATH=$PATH" ./tests/ipsec-client.sh
 
   docker-deploy:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
     strategy:
