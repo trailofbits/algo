@@ -25,18 +25,17 @@
           set_fact:
             server_list: >-
               [{% for i in _configs_list.files %}
-                {% set config  = lookup('file', i.path)|from_yaml %}
-                '{{ config.server }}'
-                {{ ',' if not loop.last else '' }}
+                {% set config = lookup('file', i.path) | from_yaml %}
+                {{ {'server': config.server, 'IP_subject_alt_name': config.IP_subject_alt_name} }}
               {% endfor %}]
 
         - name: Server address prompt
           pause:
             prompt: |
-              Select the server to update user list below:
+              Select the server to update user list below: 
                 {% for r in server_list %}
-                {{ loop.index }}. {{ r }}
-                {% endfor %}
+                  {{ loop.index }}. {{ r.server }} ({{ r.IP_subject_alt_name }})
+              {% endfor %}
           register: _server
       when: server is undefined
 
@@ -45,7 +44,7 @@
           set_fact:
             algo_server: >-
               {% if server is defined %}{{ server }}
-              {%- elif _server.user_input %}{{ server_list[_server.user_input | int -1 ] }}
+              {%- elif _server.user_input %}{{ server_list[_server.user_input | int -1 ].server }}
               {%- else %}omit{% endif %}
 
         - name: Import host specific variables
