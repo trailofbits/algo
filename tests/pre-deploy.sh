@@ -15,8 +15,6 @@ else
 fi
 
 lxc network set lxdbr0 ipv4.address 10.0.8.1/24
-lxc network set lxdbr0 ipv4.nat true
-lxc network set lxdbr0 ipv6.address none
 
 lxc profile set default raw.lxc 'lxc.apparmor.profile = unconfined'
 lxc profile set default security.privileged true
@@ -41,22 +39,5 @@ case ${UBUNTU_VERSION} in
     lxc exec algo -- apt install python3.8 -y
     ;;
 esac
-
-# Wait for the container to be fully ready
-echo "Waiting for container to be fully ready..."
-lxc exec algo -- systemctl is-system-running --wait || true
-
-# Check network connectivity
-echo "Checking network connectivity..."
-lxc exec algo -- bash -c 'until ping -c 1 8.8.8.8 &> /dev/null; do echo "Waiting for network..."; sleep 1; done'
-echo "Network is up"
-
-# Ensure DNS is working
-lxc exec algo -- bash -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf'
-lxc exec algo -- bash -c 'echo "nameserver 8.8.4.4" >> /etc/resolv.conf'
-
-# Ensure apt is in a good state
-echo "Running apt-get update..."
-lxc exec algo -- bash -c 'for i in {1..5}; do apt-get update && break || sleep 5; done'
 
 lxc list

@@ -45,7 +45,7 @@ jobs:
           ansible-lint -x experimental,package-latest,unnamed-task -v *.yml roles/{local,cloud-*}/*/*.yml || true
 
   scripted-deploy:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     permissions:
       contents: read
     strategy:
@@ -113,7 +113,7 @@ jobs:
           sudo env "PATH=$PATH" ./tests/ipsec-client.sh
 
   docker-deploy:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     permissions:
       contents: read
     strategy:
@@ -133,19 +133,7 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         run: |
           set -x
-          # Retry apt update with fallback to different mirrors
-          for i in {1..5}; do
-            if sudo apt update -y; then
-              break
-            else
-              echo "apt update failed, attempt $i/5"
-              if [ $i -eq 5 ]; then
-                echo "All attempts failed"
-                exit 1
-              fi
-              sleep 5
-            fi
-          done
+          sudo apt update -y
           sudo apt install -y \
             wireguard \
             libxml2-utils \
