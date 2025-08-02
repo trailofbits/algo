@@ -101,7 +101,7 @@ jobs:
             sleep 30;
           done
           sudo lxc exec algo -- cat /var/log/cloud-init-output.log
-          sudo lxc exec algo -- test -f /opt/algo/configs/localhost/.config.yml
+          sudo lxc exec algo -- test -f /opt/algo/configs/10.0.8.100/.config.yml
           sudo lxc exec algo -- tar zcf /root/algo-configs.tar -C /opt/algo/configs/ .
           sudo lxc file pull algo/root/algo-configs.tar ./
           sudo tar -C ./configs -zxf algo-configs.tar
