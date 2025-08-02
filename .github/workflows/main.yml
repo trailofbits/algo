@@ -7,25 +7,17 @@ permissions:
 
 jobs:
   lint:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
         with:
           persist-credentials: false
-          
       - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
         with:
           python-version: '3.11'
           cache: 'pip'
-
-      - name: Cache shellcheck
-        id: cache-shellcheck
-        uses: actions/cache@3624ceb22c1c5a301c8db4169662070a689d9ea8  # v4.1.1
-        with:
-          path: /snap/bin/shellcheck
-          key: ${{ runner.os }}-shellcheck
 
       - name: Install dependencies
         env:
@@ -34,9 +26,7 @@ jobs:
           sudo apt update -y
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          if [ ! -f /snap/bin/shellcheck ]; then
-            sudo snap install shellcheck
-          fi
+          sudo snap install shellcheck
           pip install ansible-lint
 
       - name: Checks and linters
@@ -46,8 +36,7 @@ jobs:
           ansible-lint -x experimental,package-latest,unnamed-task -v *.yml roles/{local,cloud-*}/*/*.yml || true
 
   scripted-deploy:
-    needs: lint
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     permissions:
       contents: read
     strategy:
@@ -57,17 +46,10 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
         with:
           persist-credentials: false
-          
       - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
         with:
           python-version: '3.11'
           cache: 'pip'
-
-      - name: Cache LXD images
-        uses: actions/cache@3624ceb22c1c5a301c8db4169662070a689d9ea8  # v4.1.1
-        with:
-          path: /var/snap/lxd/common/lxd/images
-          key: ${{ runner.os }}-lxd-${{ matrix.UBUNTU_VERSION }}
 
       - name: Install dependencies
         env:
@@ -122,8 +104,7 @@ jobs:
           sudo env "PATH=$PATH" ./tests/ipsec-client.sh
 
   docker-deploy:
-    needs: lint
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     permissions:
       contents: read
     strategy:
@@ -133,14 +114,10 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
         with:
           persist-credentials: false
-          
       - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
         with:
           python-version: '3.11'
           cache: 'pip'
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349  # v3.7.1
 
       - name: Install dependencies
         env:
@@ -174,20 +151,12 @@ jobs:
           sed -i "s/^reduce_mtu:\s0$/reduce_mtu: 80/" config.cfg
           sudo -E ./tests/pre-deploy.sh
 
-      - name: Build Docker image with cache
-        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75  # v6.9.0
-        with:
-          context: .
-          tags: local/algo
-          load: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
       - name: Deployment
         env:
           DEPLOY: docker
           UBUNTU_VERSION: ${{ matrix.UBUNTU_VERSION }}
         run: |
+          docker build -t local/algo .
           ./tests/local-deploy.sh
           ./tests/update-users.sh
 
