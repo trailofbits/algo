@@ -133,7 +133,19 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         run: |
           set -x
-          sudo apt update -y
+          # Retry apt update with fallback to different mirrors
+          for i in {1..5}; do
+            if sudo apt update -y; then
+              break
+            else
+              echo "apt update failed, attempt $i/5"
+              if [ $i -eq 5 ]; then
+                echo "All attempts failed"
+                exit 1
+              fi
+              sleep 5
+            fi
+          done
           sudo apt install -y \
             wireguard \
             libxml2-utils \
