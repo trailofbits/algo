@@ -40,4 +40,11 @@ case ${UBUNTU_VERSION} in
     ;;
 esac
 
+# Wait for the container to be fully ready
+echo "Waiting for container to be fully ready..."
+lxc exec algo -- systemctl is-system-running --wait || true
+
+# Ensure apt is in a good state
+lxc exec algo -- apt-get update || true
+
 lxc list
