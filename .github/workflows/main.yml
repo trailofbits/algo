@@ -2,15 +2,30 @@ name: Main
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   lint:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v2.3.2
+        with:
+          persist-credentials: false
+          
+      - uses: actions/setup-python@v5.1.0
         with:
           python-version: '3.11'
           cache: 'pip'
+
+      - name: Cache shellcheck
+        id: cache-shellcheck
+        uses: actions/cache@v4
+        with:
+          path: /snap/bin/shellcheck
+          key: ${{ runner.os }}-shellcheck
 
       - name: Install dependencies
         env:
@@ -19,7 +34,9 @@ jobs:
           sudo apt update -y
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          sudo snap install shellcheck
+          if [ ! -f /snap/bin/shellcheck ]; then
+            sudo snap install shellcheck
+          fi
           pip install ansible-lint
 
       - name: Checks and linters
@@ -29,16 +46,28 @@ jobs:
           ansible-lint -x experimental,package-latest,unnamed-task -v *.yml roles/{local,cloud-*}/*/*.yml || true
 
   scripted-deploy:
-    runs-on: ubuntu-20.04
+    needs: lint
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
     strategy:
       matrix:
         UBUNTU_VERSION: ["22.04"]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v2.3.2
+        with:
+          persist-credentials: false
+          
+      - uses: actions/setup-python@v5.1.0
         with:
           python-version: '3.11'
           cache: 'pip'
+
+      - name: Cache LXD images
+        uses: actions/cache@v4
+        with:
+          path: /var/snap/lxd/common/lxd/images
+          key: ${{ runner.os }}-lxd-${{ matrix.UBUNTU_VERSION }}
 
       - name: Install dependencies
         env:
@@ -93,16 +122,25 @@ jobs:
           sudo env "PATH=$PATH" ./tests/ipsec-client.sh
 
   docker-deploy:
-    runs-on: ubuntu-20.04
+    needs: lint
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
     strategy:
       matrix:
         UBUNTU_VERSION: ["22.04"]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v2.3.2
+        with:
+          persist-credentials: false
+          
+      - uses: actions/setup-python@v5.1.0
         with:
           python-version: '3.11'
           cache: 'pip'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Install dependencies
         env:
@@ -136,12 +174,20 @@ jobs:
           sed -i "s/^reduce_mtu:\s0$/reduce_mtu: 80/" config.cfg
           sudo -E ./tests/pre-deploy.sh
 
+      - name: Build Docker image with cache
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          tags: local/algo
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Deployment
         env:
           DEPLOY: docker
           UBUNTU_VERSION: ${{ matrix.UBUNTU_VERSION }}
         run: |
-          docker build -t local/algo .
           ./tests/local-deploy.sh
           ./tests/update-users.sh
 
