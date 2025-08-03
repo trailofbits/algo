@@ -1,0 +1,379 @@
+name: Integration Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'main.yml'
+      - 'roles/**'
+      - 'playbooks/**'
+      - 'library/**'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 1'  # Weekly on Monday at 2 AM
+
+permissions:
+  contents: read
+
+jobs:
+  localhost-deployment:
+    name: Localhost VPN Deployment Test
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        vpn_type: ['wireguard', 'ipsec', 'both']
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+        with:
+          persist-credentials: false
+          
+      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            wireguard \
+            wireguard-tools \
+            strongswan \
+            libstrongswan-standard-plugins \
+            dnsmasq \
+            qrencode \
+            openssl \
+            linux-headers-$(uname -r)
+            
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Create test configuration
+        run: |
+          cat > integration-test.cfg << EOF
+          users:
+            - alice
+            - bob
+          cloud_providers:
+            local:
+              server: localhost
+              endpoint: 127.0.0.1
+          wireguard_enabled: ${{ matrix.vpn_type == 'wireguard' || matrix.vpn_type == 'both' }}
+          ipsec_enabled: ${{ matrix.vpn_type == 'ipsec' || matrix.vpn_type == 'both' }}
+          dns_adblocking: true
+          ssh_tunneling: false
+          store_pki: true
+          algo_provider: local
+          algo_server_name: github-ci-test
+          server: localhost
+          algo_ssh_port: 22
+          CA_password: "test-ca-password-${{ github.run_id }}"
+          p12_export_password: "test-p12-password-${{ github.run_id }}"
+          tests: true
+          no_log: false
+          ansible_connection: local
+          ansible_python_interpreter: /usr/bin/python3
+          EOF
+          
+      - name: Run Algo deployment
+        run: |
+          sudo ansible-playbook main.yml \
+            -i "localhost," \
+            -c local \
+            -e @integration-test.cfg \
+            -e "provider=local" \
+            -vv
+            
+      - name: Verify services are running
+        run: |
+          # Check WireGuard
+          if [[ "${{ matrix.vpn_type }}" == "wireguard" || "${{ matrix.vpn_type }}" == "both" ]]; then
+            echo "Checking WireGuard..."
+            sudo wg show
+            if ! sudo systemctl is-active --quiet wg-quick@wg0; then
+              echo "✗ WireGuard service not running"
+              exit 1
+            fi
+            echo "✓ WireGuard is running"
+          fi
+          
+          # Check StrongSwan
+          if [[ "${{ matrix.vpn_type }}" == "ipsec" || "${{ matrix.vpn_type }}" == "both" ]]; then
+            echo "Checking StrongSwan..."
+            sudo ipsec statusall
+            if ! sudo systemctl is-active --quiet strongswan; then
+              echo "✗ StrongSwan service not running"
+              exit 1
+            fi
+            echo "✓ StrongSwan is running"
+          fi
+          
+          # Check dnsmasq
+          if ! sudo systemctl is-active --quiet dnsmasq; then
+            echo "⚠️  dnsmasq not running (may be expected)"
+          else
+            echo "✓ dnsmasq is running"
+          fi
+          
+      - name: Verify generated configs
+        run: |
+          echo "Checking generated configuration files..."
+          
+          # WireGuard configs
+          if [[ "${{ matrix.vpn_type }}" == "wireguard" || "${{ matrix.vpn_type }}" == "both" ]]; then
+            for user in alice bob; do
+              if [ ! -f "configs/localhost/wireguard/${user}.conf" ]; then
+                echo "✗ Missing WireGuard config for ${user}"
+                exit 1
+              fi
+              if [ ! -f "configs/localhost/wireguard/${user}.png" ]; then
+                echo "✗ Missing WireGuard QR code for ${user}"
+                exit 1
+              fi
+            done
+            echo "✓ All WireGuard configs generated"
+          fi
+          
+          # IPsec configs
+          if [[ "${{ matrix.vpn_type }}" == "ipsec" || "${{ matrix.vpn_type }}" == "both" ]]; then
+            for user in alice bob; do
+              if [ ! -f "configs/localhost/ipsec/${user}.p12" ]; then
+                echo "✗ Missing IPsec certificate for ${user}"
+                exit 1
+              fi
+              if [ ! -f "configs/localhost/ipsec/${user}.mobileconfig" ]; then
+                echo "✗ Missing IPsec mobile config for ${user}"
+                exit 1
+              fi
+            done
+            echo "✓ All IPsec configs generated"
+          fi
+          
+      - name: Test VPN connectivity
+        run: |
+          echo "Testing basic VPN connectivity..."
+          
+          # Test WireGuard
+          if [[ "${{ matrix.vpn_type }}" == "wireguard" || "${{ matrix.vpn_type }}" == "both" ]]; then
+            # Get server's WireGuard public key
+            SERVER_PUBKEY=$(sudo wg show wg0 public-key)
+            echo "Server public key: $SERVER_PUBKEY"
+            
+            # Check if interface has peers
+            PEER_COUNT=$(sudo wg show wg0 peers | wc -l)
+            echo "✓ WireGuard has $PEER_COUNT peer(s) configured"
+          fi
+          
+          # Test StrongSwan
+          if [[ "${{ matrix.vpn_type }}" == "ipsec" || "${{ matrix.vpn_type }}" == "both" ]]; then
+            # Check IPsec policies
+            sudo ipsec statusall | grep -E "INSTALLED|ESTABLISHED" || echo "No active IPsec connections (expected)"
+          fi
+          
+      - name: Upload configs as artifacts
+        if: always()
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32  # v3.1.3
+        with:
+          name: vpn-configs-${{ matrix.vpn_type }}-${{ github.run_id }}
+          path: configs/
+          retention-days: 7
+          
+      - name: Upload logs on failure
+        if: failure()
+        run: |
+          echo "=== Ansible Log ==="
+          sudo journalctl -u ansible --no-pager || true
+          echo "=== WireGuard Log ==="
+          sudo journalctl -u wg-quick@wg0 --no-pager || true
+          echo "=== StrongSwan Log ==="
+          sudo journalctl -u strongswan --no-pager || true
+          echo "=== System Log (last 100 lines) ==="
+          sudo journalctl -n 100 --no-pager || true
+
+  docker-deployment:
+    name: Docker Container Deployment Test
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+        with:
+          persist-credentials: false
+          
+      - name: Build Algo Docker image
+        run: |
+          docker build -t algo:ci-test .
+          
+      - name: Run Algo in Docker
+        run: |
+          # Create config
+          cat > docker-test.cfg << 'EOF'
+          users:
+            - docker-alice
+            - docker-bob
+          cloud_providers:
+            local:
+              server: localhost
+              endpoint: 172.17.0.1
+          wireguard_enabled: true
+          ipsec_enabled: false
+          dns_adblocking: false
+          ssh_tunneling: false
+          store_pki: true
+          algo_provider: local
+          algo_server_name: docker-test
+          server: localhost
+          CA_password: "docker-test-ca"
+          p12_export_password: "docker-test-p12"
+          EOF
+          
+          # Run deployment
+          docker run --rm \
+            --cap-add=NET_ADMIN \
+            --device=/dev/net/tun \
+            --sysctl net.ipv4.ip_forward=1 \
+            --sysctl net.ipv6.conf.all.disable_ipv6=0 \
+            -v $(pwd)/docker-test.cfg:/algo/config.cfg \
+            -v $(pwd)/configs:/algo/configs \
+            algo:ci-test \
+            ./algo -c /algo/config.cfg
+            
+      - name: Verify Docker deployment
+        run: |
+          # Check generated configs
+          if [ ! -d "configs/localhost/wireguard" ]; then
+            echo "✗ WireGuard configs not generated"
+            exit 1
+          fi
+          
+          for user in docker-alice docker-bob; do
+            if [ ! -f "configs/localhost/wireguard/${user}.conf" ]; then
+              echo "✗ Missing config for ${user}"
+              exit 1
+            fi
+          done
+          
+          echo "✓ Docker deployment generated configs successfully"
+          
+      - name: Test config validity
+        run: |
+          # Validate WireGuard configs
+          for conf in configs/localhost/wireguard/*.conf; do
+            if [ -f "$conf" ]; then
+              echo "Checking $conf..."
+              # Basic validation
+              grep -q "\[Interface\]" "$conf" || (echo "✗ Invalid WireGuard config: $conf" && exit 1)
+              grep -q "\[Peer\]" "$conf" || (echo "✗ Invalid WireGuard config: $conf" && exit 1)
+              grep -q "PrivateKey" "$conf" || (echo "✗ Missing PrivateKey in: $conf" && exit 1)
+              echo "✓ $conf is valid"
+            fi
+          done
+
+  upgrade-test:
+    name: Upgrade Scenario Test
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+        with:
+          persist-credentials: false
+          fetch-depth: 0  # Need full history for switching branches
+          
+      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible wireguard
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Deploy from master branch
+        run: |
+          # Checkout master
+          git checkout master
+          
+          # Create initial deployment
+          cat > upgrade-test.cfg << EOF
+          users:
+            - original-user
+          cloud_providers:
+            local:
+              server: localhost
+          wireguard_enabled: true
+          ipsec_enabled: false
+          dns_adblocking: false
+          ssh_tunneling: false
+          algo_provider: local
+          algo_server_name: upgrade-test
+          server: localhost
+          CA_password: "upgrade-test-ca"
+          EOF
+          
+          sudo ansible-playbook main.yml \
+            -i "localhost," \
+            -c local \
+            -e @upgrade-test.cfg \
+            -e "provider=local"
+            
+          # Save original configs
+          cp -r configs configs-original
+          
+      - name: Upgrade to current branch
+        run: |
+          # Switch back to current branch
+          git checkout -
+          
+          # Update config with new user
+          cat > upgrade-test.cfg << EOF
+          users:
+            - original-user
+            - new-user
+          cloud_providers:
+            local:
+              server: localhost
+          wireguard_enabled: true
+          ipsec_enabled: false
+          dns_adblocking: false
+          ssh_tunneling: false
+          algo_provider: local
+          algo_server_name: upgrade-test
+          server: localhost
+          CA_password: "upgrade-test-ca"
+          existing_users:
+            - original-user
+          EOF
+          
+          # Run upgrade
+          sudo ansible-playbook main.yml \
+            -i "localhost," \
+            -c local \
+            -e @upgrade-test.cfg \
+            -e "provider=local"
+            
+      - name: Verify upgrade preserved existing users
+        run: |
+          # Check original user still exists
+          if [ ! -f "configs/localhost/wireguard/original-user.conf" ]; then
+            echo "✗ Original user config lost during upgrade"
+            exit 1
+          fi
+          
+          # Check new user was added
+          if [ ! -f "configs/localhost/wireguard/new-user.conf" ]; then
+            echo "✗ New user not added during upgrade"
+            exit 1
+          fi
+          
+          # Compare original user config (should be unchanged)
+          if ! diff -q configs-original/localhost/wireguard/original-user.conf \
+                      configs/localhost/wireguard/original-user.conf; then
+            echo "⚠️  Original user config was modified (may be expected)"
+          fi
+          
+          echo "✓ Upgrade preserved existing users and added new ones"

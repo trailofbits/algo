@@ -11,6 +11,10 @@ from pathlib import Path
 import yaml
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, UndefinedError, TemplateSyntaxError
 
+# Add parent directory to path for fixtures
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from fixtures import load_test_variables
+
 
 # Mock Ansible filters that don't exist in plain Jinja2
 def mock_to_uuid(value):
@@ -38,101 +42,8 @@ def mock_lookup(type, path):
 
 def get_test_variables():
     """Get a comprehensive set of test variables for template rendering"""
-    return {
-        # Server/Network basics
-        'server_name': 'test-algo-vpn',
-        'IP_subject_alt_name': '10.0.0.1',
-        'ipv4_network_prefix': '10.19.49',
-        'ipv4_network': '10.19.49.0',
-        'ipv4_range': '10.19.49.2/24',
-        'ipv6_network': 'fd9d:bc11:4020::/48',
-        'ipv6_range': 'fd9d:bc11:4020::/64',
-        'wireguard_enabled': True,
-        'wireguard_port': 51820,
-        'wireguard_PersistentKeepalive': 0,
-        'wireguard_network': '10.19.49.0/24',
-        'wireguard_network_ipv6': 'fd9d:bc11:4020::/48',
-        
-        # IPsec variables
-        'ipsec_enabled': True,
-        'strongswan_enabled': True,
-        'strongswan_af': 'ipv4',
-        'algo_ondemand_cellular': 'false',
-        'algo_ondemand_wifi': 'false',
-        'algo_ondemand_wifi_exclude': 'X251bGw=',
-        'algo_ssh_tunneling': False,
-        'algo_store_pki': True,
-        
-        # DNS
-        'dns_adblocking': True,
-        'algo_dns_adblocking': True,
-        'adblock_lists': ['https://someblacklist.com'],
-        'dns_encryption': True,
-        'dns_servers': ['1.1.1.1', '1.0.0.1'],
-        'local_dns': True,
-        'alternative_ingress_ip': False,
-        
-        # Security/Firewall
-        'snat_aipv4': False,
-        'snat_aipv6': False,
-        'block_smb': True,
-        'block_netbios': True,
-        
-        # Users and auth
-        'users': ['alice', 'bob', 'charlie'],
-        'existing_users': ['alice'],
-        'easyrsa_CA_password': 'test-ca-pass',
-        'p12_export_password': 'test-export-pass',
-        'CA_password': 'test-ca-pass',
-        
-        # System
-        'ansible_ssh_port': 4160,
-        'ansible_python_interpreter': '/usr/bin/python3',
-        'BetweenClients_DROP': 'Y',
-        'ssh_tunnels_config_path': '/etc/ssh/ssh_tunnels',
-        'config_prefix': '/etc/algo',
-        'server_user': 'algo',
-        'IP': '10.0.0.1',
-        
-        # Missing variables found during testing
-        'wireguard_pki_path': '/etc/wireguard/pki',
-        'strongswan_log_level': '2',
-        'wireguard_port_avoid': 53,
-        'wireguard_port_actual': 51820,
-        'reduce_mtu': 0,
-        'ciphers': {
-            'defaults': {
-                'ike': 'aes128gcm16-prfsha512-ecp256,aes128-sha2_256-modp2048',
-                'esp': 'aes128gcm16-ecp256,aes128-sha2_256-modp2048',
-            },
-            'ike': 'aes128gcm16-prfsha512-ecp256,aes128-sha2_256-modp2048',
-            'esp': 'aes128gcm16-ecp256,aes128-sha2_256-modp2048',
-        },
-        
-        # StrongSwan specific
-        'strongswan_network': '10.19.48.0/24',
-        'strongswan_network_ipv6': 'fd9d:bc11:4021::/64',
-        'local_service_ip': '10.19.49.1',
-        'local_service_ipv6': 'fd9d:bc11:4020::1',
-        'ipv6_support': True,
-        
-        # WireGuard specific
-        'wireguard_network_ipv4': '10.19.49.0/24',
-        'wireguard_client_ip': '10.19.49.2/32,fd9d:bc11:4020::2/128',
-        'wireguard_dns_servers': '1.1.1.1,1.0.0.1',
-        
-        # Cloud provider specific
-        'algo_provider': 'local',
-        'cloud_providers': ['ec2', 'gce', 'azure', 'do', 'lightsail', 'scaleway', 'openstack', 'cloudstack', 'hetzner', 'linode', 'vultr'],
-        'provider_dns_servers': ['1.1.1.1', '1.0.0.1'],
-        'ansible_ssh_private_key_file': '~/.ssh/id_rsa',
-        
-        # Defaults
-        'inventory_hostname': 'localhost',
-        'hostvars': {'localhost': {}},
-        'groups': {'vpn-host': ['localhost']},
-        'omit': 'OMIT_PLACEHOLDER',
-    }
+    # Load from fixtures for consistency
+    return load_test_variables()
 
 
 def find_templates():

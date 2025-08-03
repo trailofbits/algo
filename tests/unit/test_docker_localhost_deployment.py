@@ -118,37 +118,6 @@ def test_docker_algo_image():
     return True
 
 
-def test_service_config_locations():
-    """Test expected config file locations (without Docker)"""
-    # These are the expected locations after deployment
-    expected_locations = [
-        {
-            'path': '/etc/wireguard/',
-            'type': 'directory',
-            'description': 'WireGuard configuration directory'
-        },
-        {
-            'path': '/etc/ipsec.d/',
-            'type': 'directory',
-            'description': 'StrongSwan configuration directory'
-        },
-        {
-            'path': '/etc/dnsmasq.d/',
-            'type': 'directory',
-            'description': 'dnsmasq configuration directory'
-        },
-        {
-            'path': '/var/log/algo/',
-            'type': 'directory',
-            'description': 'Algo log directory'
-        }
-    ]
-    
-    print("✓ Service config locations documented:")
-    for location in expected_locations:
-        print(f"  - {location['path']} ({location['description']})")
-    
-    return True
 
 
 def test_localhost_deployment_requirements():
@@ -172,81 +141,8 @@ def test_localhost_deployment_requirements():
     return all_met
 
 
-def test_docker_deployment_script():
-    """Test that Docker deployment would work"""
-    # Create a test script that simulates Docker deployment
-    test_script = """#!/bin/bash
-# Test Docker deployment simulation
-
-echo "Testing Docker deployment prerequisites..."
-
-# Check if we can run Docker commands
-if ! docker --version >/dev/null 2>&1; then
-    echo "✗ Docker not available"
-    exit 1
-fi
-
-# Check if we can build images
-if ! docker images >/dev/null 2>&1; then
-    echo "✗ Cannot access Docker daemon"
-    exit 1
-fi
-
-echo "✓ Docker deployment prerequisites met"
-
-# Simulate what a deployment would create
-echo "Expected deployment results:"
-echo "  - Container running Algo services"
-echo "  - WireGuard interface configured"
-echo "  - VPN configs generated in configs/"
-echo "  - Services accessible on configured ports"
-
-exit 0
-"""
-    
-    # Write and run test script
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False) as f:
-        f.write(test_script)
-        script_path = f.name
-    
-    try:
-        os.chmod(script_path, 0o755)
-        result = subprocess.run([script_path], capture_output=True, text=True)
-        
-        if result.returncode == 0:
-            print(result.stdout.strip())
-            return True
-        else:
-            print(f"✗ Docker deployment test failed: {result.stderr}")
-            return False
-    finally:
-        os.unlink(script_path)
 
 
-def test_generated_config_structure():
-    """Test the structure of generated configs (simulated)"""
-    # Simulate the config structure that would be generated
-    expected_structure = {
-        'configs/': {
-            'localhost/': {
-                'wireguard/': ['alice.conf', 'alice.png', 'bob.conf', 'bob.png'],
-                '.config.yml': 'Deployment configuration',
-                'ipsec/': ['alice.p12', 'bob.p12'] if False else [],  # Only if IPsec enabled
-            }
-        }
-    }
-    
-    print("✓ Expected generated config structure:")
-    print("  configs/")
-    print("  └── localhost/")
-    print("      ├── wireguard/")
-    print("      │   ├── alice.conf")
-    print("      │   ├── alice.png")
-    print("      │   ├── bob.conf")
-    print("      │   └── bob.png")
-    print("      └── .config.yml")
-    
-    return True
 
 
 if __name__ == "__main__":
@@ -262,14 +158,8 @@ if __name__ == "__main__":
         test_wireguard_config_validation,
         test_strongswan_config_validation,
         test_docker_algo_image,
-        test_service_config_locations,
         test_localhost_deployment_requirements,
-        test_generated_config_structure,
     ]
-    
-    # Only run Docker-specific tests if Docker is available
-    if docker_available:
-        tests.append(test_docker_deployment_script)
     
     failed = 0
     for test in tests:

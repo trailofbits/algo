@@ -1,6 +1,11 @@
 name: Main
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
 
 permissions:
   contents: read
