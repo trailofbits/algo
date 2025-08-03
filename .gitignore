@@ -9,3 +9,5 @@ venvs/*
 !venvs/.gitinit
 .vagrant
 .ansible/
+__pycache__/
+*.pyc
