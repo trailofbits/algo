@@ -16,6 +16,12 @@ Install to existing Ubuntu latest LTS server (for more advanced users)
 
 Make sure your target server is running an unmodified copy of the operating system version specified. The target can be the same system where you've installed the Algo scripts, or a remote system that you are able to access as root via SSH without needing to enter the SSH key passphrase (such as when using `ssh-agent`).
 
+**Note:** If you're installing locally (when the target is the same system where you've installed the Algo scripts), you'll need to run the deployment command with sudo:
+```
+sudo ./algo
+```
+This is required because the installation process needs administrative privileges to configure system services and network settings.
+
 ## Inbound VPN Server (also called "Road Warrior" setup)
 
 Some may find it useful to set up an Algo server on an Ubuntu box on your home LAN, with the intention of being able to securely access your LAN and any resources on it when you're traveling elsewhere (the ["road warrior" setup](https://en.wikipedia.org/wiki/Road_warrior_(computing))). A few tips if you're doing so:
