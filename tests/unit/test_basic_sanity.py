@@ -73,6 +73,25 @@ def test_dockerfile_exists():
     print("✓ Dockerfile exists and looks valid")
 
 
+def test_cloud_init_header_format():
+    """Check that cloud-init header is exactly '#cloud-config' without space"""
+    cloud_init_file = "files/cloud-init/base.yml"
+    assert os.path.exists(cloud_init_file), f"{cloud_init_file} not found"
+    
+    with open(cloud_init_file) as f:
+        first_line = f.readline().rstrip('\n\r')
+        
+    # The first line MUST be exactly "#cloud-config" (no space after #)
+    # This regression was introduced in PR #14775 and broke DigitalOcean deployments
+    # See: https://github.com/trailofbits/algo/issues/14800
+    assert first_line == "#cloud-config", (
+        f"cloud-init header must be exactly '#cloud-config' (no space), "
+        f"got '{first_line}'. This breaks cloud-init YAML parsing and causes SSH timeouts."
+    )
+    
+    print("✓ cloud-init header format is correct")
+
+
 if __name__ == "__main__":
     # Change to repo root
     os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -84,6 +103,7 @@ if __name__ == "__main__":
         test_ansible_syntax,
         test_shellcheck,
         test_dockerfile_exists,
+        test_cloud_init_header_format,
     ]
 
     failed = 0
