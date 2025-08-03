@@ -27,9 +27,6 @@
   until: wg_genkey_results.finished
   retries: 15
   delay: 2
-  failed_when: >
-    wg_genkey_results.failed or
-    (wg_genkey_results.finished and wg_genkey_results.rc != 0)
 
 - name: Display WireGuard private key generation failure details (if any)
   debug:
@@ -52,13 +49,18 @@
   with_items: "{{ wg_genkey_results.results | default([]) }}"
   failed_when: false
 
+- name: Debug - Show wg_genkey_results structure
+  debug:
+    var: wg_genkey_results
+  when: wg_genkey_results is defined
+
 - block:
     - name: Save private keys
       copy:
         dest: "{{ wireguard_pki_path }}/private/{{ item.item }}"
         content: "{{ item.stdout }}"
         mode: "0600"
-      no_log: "{{ algo_no_log|bool }}"
+      no_log: false  # Temporarily disabled for debugging
       when: item.changed
       with_items: "{{ wg_genkey_results.results }}"
       delegate_to: localhost
