@@ -67,7 +67,7 @@
             passphrase: "{{ p12_export_password }}"
             cipher: auto
             force: false
-          no_log: "{{ no_log|bool }}"
+          no_log: "{{ algo_no_log|bool }}"
           when: not item.stat.exists
           with_items: "{{ privatekey.results }}"
           register: openssl_privatekey
@@ -79,7 +79,7 @@
             privatekey_passphrase: "{{ p12_export_password }}"
             format: OpenSSH
             force: true
-          no_log: "{{ no_log|bool }}"
+          no_log: "{{ algo_no_log|bool }}"
           when: item.changed
           with_items: "{{ openssl_privatekey.results }}"
 
