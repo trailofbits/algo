@@ -52,7 +52,7 @@ jobs:
             Be constructive and helpful in your feedback.
 
           # Optional: Use sticky comments to make Claude reuse the same comment on subsequent pushes to the same PR
-          # use_sticky_comment: true
+          use_sticky_comment: true
           
           # Optional: Customize review based on file types
           # direct_prompt: |
@@ -69,7 +69,7 @@ jobs:
           #   'Please provide a thorough code review focusing on our coding standards and best practices.' }}
           
           # Optional: Add specific tools for running tests or linting
-          # allowed_tools: "Bash(npm run test),Bash(npm run lint),Bash(npm run typecheck)"
+          allowed_tools: "Bash(ansible-playbook * --syntax-check),Bash(ansible-lint *),Bash(ruff check *),Bash(yamllint *),Bash(shellcheck *),Bash(python -m pytest *)"
           
           # Optional: Skip review for certain conditions
           # if: |
