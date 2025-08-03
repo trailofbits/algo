@@ -76,7 +76,8 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install -r requirements.txt
 
-          sudo snap refresh lxd
+          # Install LXD on Ubuntu 24.04 (not pre-installed)
+          sudo snap install lxd
           sudo lxd init --auto
 
       - name: Provision
@@ -159,7 +160,8 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install -r requirements.txt
 
-          sudo snap refresh lxd
+          # Install LXD on Ubuntu 24.04 (not pre-installed)
+          sudo snap install lxd
           sudo lxd init --auto
 
       - name: Provision
