@@ -1,6 +1,6 @@
 name: Claude Code Review
 
-on:
+'on':
   pull_request:
     types: [opened, synchronize]
     # Optional: Only run on specific file changes
@@ -69,7 +69,9 @@ jobs:
           #   'Please provide a thorough code review focusing on our coding standards and best practices.' }}
 
           # Optional: Add specific tools for running tests or linting
-          allowed_tools: "Bash(ansible-playbook * --syntax-check),Bash(ansible-lint *),Bash(ruff check *),Bash(yamllint *),Bash(shellcheck *),Bash(python -m pytest *)"
+          allowed_tools: >-
+            Bash(ansible-playbook * --syntax-check),Bash(ansible-lint *),Bash(ruff check *),
+            Bash(yamllint *),Bash(shellcheck *),Bash(python -m pytest *)
 
           # Optional: Skip review for certain conditions
           # if: |
