@@ -5,17 +5,22 @@
   hosts: localhost
   gather_facts: no
   vars:
-    # Simulate the structure that async_status returns
+    # Simulate the actual structure that async_status with with_items returns
+    # This is the key insight: async_status results contain the original item info
     mock_wg_genkey_results:
       results:
-        - item: "user1"
-          stdout: "mock_private_key_1"
+        - item: "user1"        # This comes from the original wg_genkey.results item
+          stdout: "mock_private_key_1"  # This is the command output
           changed: true
           rc: 0
-        - item: "10.10.10.1"
-          stdout: "mock_private_key_2"
+          failed: false
+          finished: true
+        - item: "10.10.10.1"   # This comes from the original wg_genkey.results item  
+          stdout: "mock_private_key_2"  # This is the command output
           changed: true
           rc: 0
+          failed: false
+          finished: true
     wireguard_pki_path: "/tmp/test-wireguard-pki"
 
   tasks:
@@ -28,15 +33,13 @@
         - "{{ wireguard_pki_path }}/private"
         - "{{ wireguard_pki_path }}/preshared"
 
-    - name: Test private key saving (simulating our fix)
+    - name: Test private key saving (using with_items like the actual code)
       copy:
-        dest: "{{ wireguard_pki_path }}/private/{{ async_result_item.item }}"
-        content: "{{ async_result_item.stdout }}"
+        dest: "{{ wireguard_pki_path }}/private/{{ item.item }}"
+        content: "{{ item.stdout }}"
         mode: "0600"
-      when: async_result_item.changed
-      loop: "{{ mock_wg_genkey_results.results }}"
-      loop_control:
-        loop_var: async_result_item
+      when: item.changed
+      with_items: "{{ mock_wg_genkey_results.results }}"
 
     - name: Verify files were created correctly
       stat:
