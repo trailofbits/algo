@@ -4,6 +4,7 @@ exclude_paths:
   - .github/
   - tests/legacy-lxd/
   - tests/
+  - files/cloud-init/  # Cloud-init files have special format requirements
 
 skip_list:
   - 'package-latest'  # Package installs should not use latest - needed for updates

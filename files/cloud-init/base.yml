@@ -1,4 +1,8 @@
 #cloud-config
+# CRITICAL: The above line MUST be exactly "#cloud-config" (no space after #)
+# This is required by cloud-init's YAML parser. Adding a space breaks parsing
+# and causes all cloud-init directives to be skipped, resulting in SSH timeouts.
+# See: https://github.com/trailofbits/algo/issues/14800
 output: {all: '| tee -a /var/log/cloud-init-output.log'}
 
 package_update: true
