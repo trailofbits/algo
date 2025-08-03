@@ -68,6 +68,15 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
         with:
           persist-credentials: false
+      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Build Docker image
         run: docker build -t local/algo:test .
@@ -76,6 +85,9 @@ jobs:
         run: |
           # Just verify the image can start and show help
           docker run --rm local/algo:test /algo/algo --help
+
+      - name: Run Docker deployment tests
+        run: python tests/unit/test_docker_localhost_deployment.py
 
   config-generation:
     name: Configuration generation test
