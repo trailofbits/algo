@@ -26,6 +26,7 @@ warn_list:
   - no-changed-when
   - yaml[line-length]
   - risky-file-permissions
+  - command-instead-of-shell  # Prefer command over shell when possible
 
 # Enable additional rules
 enable_list:
@@ -34,6 +35,7 @@ enable_list:
   - partial-become
   - name[play]  # All plays should be named
   - yaml[new-line-at-end-of-file]  # Files should end with newline
+  - yaml[empty-lines]  # Consistent empty line usage
 
 # Rules we're actively working on fixing
 # Move these from skip_list to enable_list as we fix them
