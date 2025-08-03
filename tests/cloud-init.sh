@@ -1,5 +1,9 @@
 #!/bin/bash
-cat << 'EOF'
+# Use environment variables or defaults
+REPO=${REPOSITORY:-trailofbits/algo}
+BRANCH_NAME=${BRANCH:-master}
+
+cat << EOF
 #cloud-config
 package_update: true
 package_upgrade: true
@@ -18,8 +22,8 @@ runcmd:
     export USERS=desktop,user1,user2
     export EXTRA_VARS='install_headers=false tests=true local_service_ip=172.16.0.1'
     export ANSIBLE_EXTRA_ARGS=''
-    export REPO_SLUG=${REPOSITORY:-trailofbits/algo}
-    export REPO_BRANCH=${BRANCH:-master}
+    export REPO_SLUG=${REPO}
+    export REPO_BRANCH=${BRANCH_NAME}
     
-    curl -s https://raw.githubusercontent.com/${REPOSITORY:-trailofbits/algo}/${BRANCH:-master}/install.sh | sudo -E bash -x
+    curl -s https://raw.githubusercontent.com/${REPO}/${BRANCH_NAME}/install.sh | sudo -E bash -x
 EOF
