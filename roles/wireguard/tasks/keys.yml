@@ -8,7 +8,7 @@
     - "{{ users }}"
     - "{{ IP_subject_alt_name }}"
 
-- name: Generate private keys
+- name: Generate private keys (parallel)
   command: wg genkey
   register: wg_genkey
   args:
@@ -16,6 +16,17 @@
   with_items:
     - "{{ users }}"
     - "{{ IP_subject_alt_name }}"
+  async: 30
+  poll: 0
+
+- name: Wait for private key generation to complete
+  async_status:
+    jid: "{{ item.ansible_job_id }}"
+  with_items: "{{ wg_genkey.results }}"
+  register: wg_genkey_results
+  until: wg_genkey_results.finished
+  retries: 15
+  delay: 2
 
 - block:
     - name: Save private keys
@@ -25,7 +36,7 @@
         mode: "0600"
       no_log: "{{ algo_no_log|bool }}"
       when: item.changed
-      with_items: "{{ wg_genkey['results'] }}"
+      with_items: "{{ wg_genkey_results.results | selectattr('changed') | list }}"
       delegate_to: localhost
       become: false
 
@@ -36,7 +47,7 @@
       with_items:
         - "{{ users }}"
         - "{{ IP_subject_alt_name }}"
-  when: wg_genkey.changed
+  when: wg_genkey_results.changed
 
 - name: Delete the preshared lock files
   file:
@@ -47,7 +58,7 @@
     - "{{ users }}"
     - "{{ IP_subject_alt_name }}"
 
-- name: Generate preshared keys
+- name: Generate preshared keys (parallel)
   command: wg genpsk
   register: wg_genpsk
   args:
@@ -55,6 +66,17 @@
   with_items:
     - "{{ users }}"
     - "{{ IP_subject_alt_name }}"
+  async: 30
+  poll: 0
+
+- name: Wait for preshared key generation to complete
+  async_status:
+    jid: "{{ item.ansible_job_id }}"
+  with_items: "{{ wg_genpsk.results }}"
+  register: wg_genpsk_results
+  until: wg_genpsk_results.finished
+  retries: 15
+  delay: 2
 
 - block:
     - name: Save preshared keys
@@ -64,7 +86,7 @@
         mode: "0600"
       no_log: "{{ algo_no_log|bool }}"
       when: item.changed
-      with_items: "{{ wg_genpsk['results'] }}"
+      with_items: "{{ wg_genpsk_results.results | selectattr('changed') | list }}"
       delegate_to: localhost
       become: false
 
@@ -75,7 +97,7 @@
       with_items:
         - "{{ users }}"
         - "{{ IP_subject_alt_name }}"
-  when: wg_genpsk.changed
+  when: wg_genpsk_results.changed
 
 - name: Generate public keys
   shell: |

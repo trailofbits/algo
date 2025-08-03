@@ -100,7 +100,7 @@
         creates: certs/{{ IP_subject_alt_name }}_crt_generated
         executable: bash
 
-    - name: Build the client's pair
+    - name: Generate client private keys and certificate requests (parallel)
       shell: >
         umask 077;
         {{ openssl_bin }} req -utf8 -new
@@ -110,6 +110,28 @@
         -out reqs/{{ item }}.req -nodes
         -passin pass:"{{ CA_password }}"
         -subj "/CN={{ item }}" -batch &&
+        touch reqs/{{ item }}_req_generated
+      args:
+        chdir: "{{ ipsec_pki_path }}"
+        creates: reqs/{{ item }}_req_generated
+        executable: bash
+      with_items: "{{ users }}"
+      async: 60
+      poll: 0
+      register: client_key_jobs
+
+    - name: Wait for client key generation to complete
+      async_status:
+        jid: "{{ item.ansible_job_id }}"
+      with_items: "{{ client_key_jobs.results }}"
+      register: client_key_results
+      until: client_key_results.finished
+      retries: 30
+      delay: 2
+
+    - name: Sign client certificates (sequential - CA database locking required)
+      shell: >
+        umask 077;
         {{ openssl_bin }} ca -utf8
         -in reqs/{{ item }}.req
         -out certs/{{ item }}.crt
