@@ -3,6 +3,7 @@
   cloudformation:
     aws_access_key: "{{ access_key }}"
     aws_secret_key: "{{ secret_key }}"
+    aws_session_token: "{{ session_token if session_token else omit }}"
     stack_name: "{{ stack_name }}"
     state: present
     region: "{{ algo_region }}"
