@@ -78,7 +78,18 @@ jobs:
 
           # Install LXD on Ubuntu 24.04 (not pre-installed)
           sudo snap install lxd
+          
+          # Fix Docker/LXD iptables conflict on Ubuntu 22.04+
+          # Docker doesn't work well with nftables, switch to iptables-legacy
+          sudo update-alternatives --set iptables /usr/sbin/iptables-legacy
+          sudo update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+          
+          # Initialize LXD
           sudo lxd init --auto
+          
+          # Enable IP forwarding for container networking
+          sudo sysctl -w net.ipv4.ip_forward=1
+          sudo sysctl -w net.ipv6.conf.all.forwarding=1
 
       - name: Provision
         env:
@@ -162,7 +173,18 @@ jobs:
 
           # Install LXD on Ubuntu 24.04 (not pre-installed)
           sudo snap install lxd
+          
+          # Fix Docker/LXD iptables conflict on Ubuntu 22.04+
+          # Docker doesn't work well with nftables, switch to iptables-legacy
+          sudo update-alternatives --set iptables /usr/sbin/iptables-legacy
+          sudo update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+          
+          # Initialize LXD
           sudo lxd init --auto
+          
+          # Enable IP forwarding for container networking
+          sudo sysctl -w net.ipv4.ip_forward=1
+          sudo sysctl -w net.ipv6.conf.all.forwarding=1
 
       - name: Provision
         env:

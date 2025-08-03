@@ -15,6 +15,8 @@ else
 fi
 
 lxc network set lxdbr0 ipv4.address 10.0.8.1/24
+lxc network set lxdbr0 ipv4.nat true
+lxc network set lxdbr0 ipv6.address none
 
 lxc profile set default raw.lxc 'lxc.apparmor.profile = unconfined'
 lxc profile set default security.privileged true
@@ -30,6 +32,11 @@ ip addr
 until dig A +short algo.lxd @10.0.8.1 | grep -vE '^$' > /dev/null; do
   sleep 3
 done
+
+# Ensure DNS is working in the container
+sleep 5
+lxc exec algo -- bash -c "echo 'nameserver 8.8.8.8' > /etc/resolv.conf"
+lxc exec algo -- bash -c "echo 'nameserver 1.1.1.1' >> /etc/resolv.conf"
 
 case ${UBUNTU_VERSION} in
   20.04|22.04)
