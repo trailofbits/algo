@@ -190,6 +190,75 @@ def test_variable_consistency():
     print("✓ Variable consistency check completed")
 
 
+def test_wireguard_ipv6_endpoints():
+    """Test that WireGuard client configs properly format IPv6 endpoints"""
+    test_cases = [
+        # IPv4 address - should not be bracketed
+        {
+            'IP_subject_alt_name': '192.168.1.100',
+            'expected_endpoint': 'Endpoint = 192.168.1.100:51820'
+        },
+        # IPv6 address - should be bracketed
+        {
+            'IP_subject_alt_name': '2600:3c01::f03c:91ff:fedf:3b2a',
+            'expected_endpoint': 'Endpoint = [2600:3c01::f03c:91ff:fedf:3b2a]:51820'
+        },
+        # Hostname - should not be bracketed
+        {
+            'IP_subject_alt_name': 'vpn.example.com',
+            'expected_endpoint': 'Endpoint = vpn.example.com:51820'
+        },
+        # IPv6 with zone ID - should be bracketed
+        {
+            'IP_subject_alt_name': 'fe80::1%eth0',
+            'expected_endpoint': 'Endpoint = [fe80::1%eth0]:51820'
+        },
+    ]
+    
+    template_path = 'roles/wireguard/templates/client.conf.j2'
+    if not os.path.exists(template_path):
+        print(f"⚠ Skipping IPv6 endpoint test - {template_path} not found")
+        return
+        
+    base_vars = get_test_variables()
+    errors = []
+    
+    for test_case in test_cases:
+        try:
+            # Set up test variables
+            test_vars = {**base_vars, **test_case}
+            test_vars['item'] = ('test-user', 'test-user')
+            
+            # Render template
+            env = Environment(
+                loader=FileSystemLoader('roles/wireguard/templates'),
+                undefined=StrictUndefined
+            )
+            env.globals['lookup'] = mock_lookup
+            
+            template = env.get_template('client.conf.j2')
+            output = template.render(**test_vars)
+            
+            # Check if the expected endpoint format is in the output
+            if test_case['expected_endpoint'] not in output:
+                errors.append(f"Expected '{test_case['expected_endpoint']}' for IP '{test_case['IP_subject_alt_name']}' but not found in output")
+                # Print relevant part of output for debugging
+                for line in output.split('\n'):
+                    if 'Endpoint' in line:
+                        errors.append(f"  Found: {line.strip()}")
+                        
+        except Exception as e:
+            errors.append(f"Error testing {test_case['IP_subject_alt_name']}: {e}")
+    
+    if errors:
+        print("✗ WireGuard IPv6 endpoint test failed:")
+        for error in errors:
+            print(f"  - {error}")
+        assert False, "IPv6 endpoint formatting errors"
+    else:
+        print("✓ WireGuard IPv6 endpoint test passed (4 test cases)")
+
+
 def test_template_conditionals():
     """Test templates with different conditional states"""
     test_cases = [
@@ -276,6 +345,7 @@ if __name__ == "__main__":
         test_template_syntax,
         test_critical_templates,
         test_variable_consistency,
+        test_wireguard_ipv6_endpoints,
         test_template_conditionals,
     ]
     
