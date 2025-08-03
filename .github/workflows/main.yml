@@ -71,8 +71,7 @@ jobs:
             crudini \
             fping \
             strongswan \
-            libstrongswan-standard-plugins \
-            openresolv
+            libstrongswan-standard-plugins
 
           python3 -m pip install --upgrade pip
           python3 -m pip install -r requirements.txt
@@ -155,8 +154,7 @@ jobs:
             crudini \
             fping \
             strongswan \
-            libstrongswan-standard-plugins \
-            openresolv
+            libstrongswan-standard-plugins
 
           python3 -m pip install --upgrade pip
           python3 -m pip install -r requirements.txt
