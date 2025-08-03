@@ -21,7 +21,7 @@
     unique_name: true
     ipv6: true
     ssh_keys: "{{ do_ssh_key.data.ssh_key.id }}"
-    user_data: "{{ lookup('template', 'files/cloud-init/base.yml') }}"
+    user_data: "{{ lookup('template', 'files/cloud-init/base.yml') | string }}"
     tags:
       - Environment:Algo
   register: digital_ocean_droplet
@@ -42,62 +42,6 @@
       set_fact:
         cloud_alternative_ingress_ip: "{{ digital_ocean_floating_ip.data.floating_ip.ip }}"
   when: alternative_ingress_ip
-
-- name: Check if cloud-init properly configured SSH (DigitalOcean compatibility fix)
-  wait_for:
-    host: "{{ (droplet.networks.v4 | selectattr('type', '==', 'public')).0.ip_address }}"
-    port: "{{ ssh_port }}"
-    timeout: 30
-  delegate_to: localhost
-  ignore_errors: true
-  register: ssh_port_check
-
-- name: Fix SSH configuration if cloud-init failed to apply it
-  block:
-    - name: Wait for SSH on default port (22) to be available for remediation
-      wait_for:
-        host: "{{ (droplet.networks.v4 | selectattr('type', '==', 'public')).0.ip_address }}"
-        port: 22
-        timeout: 60
-      delegate_to: localhost
-
-    - name: Apply SSH configuration manually (cloud-init compatibility fix)
-      shell: |
-        ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no \
-            -i {{ SSH_keys.private }} \
-            root@{{ (droplet.networks.v4 | selectattr('type', '==', 'public')).0.ip_address }} "
-        # Backup current SSH config
-        cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
-
-        # Apply Algo SSH configuration
-        cat > /etc/ssh/sshd_config << 'EOF'
-        Port {{ ssh_port }}
-        AllowGroups algo
-        PermitRootLogin no
-        PasswordAuthentication no
-        ChallengeResponseAuthentication no
-        UsePAM yes
-        X11Forwarding yes
-        PrintMotd no
-        AcceptEnv LANG LC_*
-        Subsystem	sftp	/usr/lib/openssh/sftp-server
-        EOF
-
-        # Restart SSH service
-        systemctl restart sshd
-        "
-      delegate_to: localhost
-      retries: 3
-      delay: 10
-      changed_when: true
-
-    - name: Verify SSH is now listening on the correct port
-      wait_for:
-        host: "{{ (droplet.networks.v4 | selectattr('type', '==', 'public')).0.ip_address }}"
-        port: "{{ ssh_port }}"
-        timeout: 30
-      delegate_to: localhost
-  when: ssh_port_check.failed
 
 - set_fact:
     cloud_instance_ip: "{{ (droplet.networks.v4 | selectattr('type', '==', 'public')).0.ip_address }}"

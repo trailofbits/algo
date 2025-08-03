@@ -1,3 +1,4 @@
+---
 # cloud-config
 output: {all: '| tee -a /var/log/cloud-init-output.log'}
 
@@ -18,13 +19,24 @@ users:
     ssh_authorized_keys:
       - "{{ lookup('file', '{{ SSH_keys.public }}') }}"
 
-write_files:
-  - path: /etc/ssh/sshd_config
-    content: |
-      {{ lookup('template', 'files/cloud-init/sshd_config') | indent(width=6) }}
-
 runcmd:
   - set -x
+  - |
+    # Backup original SSH config
+    cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+    # Apply Algo SSH configuration directly via runcmd (bypasses write_files parsing issues)
+    cat > /etc/ssh/sshd_config << 'EOF'
+    Port {{ ssh_port }}
+    AllowGroups algo
+    PermitRootLogin no
+    PasswordAuthentication no
+    ChallengeResponseAuthentication no
+    UsePAM yes
+    X11Forwarding yes
+    PrintMotd no
+    AcceptEnv LANG LC_*
+    Subsystem	sftp	/usr/lib/openssh/sftp-server
+    EOF
   - ufw --force reset
   - sudo apt-get remove -y --purge sshguard || true
   - systemctl restart sshd.service
