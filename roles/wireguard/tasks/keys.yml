@@ -48,11 +48,7 @@
       - Verify WireGuard installation: wg --version
       - Check entropy: cat /proc/sys/kernel/random/entropy_avail
       - Check disk space: df -h /opt/algo
-  when: >
-    wg_genkey_results.failed or
-    (wg_genkey_results.finished and
-     wg_genkey_results.results is defined and
-     wg_genkey_results.results | selectattr('rc', 'defined') | selectattr('rc', '!=', 0) | list | length > 0)
+  when: item.rc is defined and item.rc != 0
   with_items: "{{ wg_genkey_results.results | default([]) }}"
   failed_when: false
 
@@ -126,11 +122,7 @@
       - Verify WireGuard installation: wg --version
       - Check entropy: cat /proc/sys/kernel/random/entropy_avail
       - Check disk space: df -h /opt/algo
-  when: >
-    wg_genpsk_results.failed or
-    (wg_genpsk_results.finished and
-     wg_genpsk_results.results is defined and
-     wg_genpsk_results.results | selectattr('rc', 'defined') | selectattr('rc', '!=', 0) | list | length > 0)
+  when: item.rc is defined and item.rc != 0
   with_items: "{{ wg_genpsk_results.results | default([]) }}"
   failed_when: false
 

@@ -150,11 +150,7 @@
           - Check disk space: df -h /opt/algo
           - Check entropy: cat /proc/sys/kernel/random/entropy_avail
           - Verify OpenSSL config: openssl version -a
-      when: >
-        client_key_results.failed or
-        (client_key_results.finished and
-         client_key_results.results is defined and
-         client_key_results.results | selectattr('rc', 'defined') | selectattr('rc', '!=', 0) | list | length > 0)
+      when: item.rc is defined and item.rc != 0
       with_items: "{{ client_key_results.results | default([]) }}"
       failed_when: false
 
