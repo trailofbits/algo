@@ -183,6 +183,6 @@ jobs:
             --diff \
             -vv \
             --skip-tags "facts,tests,local,update-alternatives,cloud_api" || true
-          
+
           # The || true is because check mode will fail on some tasks
           # but we're looking for syntax/undefined variable errors
