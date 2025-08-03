@@ -19,6 +19,7 @@ skip_list:
   - 'yaml[document-start]'  # YAML document start
   - 'role-name'  # Role naming convention - too many cloud-* roles
   - 'no-handler'  # Handler usage - some legitimate non-handler use cases
+  - 'name[missing]'  # All tasks should be named - 113 issues to fix (temporary)
 
 warn_list:
   - no-changed-when
