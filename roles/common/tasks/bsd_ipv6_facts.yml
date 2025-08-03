@@ -41,7 +41,6 @@
     - global_ipv6_address is not defined
     - ansible_all_ipv6_addresses is defined
     - not item.startswith('fe80:')
-    - global_ipv6_address is not defined  # Only set once
 
 - name: Override ansible_default_ipv6 with global address on BSD
   set_fact:
