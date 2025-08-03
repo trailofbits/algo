@@ -23,6 +23,19 @@ def mock_bool(value):
     return str(value).lower() in ('true', '1', 'yes', 'on')
 
 
+def mock_lookup(type, path):
+    """Mock the lookup function"""
+    # Return fake data for file lookups
+    if type == 'file':
+        if 'private' in path:
+            return 'MOCK_PRIVATE_KEY_BASE64=='
+        elif 'public' in path:
+            return 'MOCK_PUBLIC_KEY_BASE64=='
+        elif 'preshared' in path:
+            return 'MOCK_PRESHARED_KEY_BASE64=='
+    return 'MOCK_LOOKUP_DATA'
+
+
 def get_test_variables():
     """Get a comprehensive set of test variables for template rendering"""
     return {
@@ -52,11 +65,18 @@ def get_test_variables():
         
         # DNS
         'dns_adblocking': True,
+        'algo_dns_adblocking': True,
         'adblock_lists': ['https://someblacklist.com'],
         'dns_encryption': True,
         'dns_servers': ['1.1.1.1', '1.0.0.1'],
         'local_dns': True,
         'alternative_ingress_ip': False,
+        
+        # Security/Firewall
+        'snat_aipv4': False,
+        'snat_aipv6': False,
+        'block_smb': True,
+        'block_netbios': True,
         
         # Users and auth
         'users': ['alice', 'bob', 'charlie'],
@@ -79,6 +99,27 @@ def get_test_variables():
         'strongswan_log_level': '2',
         'wireguard_port_avoid': 53,
         'wireguard_port_actual': 51820,
+        'reduce_mtu': 0,
+        'ciphers': {
+            'defaults': {
+                'ike': 'aes128gcm16-prfsha512-ecp256,aes128-sha2_256-modp2048',
+                'esp': 'aes128gcm16-ecp256,aes128-sha2_256-modp2048',
+            },
+            'ike': 'aes128gcm16-prfsha512-ecp256,aes128-sha2_256-modp2048',
+            'esp': 'aes128gcm16-ecp256,aes128-sha2_256-modp2048',
+        },
+        
+        # StrongSwan specific
+        'strongswan_network': '10.19.48.0/24',
+        'strongswan_network_ipv6': 'fd9d:bc11:4021::/64',
+        'local_service_ip': '10.19.49.1',
+        'local_service_ipv6': 'fd9d:bc11:4020::1',
+        'ipv6_support': True,
+        
+        # WireGuard specific
+        'wireguard_network_ipv4': '10.19.49.0/24',
+        'wireguard_client_ip': '10.19.49.2/32,fd9d:bc11:4020::2/128',
+        'wireguard_dns_servers': '1.1.1.1,1.0.0.1',
         
         # Cloud provider specific
         'algo_provider': 'local',
@@ -178,11 +219,16 @@ def test_critical_templates():
                 undefined=StrictUndefined
             )
             
+            # Add mock functions
+            env.globals['lookup'] = mock_lookup
+            env.filters['to_uuid'] = mock_to_uuid
+            env.filters['bool'] = mock_bool
+            
             template = env.get_template(template_name)
             
             # Add item context for templates that use loops
             if 'client' in template_name:
-                test_vars['item'] = 'alice'
+                test_vars['item'] = ('test-user', 'test-user')
             
             # Try to render
             output = template.render(**test_vars)
@@ -285,6 +331,11 @@ def test_template_conditionals():
                     loader=FileSystemLoader(template_dir),
                     undefined=StrictUndefined
                 )
+                
+                # Add mock functions
+                env.globals['lookup'] = mock_lookup
+                env.filters['to_uuid'] = mock_to_uuid
+                env.filters['bool'] = mock_bool
                 
                 template = env.get_template(template_name)
                 output = template.render(**test_vars)
