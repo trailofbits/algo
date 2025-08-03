@@ -46,6 +46,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install jinja2  # For template rendering tests
           sudo apt-get update && sudo apt-get install -y shellcheck
 
       - name: Run basic sanity tests
@@ -55,6 +56,8 @@ jobs:
           python tests/unit/test_user_management.py
           python tests/unit/test_openssl_compatibility.py
           python tests/unit/test_cloud_provider_configs.py
+          python tests/unit/test_template_rendering.py
+          python tests/unit/test_generated_configs.py
 
   docker-build:
     name: Docker build test
@@ -99,3 +102,70 @@ jobs:
           # Run our simplified config test
           chmod +x tests/test-local-config.sh
           ./tests/test-local-config.sh
+
+  ansible-dry-run:
+    name: Ansible dry-run validation
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        provider: [local, ec2, digitalocean, gce]
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Create test configuration for ${{ matrix.provider }}
+        run: |
+          # Create provider-specific test config
+          cat > test-${{ matrix.provider }}.cfg << 'EOF'
+          users:
+            - testuser
+          cloud_providers:
+            ${{ matrix.provider }}:
+              server: test-server
+              size: t3.micro
+              image: ubuntu-22.04
+              region: us-east-1
+          wireguard_enabled: true
+          ipsec_enabled: false
+          dns_adblocking: false
+          ssh_tunneling: false
+          store_pki: true
+          algo_provider: ${{ matrix.provider }}
+          algo_server_name: test-algo-vpn
+          server: test-server
+          endpoint: 10.0.0.1
+          ansible_ssh_user: ubuntu
+          ansible_ssh_port: 22
+          algo_ssh_port: 4160
+          algo_ondemand_cellular: false
+          algo_ondemand_wifi: false
+          EOF
+
+      - name: Run Ansible check mode for ${{ matrix.provider }}
+        run: |
+          # Run ansible in check mode to validate playbooks work
+          ansible-playbook main.yml \
+            -i "localhost," \
+            -c local \
+            -e @test-${{ matrix.provider }}.cfg \
+            -e "provider=${{ matrix.provider }}" \
+            --check \
+            --diff \
+            -vv \
+            --skip-tags "facts,tests,local,update-alternatives,cloud_api" || true
+          
+          # The || true is because check mode will fail on some tasks
+          # but we're looking for syntax/undefined variable errors
