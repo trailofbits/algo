@@ -42,6 +42,24 @@ performance_parallel_crypto: true
 
 **Safety**: Safe - maintains cryptographic security while improving performance.
 
+### Cloud-init Package Pre-installation (`performance_preinstall_packages`)
+
+**Default**: `true`
+**Time Saved**: 30-90 seconds per deployment
+
+```yaml
+# config.cfg
+performance_preinstall_packages: true
+```
+
+**What it does**:
+- **Pre-installs universal packages**: Installs core system tools (`git`, `screen`, `apparmor-utils`, `uuid-runtime`, `coreutils`, `iptables-persistent`, `cgroup-tools`) during cloud-init phase
+- **Parallel installation**: Packages install while cloud instance boots, adding minimal time to boot process
+- **Skips redundant installs**: Ansible skips installing these packages since they're already present
+- **Universal compatibility**: Only installs packages that are always needed regardless of VPN configuration
+
+**Safety**: Very safe - same packages installed, just earlier in the process.
+
 ### Batch Package Installation (`performance_parallel_packages`)
 
 **Default**: `true`
@@ -66,8 +84,9 @@ performance_parallel_packages: true
 |--------------|------------|------------|
 | Skip optional reboots | 0-5 minutes | Very Low |
 | Parallel crypto | 1-3 minutes | None |
+| Cloud-init packages | 30-90 seconds | None |
 | Batch packages | 30-60 seconds | None |
-| **Combined** | **1.5-8.5 minutes** | **Very Low** |
+| **Combined** | **2-9.5 minutes** | **Very Low** |
 
 ## Performance Comparison
 
@@ -85,12 +104,12 @@ Total:              8-22 minutes
 ### After Optimizations  
 ```
 System updates:     3-8 minutes
-Package installs:   30-60 seconds (batch)
+Package installs:   0-30 seconds (pre-installed + batch)
 Certificate gen:    1-2 minutes (parallel)
 Reboot wait:        0 minutes (skipped when safe)
 Other tasks:        2-3 minutes
 ────────────────────────────────  
-Total:              6.5-13.5 minutes
+Total:              6-13 minutes
 ```
 
 ## Disabling Optimizations
@@ -101,6 +120,7 @@ To disable performance optimizations (for maximum compatibility):
 # config.cfg
 performance_skip_optional_reboots: false
 performance_parallel_crypto: false
+performance_preinstall_packages: false
 performance_parallel_packages: false
 ```
 
@@ -169,8 +189,8 @@ These optimizations are compatible with:
 - ✅ All VPN protocols (WireGuard, StrongSwan)  
 - ✅ Existing Algo installations (config changes only)
 - ✅ All supported Ubuntu versions
+- ✅ Ansible 9.13.0+ (latest stable collections)
 
-**Not compatible with**:
-- ❌ Local deployments on systems requiring specific kernel versions
-- ❌ Environments with strict reboot policies
-- ❌ Very old Ansible versions (<2.9)
+**Limited compatibility**:
+- ⚠️ Environments with strict reboot policies (disable `performance_skip_optional_reboots`)
+- ⚠️ Very old Ansible versions (<2.9) (upgrade recommended)

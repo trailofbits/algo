@@ -1,7 +1,7 @@
 ---
 - name: Initialize package lists
   set_fact:
-    algo_packages: "{{ tools | default([]) }}"
+    algo_packages: "{{ tools | default([]) if not performance_preinstall_packages | default(false) else [] }}"
     algo_packages_optional: []
   when: performance_parallel_packages | default(true)
 

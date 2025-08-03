@@ -142,7 +142,9 @@
     name: "{{ tools|default([]) }}"
     state: present
     update_cache: true
-  when: not performance_parallel_packages | default(true)
+  when: 
+    - not performance_parallel_packages | default(true)
+    - not performance_preinstall_packages | default(false)
 
 - name: Install headers (legacy method)
   apt:
