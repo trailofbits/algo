@@ -55,12 +55,14 @@
 - block:
     - name: Save private keys
       copy:
-        dest: "{{ wireguard_pki_path }}/private/{{ item.item }}"
-        content: "{{ item.stdout }}"
+        dest: "{{ wireguard_pki_path }}/private/{{ async_result_item.item }}"
+        content: "{{ async_result_item.stdout }}"
         mode: "0600"
       no_log: "{{ algo_no_log|bool }}"
-      when: item.changed
-      with_items: "{{ wg_genkey_results.results | selectattr('changed') | list }}"
+      when: async_result_item.changed
+      loop: "{{ wg_genkey_results.results }}"
+      loop_control:
+        loop_var: async_result_item
       delegate_to: localhost
       become: false
 
@@ -129,12 +131,14 @@
 - block:
     - name: Save preshared keys
       copy:
-        dest: "{{ wireguard_pki_path }}/preshared/{{ item.item }}"
-        content: "{{ item.stdout }}"
+        dest: "{{ wireguard_pki_path }}/preshared/{{ async_result_item.item }}"
+        content: "{{ async_result_item.stdout }}"
         mode: "0600"
       no_log: "{{ algo_no_log|bool }}"
-      when: item.changed
-      with_items: "{{ wg_genpsk_results.results | selectattr('changed') | list }}"
+      when: async_result_item.changed
+      loop: "{{ wg_genpsk_results.results }}"
+      loop_control:
+        loop_var: async_result_item
       delegate_to: localhost
       become: false
 
