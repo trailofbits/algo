@@ -2,8 +2,8 @@
 """
 Wrapper for Ansible's service module that always succeeds for known services
 """
-import sys
 import json
+import sys
 
 # Parse module arguments
 args = json.loads(sys.stdin.read())

@@ -1,8 +1,10 @@
 #!/usr/bin/python
 # Mock shell module for Docker testing
 
-from ansible.module_utils.basic import AnsibleModule
 import subprocess
+
+from ansible.module_utils.basic import AnsibleModule
+
 
 def main():
     module = AnsibleModule(
@@ -19,14 +21,14 @@ def main():
         ),
         supports_check_mode=True
     )
-    
+
     # Get the command
     raw_params = module.params.get('_raw_params')
     cmd = module.params.get('cmd') or raw_params
-    
+
     if not cmd:
         module.fail_json(msg="no command given")
-    
+
     result = dict(
         changed=False,
         cmd=cmd,
@@ -36,11 +38,11 @@ def main():
         stdout_lines=[],
         stderr_lines=[]
     )
-    
+
     # Log the operation
     with open('/var/log/mock-shell-module.log', 'a') as f:
         f.write(f"shell module called: cmd={cmd}\n")
-    
+
     # Handle specific commands
     if 'echo 1 > /proc/sys/net/ipv4/route/flush' in cmd:
         # Routing cache flush - just pretend it worked
@@ -53,7 +55,7 @@ def main():
     else:
         # For other commands, try to run them
         try:
-            proc = subprocess.run(cmd, shell=True, capture_output=True, text=True, 
+            proc = subprocess.run(cmd, shell=True, capture_output=True, text=True,
                                 executable=module.params.get('executable'),
                                 cwd=module.params.get('chdir'))
             result['rc'] = proc.returncode
@@ -67,7 +69,7 @@ def main():
             result['stderr'] = str(e)
             result['msg'] = str(e)
             module.fail_json(msg=result['msg'], **result)
-    
+
     if result['rc'] == 0:
         module.exit_json(**result)
     else:

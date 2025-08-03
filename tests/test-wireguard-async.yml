@@ -13,7 +13,7 @@
           changed: true
           rc: 0
         - item: "10.10.10.1"
-          stdout: "mock_private_key_2" 
+          stdout: "mock_private_key_2"
           changed: true
           rc: 0
     wireguard_pki_path: "/tmp/test-wireguard-pki"

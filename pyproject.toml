@@ -1,3 +1,9 @@
+[project]
+name = "algo"
+description = "Set up a personal IPSEC VPN in the cloud"
+version = "0.1.0"
+requires-python = ">=3.10"
+
 [tool.ruff]
 # Ruff configuration
 target-version = "py310"
@@ -15,4 +21,11 @@ select = [
 ]
 ignore = [
     "E501", # line too long (handled by formatter)
+    "B011", # assert False is acceptable in test code
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"library/*" = ["ALL"]           # Exclude Ansible library modules (external code)
+"tests/integration/*" = ["ALL"] # Exclude integration test mocks (test infrastructure)
+"scripts/*" = ["ALL"]           # Exclude utility scripts (not core functionality)
+"tests/*" = ["F841", "F401", "B904", "W293", "B007"]  # Allow test-specific patterns

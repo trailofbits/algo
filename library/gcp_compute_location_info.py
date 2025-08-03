@@ -76,7 +76,7 @@ def return_if_object(module, response):
         module.raise_for_status(response)
         result = response.json()
     except getattr(json.decoder, 'JSONDecodeError', ValueError) as inst:
-        module.fail_json(msg="Invalid JSON response with error: {}".format(inst))
+        module.fail_json(msg=f"Invalid JSON response with error: {inst}")
 
     if navigate_hash(result, ['error', 'errors']):
         module.fail_json(msg=navigate_hash(result, ['error', 'errors']))
