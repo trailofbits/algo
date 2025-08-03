@@ -82,7 +82,7 @@ def test_template_syntax():
             )
 
             # Just try to load the template - this checks syntax
-            template = env.get_template(template_path.name)
+            env.get_template(template_path.name)
 
         except TemplateSyntaxError as e:
             errors.append(f"{template_path}: Syntax error - {e}")
@@ -333,7 +333,7 @@ def test_template_conditionals():
 if __name__ == "__main__":
     # Check if we have Jinja2 available
     try:
-        import jinja2
+        import jinja2  # noqa: F401
     except ImportError:
         print("⚠ Skipping template tests - jinja2 not installed")
         print("  Run: pip install jinja2")

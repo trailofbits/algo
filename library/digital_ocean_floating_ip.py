@@ -3,7 +3,11 @@
 # (c) 2015, Patrick F. Marques <patrickfmarques@gmail.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+import json
+import time
 
+from ansible.module_utils.basic import AnsibleModule, env_fallback
+from ansible.module_utils.digital_ocean import DigitalOceanHelper
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
@@ -103,12 +107,6 @@ data:
       }
     }
 '''
-
-import json
-import time
-
-from ansible.module_utils.basic import AnsibleModule, env_fallback
-from ansible.module_utils.digital_ocean import DigitalOceanHelper
 
 
 class Response:

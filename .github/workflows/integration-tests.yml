@@ -248,4 +248,3 @@ jobs:
           docker run --rm --entrypoint cat -v $(pwd)/test-data:/data algo:ci-test /data/config.cfg
 
           echo "✓ Docker image built and basic tests passed"
-

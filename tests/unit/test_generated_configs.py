@@ -272,7 +272,7 @@ COMMIT
     chains = chain_pattern.findall(sample_rules)
 
     required_chains = [('INPUT', 'DROP'), ('FORWARD', 'DROP'), ('OUTPUT', 'ACCEPT')]
-    for chain, policy in required_chains:
+    for chain, _policy in required_chains:
         if not any(c[0] == chain for c in chains):
             errors.append(f"Missing required chain: {chain}")
 

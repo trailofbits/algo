@@ -1,9 +1,10 @@
 ---
-- name: WireGuard installed
+- name: WireGuard installed (individual)
   apt:
     name: wireguard
     state: present
     update_cache: true
+  when: not performance_parallel_packages | default(true)
 
 - name: Set OS specific facts
   set_fact:

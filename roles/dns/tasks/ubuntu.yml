@@ -19,11 +19,12 @@
         mode: 0644
   when: ansible_facts['distribution_version'] is version('20.04', '<')
 
-- name: Install dnscrypt-proxy
+- name: Install dnscrypt-proxy (individual)
   apt:
     name: dnscrypt-proxy
     state: present
     update_cache: true
+  when: not performance_parallel_packages | default(true)
 
 - block:
     - name: Ubuntu | Configure AppArmor policy for dnscrypt-proxy

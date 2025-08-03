@@ -10,6 +10,16 @@ package_upgrade: true
 
 packages:
   - sudo
+{% if performance_preinstall_packages | default(false) %}
+  # Universal tools always needed by Algo (performance optimization)
+  - git
+  - screen
+  - apparmor-utils
+  - uuid-runtime
+  - coreutils
+  - iptables-persistent
+  - cgroup-tools
+{% endif %}
 
 users:
   - default

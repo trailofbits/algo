@@ -1,6 +1,7 @@
+---
 name: Claude Code
 
-on:
+'on':
   issue_comment:
     types: [created]
   pull_request_review_comment:
@@ -39,27 +40,28 @@ jobs:
           # This is an optional setting that allows Claude to read CI results on PRs
           additional_permissions: |
             actions: read
-          
+
           # Optional: Specify model (defaults to Claude Sonnet 4, uncomment for Claude Opus 4)
           # model: "claude-opus-4-20250514"
-          
+
           # Optional: Customize the trigger phrase (default: @claude)
           # trigger_phrase: "/claude"
-          
+
           # Optional: Trigger when specific user is assigned to an issue
           # assignee_trigger: "claude-bot"
-          
+
           # Optional: Allow Claude to run specific commands
-          allowed_tools: "Bash(ansible-playbook * --syntax-check),Bash(ansible-lint *),Bash(ruff check *),Bash(yamllint *),Bash(shellcheck *),Bash(python -m pytest *)"
-          
+          allowed_tools: >-
+            Bash(ansible-playbook * --syntax-check),Bash(ansible-lint *),Bash(ruff check *),
+            Bash(yamllint *),Bash(shellcheck *),Bash(python -m pytest *)
+
           # Optional: Add custom instructions for Claude to customize its behavior for your project
           custom_instructions: |
             Follow Algo's security-first principles
             Be conservative with dependency updates
             Run ansible-lint, ruff, yamllint, and shellcheck before suggesting changes
             Check the CLAUDE.md file for project-specific guidance
-          
+
           # Optional: Custom environment variables for Claude
           # claude_env: |
           #   NODE_ENV: test
-

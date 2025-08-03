@@ -1,6 +1,8 @@
 ---
 - fail:
-    msg: "OpenStack credentials are not set. Download it from the OpenStack dashboard->Compute->API Access and source it in the shell (eg: source /tmp/dhc-openrc.sh)"
+    msg: >-
+      OpenStack credentials are not set. Download it from the OpenStack dashboard->Compute->API Access
+      and source it in the shell (eg: source /tmp/dhc-openrc.sh)
   when: lookup('env', 'OS_AUTH_URL')|length <= 0
 
 - name: Build python virtual environment

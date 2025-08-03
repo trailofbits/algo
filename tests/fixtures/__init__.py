@@ -1,5 +1,4 @@
 """Test fixtures for Algo unit tests"""
-import os
 from pathlib import Path
 
 import yaml

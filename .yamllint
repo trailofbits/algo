@@ -5,6 +5,10 @@ extends: default
 # The #cloud-config header cannot have a space and cannot have --- document start
 ignore: |
   files/cloud-init/
+  .env/
+  .ansible/
+  configs/
+  tests/integration/test-configs/
 
 rules:
   line-length:

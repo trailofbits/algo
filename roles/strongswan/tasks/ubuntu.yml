@@ -2,12 +2,13 @@
 - name: Set OS specific facts
   set_fact:
     strongswan_additional_plugins: []
-- name: Ubuntu | Install strongSwan
+- name: Ubuntu | Install strongSwan (individual)
   apt:
     name: strongswan
     state: present
     update_cache: true
     install_recommends: true
+  when: not performance_parallel_packages | default(true)
 
 - block:
     # https://bugs.launchpad.net/ubuntu/+source/strongswan/+bug/1826238

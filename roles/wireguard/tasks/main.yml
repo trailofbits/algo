@@ -40,7 +40,7 @@
           with_items: "{{ users }}"
 
         - set_fact:
-            wireguard_users: "{{ (lookup('file', wireguard_pki_path + 'index.txt')).split('\n') }}"
+            wireguard_users: "{{ (lookup('file', wireguard_pki_path + '/index.txt')).split('\n') }}"
 
         - name: WireGuard users config generated
           template:
