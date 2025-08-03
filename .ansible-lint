@@ -1,10 +1,25 @@
+# Ansible-lint configuration
+exclude_paths:
+  - .cache/
+  - .github/
+  - tests/legacy-lxd/
+
 skip_list:
-  - yaml
-  - '204'
-verbosity: 1
+  - '204'  # Lines should be less than 160 characters
+  - 'package-latest'  # Package installs should not use latest
+  - 'experimental'  # Experimental rules
 
 warn_list:
   - no-changed-when
   - no-handler
   - fqcn-builtins
   - var-spacing
+  - yaml[line-length]
+
+# Enable additional rules
+enable_list:
+  - no-log-password
+  - no-same-owner
+  - partial-become
+
+verbosity: 1

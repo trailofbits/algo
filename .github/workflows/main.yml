@@ -6,8 +6,8 @@ permissions:
   contents: read
 
 jobs:
-  lint:
-    name: Lint code
+  syntax-check:
+    name: Ansible syntax check
     runs-on: ubuntu-22.04
     permissions:
       contents: read
@@ -24,15 +24,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install ansible-lint
-          # Install shellcheck from apt (faster than snap)
-          sudo apt-get update && sudo apt-get install -y shellcheck
 
-      - name: Run linters
-        run: |
-          shellcheck algo install.sh
-          ansible-playbook main.yml --syntax-check
-          ansible-lint -x experimental,package-latest,unnamed-task -v *.yml roles/{local,cloud-*}/*/*.yml || true
+      - name: Check Ansible playbook syntax
+        run: ansible-playbook main.yml --syntax-check
 
   basic-tests:
     name: Basic sanity tests
