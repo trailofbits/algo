@@ -42,7 +42,7 @@
       What region should the server be located in?
       (https://www.vultr.com/locations/):
         {% for r in vultr_regions %}
-        {{ loop.index }}.   {{ r['name'] }}
+        {{ loop.index }}.   {{ r['name'] }} ({{ r['regioncode'] | lower }})
         {% endfor %}
 
       Enter the number of your desired region
@@ -54,5 +54,5 @@
   set_fact:
     algo_vultr_region: >-
       {% if region is defined %}{{ region }}
-      {%- elif _algo_region.user_input %}{{ vultr_regions[_algo_region.user_input | int -1 ]['name'] }}
-      {%- else %}{{ vultr_regions[default_region | int - 1]['name'] }}{% endif %}
+      {%- elif _algo_region.user_input %}{{ vultr_regions[_algo_region.user_input | int -1 ]['regioncode'] | lower }}
+      {%- else %}{{ vultr_regions[default_region | int - 1]['regioncode'] | lower }}{% endif %}

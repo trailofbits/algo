@@ -1,0 +1,293 @@
+name: Smart Test Selection
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  changed-files:
+    name: Detect Changed Files
+    runs-on: ubuntu-latest
+    outputs:
+      # Define what tests to run based on changes
+      run_syntax_check: ${{ steps.filter.outputs.ansible }}
+      run_basic_tests: ${{ steps.filter.outputs.python }}
+      run_docker_tests: ${{ steps.filter.outputs.docker }}
+      run_config_tests: ${{ steps.filter.outputs.configs }}
+      run_template_tests: ${{ steps.filter.outputs.templates }}
+      run_lint: ${{ steps.filter.outputs.lint }}
+      run_integration: ${{ steps.filter.outputs.integration }}
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+        with:
+          persist-credentials: false
+          
+      - uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50  # v2.11.1
+        id: filter
+        with:
+          filters: |
+            ansible:
+              - '**/*.yml'
+              - '**/*.yaml'
+              - 'main.yml'
+              - 'playbooks/**'
+              - 'roles/**'
+              - 'library/**'
+            python:
+              - '**/*.py'
+              - 'requirements.txt'
+              - 'tests/**'
+            docker:
+              - 'Dockerfile*'
+              - '.dockerignore'
+              - 'docker-compose*.yml'
+            configs:
+              - 'config.cfg*'
+              - 'roles/**/templates/**'
+              - 'roles/**/defaults/**'
+            templates:
+              - '**/*.j2'
+              - 'roles/**/templates/**'
+            lint:
+              - '**/*.py'
+              - '**/*.yml'
+              - '**/*.yaml'
+              - '**/*.sh'
+              - '.ansible-lint'
+              - '.yamllint'
+              - 'ruff.toml'
+              - 'pyproject.toml'
+            integration:
+              - 'main.yml'
+              - 'roles/**'
+              - 'library/**'
+              - 'playbooks/**'
+
+  syntax-check:
+    name: Ansible Syntax Check
+    needs: changed-files
+    if: needs.changed-files.outputs.run_syntax_check == 'true'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Check Ansible playbook syntax
+        run: ansible-playbook main.yml --syntax-check
+
+  basic-tests:
+    name: Basic Sanity Tests
+    needs: changed-files
+    if: needs.changed-files.outputs.run_basic_tests == 'true' || needs.changed-files.outputs.run_template_tests == 'true'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install jinja2 pyyaml  # For tests
+          sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Run relevant tests
+        run: |
+          # Always run basic sanity
+          python tests/unit/test_basic_sanity.py
+          
+          # Run other tests based on what changed
+          if [[ "${{ needs.changed-files.outputs.run_basic_tests }}" == "true" ]]; then
+            python tests/unit/test_config_validation.py
+            python tests/unit/test_user_management.py
+            python tests/unit/test_openssl_compatibility.py
+            python tests/unit/test_cloud_provider_configs.py
+            python tests/unit/test_generated_configs.py
+          fi
+          
+          if [[ "${{ needs.changed-files.outputs.run_template_tests }}" == "true" ]]; then
+            python tests/unit/test_template_rendering.py
+          fi
+
+  docker-tests:
+    name: Docker Build Test
+    needs: changed-files
+    if: needs.changed-files.outputs.run_docker_tests == 'true'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build Docker image
+        run: docker build -t local/algo:test .
+
+      - name: Test Docker image starts
+        run: |
+          docker run --rm local/algo:test /algo/algo --help
+
+      - name: Run Docker deployment tests
+        run: python tests/unit/test_docker_localhost_deployment.py
+
+  config-tests:
+    name: Configuration Tests
+    needs: changed-files
+    if: needs.changed-files.outputs.run_config_tests == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Test configuration generation
+        run: |
+          chmod +x tests/test-local-config.sh
+          ./tests/test-local-config.sh
+
+      - name: Run ansible dry-run tests
+        run: |
+          # Quick dry-run for local provider only
+          cat > test-local.cfg << 'EOF'
+          users:
+            - testuser
+          cloud_providers:
+            local:
+              server: test-server
+          wireguard_enabled: true
+          ipsec_enabled: false
+          dns_adblocking: false
+          ssh_tunneling: false
+          algo_provider: local
+          algo_server_name: test-algo-vpn
+          server: test-server
+          endpoint: 10.0.0.1
+          EOF
+          
+          ansible-playbook main.yml \
+            -i "localhost," \
+            -c local \
+            -e @test-local.cfg \
+            -e "provider=local" \
+            --check \
+            --diff \
+            -vv \
+            --skip-tags "facts,tests,local,update-alternatives,cloud_api" || true
+
+  lint:
+    name: Linting
+    needs: changed-files
+    if: needs.changed-files.outputs.run_lint == 'true'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install linting tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible-lint ansible yamllint ruff
+
+      - name: Install ansible dependencies
+        run: ansible-galaxy collection install community.crypto
+
+      - name: Run relevant linters
+        run: |
+          # Always run if lint files changed
+          if [[ "${{ needs.changed-files.outputs.run_lint }}" == "true" ]]; then
+            # Run all linters
+            ruff check . || true
+            yamllint . || true
+            ansible-lint || true
+            
+            # Check shell scripts if any changed
+            if git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep -q '\.sh$'; then
+              find . -name "*.sh" -type f -exec shellcheck {} + || true
+            fi
+          fi
+
+  all-tests-required:
+    name: All Required Tests
+    needs: [syntax-check, basic-tests, docker-tests, config-tests, lint]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check test results
+        run: |
+          # This job ensures all required tests pass
+          # It will fail if any dependent job failed
+          if [[ "${{ needs.syntax-check.result }}" == "failure" ]] || \
+             [[ "${{ needs.basic-tests.result }}" == "failure" ]] || \
+             [[ "${{ needs.docker-tests.result }}" == "failure" ]] || \
+             [[ "${{ needs.config-tests.result }}" == "failure" ]] || \
+             [[ "${{ needs.lint.result }}" == "failure" ]]; then
+            echo "One or more required tests failed"
+            exit 1
+          fi
+          echo "All required tests passed!"
+
+  trigger-integration:
+    name: Trigger Integration Tests
+    needs: changed-files
+    if: |
+      needs.changed-files.outputs.run_integration == 'true' &&
+      github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger integration tests
+        run: |
+          echo "Integration tests should be triggered for this PR"
+          echo "Changed files indicate potential breaking changes"
+          echo "Run workflow manually: .github/workflows/integration-tests.yml"

@@ -1,9 +1,6 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
 
 ################################################################################
 # Documentation
@@ -14,8 +11,9 @@ ANSIBLE_METADATA = {'metadata_version': '1.1', 'status': ["preview"], 'supported
 ################################################################################
 # Imports
 ################################################################################
-from ansible.module_utils.gcp_utils import navigate_hash, GcpSession, GcpModule, GcpRequest
 import json
+
+from ansible.module_utils.gcp_utils import GcpModule, GcpSession, navigate_hash
 
 ################################################################################
 # Main
