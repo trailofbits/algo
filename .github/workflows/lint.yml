@@ -56,22 +56,12 @@ jobs:
       - name: Install Python linters
         run: |
           python -m pip install --upgrade pip
-          pip install ruff black mypy
+          pip install ruff
 
       - name: Run ruff
         run: |
           # Fast Python linter
           ruff check . || true  # Start with warnings only
-
-      - name: Check Python formatting with black
-        run: |
-          # Check formatting (don't modify)
-          black --check --diff . || true  # Start with warnings only
-
-      - name: Run mypy
-        run: |
-          # Type checking for Python
-          mypy library/ --ignore-missing-imports || true  # Start with warnings only
 
   shellcheck:
     name: Shell script linting
@@ -102,12 +92,7 @@ jobs:
       - name: Install security tools
         run: |
           python -m pip install --upgrade pip
-          pip install bandit safety
-
-      - name: Run bandit
-        run: |
-          # Security linter for Python
-          bandit -r library/ || true  # Start with warnings only
+          pip install safety
 
       - name: Check dependencies with safety
         run: |

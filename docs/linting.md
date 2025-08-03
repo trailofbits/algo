@@ -22,13 +22,10 @@ The project uses multiple linters to ensure code quality across different file t
   - `partial-become`: Avoid unnecessary privilege escalation
 
 ### 2. Python Linting
-- **Tools**: 
-  - `ruff` - Fast Python linter (replaces flake8, isort, etc.)
-  - `black` - Code formatter
-  - `mypy` - Type checker
-  - `bandit` - Security linter
+- **Tool**: `ruff` - Fast Python linter (replaces flake8, isort, etc.)
 - **Config**: `pyproject.toml`
 - **Style**: 120 character line length, Python 3.10+
+- **Checks**: Syntax errors, imports, code style
 
 ### 3. Shell Script Linting
 - **Tool**: `shellcheck`
@@ -42,7 +39,6 @@ The project uses multiple linters to ensure code quality across different file t
 
 ### 5. Security Scanning
 - **Tools**:
-  - `bandit` - Python security issues
   - `safety` - Known vulnerabilities in dependencies
   - `zizmor` - GitHub Actions security (run separately)
 
@@ -68,8 +64,6 @@ ansible-lint -v *.yml roles/{local,cloud-*}/*/*.yml
 
 # Python
 ruff check .
-black --check .
-mypy library/
 
 # Shell
 find . -name "*.sh" -exec shellcheck {} \;
@@ -78,7 +72,6 @@ find . -name "*.sh" -exec shellcheck {} \;
 yamllint .
 
 # Security
-bandit -r library/
 safety check
 ```
 

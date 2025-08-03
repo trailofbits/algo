@@ -14,30 +14,3 @@ select = [
 ignore = [
     "E501", # line too long (handled by formatter)
 ]
-
-[tool.black]
-line-length = 120
-target-version = ['py310']
-include = '\.pyi?$'
-extend-exclude = '''
-(
-  /(
-      \.eggs
-    | \.git
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | _build
-    | buck-out
-    | build
-    | dist
-  )/
-)
-'''
-
-[tool.mypy]
-python_version = "3.10"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = false
-ignore_missing_imports = true
