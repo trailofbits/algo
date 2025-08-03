@@ -219,12 +219,12 @@ jobs:
       - name: Test Docker image
         run: |
           # Test that the image can run and show help
-          docker run --rm algo:ci-test /algo/algo --help || true
+          docker run --rm --entrypoint /bin/sh algo:ci-test -c "cd /algo && ./algo --help" || true
           
-          # Test that required binaries exist
-          docker run --rm algo:ci-test which ansible
-          docker run --rm algo:ci-test which python3
-          docker run --rm algo:ci-test which rsync
+          # Test that required binaries exist in the virtual environment
+          docker run --rm --entrypoint /bin/sh algo:ci-test -c "cd /algo && source .env/bin/activate && which ansible"
+          docker run --rm --entrypoint /bin/sh algo:ci-test -c "which python3"
+          docker run --rm --entrypoint /bin/sh algo:ci-test -c "which rsync"
           
       - name: Test Docker config validation
         run: |
@@ -244,7 +244,7 @@ jobs:
           EOF
           
           # Test that config is readable
-          docker run --rm -v $(pwd)/test-data:/data algo:ci-test cat /data/config.cfg
+          docker run --rm --entrypoint cat -v $(pwd)/test-data:/data algo:ci-test /data/config.cfg
           
           echo "✓ Docker image built and basic tests passed"
 
