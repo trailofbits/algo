@@ -1,0 +1,27 @@
+# Ubuntu client for testing VPN connections
+FROM ubuntu:22.04
+
+RUN apt-get update && apt-get install -y \
+    wireguard \
+    wireguard-tools \
+    strongswan \
+    strongswan-swanctl \
+    iproute2 \
+    iputils-ping \
+    dnsutils \
+    curl \
+    tcpdump \
+    net-tools \
+    iptables \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create directories for configs
+RUN mkdir -p /etc/wireguard /etc/swanctl
+
+# Copy test utilities
+COPY tests/integration/client-test-utils.sh /usr/local/bin/test-utils.sh
+RUN chmod +x /usr/local/bin/test-utils.sh
+
+WORKDIR /root
+
+CMD ["/bin/bash"]

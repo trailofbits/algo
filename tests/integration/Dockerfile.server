@@ -1,0 +1,44 @@
+# Algo server container for integration testing
+FROM ubuntu:22.04
+
+# Install required packages
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-venv \
+    ansible \
+    wireguard \
+    wireguard-tools \
+    strongswan \
+    strongswan-swanctl \
+    strongswan-pki \
+    iptables \
+    iproute2 \
+    openssl \
+    curl \
+    dnsutils \
+    iputils-ping \
+    net-tools \
+    sudo \
+    kmod \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy Algo source
+WORKDIR /algo
+COPY . /algo/
+
+# Install Python dependencies
+RUN python3 -m pip install --upgrade pip && \
+    pip3 install -r requirements.txt
+
+# Create test configuration
+RUN mkdir -p /etc/algo
+
+# Entry point script
+COPY tests/integration/server-entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Expose VPN ports
+EXPOSE 51820/udp 500/udp 4500/udp
+
+ENTRYPOINT ["/entrypoint.sh"]

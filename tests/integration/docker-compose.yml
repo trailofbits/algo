@@ -1,0 +1,73 @@
+version: '3.8'
+
+networks:
+  algo-test:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.99.0.0/24
+          gateway: 10.99.0.1
+
+services:
+  algo-server:
+    build:
+      context: ../..
+      dockerfile: tests/integration/Dockerfile.server
+    container_name: algo-server
+    hostname: algo-server
+    networks:
+      algo-test:
+        ipv4_address: 10.99.0.10
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv6.conf.all.forwarding=1
+      - net.ipv6.conf.all.disable_ipv6=0
+    volumes:
+      - /lib/modules:/lib/modules:ro
+      - ./test-configs:/etc/algo
+    environment:
+      - ALGO_TEST_MODE=1
+    healthcheck:
+      test: ["CMD", "test", "-f", "/etc/algo/.provisioned"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  client-ubuntu:
+    build:
+      context: ../..
+      dockerfile: tests/integration/Dockerfile.client-ubuntu
+    container_name: client-ubuntu
+    hostname: client-ubuntu
+    networks:
+      algo-test:
+        ipv4_address: 10.99.0.20
+    cap_add:
+      - NET_ADMIN
+    depends_on:
+      algo-server:
+        condition: service_healthy
+    volumes:
+      - ./test-configs:/configs:ro
+    command: /bin/bash -c "tail -f /dev/null"
+
+  client-debian:
+    build:
+      context: ../..
+      dockerfile: tests/integration/Dockerfile.client-debian
+    container_name: client-debian
+    hostname: client-debian
+    networks:
+      algo-test:
+        ipv4_address: 10.99.0.21
+    cap_add:
+      - NET_ADMIN
+    depends_on:
+      algo-server:
+        condition: service_healthy
+    volumes:
+      - ./test-configs:/configs:ro
+    command: /bin/bash -c "tail -f /dev/null"

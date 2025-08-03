@@ -49,13 +49,33 @@
    - Certificate generation compatibility
    - PKCS#12 export for mobile devices
 
-8. **Cloud Provider Configs** (`test_cloud_provider_configs.py`) - Addresses #14752, #14730, #14762
+8. **Docker Integration Tests** (`integration/test_docker_vpn.py`)
+   - Full VPN server deployment in containers
+   - WireGuard client connectivity testing
+   - IPsec/StrongSwan tunnel testing
+   - DNS resolution through VPN
+   - Multiple client connections
+   - Network isolation verification
+
+9. **Cloud Provider Configs** (`test_cloud_provider_configs.py`) - Addresses #14752, #14730, #14762
    - Cloud provider configuration validation
    - Hetzner server type updates (cx11 → cx22)
    - Azure dependency compatibility
    - Region format validation
    - Server size naming conventions
    - OS image naming validation
+
+10. **Template Rendering** (`test_template_rendering.py`)
+    - Jinja2 template syntax validation
+    - Variable substitution testing
+    - Template security (no arbitrary code execution)
+    - Configuration file generation
+
+11. **Generated Configs** (`test_generated_configs.py`)
+    - WireGuard config file validation
+    - IPsec/StrongSwan config validation
+    - DNS configuration validation
+    - Firewall rules validation
 
 ### What We DON'T Test Yet
 
@@ -122,7 +142,7 @@
 
 ### Medium Term
 1. **Mock cloud provider APIs** to test deployment logic
-2. **Container-based integration tests** using Docker Compose
+2. ~~**Container-based integration tests** using Docker Compose~~ ✅ DONE! See `integration/`
 3. **Test certificate generation** without full deployment
 4. **Validate generated configs** against schemas
 
@@ -148,3 +168,42 @@ Our approach focuses on:
 2. **No flaky tests** - Avoid complex networking setups
 3. **Test what matters** - Config generation, not VPN protocols
 4. **Progressive enhancement** - Start simple, add coverage gradually
+
+## Running Tests
+
+### Unit Tests
+```bash
+# Run all unit tests
+python -m pytest tests/unit/ -v
+
+# Run specific test file
+python tests/unit/test_basic_sanity.py
+
+# Run with coverage
+python -m pytest tests/unit/ --cov=algo
+```
+
+### Integration Tests
+```bash
+# Using make (recommended)
+cd tests/integration
+make test              # Run all tests
+make test-one TEST=test_wireguard  # Run specific test
+make shell-server     # Debug server container
+
+# Using shell script
+cd tests/integration
+./run-docker-tests.sh
+
+# Direct Python execution
+cd tests/integration
+python3 test_docker_vpn.py -v
+```
+
+### CI/CD Tests
+The test suite runs automatically on:
+- Every pull request
+- Weekly schedule (Mondays)
+- Manual workflow dispatch
+
+View test results in GitHub Actions tab.

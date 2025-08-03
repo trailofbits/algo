@@ -1,0 +1,130 @@
+name: Docker Integration Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'main.yml'
+      - 'roles/**'
+      - 'playbooks/**'
+      - 'library/**'
+      - 'tests/integration/**'
+      - 'Dockerfile'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * 1'  # Weekly on Monday at 3 AM
+
+permissions:
+  contents: read
+
+jobs:
+  docker-vpn-tests:
+    name: Docker VPN Integration Tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+        with:
+          persist-credentials: false
+          
+      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Build test images
+        run: |
+          cd tests/integration
+          docker-compose build --parallel
+          
+      - name: Run Docker integration tests
+        run: |
+          cd tests/integration
+          # Run with specific test or all tests
+          if [ -n "${{ github.event.inputs.test_name }}" ]; then
+            python3 test_docker_vpn.py -k "${{ github.event.inputs.test_name }}"
+          else
+            python3 test_docker_vpn.py -v
+          fi
+          
+      - name: Collect container logs
+        if: always()
+        run: |
+          cd tests/integration
+          mkdir -p logs
+          
+          # Collect logs from all containers
+          for container in algo-server client-ubuntu client-debian; do
+            echo "=== Logs for $container ===" > "logs/${container}.log"
+            docker logs "$container" >> "logs/${container}.log" 2>&1 || echo "Failed to get logs for $container"
+            
+            # Also get service status from containers
+            echo -e "\n=== Service Status ===" >> "logs/${container}.log"
+            docker exec "$container" systemctl status --no-pager || true >> "logs/${container}.log" 2>&1
+          done
+          
+          # Get WireGuard status from server
+          echo "=== WireGuard Status ===" > logs/wireguard-status.log
+          docker exec algo-server wg show >> logs/wireguard-status.log 2>&1 || true
+          
+          # Get network info
+          echo "=== Docker Network Info ===" > logs/network-info.log
+          docker network inspect algo-test >> logs/network-info.log 2>&1 || true
+          
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3  # v4.3.1
+        with:
+          name: docker-integration-logs-${{ github.run_id }}
+          path: tests/integration/logs/
+          retention-days: 7
+          
+      - name: Clean up Docker resources
+        if: always()
+        run: |
+          cd tests/integration
+          docker-compose down -v --remove-orphans || true
+          docker system prune -f
+
+  docker-client-compatibility:
+    name: Test Client OS Compatibility
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        client_os:
+          - ubuntu:22.04
+          - ubuntu:20.04
+          - debian:12
+          - debian:11
+          - alpine:3.19
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+        with:
+          persist-credentials: false
+          
+      - name: Test client OS compatibility
+        run: |
+          # Build a minimal test to verify WireGuard tools install
+          cat > Dockerfile.test << EOF
+          FROM ${{ matrix.client_os }}
+          RUN if [ -f /etc/alpine-release ]; then \
+                apk add --no-cache wireguard-tools; \
+              elif [ -f /etc/debian_version ]; then \
+                apt-get update && apt-get install -y wireguard-tools; \
+              fi
+          RUN wg version
+          EOF
+          
+          docker build -f Dockerfile.test -t test-client:${{ matrix.client_os }} .
+          docker run --rm test-client:${{ matrix.client_os }} wg version
+          
+          echo "✓ WireGuard tools work on ${{ matrix.client_os }}"
