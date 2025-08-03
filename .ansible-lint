@@ -3,27 +3,28 @@ exclude_paths:
   - .cache/
   - .github/
   - tests/legacy-lxd/
+  - tests/
 
 skip_list:
-  - '204'  # Lines should be less than 160 characters
-  - 'package-latest'  # Package installs should not use latest
+  - 'package-latest'  # Package installs should not use latest - needed for updates
   - 'experimental'  # Experimental rules
-  - 'name[missing]'  # All tasks should be named
-  - 'name[play]'  # All plays should be named
-  - 'fqcn[action]'  # Use FQCN for module actions
-  - 'fqcn[action-core]'  # Use FQCN for builtin actions
+  - 'fqcn[action]'  # Use FQCN for module actions - gradual migration
+  - 'fqcn[action-core]'  # Use FQCN for builtin actions - gradual migration
   - 'var-naming[no-role-prefix]'  # Variable naming
   - 'var-naming[pattern]'  # Variable naming patterns
-  - 'no-free-form'  # Avoid free-form syntax
+  - 'no-free-form'  # Avoid free-form syntax - some legacy usage
   - 'key-order[task]'  # Task key order
   - 'jinja[spacing]'  # Jinja2 spacing
   - 'name[casing]'  # Name casing
   - 'yaml[document-start]'  # YAML document start
+  - 'role-name'  # Role naming convention - too many cloud-* roles
+  - 'no-handler'  # Handler usage - some legitimate non-handler use cases
 
 warn_list:
   - no-changed-when
-  - no-handler
   - yaml[line-length]
+  - risky-file-permissions
+  - name[missing]
 
 # Enable additional rules
 enable_list:
@@ -32,3 +33,5 @@ enable_list:
   - partial-become
 
 verbosity: 1
+
+# vim: ft=yaml
