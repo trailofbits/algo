@@ -47,9 +47,9 @@ publicIpFromInterface() {
 
 tryGetMetadata() {
   # Helper function to fetch metadata with retry
-  local url="$1"
-  local headers="$2"
-  local response=""
+  url="$1"
+  headers="$2"
+  response=""
   
   # Try up to 2 times
   for attempt in 1 2; do

@@ -1,5 +1,6 @@
 ---
-- hosts: localhost
+- name: Manage VPN Users
+  hosts: localhost
   gather_facts: false
   tags: always
   vars_files:

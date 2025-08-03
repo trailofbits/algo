@@ -212,12 +212,14 @@
         - "{{ users }}"
 
     - name: Get active users
-      shell: >
+      shell: |
+        set -o pipefail
         grep ^V index.txt |
         grep -v "{{ IP_subject_alt_name }}" |
         awk '{print $5}' |
         sed 's/\/CN=//g'
       args:
+        executable: /bin/bash
         chdir: "{{ ipsec_pki_path }}"
       register: valid_certs
 

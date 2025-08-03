@@ -25,7 +25,7 @@
       async: 1
       poll: 0
       when: reboot_required is defined and reboot_required.stdout == 'required'
-      ignore_errors: true
+      failed_when: false
 
     - name: Wait until the server becomes ready...
       wait_for_connection:
