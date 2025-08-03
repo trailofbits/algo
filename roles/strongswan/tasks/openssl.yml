@@ -131,8 +131,6 @@
       failed_when: >
         client_key_results.failed or
         (client_key_results.finished and client_key_results.rc != 0)
-      vars:
-        ansible_async_dir: "{{ ansible_remote_tmp }}/.ansible_async"
 
     - name: Display crypto generation failure details (if any)
       debug:
