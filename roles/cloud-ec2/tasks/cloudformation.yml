@@ -9,7 +9,6 @@
     template: roles/cloud-ec2/files/stack.yaml
     template_parameters:
       InstanceTypeParameter: "{{ cloud_providers.ec2.size }}"
-      PublicSSHKeyParameter: "{{ lookup('file', SSH_keys.public) }}"
       ImageIdParameter: "{{ ami_image }}"
       WireGuardPort: "{{ wireguard_port }}"
       UseThisElasticIP: "{{ existing_eip }}"

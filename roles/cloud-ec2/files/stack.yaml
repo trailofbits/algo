@@ -5,10 +5,8 @@ Parameters:
   InstanceTypeParameter:
     Type: String
     Default: t2.micro
-  PublicSSHKeyParameter:
-    Type: String
   ImageIdParameter:
-    Type: String
+    Type: AWS::EC2::Image::Id
   WireGuardPort:
     Type: String
   UseThisElasticIP:
@@ -83,8 +81,6 @@ Resources:
   Route:
     Type: AWS::EC2::Route
     DependsOn:
-      - InternetGateway
-      - RouteTable
       - VPCGatewayAttachment
     Properties:
       RouteTableId: !Ref RouteTable
@@ -94,8 +90,6 @@ Resources:
   RouteIPv6:
     Type: AWS::EC2::Route
     DependsOn:
-      - InternetGateway
-      - RouteTable
       - VPCGatewayAttachment
     Properties:
       RouteTableId: !Ref RouteTable
@@ -105,8 +99,6 @@ Resources:
   SubnetIPv6:
     Type: AWS::EC2::SubnetCidrBlock
     DependsOn:
-      - RouteIPv6
-      - VPC
       - VPCIPv6
     Properties:
       Ipv6CidrBlock:
@@ -118,10 +110,6 @@ Resources:
 
   RouteSubnet:
     Type: "AWS::EC2::SubnetRouteTableAssociation"
-    DependsOn:
-      - RouteTable
-      - Subnet
-      - Route
     Properties:
       RouteTableId: !Ref RouteTable
       SubnetId: !Ref Subnet
@@ -167,8 +155,6 @@ Resources:
     Type: AWS::EC2::Instance
     DependsOn:
       - SubnetIPv6
-      - Subnet
-      - InstanceSecurityGroup
     Properties:
       InstanceType:
         Ref: InstanceTypeParameter
@@ -205,7 +191,6 @@ Resources:
       Domain: vpc
       InstanceId: !Ref EC2Instance
     DependsOn:
-      - EC2Instance
       - VPCGatewayAttachment
 
   ElasticIPAssociation:
