@@ -81,7 +81,14 @@ Enter the number of your desired provider
 : 3
 ```
 
-Next, you will be asked for the AWS Access Key (Access Key ID) and AWS Secret Key (Secret Access Key) that you received in  the CSV file when you setup the account (don't worry if you don't see your text entered in the console; the key input is  hidden here by Algo).
+Next, Algo will need your AWS credentials. If you have already configured AWS CLI with `aws configure`, Algo will automatically use those credentials. Otherwise, you will be asked for the AWS Access Key (Access Key ID) and AWS Secret Key (Secret Access Key) that you received in the CSV file when you setup the account (don't worry if you don't see your text entered in the console; the key input is hidden here by Algo).
+
+**Automatic credential detection**: Algo will check for credentials in this order:
+1. Command-line variables
+2. Environment variables (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`)
+3. AWS credentials file (`~/.aws/credentials`)
+
+If none are found, you'll see these prompts:
 
 ```
 Enter your aws_access_key (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
@@ -93,6 +100,8 @@ Enter your aws_secret_key (http://docs.aws.amazon.com/general/latest/gr/managing
 [pasted values will not be displayed]
 [ABCD...]:
 ```
+
+For more details on credential configuration, see the [AWS Credentials guide](aws-credentials.md).
 
 You will be prompted for the server name to enter. Feel free to leave this as the default ("algo") if you are not certain how this will affect your setup. Here we chose to call it "algovpn".
 
