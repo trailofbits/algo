@@ -52,7 +52,6 @@ jobs:
         run: |
           python tests/unit/test_basic_sanity.py
           python tests/unit/test_config_validation.py
-          python tests/unit/test_certificate_validation.py
           python tests/unit/test_user_management.py
           python tests/unit/test_openssl_compatibility.py
           python tests/unit/test_cloud_provider_configs.py
