@@ -45,7 +45,7 @@ These steps should be only if you clone the Algo repository to the host machine 
 
 ### Allow git to change files metadata
 
-By default git cannot change files metadata (using chmod for example) for files stored at host machine disks (https://docs.microsoft.com/en-us/windows/wsl/wsl-config#set-wsl-launch-settings). Allow it:
+By default, git cannot change files metadata (using chmod for example) for files stored at host machine disks (https://docs.microsoft.com/en-us/windows/wsl/wsl-config#set-wsl-launch-settings). Allow it:
 
 1. Start Ubuntu Terminal.
 2. Edit /etc/wsl.conf (create it if it doesn't exist). Add the following:
@@ -57,9 +57,9 @@ options = "metadata"
 4. Run powershell.
 5. Run `wsl --shutdown` in powershell.
 
-### Allow  run Ansible in a world writable directory
+### Allow run Ansible in a world writable directory
 
-Ansible threat host machine directories as world writable directory and do not load .cfg from it by default (https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-writable-dir). For fix run inside `algo` directory:
+Ansible treats host machine directories as world writable directory and do not load .cfg from it by default (https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-writable-dir). For fix run inside `algo` directory:
 
 ```shell
 chmod 744 .

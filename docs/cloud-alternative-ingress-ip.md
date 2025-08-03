@@ -13,7 +13,7 @@ Additional info might be found in [this issue](https://github.com/trailofbits/al
 
 ##### Extra charges
 
-- DigitalOcean: Floating IPs are free when assigned to a Droplet, but after manually deleting a Droplet you need to also delete the Floating IP or you'll get charged for it.
+- DigitalOcean: Floating IPs are free when assigned to a Droplet, but after manually deleting a Droplet, you need to also delete the Floating IP or you'll get charged for it.
 
 ##### IPv6
 

@@ -1,6 +1,6 @@
 # Deploy from Google Cloud Shell
 
-If you want to try Algo but don't wish to install the software on your own system you can use the **free** [Google Cloud Shell](https://cloud.google.com/shell/) to deploy a VPN to any supported cloud provider. Note that you cannot choose `Install to existing Ubuntu server` to turn Google Cloud Shell into your VPN server.
+If you want to try Algo but don't wish to install the software on your own system, you can use the **free** [Google Cloud Shell](https://cloud.google.com/shell/) to deploy a VPN to any supported cloud provider. Note that you cannot choose `Install to existing Ubuntu server` to turn Google Cloud Shell into your VPN server.
 
 1. See the [Cloud Shell documentation](https://cloud.google.com/shell/docs/) to start an instance of Cloud Shell in your browser.
 

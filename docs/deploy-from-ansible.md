@@ -67,7 +67,7 @@ Server roles:
   - Adds a restricted `algo` group with no shell access and limited SSH forwarding options
   - Creates one limited, local account and an SSH public key for each user
 - role: wireguard
-  - Installs a [Wireguard](https://www.wireguard.com/) server, with a startup script, and automatic checks for upgrades
+  - Install a [Wireguard](https://www.wireguard.com/) server, with a startup script, and automatic checks for upgrades
   - Creates wireguard.conf files for Linux clients as well as QR codes for Apple/Android clients
 
 Note: The `strongswan` role generates Apple profiles with On-Demand Wifi and Cellular if you pass the following variables:
@@ -80,7 +80,7 @@ Note: The `strongswan` role generates Apple profiles with On-Demand Wifi and Cel
 
 - role: local, provider: local
 
-This role is intended to be run for local install onto an Ubuntu server, or onto an unsupported cloud provider's Ubuntu instance. Required variables:
+This role is intended to be run for local installation onto an Ubuntu server, or onto an unsupported cloud provider's Ubuntu instance. Required variables:
 
 - server - IP address of your server (or "localhost" if deploying to the local machine)
 - endpoint - public IP address of the server you're installing on
@@ -112,7 +112,7 @@ Additional variables:
 
 - [encrypted](https://aws.amazon.com/blogs/aws/new-encrypted-ebs-boot-volumes/) - Encrypted EBS boot volume. Boolean (Default: true)
 - [size](https://aws.amazon.com/ec2/instance-types/) - EC2 instance type. String (Default: t2.micro)
-- [image](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/describe-images.html) - AMI `describe-images` search parameters to find the OS for the hosted image. Each OS and architecture has a unique AMI-ID. The OS owner, for example [Ubuntu](https://cloud-images.ubuntu.com/locator/ec2/), updates these images often. If parameters below result in multiple results, the most recent AMI-ID is chosen
+- [image](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/describe-images.html) - AMI `describe-images` search parameters to find the OS for the hosted image. Each OS and architecture has a unique AMI-ID. The OS owner, for example, [Ubuntu](https://cloud-images.ubuntu.com/locator/ec2/), updates these images often. If parameters below result in multiple results, the most recent AMI-ID is chosen
 
    ```
    # Example of equivalent cli command

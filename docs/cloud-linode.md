@@ -1,6 +1,6 @@
 ## API Token
 
-Sign into the Linode Manager and go to the
+Sign in to the Linode Manager and go to the
 [tokens management page](https://cloud.linode.com/profile/tokens).
 
 Click `Add a Personal Access Token`. Label your new token and select *at least* the

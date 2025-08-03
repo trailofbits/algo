@@ -38,7 +38,7 @@ Here you can find some information from [the official doc](https://docs.microsof
 - Windows ([link](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-windows?view=azure-cli-latest)):  
   For Windows the Azure CLI is installed via an MSI, which gives you access to the CLI through the Windows Command Prompt (CMD) or PowerShell. When installing for Windows Subsystem for Linux (WSL), packages are available for your Linux distribution. [Download the MSI installer](https://aka.ms/installazurecliwindows)
 
-If your OS is missing or to get more information see [the official doc](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
+If your OS is missing or to get more information, see [the official doc](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 
 
 ## Sign in
