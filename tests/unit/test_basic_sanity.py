@@ -31,7 +31,7 @@ def test_config_file_valid():
             assert isinstance(config, dict), "config.cfg should parse as a dictionary"
             print("✓ config.cfg is valid YAML")
         except yaml.YAMLError as e:
-            raise AssertionError(f"config.cfg is not valid YAML: {e}")
+            raise AssertionError(f"config.cfg is not valid YAML: {e}") from e
 
 
 def test_ansible_syntax():

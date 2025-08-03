@@ -25,7 +25,4 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"library/*" = ["ALL"]           # Exclude Ansible library modules (external code)
-"tests/integration/*" = ["ALL"] # Exclude integration test mocks (test infrastructure)
-"scripts/*" = ["ALL"]           # Exclude utility scripts (not core functionality)
-"tests/*" = ["F841", "F401", "B904", "W293", "B007"]  # Allow test-specific patterns
+"library/*" = ["ALL"]  # Exclude Ansible library modules (external code)

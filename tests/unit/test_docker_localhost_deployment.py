@@ -58,7 +58,7 @@ conn %default
     keyexchange=ikev2
     ike=aes128-sha256-modp2048
     esp=aes128-sha256-modp2048
-    
+
 conn ikev2-pubkey
     left=%any
     leftid=@10.0.0.1

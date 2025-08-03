@@ -153,7 +153,7 @@ def generate_effectiveness_report(test_failures, correlations):
     # Recommendations
     report.append("\n## Recommendations")
 
-    for test_name, failures, caught, false_pos, effectiveness in scores:
+    for test_name, failures, _caught, _false_pos, effectiveness in scores:
         if effectiveness < 0.2 and failures > 5:
             report.append(f"- ⚠️  Consider improving or removing `{test_name}` (only {effectiveness:.0%} effective)")
         elif effectiveness > 0.8:

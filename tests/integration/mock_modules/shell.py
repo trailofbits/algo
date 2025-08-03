@@ -8,17 +8,17 @@ from ansible.module_utils.basic import AnsibleModule
 
 def main():
     module = AnsibleModule(
-        argument_spec=dict(
-            _raw_params=dict(type='str'),
-            cmd=dict(type='str'),
-            creates=dict(type='path'),
-            removes=dict(type='path'),
-            chdir=dict(type='path'),
-            executable=dict(type='path', default='/bin/sh'),
-            warn=dict(type='bool', default=False),
-            stdin=dict(type='str'),
-            stdin_add_newline=dict(type='bool', default=True),
-        ),
+        argument_spec={
+            '_raw_params': {'type': 'str'},
+            'cmd': {'type': 'str'},
+            'creates': {'type': 'path'},
+            'removes': {'type': 'path'},
+            'chdir': {'type': 'path'},
+            'executable': {'type': 'path', 'default': '/bin/sh'},
+            'warn': {'type': 'bool', 'default': False},
+            'stdin': {'type': 'str'},
+            'stdin_add_newline': {'type': 'bool', 'default': True},
+        },
         supports_check_mode=True
     )
 
@@ -29,15 +29,15 @@ def main():
     if not cmd:
         module.fail_json(msg="no command given")
 
-    result = dict(
-        changed=False,
-        cmd=cmd,
-        rc=0,
-        stdout='',
-        stderr='',
-        stdout_lines=[],
-        stderr_lines=[]
-    )
+    result = {
+        'changed': False,
+        'cmd': cmd,
+        'rc': 0,
+        'stdout': '',
+        'stderr': '',
+        'stdout_lines': [],
+        'stderr_lines': []
+    }
 
     # Log the operation
     with open('/var/log/mock-shell-module.log', 'a') as f:

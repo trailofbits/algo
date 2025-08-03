@@ -62,8 +62,6 @@ def test_aws_instance_types():
 def test_vultr_instance_types():
     """Test Vultr instance type naming"""
     # Vultr uses format like vc2-1c-1gb
-    valid_types = ['vc2-1c-1gb', 'vc2-2c-4gb', 'vhf-1c-1gb', 'vhf-2c-2gb']
-
     test_type = 'vc2-1c-1gb'
     assert any(test_type.startswith(prefix) for prefix in ['vc2-', 'vhf-', 'vhp-']), \
         f"Invalid Vultr type format: {test_type}"

@@ -8,21 +8,21 @@ from ansible.module_utils.basic import AnsibleModule
 
 def main():
     module = AnsibleModule(
-        argument_spec=dict(
-            name=dict(type='list', aliases=['pkg', 'package']),
-            state=dict(type='str', default='present', choices=['present', 'absent', 'latest', 'build-dep', 'fixed']),
-            update_cache=dict(type='bool', default=False),
-            cache_valid_time=dict(type='int', default=0),
-            install_recommends=dict(type='bool'),
-            force=dict(type='bool', default=False),
-            allow_unauthenticated=dict(type='bool', default=False),
-            allow_downgrade=dict(type='bool', default=False),
-            allow_change_held_packages=dict(type='bool', default=False),
-            dpkg_options=dict(type='str', default='force-confdef,force-confold'),
-            autoremove=dict(type='bool', default=False),
-            purge=dict(type='bool', default=False),
-            force_apt_get=dict(type='bool', default=False),
-        ),
+        argument_spec={
+            'name': {'type': 'list', 'aliases': ['pkg', 'package']},
+            'state': {'type': 'str', 'default': 'present', 'choices': ['present', 'absent', 'latest', 'build-dep', 'fixed']},
+            'update_cache': {'type': 'bool', 'default': False},
+            'cache_valid_time': {'type': 'int', 'default': 0},
+            'install_recommends': {'type': 'bool'},
+            'force': {'type': 'bool', 'default': False},
+            'allow_unauthenticated': {'type': 'bool', 'default': False},
+            'allow_downgrade': {'type': 'bool', 'default': False},
+            'allow_change_held_packages': {'type': 'bool', 'default': False},
+            'dpkg_options': {'type': 'str', 'default': 'force-confdef,force-confold'},
+            'autoremove': {'type': 'bool', 'default': False},
+            'purge': {'type': 'bool', 'default': False},
+            'force_apt_get': {'type': 'bool', 'default': False},
+        },
         supports_check_mode=True
     )
 
@@ -30,11 +30,11 @@ def main():
     state = module.params['state']
     update_cache = module.params['update_cache']
 
-    result = dict(
-        changed=False,
-        cache_updated=False,
-        cache_update_time=0
-    )
+    result = {
+        'changed': False,
+        'cache_updated': False,
+        'cache_update_time': 0
+    }
 
     # Log the operation
     with open('/var/log/mock-apt-module.log', 'a') as f:
