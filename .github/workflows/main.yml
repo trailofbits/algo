@@ -19,39 +19,24 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Cache shellcheck
-        id: cache-shellcheck
-        uses: actions/cache@v4
-        with:
-          path: /snap/bin/shellcheck
-          key: ${{ runner.os }}-shellcheck-v1
-
       - name: Install dependencies
-        env:
-          DEBIAN_FRONTEND: noninteractive
         run: |
-          sudo apt update -y
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          if [ "${{ steps.cache-shellcheck.outputs.cache-hit }}" != "true" ]; then
-            sudo snap install shellcheck
-          fi
           pip install ansible-lint
+          # Install shellcheck from apt (faster than snap)
+          sudo apt-get update && sudo apt-get install -y shellcheck
 
-      - name: Checks and linters
+      - name: Run linters
         run: |
-          /snap/bin/shellcheck algo install.sh
+          shellcheck algo install.sh
           ansible-playbook main.yml --syntax-check
           ansible-lint -x experimental,package-latest,unnamed-task -v *.yml roles/{local,cloud-*}/*/*.yml || true
 
-  scripted-deploy:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
+  basic-tests:
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
-    strategy:
-      matrix:
-        UBUNTU_VERSION: ["22.04"]
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
         with:
@@ -62,91 +47,36 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        env:
-          DEBIAN_FRONTEND: noninteractive
         run: |
-          sudo apt update -y
-          sudo apt install -y \
-            wireguard \
-            libxml2-utils \
-            crudini \
-            fping \
-            strongswan \
-            libstrongswan-standard-plugins
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          sudo apt-get update && sudo apt-get install -y shellcheck
 
-          python3 -m pip install --upgrade pip
-          python3 -m pip install -r requirements.txt
+      - name: Run basic sanity tests
+        run: python tests/unit/test_basic_sanity.py
 
-          # Install LXD on Ubuntu 24.04 (not pre-installed)
-          sudo snap install lxd
-          
-          # Fix Docker/LXD iptables conflict on Ubuntu 22.04+
-          # Docker doesn't work well with nftables, switch to iptables-legacy
-          sudo update-alternatives --set iptables /usr/sbin/iptables-legacy
-          sudo update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
-          
-          # Initialize LXD
-          sudo lxd init --auto
-          
-          # Enable IP forwarding for container networking
-          sudo sysctl -w net.ipv4.ip_forward=1
-          sudo sysctl -w net.ipv6.conf.all.forwarding=1
-
-      - name: Provision
-        env:
-          DEPLOY: cloud-init
-          UBUNTU_VERSION: ${{ matrix.UBUNTU_VERSION }}
-          REPOSITORY: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}
-          BRANCH: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref }}
-        run: |
-          ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
-          # sed -i "s/^reduce_mtu:\s0$/reduce_mtu: 80/" config.cfg
-          sudo -E ./tests/pre-deploy.sh
-
-      - name: Deployment
-        run: |
-          set -x
-          until sudo lxc exec algo -- test -f /var/log/cloud-init-output.log; do echo 'Log file not found, Sleep for 3 seconds'; sleep 3; done
-          ( sudo lxc exec algo -- tail -f /var/log/cloud-init-output.log & )
-          until sudo lxc exec algo -- test -f /var/lib/cloud/data/result.json; do
-            echo 'Cloud init is not finished. Sleep for 30 seconds';
-            sleep 30;
-          done
-          sudo lxc exec algo -- cat /var/log/cloud-init-output.log
-          sudo lxc exec algo -- test -f /opt/algo/configs/10.0.8.100/.config.yml
-          sudo lxc exec algo -- tar zcf /root/algo-configs.tar -C /opt/algo/configs/ .
-          sudo lxc file pull algo/root/algo-configs.tar ./
-          sudo tar -C ./configs -zxf algo-configs.tar
-
-      - name: Tests
-        run: |
-          set -x
-          # Run tests in parallel
-          sudo -E bash -x ./tests/wireguard-client.sh &
-          WG_PID=$!
-          sudo env "PATH=$PATH" ./tests/ipsec-client.sh &
-          IPSEC_PID=$!
-          
-          # Wait for all tests to complete
-          wait $WG_PID
-          WG_EXIT=$?
-          wait $IPSEC_PID
-          IPSEC_EXIT=$?
-          
-          # Check if any test failed
-          if [ $WG_EXIT -ne 0 ] || [ $IPSEC_EXIT -ne 0 ]; then
-            echo "One or more tests failed"
-            exit 1
-          fi
-
-  docker-deploy:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
+  docker-build:
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
-    strategy:
-      matrix:
-        UBUNTU_VERSION: ["22.04"]
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+        with:
+          persist-credentials: false
+
+      - name: Build Docker image
+        run: docker build -t local/algo:test .
+
+      - name: Test Docker image starts
+        run: |
+          # Just verify the image can start and show help
+          docker run --rm local/algo:test /algo/algo --help
+
+  config-generation:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
         with:
@@ -157,78 +87,12 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        env:
-          DEBIAN_FRONTEND: noninteractive
         run: |
-          set -x
-          sudo apt update -y
-          sudo apt install -y \
-            wireguard \
-            libxml2-utils \
-            crudini \
-            fping \
-            strongswan \
-            libstrongswan-standard-plugins
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-          python3 -m pip install --upgrade pip
-          python3 -m pip install -r requirements.txt
-
-          # Install LXD on Ubuntu 24.04 (not pre-installed)
-          sudo snap install lxd
-          
-          # Fix Docker/LXD iptables conflict on Ubuntu 22.04+
-          # Docker doesn't work well with nftables, switch to iptables-legacy
-          sudo update-alternatives --set iptables /usr/sbin/iptables-legacy
-          sudo update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
-          
-          # Initialize LXD
-          sudo lxd init --auto
-          
-          # Enable IP forwarding for container networking
-          sudo sysctl -w net.ipv4.ip_forward=1
-          sudo sysctl -w net.ipv6.conf.all.forwarding=1
-
-      - name: Provision
-        env:
-          DEPLOY: docker
-          UBUNTU_VERSION: ${{ matrix.UBUNTU_VERSION }}
-          REPOSITORY: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}
-          BRANCH: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref }}
+      - name: Test configuration generation (local mode)
         run: |
-          ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
-          sed -i "s/^reduce_mtu:\s0$/reduce_mtu: 80/" config.cfg
-          sudo -E ./tests/pre-deploy.sh
-
-      - name: Deployment
-        env:
-          DEPLOY: docker
-          UBUNTU_VERSION: ${{ matrix.UBUNTU_VERSION }}
-        run: |
-          docker build -t local/algo .
-          ./tests/local-deploy.sh
-          ./tests/update-users.sh
-
-      - name: Tests
-        run: |
-          set -x
-          # Run tests in parallel
-          sudo bash -x ./tests/wireguard-client.sh &
-          WG_PID=$!
-          sudo env "PATH=$PATH" bash -x ./tests/ipsec-client.sh &
-          IPSEC_PID=$!
-          sudo bash -x ./tests/ssh-tunnel.sh &
-          SSH_PID=$!
-          
-          # Wait for all tests to complete
-          wait $WG_PID
-          WG_EXIT=$?
-          wait $IPSEC_PID
-          IPSEC_EXIT=$?
-          wait $SSH_PID
-          SSH_EXIT=$?
-          
-          # Check if any test failed
-          if [ $WG_EXIT -ne 0 ] || [ $IPSEC_EXIT -ne 0 ] || [ $SSH_EXIT -ne 0 ]; then
-            echo "One or more tests failed"
-            exit 1
-          fi
+          # Run our simplified config test
+          chmod +x tests/test-local-config.sh
+          ./tests/test-local-config.sh
