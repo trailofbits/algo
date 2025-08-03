@@ -48,9 +48,21 @@
 
 # Set final credentials with proper precedence
 - set_fact:
-    access_key: "{{ aws_access_key | default(lookup('env','AWS_ACCESS_KEY_ID')) | default(_file_access_key) | default(_aws_access_key.user_input|default(None)) }}"
-    secret_key: "{{ aws_secret_key | default(lookup('env','AWS_SECRET_ACCESS_KEY')) | default(_file_secret_key) | default(_aws_secret_key.user_input|default(None)) }}"
-    session_token: "{{ aws_session_token | default(lookup('env','AWS_SESSION_TOKEN')) | default(_file_session_token) | default('') }}"
+    access_key: >-
+      {{ aws_access_key
+         | default(lookup('env', 'AWS_ACCESS_KEY_ID'))
+         | default(_file_access_key)
+         | default(_aws_access_key.user_input | default(None)) }}
+    secret_key: >-
+      {{ aws_secret_key
+         | default(lookup('env', 'AWS_SECRET_ACCESS_KEY'))
+         | default(_file_secret_key)
+         | default(_aws_secret_key.user_input | default(None)) }}
+    session_token: >-
+      {{ aws_session_token
+         | default(lookup('env', 'AWS_SESSION_TOKEN'))
+         | default(_file_session_token)
+         | default('') }}
   no_log: true
 
 - block:
