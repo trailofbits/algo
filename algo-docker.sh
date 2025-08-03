@@ -11,9 +11,9 @@ usage() {
     retcode="${1:-0}"
     echo "To run algo from Docker:"
     echo ""
-    echo "docker run --cap-drop=all -it -v <path to configurations>:"${DATA_DIR}" ghcr.io/trailofbits/algo:latest"
+    echo "docker run --cap-drop=all -it -v <path to configurations>:${DATA_DIR} ghcr.io/trailofbits/algo:latest"
     echo ""
-    exit ${retcode}
+    exit "${retcode}"
 }
 
 if [ ! -f "${DATA_DIR}"/config.cfg ] ; then
@@ -25,7 +25,7 @@ fi
 
 if [ ! -e /dev/console ] ; then
   echo "Looks like you're trying to run this container without a TTY."
-  echo "If you don't pass `-t`, you can't interact with the algo script."
+  echo "If you don't pass -t, you can't interact with the algo script."
   echo ""
   usage -1
 fi
@@ -41,4 +41,4 @@ test -d "${DATA_DIR}"/configs && rsync -qLktr --delete "${DATA_DIR}"/configs "${
 retcode=${?}
 
 rsync -qLktr --delete "${ALGO_DIR}"/configs "${DATA_DIR}"/
-exit ${retcode}
+exit "${retcode}"
