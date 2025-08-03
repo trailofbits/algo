@@ -31,7 +31,7 @@
 - name: Display WireGuard private key generation failure details (if any)
   debug:
     msg: |
-      WireGuard private key generation failed for user: {{ item.item }}
+      WireGuard private key generation failed for user: {{ item.item.item }}
       Error details: {{ item.stderr | default('No stderr available') }}
       Return code: {{ item.rc | default('Unknown') }}
 
@@ -49,18 +49,13 @@
   with_items: "{{ wg_genkey_results.results | default([]) }}"
   failed_when: false
 
-- name: Debug - Show wg_genkey_results structure
-  debug:
-    var: wg_genkey_results
-  when: wg_genkey_results is defined
-
 - block:
     - name: Save private keys
       copy:
-        dest: "{{ wireguard_pki_path }}/private/{{ item.item }}"
+        dest: "{{ wireguard_pki_path }}/private/{{ item.item.item }}"
         content: "{{ item.stdout }}"
         mode: "0600"
-      no_log: false  # Temporarily disabled for debugging
+      no_log: "{{ algo_no_log|bool }}"
       when: item.changed
       with_items: "{{ wg_genkey_results.results }}"
       delegate_to: localhost
@@ -110,7 +105,7 @@
 - name: Display WireGuard preshared key generation failure details (if any)
   debug:
     msg: |
-      WireGuard preshared key generation failed for user: {{ item.item }}
+      WireGuard preshared key generation failed for user: {{ item.item.item }}
       Error details: {{ item.stderr | default('No stderr available') }}
       Return code: {{ item.rc | default('Unknown') }}
 
@@ -131,7 +126,7 @@
 - block:
     - name: Save preshared keys
       copy:
-        dest: "{{ wireguard_pki_path }}/preshared/{{ item.item }}"
+        dest: "{{ wireguard_pki_path }}/preshared/{{ item.item.item }}"
         content: "{{ item.stdout }}"
         mode: "0600"
       no_log: "{{ algo_no_log|bool }}"
