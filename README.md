@@ -7,13 +7,13 @@ Algo VPN is a set of Ansible scripts that simplify the setup of a personal WireG
 ## Features
 
 * Supports only IKEv2 with strong crypto (AES-GCM, SHA2, and P-256) for iOS, macOS, and Linux
-* Supports [WireGuard](https://www.wireguard.com/) for all of the above, in addition to Android and Windows 10/11
+* Supports [WireGuard](https://www.wireguard.com/) for all of the above, in addition to Android and Windows 11
 * Generates .conf files and QR codes for iOS, macOS, Android, and Windows WireGuard clients
 * Generates Apple profiles to auto-configure iOS and macOS devices for IPsec - no client software required
 * Includes a helper script to add and remove users
 * Blocks ads with a local DNS resolver (optional)
 * Sets up limited SSH users for tunneling traffic (optional)
-* Based on current versions of Ubuntu 22.04 LTS or later and strongSwan
+* Based on current versions of Ubuntu and strongSwan
 * Installs to DigitalOcean, Amazon Lightsail, Amazon EC2, Vultr, Microsoft Azure, Google Compute Engine, Scaleway, OpenStack, CloudStack, Hetzner Cloud, Linode, or [your own Ubuntu server (for more advanced users)](docs/deploy-to-ubuntu.md)
 
 ## Anti-features
@@ -39,7 +39,7 @@ The easiest way to get an Algo server running is to run it on your local system 
         git clone https://github.com/trailofbits/algo.git
         ```
 
-3. **Install Algo's core dependencies.** Algo requires that **Python 3.10 or later** and at least one supporting package are installed on your system.
+3. **Install Algo's core dependencies.** Algo requires that **Python 3.10** and at least one supporting package are installed on your system.
 
     - **macOS:** Big Sur (11.0) and higher includes Python 3 as part of the optional Command Line Developer Tools package. From Terminal run:
 
@@ -51,7 +51,7 @@ The easiest way to get an Algo server running is to run it on your local system 
 
         For macOS versions prior to Big Sur, see [Deploy from macOS](docs/deploy-from-macos.md) for information on installing Python 3 .
 
-    - **Linux:** Recent releases of Ubuntu 22.04 LTS or later, Debian, and Fedora come with Python 3 already installed. If your Python version is not 3.10 or later, then you will need to use pyenv to install Python 3.10 or later. Make sure your system is up-to-date and install the supporting package(s):
+    - **Linux:** Recent releases of Ubuntu, Debian, and Fedora come with Python 3 already installed. If your Python version is not 3.10, then you will need to use pyenv to install Python 3.10. Make sure your system is up-to-date and install the supporting package(s):
         * Ubuntu and Debian:
             ```bash
             sudo apt install -y --no-install-recommends python3-virtualenv file lookup
