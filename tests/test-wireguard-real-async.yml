@@ -1,5 +1,14 @@
 ---
-# Test actual WireGuard async flow to understand the real data structure
+# CRITICAL TEST: WireGuard Async Structure Debugging
+# ==================================================
+# This test validates the complex triple-nested data structure created by:
+# async + register + loop -> async_status + register + loop
+#
+# DO NOT DELETE: This test prevented production deployment failures by revealing
+# that the access pattern is item.item.item (not item.item as initially assumed).
+#
+# Run with: ansible-playbook tests/test-wireguard-real-async.yml -v
+# Purpose: Debug and validate the async result structure when using with_items
 - name: Test real WireGuard async pattern
   hosts: localhost
   gather_facts: no
