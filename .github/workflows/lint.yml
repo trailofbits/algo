@@ -27,8 +27,7 @@ jobs:
 
       - name: Run ansible-lint
         run: |
-          # Run with || true temporarily while we make the linter less strict
-          ansible-lint -v *.yml roles/{local,cloud-*}/*/*.yml || true
+          ansible-lint -v *.yml roles/{local,cloud-*}/*/*.yml
 
   yaml-lint:
     name: YAML linting

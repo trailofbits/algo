@@ -24,13 +24,21 @@ warn_list:
   - no-changed-when
   - yaml[line-length]
   - risky-file-permissions
-  - name[missing]
 
 # Enable additional rules
 enable_list:
   - no-log-password
   - no-same-owner
   - partial-become
+  - name[play]  # All plays should be named
+  - yaml[new-line-at-end-of-file]  # Files should end with newline
+
+# Rules we're actively working on fixing
+# Move these from skip_list to enable_list as we fix them
+# - 'name[missing]'  # All tasks should be named - 113 issues to fix
+# - 'no-changed-when'  # Commands should not change things
+# - 'yaml[line-length]'  # Line length limit
+# - 'risky-file-permissions'  # File permissions
 
 verbosity: 1
 

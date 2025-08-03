@@ -1,5 +1,6 @@
 ---
-- hosts: localhost
+- name: Algo VPN Setup
+  hosts: localhost
   become: false
   tasks:
     - name: Playbook dir stat
