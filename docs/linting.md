@@ -37,10 +37,8 @@ The project uses multiple linters to ensure code quality across different file t
 - **Config**: `.yamllint`
 - **Rules**: Extended from default with custom line length
 
-### 5. Security Scanning
-- **Tools**:
-  - `safety` - Known vulnerabilities in dependencies
-  - `zizmor` - GitHub Actions security (run separately)
+### 5. GitHub Actions Security
+- **Tool**: `zizmor` - GitHub Actions security (run separately)
 
 ## CI/CD Integration
 
@@ -54,7 +52,6 @@ Separate workflow with parallel jobs:
 - **yaml-lint**: YAML formatting
 - **python-lint**: Python code quality
 - **shellcheck**: Shell script validation
-- **security-checks**: Security scanning
 
 ## Running Linters Locally
 
@@ -70,9 +67,6 @@ find . -name "*.sh" -exec shellcheck {} \;
 
 # YAML
 yamllint .
-
-# Security
-safety check
 ```
 
 ## Current Status

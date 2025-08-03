@@ -7,9 +7,7 @@
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
@@ -167,8 +165,7 @@ import datetime
 import time
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.six.moves.urllib.parse import quote as urlquote
-from ansible.module_utils.scaleway import SCALEWAY_LOCATION, scaleway_argument_spec, Scaleway
+from ansible.module_utils.scaleway import SCALEWAY_LOCATION, Scaleway, scaleway_argument_spec
 
 SCALEWAY_SERVER_STATES = (
     'stopped',
@@ -378,8 +375,7 @@ def absent_strategy(compute_api, wished_server):
         response = stop_server(compute_api=compute_api, server=target_server)
 
         if not response.ok:
-            err_msg = 'Error while stopping a server before removing it [{0}: {1}]'.format(response.status_code,
-                                                                                           response.json)
+            err_msg = f'Error while stopping a server before removing it [{response.status_code}: {response.json}]'
             compute_api.module.fail_json(msg=err_msg)
 
         wait_to_complete_state_transition(compute_api=compute_api, server=target_server)
@@ -387,7 +383,7 @@ def absent_strategy(compute_api, wished_server):
     response = remove_server(compute_api=compute_api, server=target_server)
 
     if not response.ok:
-        err_msg = 'Error while removing server [{0}: {1}]'.format(response.status_code, response.json)
+        err_msg = f'Error while removing server [{response.status_code}: {response.json}]'
         compute_api.module.fail_json(msg=err_msg)
 
     return changed, {"status": "Server %s deleted" % target_server["id"]}
@@ -426,7 +422,7 @@ def running_strategy(compute_api, wished_server):
 
         response = start_server(compute_api=compute_api, server=target_server)
         if not response.ok:
-            msg = 'Error while running server [{0}: {1}]'.format(response.status_code, response.json)
+            msg = f'Error while running server [{response.status_code}: {response.json}]'
             compute_api.module.fail_json(msg=msg)
 
     return changed, target_server
@@ -476,7 +472,7 @@ def stop_strategy(compute_api, wished_server):
         compute_api.module.debug(response.ok)
 
         if not response.ok:
-            msg = 'Error while stopping server [{0}: {1}]'.format(response.status_code, response.json)
+            msg = f'Error while stopping server [{response.status_code}: {response.json}]'
             compute_api.module.fail_json(msg=msg)
 
     return changed, target_server
@@ -517,16 +513,14 @@ def restart_strategy(compute_api, wished_server):
         response = restart_server(compute_api=compute_api, server=target_server)
         wait_to_complete_state_transition(compute_api=compute_api, server=target_server)
         if not response.ok:
-            msg = 'Error while restarting server that was running [{0}: {1}].'.format(response.status_code,
-                                                                                      response.json)
+            msg = f'Error while restarting server that was running [{response.status_code}: {response.json}].'
             compute_api.module.fail_json(msg=msg)
 
     if fetch_state(compute_api=compute_api, server=target_server) in ("stopped",):
         response = restart_server(compute_api=compute_api, server=target_server)
         wait_to_complete_state_transition(compute_api=compute_api, server=target_server)
         if not response.ok:
-            msg = 'Error while restarting server that was stopped [{0}: {1}].'.format(response.status_code,
-                                                                                      response.json)
+            msg = f'Error while restarting server that was stopped [{response.status_code}: {response.json}].'
             compute_api.module.fail_json(msg=msg)
 
     return changed, target_server

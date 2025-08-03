@@ -3,9 +3,10 @@
 Basic sanity tests for Algo VPN that don't require deployment
 """
 import os
-import sys
-import yaml
 import subprocess
+import sys
+
+import yaml
 
 
 def test_python_version():
@@ -23,8 +24,8 @@ def test_requirements_file_exists():
 def test_config_file_valid():
     """Check that config.cfg is valid YAML"""
     assert os.path.exists("config.cfg"), "config.cfg not found"
-    
-    with open("config.cfg", "r") as f:
+
+    with open("config.cfg") as f:
         try:
             config = yaml.safe_load(f)
             assert isinstance(config, dict), "config.cfg should parse as a dictionary"
@@ -40,7 +41,7 @@ def test_ansible_syntax():
         capture_output=True,
         text=True
     )
-    
+
     assert result.returncode == 0, f"Ansible syntax check failed:\n{result.stderr}"
     print("✓ Ansible playbook syntax is valid")
 
@@ -48,7 +49,7 @@ def test_ansible_syntax():
 def test_shellcheck():
     """Run shellcheck on shell scripts"""
     shell_scripts = ["algo", "install.sh"]
-    
+
     for script in shell_scripts:
         if os.path.exists(script):
             result = subprocess.run(
@@ -63,19 +64,19 @@ def test_shellcheck():
 def test_dockerfile_exists():
     """Check that Dockerfile exists and is not empty"""
     assert os.path.exists("Dockerfile"), "Dockerfile not found"
-    
-    with open("Dockerfile", "r") as f:
+
+    with open("Dockerfile") as f:
         content = f.read()
         assert len(content) > 100, "Dockerfile seems too small"
         assert "FROM" in content, "Dockerfile missing FROM statement"
-    
+
     print("✓ Dockerfile exists and looks valid")
 
 
 if __name__ == "__main__":
     # Change to repo root
     os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-    
+
     tests = [
         test_python_version,
         test_requirements_file_exists,
@@ -84,7 +85,7 @@ if __name__ == "__main__":
         test_shellcheck,
         test_dockerfile_exists,
     ]
-    
+
     failed = 0
     for test in tests:
         try:
@@ -95,7 +96,7 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"✗ {test.__name__} error: {e}")
             failed += 1
-    
+
     if failed > 0:
         print(f"\n{failed} tests failed")
         sys.exit(1)
