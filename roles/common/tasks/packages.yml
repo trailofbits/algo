@@ -24,6 +24,8 @@
     algo_packages: "{{ algo_packages + ['dnscrypt-proxy'] }}"
   when:
     - performance_parallel_packages | default(true)
+    # dnscrypt-proxy handles both DNS ad-blocking and DNS-over-HTTPS/TLS encryption
+    # Install if user wants either ad-blocking OR encrypted DNS (or both)
     - algo_dns_adblocking | default(false) or dns_encryption | default(false)
 
 - name: Add kernel headers to optional packages

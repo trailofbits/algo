@@ -27,6 +27,34 @@
   until: wg_genkey_results.finished
   retries: 15
   delay: 2
+  failed_when: >
+    wg_genkey_results.failed or
+    (wg_genkey_results.finished and wg_genkey_results.rc != 0)
+
+- name: Display WireGuard private key generation failure details (if any)
+  debug:
+    msg: |
+      WireGuard private key generation failed for user: {{ item.item }}
+      Error details: {{ item.stderr | default('No stderr available') }}
+      Return code: {{ item.rc | default('Unknown') }}
+
+      Common causes:
+      - WireGuard tools not properly installed
+      - Insufficient entropy for key generation
+      - Permission issues in key directory
+      - Filesystem full or read-only
+
+      Troubleshooting:
+      - Verify WireGuard installation: wg --version
+      - Check entropy: cat /proc/sys/kernel/random/entropy_avail
+      - Check disk space: df -h /opt/algo
+  when: >
+    wg_genkey_results.failed or
+    (wg_genkey_results.finished and
+     wg_genkey_results.results is defined and
+     wg_genkey_results.results | selectattr('rc', 'defined') | selectattr('rc', '!=', 0) | list | length > 0)
+  with_items: "{{ wg_genkey_results.results | default([]) }}"
+  failed_when: false
 
 - block:
     - name: Save private keys
@@ -77,6 +105,34 @@
   until: wg_genpsk_results.finished
   retries: 15
   delay: 2
+  failed_when: >
+    wg_genpsk_results.failed or
+    (wg_genpsk_results.finished and wg_genpsk_results.rc != 0)
+
+- name: Display WireGuard preshared key generation failure details (if any)
+  debug:
+    msg: |
+      WireGuard preshared key generation failed for user: {{ item.item }}
+      Error details: {{ item.stderr | default('No stderr available') }}
+      Return code: {{ item.rc | default('Unknown') }}
+
+      Common causes:
+      - WireGuard tools not properly installed
+      - Insufficient entropy for key generation
+      - Permission issues in key directory
+      - Filesystem full or read-only
+
+      Troubleshooting:
+      - Verify WireGuard installation: wg --version
+      - Check entropy: cat /proc/sys/kernel/random/entropy_avail
+      - Check disk space: df -h /opt/algo
+  when: >
+    wg_genpsk_results.failed or
+    (wg_genpsk_results.finished and
+     wg_genpsk_results.results is defined and
+     wg_genpsk_results.results | selectattr('rc', 'defined') | selectattr('rc', '!=', 0) | list | length > 0)
+  with_items: "{{ wg_genpsk_results.results | default([]) }}"
+  failed_when: false
 
 - block:
     - name: Save preshared keys

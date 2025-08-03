@@ -128,6 +128,37 @@
       until: client_key_results.finished
       retries: 30
       delay: 2
+      failed_when: >
+        client_key_results.failed or
+        (client_key_results.finished and client_key_results.rc != 0)
+      vars:
+        ansible_async_dir: "{{ ansible_remote_tmp }}/.ansible_async"
+
+    - name: Display crypto generation failure details (if any)
+      debug:
+        msg: |
+          StrongSwan client key generation failed for user: {{ item.item }}
+          Error details: {{ item.stderr | default('No stderr available') }}
+          Return code: {{ item.rc | default('Unknown') }}
+          Command: {{ item.cmd | default('Unknown command') }}
+
+          Common causes:
+          - Insufficient entropy (try installing haveged or rng-tools)
+          - Disk space issues in /opt/algo
+          - Permission problems with OpenSSL CA database
+          - OpenSSL configuration errors
+
+          Troubleshooting:
+          - Check disk space: df -h /opt/algo
+          - Check entropy: cat /proc/sys/kernel/random/entropy_avail
+          - Verify OpenSSL config: openssl version -a
+      when: >
+        client_key_results.failed or
+        (client_key_results.finished and
+         client_key_results.results is defined and
+         client_key_results.results | selectattr('rc', 'defined') | selectattr('rc', '!=', 0) | list | length > 0)
+      with_items: "{{ client_key_results.results | default([]) }}"
+      failed_when: false
 
     - name: Sign client certificates (sequential - CA database locking required)
       shell: >
