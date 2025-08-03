@@ -32,6 +32,7 @@
       user:
         name: "{{ item }}"
         group: algo
+        groups: algo
         home: /var/jail/{{ item }}
         createhome: true
         generate_ssh_key: false
