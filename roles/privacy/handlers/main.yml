@@ -1,0 +1,29 @@
+---
+# Privacy role handlers
+# These handlers are triggered by privacy configuration changes
+
+- name: restart rsyslog
+  systemd:
+    name: rsyslog
+    state: restarted
+    daemon_reload: yes
+  become: yes
+
+- name: restart systemd-journald
+  systemd:
+    name: systemd-journald
+    state: restarted
+    daemon_reload: yes
+  become: yes
+
+- name: reload systemd
+  systemd:
+    daemon_reload: yes
+  become: yes
+
+- name: enable privacy shutdown cleanup
+  systemd:
+    name: privacy-shutdown-cleanup.service
+    enabled: yes
+    daemon_reload: yes
+  become: yes

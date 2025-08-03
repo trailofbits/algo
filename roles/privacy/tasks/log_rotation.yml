@@ -1,0 +1,51 @@
+---
+# Aggressive log rotation configuration for privacy
+# Reduces log retention time and implements more frequent rotation
+
+- name: Configure aggressive logrotate for system logs
+  template:
+    src: privacy-logrotate.j2
+    dest: /etc/logrotate.d/99-privacy-enhanced
+    mode: '0644'
+    owner: root
+    group: root
+  notify: restart rsyslog
+
+- name: Configure logrotate for auth logs with shorter retention
+  template:
+    src: auth-logrotate.j2
+    dest: /etc/logrotate.d/99-auth-privacy
+    mode: '0644'
+    owner: root
+    group: root
+  notify: restart rsyslog
+
+- name: Configure logrotate for kern logs with VPN filtering
+  template:
+    src: kern-logrotate.j2
+    dest: /etc/logrotate.d/99-kern-privacy
+    mode: '0644'
+    owner: root
+    group: root
+  notify: restart rsyslog
+
+- name: Set more frequent logrotate execution
+  cron:
+    name: "Enhanced privacy log rotation"
+    job: "/usr/sbin/logrotate /etc/logrotate.conf"
+    minute: "0"
+    hour: "*/6"
+    user: root
+    state: present
+
+- name: Create privacy log cleanup script
+  template:
+    src: privacy-log-cleanup.sh.j2
+    dest: /usr/local/bin/privacy-log-cleanup.sh
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Force immediate log rotation to apply new settings
+  command: /usr/sbin/logrotate -f /etc/logrotate.conf
+  changed_when: false

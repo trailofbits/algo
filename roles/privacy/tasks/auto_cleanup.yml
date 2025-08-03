@@ -1,0 +1,70 @@
+---
+# Automatic cleanup tasks for enhanced privacy
+
+- name: Create privacy cleanup script
+  template:
+    src: privacy-auto-cleanup.sh.j2
+    dest: /usr/local/bin/privacy-auto-cleanup.sh
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Set up automatic privacy cleanup cron job
+  cron:
+    name: "Privacy auto cleanup"
+    job: "/usr/local/bin/privacy-auto-cleanup.sh"
+    minute: "30"
+    hour: "2"
+    user: root
+    state: "{{ 'present' if privacy_auto_cleanup.enabled else 'absent' }}"
+  when: privacy_auto_cleanup.frequency == 'daily'
+
+- name: Set up weekly privacy cleanup cron job
+  cron:
+    name: "Privacy auto cleanup weekly"
+    job: "/usr/local/bin/privacy-auto-cleanup.sh"
+    minute: "30"
+    hour: "2"
+    weekday: "0"
+    user: root
+    state: "{{ 'present' if privacy_auto_cleanup.enabled else 'absent' }}"
+  when: privacy_auto_cleanup.frequency == 'weekly'
+
+- name: Set up monthly privacy cleanup cron job
+  cron:
+    name: "Privacy auto cleanup monthly"
+    job: "/usr/local/bin/privacy-auto-cleanup.sh"
+    minute: "30"
+    hour: "2"
+    day: "1"
+    user: root
+    state: "{{ 'present' if privacy_auto_cleanup.enabled else 'absent' }}"
+  when: privacy_auto_cleanup.frequency == 'monthly'
+
+- name: Create systemd service for privacy cleanup on shutdown
+  template:
+    src: privacy-shutdown-cleanup.service.j2
+    dest: /etc/systemd/system/privacy-shutdown-cleanup.service
+    mode: '0644'
+    owner: root
+    group: root
+  when: privacy_advanced.clear_logs_on_shutdown | bool
+  notify: 
+    - reload systemd
+    - enable privacy shutdown cleanup
+
+- name: Clean up temporary files immediately
+  shell: |
+    find /tmp -type f -mtime +{{ privacy_auto_cleanup.temp_files_max_age }} -delete
+    find /var/tmp -type f -mtime +{{ privacy_auto_cleanup.temp_files_max_age }} -delete
+  changed_when: false
+  when: privacy_auto_cleanup.enabled | bool
+
+- name: Clean package cache immediately
+  shell: |
+    apt-get clean
+    apt-get autoclean
+  changed_when: false
+  when: 
+    - privacy_auto_cleanup.enabled | bool
+    - privacy_auto_cleanup.clean_package_cache | bool

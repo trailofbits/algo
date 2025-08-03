@@ -25,6 +25,34 @@ Algo VPN is a set of Ansible scripts that simplify the setup of a personal WireG
 * Does not claim to provide anonymity or censorship avoidance
 * Does not claim to protect you from the [FSB](https://en.wikipedia.org/wiki/Federal_Security_Service), [MSS](https://en.wikipedia.org/wiki/Ministry_of_State_Security_(China)), [DGSE](https://en.wikipedia.org/wiki/Directorate-General_for_External_Security), or [FSM](https://en.wikipedia.org/wiki/Flying_Spaghetti_Monster)
 
+## Privacy Considerations
+
+Algo was originally designed with security and ease-of-use as primary goals, rather than zero-logging. Recent updates have introduced privacy enhancements as best-effort improvements, but users should understand the current limitations and trade-offs.
+
+**Privacy Enhancements in Recent Updates:**
+* Reduced default logging for VPN connections and authentication events
+* Minimized retention of connection metadata where practical
+* Improved log rotation and cleanup procedures
+
+**What May Still Be Logged:**
+* System-level logs for troubleshooting server issues
+* DNS query logs (if ad-blocking DNS resolver is enabled)
+* SSH access logs for administrative connections
+* Cloud provider metadata and billing logs (outside Algo's control)
+
+**Maximizing Privacy:**
+* Regularly review and clean `/var/log/` directories on your server
+* Consider disabling the DNS ad-blocking feature if DNS query privacy is a concern
+* Use ephemeral cloud instances that can be destroyed and recreated
+* Be aware that your cloud provider may maintain separate logs and metadata
+
+**Trade-offs:**
+* Reduced logging may make troubleshooting connection issues more difficult
+* Some diagnostic information needed for support requests may not be available
+* Cloud provider logs and metadata remain outside of Algo's control
+
+Remember that your cloud provider, ISP, and destination websites can still observe traffic patterns and metadata. Algo primarily protects the content of your traffic between your device and the VPN server.
+
 ## Deploy the Algo Server
 
 The easiest way to get an Algo server running is to run it on your local system or from [Google Cloud Shell](docs/deploy-from-cloudshell.md) and let it set up a _new_ virtual machine in the cloud for you.

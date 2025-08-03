@@ -30,6 +30,7 @@
         aws_secret_key: "{{ secret_key }}"
         region: us-east-1
       register: _aws_regions
+      no_log: true
 
     - name: Set facts about the regions
       set_fact:
@@ -70,6 +71,7 @@
         aws_secret_key: "{{ secret_key }}"
         region: "{{ algo_region }}"
       register: raw_eip_addresses
+      no_log: true
 
     - set_fact:
         available_eip_addresses: "{{ raw_eip_addresses.addresses | selectattr('association_id', 'undefined') | list }}"

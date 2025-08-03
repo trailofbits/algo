@@ -8,6 +8,7 @@
       when:
         - cs_key is undefined
         - lookup('env','CLOUDSTACK_KEY')|length <= 0
+      no_log: true
 
     - pause:
         prompt: |
@@ -17,6 +18,7 @@
       when:
         - cs_secret is undefined
         - lookup('env','CLOUDSTACK_SECRET')|length <= 0
+      no_log: true
 
     - pause:
         prompt: |
@@ -32,6 +34,7 @@
         algo_cs_token: "{{ cs_secret | default(_cs_secret.user_input|default(None)) | default(lookup('env', 'CLOUDSTACK_SECRET'), true) }}"
         algo_cs_url: "{{ cs_url | default(_cs_url.user_input|default(None)) | default(lookup('env', 'CLOUDSTACK_ENDPOINT'), true) | default('https://api.exoscale.com/compute',\
           \ true) }}"
+      no_log: true
 
     - name: Get zones on cloud
       cs_zone_info:
@@ -40,6 +43,7 @@
         CLOUDSTACK_KEY: "{{ algo_cs_key }}"
         CLOUDSTACK_SECRET: "{{ algo_cs_token }}"
         CLOUDSTACK_ENDPOINT: "{{ algo_cs_url }}"
+      no_log: true
 
     - name: Extract zones from output
       set_fact:

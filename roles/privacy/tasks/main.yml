@@ -1,0 +1,36 @@
+---
+# Privacy enhancements for Algo VPN
+# This role implements additional privacy measures to reduce log retention
+# and minimize traces of VPN usage on the server
+
+- name: Display privacy enhancements status
+  debug:
+    msg: "Privacy enhancements are {{ 'enabled' if privacy_enhancements_enabled else 'disabled' }}"
+
+- name: Privacy enhancements block
+  block:
+    - name: Include log rotation tasks
+      include_tasks: log_rotation.yml
+      tags: privacy-logs
+
+    - name: Include history clearing tasks
+      include_tasks: clear_history.yml
+      tags: privacy-history
+
+    - name: Include log filtering tasks
+      include_tasks: log_filtering.yml
+      tags: privacy-filtering
+
+    - name: Include automatic cleanup tasks
+      include_tasks: auto_cleanup.yml
+      tags: privacy-cleanup
+
+    - name: Include advanced privacy tasks
+      include_tasks: advanced_privacy.yml
+      tags: privacy-advanced
+
+    - name: Display privacy enhancements completion
+      debug:
+        msg: "Privacy enhancements have been successfully applied"
+
+  when: privacy_enhancements_enabled | bool
