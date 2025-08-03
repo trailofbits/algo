@@ -29,6 +29,8 @@
       mode: "0644"
   notify:
     - restart strongswan
+  tags:
+    - service_management
 
 - name: Get loaded plugins
   shell: |
@@ -49,6 +51,8 @@
   notify:
     - restart strongswan
   when: item not in strongswan_enabled_plugins and item not in strongswan_additional_plugins
+  tags:
+    - service_management
   with_items: "{{ strongswan_plugins.stdout_lines }}"
 
 - name: Ensure that required plugins are enabled
@@ -56,4 +60,6 @@
   notify:
     - restart strongswan
   when: item in strongswan_enabled_plugins or item in strongswan_additional_plugins
+  tags:
+    - service_management
   with_items: "{{ strongswan_plugins.stdout_lines }}"

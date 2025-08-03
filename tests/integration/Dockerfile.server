@@ -1,6 +1,10 @@
 # Algo server container for integration testing
 FROM ubuntu:22.04
 
+# Set timezone to avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
 # Install required packages
 RUN apt-get update && apt-get install -y \
     python3 \

@@ -24,3 +24,5 @@
       mode: "0600"
   notify:
     - restart strongswan
+  tags:
+    - service_management

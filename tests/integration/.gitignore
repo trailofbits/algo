@@ -1,0 +1,4 @@
+# Ignore Docker volumes
+test-configs/
+configs/
+*.log

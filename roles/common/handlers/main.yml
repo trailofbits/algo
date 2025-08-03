@@ -13,11 +13,15 @@
     name: systemd-networkd
     state: restarted
     daemon_reload: true
+  tags:
+    - service_management
 
 - name: restart systemd-resolved
   systemd:
     name: systemd-resolved
     state: restarted
+  tags:
+    - service_management
 
 - name: restart loopback bsd
   shell: >
@@ -28,6 +32,8 @@
 
 - name: restart iptables
   service: name=netfilter-persistent state=restarted
+  tags:
+    - service_management
 
 - name: netplan apply
   command: netplan apply

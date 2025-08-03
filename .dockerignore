@@ -11,7 +11,8 @@ configs
 docs
 .env
 logo.png
-tests
+tests/unit
+tests/*.md
 CHANGELOG.md
 PULL_REQUEST_TEMPLATE.md
 Vagrantfile

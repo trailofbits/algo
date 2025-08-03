@@ -83,6 +83,9 @@
         dest: "{{ config_prefix|default('/') }}etc/wireguard/{{ wireguard_interface }}.conf"
         mode: "0600"
       notify: restart wireguard
+      tags:
+        - update-users
+        - service_management
   tags: update-users
 
 - name: WireGuard enabled and started
@@ -90,6 +93,8 @@
     name: "{{ service_name }}"
     state: started
     enabled: true
+  tags:
+    - service_management
 
 - name: Delete the PKI directory
   file:

@@ -1,6 +1,10 @@
 # Debian client for testing VPN connections
 FROM debian:12
 
+# Set timezone to avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
 RUN apt-get update && apt-get install -y \
     wireguard \
     wireguard-tools \

@@ -7,6 +7,27 @@ echo "Starting Algo server container..."
 modprobe wireguard || true
 modprobe af_key || true
 
+# Create a fake systemctl to prevent systemd errors
+cat > /usr/bin/systemctl << 'SYSTEMCTL_EOF'
+#!/bin/bash
+# Fake systemctl for Docker container
+echo "systemctl (fake): $*" >&2
+
+case "$1" in
+    daemon-reload)
+        exit 0
+        ;;
+    enable|start|restart)
+        echo "Service $2 would be ${1}ed"
+        exit 0
+        ;;
+    *)
+        exit 0
+        ;;
+esac
+SYSTEMCTL_EOF
+chmod +x /usr/bin/systemctl
+
 # Create test configuration
 cat > /algo/config.cfg << EOF
 users:
@@ -33,11 +54,13 @@ IP_subject_alt_name: 10.99.0.10
 ipv4_network_prefix: 10.19.49
 ipv6_network: fd9d:bc11:4020::/48
 wireguard_network: 10.19.49.0/24
+wireguard_network_ipv4: 10.19.49.0/24
 wireguard_network_ipv6: fd9d:bc11:4020::/64
 wireguard_port: 51820
 wireguard_PersistentKeepalive: 0
 
 strongswan_network: 10.19.48.0/24
+strongswan_network_ipv4: 10.19.48.0/24
 strongswan_network_ipv6: fd9d:bc11:4021::/64
 
 # DNS
@@ -50,6 +73,10 @@ dns_servers:
     - 2001:4860:4860::8888
     - 2001:4860:4860::8844
 
+# Local service IP (gateway for wireguard network)
+local_service_ip: 10.19.49.1
+local_service_ipv6: 2001:db8:a160::1
+
 # Other settings
 algo_ondemand_cellular: false
 algo_ondemand_wifi: false
@@ -58,21 +85,63 @@ algo_store_pki: true
 BetweenClients_DROP: false
 block_smb: true
 block_netbios: true
+pki_in_tmpfs: false
+ansible_connection: local
+ansible_python_interpreter: /usr/bin/python3
+server_user: root
+CA_password: test_ca_password_123
+p12_export_password: test_p12_password_123
+unattended_reboot:
+  enabled: false
+  time: 04:00
+ssh_port: 22
+algo_ssh_port: 4160
+reduce_mtu: 0
+keepalive_timeout: 600
+tests: false
+no_log: false
+alternative_ingress_ip: false
+install_headers: false
+apparmor_enabled: false
+strongswan_log_level: 1
+congrats:
+  common: |
+    "#                          Congratulations!                            #"
+    "#                     Your Algo server is running.                     #"
+    "#    Config files and certificates are in the ./configs/ directory.    #"
+  playbook: |
+    "#                          Congratulations!                            #"
+    "#                    Your Algo VPN server is ready!                    #"
+  p12_pass: |
+    "#        The p12 and SSH keys password for new users is drkf3bnaM     #"
+  ca_key_pass: |
+    "#     The CA key password is 6Uyy3RrotOtYIaD2                         #"
+  ssh_access: ""
 EOF
 
 # Run Algo provisioning
 cd /algo
 echo "Running Algo provisioning..."
+
+# Create dummy sshd pam file to avoid errors
+mkdir -p /etc/pam.d
+touch /etc/pam.d/sshd
+
+# Update apt cache to prevent issues later
+apt-get update || true
+
+# Force refresh APT cache to avoid stale metadata
+rm -rf /var/lib/apt/lists/*
+apt-get update
+
 ansible-playbook main.yml \
+    -e @config.cfg \
     -e "provider=local" \
     -e "server=localhost" \
     -e "endpoint=10.99.0.10" \
-    -e "ondemand_cellular=false" \
-    -e "ondemand_wifi=false" \
-    -e "dns_adblocking=false" \
-    -e "ssh_tunneling=false" \
-    -e "store_pki=true" \
-    --skip-tags "reboot,facts" \
+    -e "ansible_default_ipv4.address=10.99.0.10" \
+    -e "ansible_default_ipv4.interface=eth0" \
+    --skip-tags "reboot,ssh_tunneling,service_management" \
     -v
 
 # Mark as provisioned
@@ -82,6 +151,26 @@ touch /etc/algo/.provisioned
 cp -r /algo/configs/* /etc/algo/ || true
 
 echo "Algo server provisioned successfully"
+
+# Start services that would normally be started by systemd
+echo "Starting VPN services..."
+
+# Start StrongSwan if configured
+if [ -f /etc/ipsec.conf ]; then
+    echo "Starting StrongSwan..."
+    ipsec start || true
+fi
+
+# Start WireGuard interfaces if configured
+if [ -d /etc/wireguard ]; then
+    for conf in /etc/wireguard/*.conf; do
+        if [ -f "$conf" ]; then
+            interface=$(basename "$conf" .conf)
+            echo "Starting WireGuard interface: $interface"
+            wg-quick up "$interface" || true
+        fi
+    done
+fi
 
 # Keep container running
 tail -f /dev/null

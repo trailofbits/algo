@@ -3,3 +3,5 @@
   service:
     name: "{{ service_name }}"
     state: restarted
+  tags:
+    - service_management

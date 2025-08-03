@@ -19,6 +19,7 @@
         group: root
         mode: 0644
       notify: restart strongswan
+      tags: service_management
 
     - name: Ubuntu | Enforcing ipsec with apparmor
       command: aa-enforce "{{ item }}"
@@ -36,6 +37,8 @@
     - apparmor
     - "{{ strongswan_service }}"
     - netfilter-persistent
+  tags:
+    - service_management
 
 - name: Ubuntu | Ensure that the strongswan service directory exists
   file:
@@ -52,3 +55,5 @@
   notify:
     - daemon-reload
     - restart strongswan
+  tags:
+    - service_management

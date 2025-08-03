@@ -52,6 +52,8 @@
     value: "{{ dns_servers.ipv4 | join(' ') }}"
   notify:
     - restart systemd-resolved
+  tags:
+    - service_management
 
 - name: Loopback for services configured
   template:
@@ -59,6 +61,8 @@
     dest: /etc/systemd/network/10-algo-lo100.network
   notify:
     - restart systemd-networkd
+  tags:
+    - service_management
 
 - name: systemd services enabled and started
   systemd:
@@ -69,6 +73,8 @@
   with_items:
     - systemd-networkd
     - systemd-resolved
+  tags:
+    - service_management
 
 - meta: flush_handlers
 
