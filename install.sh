@@ -45,15 +45,47 @@ publicIpFromInterface() {
   echo "Using ${ENDPOINT} as the endpoint"
 }
 
+tryGetMetadata() {
+  # Helper function to fetch metadata with retry
+  local url="$1"
+  local headers="$2"
+  local response=""
+  
+  # Try up to 2 times
+  for attempt in 1 2; do
+    if [ -n "$headers" ]; then
+      response="$(curl -s --connect-timeout 5 --max-time "${METADATA_TIMEOUT}" -H "$headers" "$url" || true)"
+    else
+      response="$(curl -s --connect-timeout 5 --max-time "${METADATA_TIMEOUT}" "$url" || true)"
+    fi
+    
+    # If we got a response, return it
+    if [ -n "$response" ]; then
+      echo "$response"
+      return 0
+    fi
+    
+    # Wait before retry (only on first attempt)
+    [ $attempt -eq 1 ] && sleep 2
+  done
+  
+  # Return empty string if all attempts failed
+  echo ""
+  return 1
+}
+
 publicIpFromMetadata() {
-  if curl -s http://169.254.169.254/metadata/v1/vendor-data | grep DigitalOcean >/dev/null; then
-    ENDPOINT="$(curl -s http://169.254.169.254/metadata/v1/interfaces/public/0/ipv4/address)"
-  elif test "$(curl -s http://169.254.169.254/latest/meta-data/services/domain)" = "amazonaws.com"; then
-    ENDPOINT="$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
+  # Set default timeout from environment or use 20 seconds
+  METADATA_TIMEOUT="${METADATA_TIMEOUT:-20}"
+  
+  if tryGetMetadata "http://169.254.169.254/metadata/v1/vendor-data" "" | grep DigitalOcean >/dev/null; then
+    ENDPOINT="$(tryGetMetadata "http://169.254.169.254/metadata/v1/interfaces/public/0/ipv4/address" "")"
+  elif test "$(tryGetMetadata "http://169.254.169.254/latest/meta-data/services/domain" "")" = "amazonaws.com"; then
+    ENDPOINT="$(tryGetMetadata "http://169.254.169.254/latest/meta-data/public-ipv4" "")"
   elif host -t A -W 10 metadata.google.internal 127.0.0.53 >/dev/null; then
-    ENDPOINT="$(curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip")"
-  elif test "$(curl -s -H Metadata:true 'http://169.254.169.254/metadata/instance/compute/publisher/?api-version=2017-04-02&format=text')" = "Canonical"; then
-    ENDPOINT="$(curl -H Metadata:true 'http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/publicIpAddress?api-version=2017-04-02&format=text')"
+    ENDPOINT="$(tryGetMetadata "http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip" "Metadata-Flavor: Google")"
+  elif test "$(tryGetMetadata "http://169.254.169.254/metadata/instance/compute/publisher/?api-version=2017-04-02&format=text" "Metadata:true")" = "Canonical"; then
+    ENDPOINT="$(tryGetMetadata "http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/publicIpAddress?api-version=2017-04-02&format=text" "Metadata:true")"
   fi
 
   if echo "${ENDPOINT}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"; then
