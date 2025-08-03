@@ -1,0 +1,13 @@
+---
+extends: default
+
+rules:
+  line-length:
+    max: 160
+    level: warning
+  comments:
+    min-spaces-from-content: 1
+  braces:
+    max-spaces-inside: 1
+  truthy:
+    allowed-values: ['true', 'false', 'yes', 'no']

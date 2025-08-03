@@ -115,7 +115,7 @@ Additional variables:
 - [image](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/describe-images.html) - AMI `describe-images` search parameters to find the OS for the hosted image. Each OS and architecture has a unique AMI-ID. The OS owner, for example [Ubuntu](https://cloud-images.ubuntu.com/locator/ec2/), updates these images often. If parameters below result in multiple results, the most recent AMI-ID is chosen
 
    ```
-   # Example of equivalent cli comand
+   # Example of equivalent cli command
    aws ec2 describe-images --owners "099720109477" --filters "Name=architecture,Values=arm64" "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-jammy-22.04*"
    ```
 
