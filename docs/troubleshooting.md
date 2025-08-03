@@ -19,6 +19,7 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
      * [Azure: The client xxx with object id xxx does not have authorization to perform action Microsoft.Resources/subscriptions/resourcegroups/write' over scope](#azure-deployment-permissions-error)
      * [Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid](#windows-the-value-of-parameter-linuxconfigurationsshpublickeyskeydata-is-invalid)
      * [Docker: Failed to connect to the host via ssh](#docker-failed-to-connect-to-the-host-via-ssh)
+     * [Windows: "The parameter is incorrect" error when connecting](#windows-the-parameter-is-incorrect-error-when-connecting)
      * [Error: Failed to create symlinks for deploying to localhost](#error-failed-to-create-symlinks-for-deploying-to-localhost)
      * [Wireguard: Unable to find 'configs/...' in expected paths](#wireguard-unable-to-find-configs-in-expected-paths)
      * [Ubuntu Error: "unable to write 'random state'" when generating CA password](#ubuntu-error-unable-to-write-random-state-when-generating-ca-password)
@@ -293,6 +294,43 @@ You need to add the following to the ansible.cfg in repo root:
 [ssh_connection]
 control_path_dir=/dev/shm/ansible_control_path
 ```
+
+### Windows: "The parameter is incorrect" error when connecting
+
+When trying to connect to your Algo VPN on Windows 10/11, you may receive an error stating "The parameter is incorrect". This is a common issue that can usually be resolved by resetting your Windows networking stack.
+
+#### Solution
+
+1. **Clear the networking caches**
+   
+   Open Command Prompt as Administrator (right-click on Command Prompt and select "Run as Administrator") and run these commands:
+   ```cmd
+   netsh int ip reset
+   netsh int ipv6 reset
+   netsh winsock reset
+   ```
+   
+   Then restart your computer.
+
+2. **Reset Device Manager network adapters** (if step 1 doesn't work)
+   
+   - Open Device Manager
+   - Find "Network Adapters"
+   - Uninstall all WAN Miniport drivers (IKEv2, IP, IPv6, etc.)
+   - Click Action → Scan for hardware changes
+   - The adapters you just uninstalled should reinstall automatically
+   
+   Try connecting to the VPN again.
+
+#### What causes this issue?
+
+This error typically occurs when:
+- Windows networking stack becomes corrupted
+- After Windows updates that affect network drivers
+- When switching between different VPN configurations
+- After network-related software installations/uninstallations
+
+Note: This issue has been reported by many users and the above solution has proven effective in most cases.
 
 ### Error: Failed to create symlinks for deploying to localhost
 

@@ -122,7 +122,7 @@ WireGuard is used to provide VPN services on Android. Install the [WireGuard VPN
 
 WireGuard is used to provide VPN services on Windows. Algo generates a WireGuard configuration file, `wireguard/<username>.conf`, for each user defined in `config.cfg`.
 
-Install the [WireGuard VPN Client](https://www.wireguard.com/install/#windows-7-8-81-10-2012-2016-2019). Import the generated `wireguard/<username>.conf` file to your device, then setup a new connection with it.
+Install the [WireGuard VPN Client](https://www.wireguard.com/install/#windows-7-8-81-10-2012-2016-2019). Import the generated `wireguard/<username>.conf` file to your device, then setup a new connection with it. See the [Windows setup instructions](docs/client-windows.md) for more detailed walkthrough and troubleshooting.
 
 ### Linux WireGuard Clients
 
@@ -211,6 +211,7 @@ After this process completes, the Algo VPN server will contain only the users li
 * Deploy from a [Docker container](docs/deploy-from-docker.md)
 
 ### Setup VPN Clients to Connect to the Server
+* Setup [Windows](docs/client-windows.md) clients
 * Setup [Android](docs/client-android.md) clients
 * Setup [Linux](docs/client-linux.md) clients with Ansible
 * Setup Ubuntu clients to use [WireGuard](docs/client-linux-wireguard.md)
