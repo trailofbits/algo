@@ -1,14 +1,13 @@
 # Algo VPN
 
-[![Twitter](https://img.shields.io/twitter/url/https/twitter.com/fold_left.svg?style=social&label=Follow%20%40AlgoVPN)](https://twitter.com/AlgoVPN)
-[![](https://github.com/trailofbits/algo/workflows/Main/badge.svg?branch=master)](https://github.com/trailofbits/algo/actions)
+[![Twitter](https://img.shields.io/twitter/url/https/twitter.com/fold_left.svg?style=social&label=Follow%20%40AlgoVPN)](https://x.com/AlgoVPN)
 
 Algo VPN is a set of Ansible scripts that simplify the setup of a personal WireGuard and IPsec VPN. It uses the most secure defaults available and works with common cloud providers. See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo-the-vpn-that-works/) for more information.
 
 ## Features
 
 * Supports only IKEv2 with strong crypto (AES-GCM, SHA2, and P-256) for iOS, macOS, and Linux
-* Supports [WireGuard](https://www.wireguard.com/) for all of the above, in addition to Android and Windows 10
+* Supports [WireGuard](https://www.wireguard.com/) for all of the above, in addition to Android and Windows 11
 * Generates .conf files and QR codes for iOS, macOS, Android, and Windows WireGuard clients
 * Generates Apple profiles to auto-configure iOS and macOS devices for IPsec - no client software required
 * Includes a helper script to add and remove users
@@ -40,9 +39,9 @@ The easiest way to get an Algo server running is to run it on your local system 
         git clone https://github.com/trailofbits/algo.git
         ```
 
-3. **Install Algo's core dependencies.** Algo requires that **Python 3.10 or later** and at least one supporting package are installed on your system.
+3. **Install Algo's core dependencies.** Algo requires that **Python 3.10** and at least one supporting package are installed on your system.
 
-    - **macOS:** Catalina (10.15) and higher includes Python 3 as part of the optional Command Line Developer Tools package. From Terminal run:
+    - **macOS:** Big Sur (11.0) and higher includes Python 3 as part of the optional Command Line Developer Tools package. From Terminal run:
 
         ```bash
         python3 -m pip install --user --upgrade virtualenv
@@ -50,7 +49,7 @@ The easiest way to get an Algo server running is to run it on your local system 
 
         If prompted, install the Command Line Developer Tools and re-run the above command.
 
-        For macOS versions prior to Catalina, see [Deploy from macOS](docs/deploy-from-macos.md) for information on installing Python 3 .
+        For macOS versions prior to Big Sur, see [Deploy from macOS](docs/deploy-from-macos.md) for information on installing Python 3 .
 
     - **Linux:** Recent releases of Ubuntu, Debian, and Fedora come with Python 3 already installed. If your Python version is not 3.10, then you will need to use pyenv to install Python 3.10. Make sure your system is up-to-date and install the supporting package(s):
         * Ubuntu and Debian:
@@ -252,14 +251,12 @@ If you've read all the documentation and have further questions, [create a new d
 -- [Thorin Klosowski](https://twitter.com/kingthor) for [Lifehacker](http://lifehacker.com/how-to-set-up-your-own-completely-free-vpn-in-the-cloud-1794302432)
 
 ## Support Algo VPN
-[![Flattr](https://button.flattr.com/flattr-badge-large.png)](https://flattr.com/submit/auto?fid=kxw60j&url=https%3A%2F%2Fgithub.com%2Ftrailofbits%2Falgo)
 [![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CYZZD39GXUJ3E)
 [![Patreon](https://img.shields.io/badge/back_on-patreon-red.svg)](https://www.patreon.com/algovpn)
-[![Bountysource](https://img.shields.io/bountysource/team/trailofbits/activity.svg)](https://www.bountysource.com/teams/trailofbits)
 
 All donations support continued development. Thanks!
 
-* We accept donations via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CYZZD39GXUJ3E), [Patreon](https://www.patreon.com/algovpn), and [Flattr](https://flattr.com/submit/auto?fid=kxw60j&url=https%3A%2F%2Fgithub.com%2Ftrailofbits%2Falgo).
+* We accept donations via [PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CYZZD39GXUJ3E) and [Patreon](https://www.patreon.com/algovpn).
 * Use our [referral code](https://m.do.co/c/4d7f4ff9cfe4) when you sign up to Digital Ocean for a $10 credit.
 * We also accept and appreciate contributions of new code and bugfixes via Github Pull Requests.
 
