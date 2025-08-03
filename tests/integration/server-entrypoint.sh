@@ -7,26 +7,34 @@ echo "Starting Algo server container..."
 modprobe wireguard || true
 modprobe af_key || true
 
-# Create a fake systemctl to prevent systemd errors
-cat > /usr/bin/systemctl << 'SYSTEMCTL_EOF'
-#!/bin/bash
-# Fake systemctl for Docker container
-echo "systemctl (fake): $*" >&2
+# Install enhanced mock commands
+cp /algo/tests/integration/mock-systemctl.sh /usr/bin/systemctl
+cp /algo/tests/integration/mock-service.sh /usr/bin/service
+chmod +x /usr/bin/systemctl /usr/bin/service
 
-case "$1" in
-    daemon-reload)
-        exit 0
-        ;;
-    enable|start|restart)
-        echo "Service $2 would be ${1}ed"
-        exit 0
-        ;;
-    *)
-        exit 0
-        ;;
-esac
-SYSTEMCTL_EOF
-chmod +x /usr/bin/systemctl
+# Initialize some services as "running" to simulate a real system
+mkdir -p /var/lib/fake-systemd
+touch /var/lib/fake-systemd/systemd-resolved.active
+touch /var/lib/fake-systemd/systemd-resolved.enabled
+touch /var/lib/fake-systemd/systemd-networkd.active
+touch /var/lib/fake-systemd/systemd-networkd.enabled
+
+# Create mock service files so Ansible's systemd module finds them
+mkdir -p /etc/systemd/system /lib/systemd/system
+for service in systemd-networkd systemd-resolved netfilter-persistent apparmor \
+               wg-quick@wg0 strongswan-starter ipsec unattended-upgrades; do
+    cat > /lib/systemd/system/${service}.service << EOF
+[Unit]
+Description=Mock ${service} service
+
+[Service]
+Type=simple
+ExecStart=/bin/true
+
+[Install]
+WantedBy=multi-user.target
+EOF
+done
 
 # Create test configuration
 cat > /algo/config.cfg << EOF
@@ -130,9 +138,8 @@ touch /etc/pam.d/sshd
 # Update apt cache to prevent issues later
 apt-get update || true
 
-# Force refresh APT cache to avoid stale metadata
-rm -rf /var/lib/apt/lists/*
-apt-get update
+# Use our mock Ansible modules
+export ANSIBLE_LIBRARY=/algo/tests/integration/mock_modules
 
 ansible-playbook main.yml \
     -e @config.cfg \
@@ -141,7 +148,7 @@ ansible-playbook main.yml \
     -e "endpoint=10.99.0.10" \
     -e "ansible_default_ipv4.address=10.99.0.10" \
     -e "ansible_default_ipv4.interface=eth0" \
-    --skip-tags "reboot,ssh_tunneling,service_management" \
+    --skip-tags "reboot,ssh_tunneling" \
     -v
 
 # Mark as provisioned
