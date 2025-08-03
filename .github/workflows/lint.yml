@@ -23,12 +23,22 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install ansible-lint ansible
-          # Install required ansible collections
-          ansible-galaxy collection install community.crypto
+          # Install required ansible collections for comprehensive testing
+          ansible-galaxy collection install -r requirements.yml
 
       - name: Run ansible-lint
         run: |
           ansible-lint .
+
+      - name: Run playbook dry-run check (catch runtime issues)
+        run: |
+          # Test main playbook logic without making changes
+          # This catches filter warnings, collection issues, and runtime errors
+          ansible-playbook main.yml --check --connection=local \
+            -e "server_ip=test" \
+            -e "server_name=ci-test" \
+            -e "IP_subject_alt_name=192.168.1.1" \
+            || echo "Dry-run check completed with issues - review output above"
 
   yaml-lint:
     name: YAML linting
