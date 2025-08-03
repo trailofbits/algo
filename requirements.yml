@@ -1,6 +1,10 @@
 ---
 collections:
   - name: ansible.posix
+    version: ">=1.5.4,<2.0"
   - name: community.general
+    version: ">=8.1.0,<9.0"
   - name: community.crypto
+    version: ">=2.16.1,<3.0"
   - name: openstack.cloud
+    version: ">=2.2.0,<3.0"
