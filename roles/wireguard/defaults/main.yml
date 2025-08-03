@@ -1,7 +1,7 @@
 ---
 wireguard_PersistentKeepalive: 0
-wireguard_config_path: configs/{{ IP_subject_alt_name }}/wireguard/
-wireguard_pki_path: "{{ wireguard_config_path }}/.pki/"
+wireguard_config_path: configs/{{ IP_subject_alt_name }}/wireguard
+wireguard_pki_path: "{{ wireguard_config_path }}/.pki"
 wireguard_interface: wg0
 wireguard_port_avoid: 53
 wireguard_port_actual: 51820
