@@ -25,6 +25,8 @@
 
 - name: Generate keys
   import_tasks: keys.yml
+  delegate_to: localhost
+  become: false
   tags: update-users
 
 - block:
