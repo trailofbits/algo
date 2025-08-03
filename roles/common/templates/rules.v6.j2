@@ -35,7 +35,7 @@ COMMIT
 -A PREROUTING --in-interface {{ ansible_default_ipv6['interface'] }} -p udp --dport {{ wireguard_port_avoid }} -j REDIRECT --to-port {{ wireguard_port_actual }}
 {% endif %}
 # Allow traffic from the VPN network to the outside world, and replies
--A POSTROUTING -s {{ subnets|join(',') }} -m policy --pol none --dir out {{ '-j SNAT --to ' + ipv6_egress_ip | ipaddr('address') if alternative_ingress_ip else '-j MASQUERADE' }}
+-A POSTROUTING -s {{ subnets|join(',') }} -m policy --pol none --dir out {{ '-j SNAT --to ' + ipv6_egress_ip | ansible.utils.ipaddr('address') if alternative_ingress_ip else '-j MASQUERADE' }}
 
 COMMIT
 

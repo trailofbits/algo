@@ -40,6 +40,7 @@
 
 - name: Disable MOTD on login and SSHD
   replace: dest="{{ item.file }}" regexp="{{ item.regexp }}" replace="{{ item.line }}"
+  become: true
   with_items:
     - { regexp: ^session.*optional.*pam_motd.so.*, line: "# MOTD DISABLED", file: /etc/pam.d/login }
     - { regexp: ^session.*optional.*pam_motd.so.*, line: "# MOTD DISABLED", file: /etc/pam.d/sshd }
