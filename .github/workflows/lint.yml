@@ -28,7 +28,7 @@ jobs:
 
       - name: Run ansible-lint
         run: |
-          ansible-lint -v *.yml roles/{local,cloud-*}/*/*.yml
+          ansible-lint .
 
   yaml-lint:
     name: YAML linting
@@ -41,7 +41,7 @@ jobs:
       - name: Run yamllint
         run: |
           pip install yamllint
-          yamllint -c .yamllint . || true  # Start with warnings only
+          yamllint -c .yamllint .
 
   python-lint:
     name: Python linting

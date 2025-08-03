@@ -8,11 +8,11 @@
 - name: Add StrongSwan packages
   set_fact:
     algo_packages: "{{ algo_packages + ['strongswan'] }}"
-  when: 
+  when:
     - performance_parallel_packages | default(true)
     - ipsec_enabled | default(false)
 
-- name: Add WireGuard packages  
+- name: Add WireGuard packages
   set_fact:
     algo_packages: "{{ algo_packages + ['wireguard'] }}"
   when:
@@ -39,7 +39,7 @@
     state: present
     update_cache: true
     install_recommends: true
-  when: 
+  when:
     - performance_parallel_packages | default(true)
     - algo_packages | length > 0
 
@@ -53,9 +53,9 @@
 
 - name: Debug - Show batched packages
   debug:
-    msg: 
+    msg:
       - "Batch installed {{ algo_packages | length }} main packages: {{ algo_packages | unique | join(', ') }}"
       - "Batch installed {{ algo_packages_optional | length }} optional packages: {{ algo_packages_optional | unique | join(', ') }}"
-  when: 
+  when:
     - performance_parallel_packages | default(true)
     - (algo_packages | length > 0 or algo_packages_optional | length > 0)

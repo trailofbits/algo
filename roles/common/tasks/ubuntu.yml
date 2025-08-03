@@ -15,12 +15,13 @@
 
     - name: Check if reboot is required
       shell: |
+        set -o pipefail
         if [[ -e /var/run/reboot-required ]]; then
           # Check if kernel was updated (most critical reboot reason)
           if grep -q "linux-image\|linux-generic\|linux-headers" /var/log/dpkg.log.1 /var/log/dpkg.log 2>/dev/null; then
             echo "kernel-updated"
           else
-            echo "optional"  
+            echo "optional"
           fi
         else
           echo "no"
@@ -44,8 +45,8 @@
       debug:
         msg: "Skipping reboot - performance optimization enabled. No kernel updates detected."
       when: >
-        reboot_required is defined and 
-        reboot_required.stdout == 'optional' and 
+        reboot_required is defined and
+        reboot_required.stdout == 'optional' and
         performance_skip_optional_reboots|default(false)
 
     - name: Wait until the server becomes ready...
@@ -142,7 +143,7 @@
     name: "{{ tools|default([]) }}"
     state: present
     update_cache: true
-  when: 
+  when:
     - not performance_parallel_packages | default(true)
     - not performance_preinstall_packages | default(false)
 
@@ -152,7 +153,7 @@
       - linux-headers-generic
       - linux-headers-{{ ansible_kernel }}
     state: present
-  when: 
+  when:
     - not performance_parallel_packages | default(true)
     - install_headers | bool
 
