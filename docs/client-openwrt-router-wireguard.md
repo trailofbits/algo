@@ -5,7 +5,7 @@ This is a tested, working scenario with following environment:
 - algo installed ubuntu at digitalocean
 - client side router "TP-Link TL-WR1043ND" with openwrt ver. 21.02.1. [Openwrt Install instructions](https://openwrt.org/toh/tp-link/tl-wr1043nd)
 - or client side router "TP-Link Archer C20i AC750" with openwrt ver. 21.02.1. [Openwrt install instructions](https://openwrt.org/toh/tp-link/archer_c20i)
-see compatible device list at https://openwrt.org/toh/start . Theoretically, any of the device on list should work
+see compatible device list at https://openwrt.org/toh/start . Theoretically, any of the devices on the list should work
 
 
 
@@ -13,7 +13,7 @@ see compatible device list at https://openwrt.org/toh/start . Theoretically, any
 Make sure that you have 
 - router with openwrt installed, 
 - router is connected to internet, 
-- router and device in front of router do not have same ip. By default, openwrt have 192.168.1.1 if so change it to something like 192.168.2.1 
+- router and device in front of router do not have the same IP. By default, OpenWrt has 192.168.1.1 if so change it to something like 192.168.2.1 
 ### Install required packages(WebUI)
 - Open router web UI (mostly http://192.168.1.1)
 - Login. (by default username: root, password:<empty>

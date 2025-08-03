@@ -59,7 +59,7 @@ options = "metadata"
 
 ### Allow run Ansible in a world writable directory
 
-Ansible threat host machine directories as world writable directory and do not load .cfg from it by default (https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-writable-dir). For fix run inside `algo` directory:
+Ansible treats host machine directories as world writable directory and do not load .cfg from it by default (https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-writable-dir). For fix run inside `algo` directory:
 
 ```shell
 chmod 744 .
