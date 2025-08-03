@@ -79,7 +79,7 @@ fi
 echo -e "\n${YELLOW}Privacy Configuration Summary:${NC}"
 echo "  Log retention: {{ privacy_log_rotation.max_age }} days"
 echo "  Max log size: {{ privacy_log_rotation.max_size }}MB"
-echo "  VPN log filtering: {{ privacy_log_filtering.exclude_vpn_logs | bool }}"
-echo -e "  History clearing: {{ privacy_history_clearing.clear_bash_history | bool }}"
+echo "  VPN log filtering: {{ privacy_log_filtering.exclude_vpn_logs }}"
+echo -e "  History clearing: {{ privacy_history_clearing.clear_bash_history }}"
 
 echo -e "\n${GREEN}Privacy monitoring complete${NC}"
