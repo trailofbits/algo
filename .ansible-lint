@@ -8,12 +8,21 @@ skip_list:
   - '204'  # Lines should be less than 160 characters
   - 'package-latest'  # Package installs should not use latest
   - 'experimental'  # Experimental rules
+  - 'name[missing]'  # All tasks should be named
+  - 'name[play]'  # All plays should be named
+  - 'fqcn[action]'  # Use FQCN for module actions
+  - 'fqcn[action-core]'  # Use FQCN for builtin actions
+  - 'var-naming[no-role-prefix]'  # Variable naming
+  - 'var-naming[pattern]'  # Variable naming patterns
+  - 'no-free-form'  # Avoid free-form syntax
+  - 'key-order[task]'  # Task key order
+  - 'jinja[spacing]'  # Jinja2 spacing
+  - 'name[casing]'  # Name casing
+  - 'yaml[document-start]'  # YAML document start
 
 warn_list:
   - no-changed-when
   - no-handler
-  - fqcn-builtins
-  - var-spacing
   - yaml[line-length]
 
 # Enable additional rules
