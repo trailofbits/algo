@@ -1,11 +1,8 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 #
 # (c) 2015, Patrick F. Marques <patrickfmarques@gmail.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
 
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -110,12 +107,11 @@ data:
 import json
 import time
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.basic import env_fallback
-from ansible.module_utils.urls import fetch_url
+from ansible.module_utils.basic import AnsibleModule, env_fallback
 from ansible.module_utils.digital_ocean import DigitalOceanHelper
 
-class Response(object):
+
+class Response:
 
     def __init__(self, resp, info):
         self.body = None
@@ -141,18 +137,16 @@ class Response(object):
 def wait_action(module, rest, ip, action_id, timeout=10):
     end_time = time.time() + 10
     while time.time() < end_time:
-        response = rest.get('floating_ips/{0}/actions/{1}'.format(ip, action_id))
+        response = rest.get(f'floating_ips/{ip}/actions/{action_id}')
         status_code = response.status_code
         status = response.json['action']['status']
         # TODO: check status_code == 200?
         if status == 'completed':
             return True
         elif status == 'errored':
-            module.fail_json(msg='Floating ip action error [ip: {0}: action: {1}]'.format(
-                ip, action_id), data=json)
+            module.fail_json(msg=f'Floating ip action error [ip: {ip}: action: {action_id}]', data=json)
 
-    module.fail_json(msg='Floating ip action timeout [ip: {0}: action: {1}]'.format(
-        ip, action_id), data=json)
+    module.fail_json(msg=f'Floating ip action timeout [ip: {ip}: action: {action_id}]', data=json)
 
 
 def core(module):
@@ -171,7 +165,7 @@ def core(module):
             create_floating_ips(module, rest)
 
     elif state in ('absent'):
-        response = rest.delete("floating_ips/{0}".format(ip))
+        response = rest.delete(f"floating_ips/{ip}")
         status_code = response.status_code
         json_data = response.json
         if status_code == 204:
@@ -185,7 +179,7 @@ def core(module):
 def get_floating_ip_details(module, rest):
     ip = module.params['ip']
 
-    response = rest.get("floating_ips/{0}".format(ip))
+    response = rest.get(f"floating_ips/{ip}")
     status_code = response.status_code
     json_data = response.json
     if status_code == 200:
@@ -203,7 +197,7 @@ def assign_floating_id_to_droplet(module, rest):
         "droplet_id": module.params['droplet_id'],
     }
 
-    response = rest.post("floating_ips/{0}/actions".format(ip), data=payload)
+    response = rest.post(f"floating_ips/{ip}/actions", data=payload)
     status_code = response.status_code
     json_data = response.json
     if status_code == 201:

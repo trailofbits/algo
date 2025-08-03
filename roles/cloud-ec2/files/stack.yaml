@@ -111,9 +111,9 @@ Resources:
     Properties:
       Ipv6CidrBlock:
         "Fn::Join":
-            - ""
-            - - !Select [0, !Split [ "::", !Select [0, !GetAtt VPC.Ipv6CidrBlocks] ]]
-              - "::dead:beef/64"
+          - ""
+          - - !Select [0, !Split ["::", !Select [0, !GetAtt VPC.Ipv6CidrBlocks]]]
+            - "::dead:beef/64"
       SubnetId: !Ref Subnet
 
   RouteSubnet:
@@ -188,12 +188,12 @@ Resources:
       UserData: !Ref UserData
       LaunchTemplate:
         !If               # Only if Conditions created "EC2LaunchTemplate"
-          - InstanceIsSpot
-          -
-            LaunchTemplateId:
-              !Ref EC2LaunchTemplate
-            Version: 1
-          - !Ref AWS::NoValue  # Else this LaunchTemplate not set
+        - InstanceIsSpot
+        -
+          LaunchTemplateId:
+            !Ref EC2LaunchTemplate
+          Version: 1
+        - !Ref AWS::NoValue  # Else this LaunchTemplate not set
       Tags:
         - Key: Name
           Value: !Ref AWS::StackName

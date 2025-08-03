@@ -1,8 +1,5 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
 
 import traceback
 
@@ -11,7 +8,7 @@ from ansible.module_utils.linode import get_user_agent
 
 LINODE_IMP_ERR = None
 try:
-    from linode_api4 import StackScript, LinodeClient
+    from linode_api4 import LinodeClient, StackScript
     HAS_LINODE_DEPENDENCY = True
 except ImportError:
     LINODE_IMP_ERR = traceback.format_exc()

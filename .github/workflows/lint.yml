@@ -1,0 +1,80 @@
+name: Lint
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  ansible-lint:
+    name: Ansible linting
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install ansible-lint and dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible-lint ansible
+          # Install required ansible collections
+          ansible-galaxy collection install community.crypto
+
+      - name: Run ansible-lint
+        run: |
+          # Run with || true temporarily while we make the linter less strict
+          ansible-lint -v *.yml roles/{local,cloud-*}/*/*.yml || true
+
+  yaml-lint:
+    name: YAML linting
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+        with:
+          persist-credentials: false
+
+      - name: Run yamllint
+        run: |
+          pip install yamllint
+          yamllint -c .yamllint . || true  # Start with warnings only
+
+  python-lint:
+    name: Python linting
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python linters
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff
+
+      - name: Run ruff
+        run: |
+          # Fast Python linter
+          ruff check . || true  # Start with warnings only
+
+  shellcheck:
+    name: Shell script linting
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+        with:
+          persist-credentials: false
+
+      - name: Run shellcheck
+        run: |
+          sudo apt-get update && sudo apt-get install -y shellcheck
+          # Check all shell scripts, not just algo and install.sh
+          find . -type f -name "*.sh" -not -path "./.git/*" -exec shellcheck {} \;
