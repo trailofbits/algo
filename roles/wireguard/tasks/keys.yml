@@ -55,8 +55,8 @@
 - block:
     - name: Save private keys
       copy:
-        dest: "{{ wireguard_pki_path }}/private/{{ item['item'] }}"
-        content: "{{ item['stdout'] }}"
+        dest: "{{ wireguard_pki_path }}/private/{{ item.item }}"
+        content: "{{ item.stdout }}"
         mode: "0600"
       no_log: "{{ algo_no_log|bool }}"
       when: item.changed
@@ -129,8 +129,8 @@
 - block:
     - name: Save preshared keys
       copy:
-        dest: "{{ wireguard_pki_path }}/preshared/{{ item['item'] }}"
-        content: "{{ item['stdout'] }}"
+        dest: "{{ wireguard_pki_path }}/preshared/{{ item.item }}"
+        content: "{{ item.stdout }}"
         mode: "0600"
       no_log: "{{ algo_no_log|bool }}"
       when: item.changed
