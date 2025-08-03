@@ -1,0 +1,57 @@
+---
+# BSD systems return IPv6 addresses in the order they were added to the interface,
+# not sorted by scope like Linux does. This means ansible_default_ipv6 often contains
+# a link-local address (fe80::) instead of a global address, which breaks certificate
+# generation due to the %interface suffix.
+#
+# This task file creates a fact with the first global IPv6 address found.
+
+- name: Initialize all_ipv6_addresses as empty list
+  set_fact:
+    all_ipv6_addresses: []
+
+- name: Get all IPv6 addresses for the default interface
+  set_fact:
+    all_ipv6_addresses: "{{ ansible_facts[ansible_default_ipv6.interface]['ipv6'] | default([]) }}"
+  when:
+    - ansible_default_ipv6 is defined
+    - ansible_default_ipv6.interface is defined
+    - ansible_facts[ansible_default_ipv6.interface] is defined
+
+- name: Find first global IPv6 address from interface-specific addresses
+  set_fact:
+    global_ipv6_address: "{{ item.address }}"
+    global_ipv6_prefix: "{{ item.prefix }}"
+  loop: "{{ all_ipv6_addresses }}"
+  when:
+    - all_ipv6_addresses | length > 0
+    - item.address is defined
+    - not item.address.startswith('fe80:')  # Filter out link-local addresses
+    - "'%' not in item.address"  # Ensure no interface suffix
+    - global_ipv6_address is not defined  # Only set once
+  loop_control:
+    label: "{{ item.address | default('no address') }}"
+
+- name: Find first global IPv6 address from ansible_all_ipv6_addresses
+  set_fact:
+    global_ipv6_address: "{{ item | regex_replace('(.*)%.*', '\\1') }}"
+    global_ipv6_prefix: "128"  # Assume /128 for addresses from this list
+  loop: "{{ ansible_all_ipv6_addresses | default([]) }}"
+  when:
+    - global_ipv6_address is not defined
+    - ansible_all_ipv6_addresses is defined
+    - not item.startswith('fe80:')
+    - global_ipv6_address is not defined  # Only set once
+
+- name: Override ansible_default_ipv6 with global address on BSD
+  set_fact:
+    ansible_default_ipv6: "{{ ansible_default_ipv6 | combine({'address': global_ipv6_address, 'prefix': global_ipv6_prefix}) }}"
+  when:
+    - global_ipv6_address is defined
+    - ansible_default_ipv6 is defined
+    - ansible_default_ipv6.address.startswith('fe80:') or '%' in ansible_default_ipv6.address
+
+- name: Debug IPv6 address selection
+  debug:
+    msg: "Selected IPv6 address: {{ ansible_default_ipv6.address | default('none') }}"
+  when: algo_debug | default(false) | bool
