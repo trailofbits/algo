@@ -10,6 +10,7 @@
 * [I deployed an Algo server. Can you update it with new features?](#i-deployed-an-algo-server-can-you-update-it-with-new-features)
 * [Where did the name "Algo" come from?](#where-did-the-name-algo-come-from)
 * [Can DNS filtering be disabled?](#can-dns-filtering-be-disabled)
+* [Does Algo support zero logging?](#does-algo-support-zero-logging)
 * [Wasn't IPSEC backdoored by the US government?](#wasnt-ipsec-backdoored-by-the-us-government)
 * [What inbound ports are used?](#what-inbound-ports-are-used)
 * [How do I monitor user activity?](#how-do-i-monitor-user-activity)
@@ -58,6 +59,37 @@ Algo is short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhe
 ## Can DNS filtering be disabled?
 
 You can temporarily disable DNS filtering for all IPsec clients at once with the following workaround: SSH to your Algo server (using the 'shell access' command printed upon a successful deployment), edit `/etc/ipsec.conf`, and change `rightdns=<random_ip>` to `rightdns=8.8.8.8`. Then run `sudo systemctl restart strongswan`. DNS filtering for WireGuard clients has to be disabled on each client device separately by modifying the settings in the app, or by directly modifying the `DNS` setting on the `clientname.conf` file. If all else fails, we recommend deploying a new Algo server without the adblocking feature enabled.
+
+## Does Algo support zero logging?
+
+Algo was not originally designed for zero-logging, but recent updates have introduced privacy enhancements to significantly reduce the logging footprint. Here's what you need to know:
+
+**Recent Privacy Enhancements:**
+* **StrongSwan logging disabled by default** - Connection logs no longer record who connects, when, or from which IP
+* **DNSCrypt syslog disabled** - DNS queries are not logged to system logs
+* **Sensitive data protection** - All passwords, keys, and credentials are now hidden from Ansible logs
+* **Aggressive log rotation** - Logs are automatically rotated and deleted after 7 days
+* **Optional privacy features** - Bash history clearing, VPN log filtering, and more
+
+**What May Still Be Logged:**
+* System errors and security events (failed authentications, system updates)
+* SSH administrative access for server management
+* Cloud provider logs and metadata (outside Algo's control)
+* Kernel messages and system diagnostics needed for troubleshooting
+
+**How to Maximize Privacy:**
+* Keep the default privacy settings enabled in `config.cfg`
+* Use the privacy monitoring script: `sudo /usr/local/bin/privacy-monitor.sh`
+* Deploy on ephemeral cloud instances that can be destroyed when needed
+* Review the privacy settings in `config.cfg` for additional options
+
+**Important Limitations:**
+* WireGuard inherently shows last endpoint and handshake time via `sudo wg`
+* Cloud providers maintain their own logs and traffic metadata
+* Your ISP and destination websites can still observe traffic patterns
+* Complete zero-logging may make troubleshooting difficult
+
+The privacy enhancements are enabled by default but can be disabled if you need more detailed logging for debugging. See the `privacy_enhancements_enabled` setting in `config.cfg`.
 
 ## Wasn't IPSEC backdoored by the US government?
 
