@@ -7,6 +7,7 @@ permissions:
 
 jobs:
   lint:
+    name: Lint code
     runs-on: ubuntu-22.04
     permissions:
       contents: read
@@ -34,6 +35,7 @@ jobs:
           ansible-lint -x experimental,package-latest,unnamed-task -v *.yml roles/{local,cloud-*}/*/*.yml || true
 
   basic-tests:
+    name: Basic sanity tests
     runs-on: ubuntu-22.04
     permissions:
       contents: read
@@ -53,9 +55,16 @@ jobs:
           sudo apt-get update && sudo apt-get install -y shellcheck
 
       - name: Run basic sanity tests
-        run: python tests/unit/test_basic_sanity.py
+        run: |
+          python tests/unit/test_basic_sanity.py
+          python tests/unit/test_config_validation.py
+          python tests/unit/test_certificate_validation.py
+          python tests/unit/test_user_management.py
+          python tests/unit/test_openssl_compatibility.py
+          python tests/unit/test_cloud_provider_configs.py
 
   docker-build:
+    name: Docker build test
     runs-on: ubuntu-22.04
     permissions:
       contents: read
@@ -73,6 +82,7 @@ jobs:
           docker run --rm local/algo:test /algo/algo --help
 
   config-generation:
+    name: Configuration generation test
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     permissions:
