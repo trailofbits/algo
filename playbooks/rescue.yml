@@ -1,10 +1,6 @@
 ---
-- name: Rescue tasks  
-  hosts: localhost
-  gather_facts: false
-  tasks:
-    - debug:
-        var: fail_hint
+- debug:
+    var: fail_hint
 
-    - name: Fail the installation
-      fail:
+- name: Fail the installation
+  fail:
