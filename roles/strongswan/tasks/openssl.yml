@@ -65,6 +65,7 @@
         chdir: "{{ ipsec_pki_path }}"
         creates: "{{ IP_subject_alt_name }}_ca_generated"
         executable: bash
+      no_log: true
 
     - name: Copy the CA certificate
       copy:
@@ -99,6 +100,7 @@
         chdir: "{{ ipsec_pki_path }}"
         creates: certs/{{ IP_subject_alt_name }}_crt_generated
         executable: bash
+      no_log: true
 
     - name: Build the client's pair
       shell: >
@@ -123,6 +125,7 @@
         creates: certs/{{ item }}_crt_generated
         executable: bash
       with_items: "{{ users }}"
+      no_log: true
 
     - name: Build the tests pair
       shell: >
@@ -147,6 +150,7 @@
         creates: certs/google-algo-test-pair.com_crt_generated
         executable: bash
       when: tests|default(false)|bool
+      no_log: true
 
     - name: Build openssh public keys
       openssl_publickey:
@@ -185,6 +189,7 @@
         executable: bash
       with_items: "{{ users }}"
       register: p12
+      no_log: true
 
     - name: Build the client's p12 with the CA cert included
       shell: >
@@ -203,6 +208,7 @@
         executable: bash
       with_items: "{{ users }}"
       register: p12
+      no_log: true
 
     - name: Copy the p12 certificates
       copy:
@@ -235,6 +241,7 @@
         executable: bash
       when: item.split('@')[0] not in users
       with_items: "{{ valid_certs.stdout_lines }}"
+      no_log: true
 
     - name: Generate new CRL file
       shell: >
@@ -248,6 +255,7 @@
       args:
         chdir: "{{ ipsec_pki_path }}"
         executable: bash
+      no_log: true
   delegate_to: localhost
   become: false
   vars:

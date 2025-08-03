@@ -21,6 +21,7 @@
 - set_fact:
     access_key: "{{ aws_access_key | default(_aws_access_key.user_input|default(None)) | default(lookup('env','AWS_ACCESS_KEY_ID'), true) }}"
     secret_key: "{{ aws_secret_key | default(_aws_secret_key.user_input|default(None)) | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true) }}"
+  no_log: true
 
 - block:
     - name: Get regions
