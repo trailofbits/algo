@@ -1,6 +1,7 @@
+---
 name: Integration Tests
 
-on:
+'on':
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
@@ -28,12 +29,12 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
         with:
           persist-credentials: false
-          
+
       - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
         with:
           python-version: '3.11'
           cache: 'pip'
-          
+
       - name: Install system dependencies
         run: |
           sudo apt-get update
@@ -46,12 +47,12 @@ jobs:
             qrencode \
             openssl \
             linux-headers-$(uname -r)
-            
+
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          
+
       - name: Create test configuration
         run: |
           cat > integration-test.cfg << EOF
@@ -87,7 +88,7 @@ jobs:
           endpoint: 127.0.0.1
           ssh_port: 4160
           EOF
-          
+
       - name: Run Algo deployment
         run: |
           sudo ansible-playbook main.yml \
@@ -96,7 +97,7 @@ jobs:
             -e @integration-test.cfg \
             -e "provider=local" \
             -vv
-            
+
       - name: Verify services are running
         run: |
           # Check WireGuard
@@ -109,7 +110,7 @@ jobs:
             fi
             echo "✓ WireGuard is running"
           fi
-          
+
           # Check StrongSwan
           if [[ "${{ matrix.vpn_type }}" == "ipsec" || "${{ matrix.vpn_type }}" == "both" ]]; then
             echo "Checking StrongSwan..."
@@ -120,18 +121,18 @@ jobs:
             fi
             echo "✓ StrongSwan is running"
           fi
-          
+
           # Check dnsmasq
           if ! sudo systemctl is-active --quiet dnsmasq; then
             echo "⚠️  dnsmasq not running (may be expected)"
           else
             echo "✓ dnsmasq is running"
           fi
-          
+
       - name: Verify generated configs
         run: |
           echo "Checking generated configuration files..."
-          
+
           # WireGuard configs
           if [[ "${{ matrix.vpn_type }}" == "wireguard" || "${{ matrix.vpn_type }}" == "both" ]]; then
             for user in alice bob; do
@@ -146,7 +147,7 @@ jobs:
             done
             echo "✓ All WireGuard configs generated"
           fi
-          
+
           # IPsec configs
           if [[ "${{ matrix.vpn_type }}" == "ipsec" || "${{ matrix.vpn_type }}" == "both" ]]; then
             for user in alice bob; do
@@ -161,28 +162,28 @@ jobs:
             done
             echo "✓ All IPsec configs generated"
           fi
-          
+
       - name: Test VPN connectivity
         run: |
           echo "Testing basic VPN connectivity..."
-          
+
           # Test WireGuard
           if [[ "${{ matrix.vpn_type }}" == "wireguard" || "${{ matrix.vpn_type }}" == "both" ]]; then
             # Get server's WireGuard public key
             SERVER_PUBKEY=$(sudo wg show wg0 public-key)
             echo "Server public key: $SERVER_PUBKEY"
-            
+
             # Check if interface has peers
             PEER_COUNT=$(sudo wg show wg0 peers | wc -l)
             echo "✓ WireGuard has $PEER_COUNT peer(s) configured"
           fi
-          
+
           # Test StrongSwan
           if [[ "${{ matrix.vpn_type }}" == "ipsec" || "${{ matrix.vpn_type }}" == "both" ]]; then
             # Check IPsec policies
             sudo ipsec statusall | grep -E "INSTALLED|ESTABLISHED" || echo "No active IPsec connections (expected)"
           fi
-          
+
       - name: Upload configs as artifacts
         if: always()
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3  # v4.3.1
@@ -190,7 +191,7 @@ jobs:
           name: vpn-configs-${{ matrix.vpn_type }}-${{ github.run_id }}
           path: configs/
           retention-days: 7
-          
+
       - name: Upload logs on failure
         if: failure()
         run: |
@@ -211,21 +212,21 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
         with:
           persist-credentials: false
-          
+
       - name: Build Algo Docker image
         run: |
           docker build -t algo:ci-test .
-          
+
       - name: Test Docker image
         run: |
           # Test that the image can run and show help
           docker run --rm --entrypoint /bin/sh algo:ci-test -c "cd /algo && ./algo --help" || true
-          
+
           # Test that required binaries exist in the virtual environment
           docker run --rm --entrypoint /bin/sh algo:ci-test -c "cd /algo && source .env/bin/activate && which ansible"
           docker run --rm --entrypoint /bin/sh algo:ci-test -c "which python3"
           docker run --rm --entrypoint /bin/sh algo:ci-test -c "which rsync"
-          
+
       - name: Test Docker config validation
         run: |
           # Create a minimal valid config
@@ -242,9 +243,9 @@ jobs:
           dns_encryption: true
           algo_provider: ec2
           EOF
-          
+
           # Test that config is readable
           docker run --rm --entrypoint cat -v $(pwd)/test-data:/data algo:ci-test /data/config.cfg
-          
+
           echo "✓ Docker image built and basic tests passed"
 

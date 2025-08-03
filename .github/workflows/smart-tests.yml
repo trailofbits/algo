@@ -1,6 +1,7 @@
+---
 name: Smart Test Selection
 
-on:
+'on':
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -25,7 +26,7 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
         with:
           persist-credentials: false
-          
+
       - uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50  # v2.11.1
         id: filter
         with:
@@ -118,7 +119,7 @@ jobs:
         run: |
           # Always run basic sanity
           python tests/unit/test_basic_sanity.py
-          
+
           # Run other tests based on what changed
           if [[ "${{ needs.changed-files.outputs.run_basic_tests }}" == "true" ]]; then
             python tests/unit/test_config_validation.py
@@ -127,7 +128,7 @@ jobs:
             python tests/unit/test_cloud_provider_configs.py
             python tests/unit/test_generated_configs.py
           fi
-          
+
           if [[ "${{ needs.changed-files.outputs.run_template_tests }}" == "true" ]]; then
             python tests/unit/test_template_rendering.py
           fi
@@ -208,7 +209,7 @@ jobs:
           server: test-server
           endpoint: 10.0.0.1
           EOF
-          
+
           ansible-playbook main.yml \
             -i "localhost," \
             -c local \
@@ -251,7 +252,7 @@ jobs:
             ruff check . || true
             yamllint . || true
             ansible-lint || true
-            
+
             # Check shell scripts if any changed
             if git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep -q '\.sh$'; then
               find . -name "*.sh" -type f -exec shellcheck {} + || true
