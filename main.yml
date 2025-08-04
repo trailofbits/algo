@@ -24,8 +24,7 @@
 
     - name: Set required ansible version as a fact
       set_fact:
-        required_ansible_version: "{{ item |  regex_replace('^ansible[\\s+]?(?P<op>[=,>,<]+)[\\s+]?(?P<ver>\\d.\\d+(.\\d+)?)$', '{\"op\": \"\\g<op>\",\"ver\"\
-          : \"\\g<ver>\" }') }}"
+        required_ansible_version: "{{ item | regex_replace('^ansible\\s*(?P<op>[~>=<]+)\\s*(?P<ver>\\d+\\.\\d+(?:\\.\\d+)?).*$', '{\"op\": \"\\g<op>\", \"ver\": \"\\g<ver>\"}') }}"
       when: '"ansible" in item'
       with_items: "{{ lookup('file', 'requirements.txt').splitlines() }}"
 
