@@ -36,7 +36,7 @@
     - name: Debug - Show wg_genkey structure
       debug:
         var: wg_genkey
-        
+
     - name: Simulate the actual async pattern - Wait for completion
       async_status:
         jid: "{{ item.ansible_job_id }}"

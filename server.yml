@@ -9,7 +9,7 @@
     - block:
         - name: Wait until the cloud-init completed
           wait_for:
-            path: /var/lib/cloud/data/result.json  
+            path: /var/lib/cloud/data/result.json
             delay: 10         # Conservative 10 second initial delay
             timeout: 480      # Reduce from 600 to 480 seconds (8 minutes)
             sleep: 10         # Check every 10 seconds (less aggressive)

@@ -47,7 +47,7 @@
       register: file_check
       loop:
         - "testuser1"
-        - "testuser2" 
+        - "testuser2"
         - "127.0.0.1"
 
     - name: Assert all files exist
