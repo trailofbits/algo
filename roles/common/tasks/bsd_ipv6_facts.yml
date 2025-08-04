@@ -34,7 +34,7 @@
 
 - name: Find first global IPv6 address from ansible_all_ipv6_addresses
   set_fact:
-    global_ipv6_address: "{{ item | regex_replace('(.*)%.*', '\\1') }}"
+    global_ipv6_address: "{{ item | regex_replace('%.*', '') }}"
     global_ipv6_prefix: "128"  # Assume /128 for addresses from this list
   loop: "{{ ansible_all_ipv6_addresses | default([]) }}"
   when:
