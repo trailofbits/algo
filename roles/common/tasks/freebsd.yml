@@ -16,6 +16,10 @@
 - name: Gather additional facts
   import_tasks: facts.yml
 
+- name: Fix IPv6 address selection on BSD
+  import_tasks: bsd_ipv6_facts.yml
+  when: ipv6_support | default(false) | bool
+
 - name: Set OS specific facts
   set_fact:
     config_prefix: /usr/local/

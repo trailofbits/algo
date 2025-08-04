@@ -15,7 +15,7 @@
           rc: 0
           failed: false
           finished: true
-        - item: "10.10.10.1"   # This comes from the original wg_genkey.results item  
+        - item: "10.10.10.1"   # This comes from the original wg_genkey.results item
           stdout: "mock_private_key_2"  # This is the command output
           changed: true
           rc: 0

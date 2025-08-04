@@ -10,7 +10,7 @@
 #
 # Access pattern: item.item.item where:
 # - First 'item' = current async_status result
-# - Second 'item' = original async job object  
+# - Second 'item' = original async job object
 # - Third 'item' = actual username from original loop
 #
 # Reference: https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_loops.html
@@ -92,7 +92,7 @@
       become: false
       # DATA STRUCTURE EXPLANATION:
       # item = current result from wg_genkey_results.results
-      # item.item = original job object from wg_genkey.results  
+      # item.item = original job object from wg_genkey.results
       # item.item.item = actual username from original loop
       # item.stdout = the generated private key content
 
