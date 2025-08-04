@@ -60,12 +60,16 @@ def run_module():
             with open(module.params['private_key_path'], 'rb') as f:
                 data = f.read()
             try:
-                # try decoding as base64 first (strip whitespace for text data)
+                # First attempt: assume file contains base64 text data
+                # Strip whitespace from edges for text files (safe for base64 strings)
                 stripped_data = data.strip()
                 base64.b64decode(stripped_data, validate=True)
                 priv_b64 = stripped_data.decode()
             except (base64.binascii.Error, ValueError):
-                # if not valid base64, assume raw 32 bytes and convert (no stripping for binary)
+                # Second attempt: assume file contains raw binary data
+                # CRITICAL: Do NOT strip raw binary data - X25519 keys can contain
+                # whitespace-like bytes (0x09, 0x0A, etc.) that must be preserved
+                # Stripping would corrupt the key and cause "got 31 bytes" errors
                 if len(data) != 32:
                     module.fail_json(msg=f"Private key file must be either base64 or exactly 32 raw bytes, got {len(data)} bytes")
                 priv_b64 = base64.b64encode(data).decode()
