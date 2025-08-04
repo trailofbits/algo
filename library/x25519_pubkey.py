@@ -30,6 +30,12 @@ Returns:
 
 
 def run_module():
+    """
+    Main execution function for the x25519_pubkey Ansible module.
+    
+    Handles parameter validation, private key processing, public key derivation,
+    and optional file output with idempotent behavior.
+    """
     module_args = {
         'private_key_b64': {'type': 'str', 'required': False},
         'private_key_path': {'type': 'path', 'required': False},
@@ -52,13 +58,14 @@ def run_module():
     if module.params['private_key_path']:
         try:
             with open(module.params['private_key_path'], 'rb') as f:
-                data = f.read().strip()
+                data = f.read()
             try:
-                # try decoding as base64 first
-                base64.b64decode(data, validate=True)
-                priv_b64 = data.decode()
+                # try decoding as base64 first (strip whitespace for text data)
+                stripped_data = data.strip()
+                base64.b64decode(stripped_data, validate=True)
+                priv_b64 = stripped_data.decode()
             except (base64.binascii.Error, ValueError):
-                # if not valid base64, assume raw 32 bytes and convert
+                # if not valid base64, assume raw 32 bytes and convert (no stripping for binary)
                 if len(data) != 32:
                     module.fail_json(msg=f"Private key file must be either base64 or exactly 32 raw bytes, got {len(data)} bytes")
                 priv_b64 = base64.b64encode(data).decode()
@@ -116,6 +123,7 @@ def run_module():
 
 
 def main():
+    """Entry point when module is executed directly."""
     run_module()
 
 
