@@ -12,7 +12,7 @@
       interface: "em0"
       prefix: "64"
       gateway: "fe80::1"
-    
+
     # Simulate interface facts with multiple IPv6 addresses
     ansible_facts:
       em0:
@@ -23,13 +23,13 @@
             prefix: "64"
           - address: "2001:db8::2"
             prefix: "64"
-    
+
     # Simulate all_ipv6_addresses fact
     ansible_all_ipv6_addresses:
       - "fe80::1%em0"
       - "2001:db8::1"
       - "2001:db8::2"
-    
+
     ipv6_support: true
     algo_debug: true
 
