@@ -5,23 +5,41 @@
 #
 # Why: community.crypto does not provide raw public key derivation for X25519 keys.
 
-from ansible.module_utils.basic import AnsibleModule
-from cryptography.hazmat.primitives.asymmetric import x25519
-from cryptography.hazmat.primitives import serialization
 import base64
+
+from ansible.module_utils.basic import AnsibleModule
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import x25519
+
+"""
+Ansible module to derive base64-encoded X25519 public keys from private keys.
+
+Supports both base64-encoded strings and raw 32-byte key files.
+Used for WireGuard key generation where community.crypto lacks raw public key derivation.
+
+Parameters:
+- private_key_b64: Base64-encoded X25519 private key string
+- private_key_path: Path to file containing X25519 private key (base64 or raw 32 bytes)
+- public_key_path: Path where the derived public key should be written
+
+Returns:
+- public_key: Base64-encoded X25519 public key
+- changed: Whether the public key file was modified
+- public_key_path: Path where public key was written (if specified)
+"""
 
 
 def run_module():
-    module_args = dict(
-        private_key_b64=dict(type='str', required=False),
-        private_key_path=dict(type='path', required=False),
-        public_key_path=dict(type='path', required=False),
-    )
+    module_args = {
+        'private_key_b64': {'type': 'str', 'required': False},
+        'private_key_path': {'type': 'path', 'required': False},
+        'public_key_path': {'type': 'path', 'required': False},
+    }
 
-    result = dict(
-        changed=False,
-        public_key='',
-    )
+    result = {
+        'changed': False,
+        'public_key': '',
+    }
 
     module = AnsibleModule(
         argument_spec=module_args,
@@ -39,20 +57,24 @@ def run_module():
                 # try decoding as base64 first
                 base64.b64decode(data, validate=True)
                 priv_b64 = data.decode()
-            except Exception:
+            except (base64.binascii.Error, ValueError):
                 # if not valid base64, assume raw 32 bytes and convert
                 if len(data) != 32:
-                    module.fail_json(msg=f"Private key file must be either base64 or exactly 32 raw bytes, got {len(data)}")
+                    module.fail_json(msg=f"Private key file must be either base64 or exactly 32 raw bytes, got {len(data)} bytes")
                 priv_b64 = base64.b64encode(data).decode()
-        except Exception as e:
+        except OSError as e:
             module.fail_json(msg=f"Failed to read private key file: {e}")
     else:
         priv_b64 = module.params['private_key_b64']
 
+    # Validate input parameters
+    if not priv_b64:
+        module.fail_json(msg="No private key provided")
+
     try:
         priv_raw = base64.b64decode(priv_b64, validate=True)
     except Exception as e:
-        module.fail_json(msg=f"Invalid base64 input: {e}")
+        module.fail_json(msg=f"Invalid base64 private key format: {e}")
 
     if len(priv_raw) != 32:
         module.fail_json(msg=f"Private key must decode to exactly 32 bytes, got {len(priv_raw)}")
@@ -72,15 +94,18 @@ def run_module():
             existing = None
 
             try:
-                with open(pub_path, 'r') as f:
+                with open(pub_path) as f:
                     existing = f.read().strip()
-            except FileNotFoundError:
-                pass
+            except OSError:
+                existing = None
 
             if existing != pub_b64:
-                with open(pub_path, 'w') as f:
-                    f.write(pub_b64)
-                result['changed'] = True
+                try:
+                    with open(pub_path, 'w') as f:
+                        f.write(pub_b64)
+                    result['changed'] = True
+                except OSError as e:
+                    module.fail_json(msg=f"Failed to write public key file: {e}")
 
             result['public_key_path'] = pub_path
 
