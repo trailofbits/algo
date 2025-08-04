@@ -1,205 +1,46 @@
 ---
-# ANSIBLE ASYNC + LOOP PATTERN DOCUMENTATION
-# ============================================
-# This file uses a complex async pattern that creates triple-nested data structures.
-# When using async + register + loop + async_status + register + loop, the result is:
-#
-# Step 1: async task with loop -> register creates: { results: [job1, job2] }
-# Step 2: async_status with loop -> register creates: { results: [status1, status2] }
-# Step 3: Each status contains the original job as nested 'item' field
-#
-# Access pattern: item.item.item where:
-# - First 'item' = current async_status result
-# - Second 'item' = original async job object
-# - Third 'item' = actual username from original loop
-#
-# Reference: https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_loops.html
-# See also: tests/test-wireguard-real-async.yml for structure debugging
-
-- name: Delete the lock files
-  file:
-    dest: "{{ config_prefix|default('/') }}etc/wireguard/private_{{ item }}.lock"
-    state: absent
-  when: keys_clean_all|bool
+- name: Generate raw private keys
+  community.crypto.openssl_privatekey:
+    type: X25519
+    path: "{{ wireguard_pki_path }}/private/{{ item }}.raw"
+    format: raw
+    mode: "0600"
   with_items:
     - "{{ users }}"
     - "{{ IP_subject_alt_name }}"
 
-- name: Generate private keys (parallel)
-  command: wg genkey
-  register: wg_genkey
-  args:
-    creates: "{{ config_prefix|default('/') }}etc/wireguard/private_{{ item }}.lock"
-  with_items:
-    - "{{ users }}"
-    - "{{ IP_subject_alt_name }}"
-  async: 30
-  poll: 0
-  # Result structure: wg_genkey.results = [
-  #   { "ansible_job_id": "j123", "item": "user1", "changed": true },
-  #   { "ansible_job_id": "j456", "item": "user2", "changed": true }
-  # ]
-
-- name: Wait for private key generation to complete
-  async_status:
-    jid: "{{ item.ansible_job_id }}"
-  with_items: "{{ wg_genkey.results }}"
-  register: wg_genkey_results
-  until: wg_genkey_results.finished
-  retries: 15
-  delay: 2
-  # CRITICAL: Complex nested structure created here!
-  # wg_genkey_results.results = [
-  #   {
-  #     "item": { "ansible_job_id": "j123", "item": "user1", "changed": true },
-  #     "stdout": "actual_private_key_content",
-  #     "finished": 1, "changed": true
-  #   }
-  # ]
-  # To access username: item.item.item (triple nested!)
-
-- name: Display WireGuard private key generation failure details (if any)
-  debug:
-    msg: |
-      WireGuard private key generation failed for user: {{ item.item.item }}
-      Error details: {{ item.stderr | default('No stderr available') }}
-      Return code: {{ item.rc | default('Unknown') }}
-
-      Common causes:
-      - WireGuard tools not properly installed
-      - Insufficient entropy for key generation
-      - Permission issues in key directory
-      - Filesystem full or read-only
-
-      Troubleshooting:
-      - Verify WireGuard installation: wg --version
-      - Check entropy: cat /proc/sys/kernel/random/entropy_avail
-      - Check disk space: df -h /opt/algo
-  when: item.rc is defined and item.rc != 0
-  with_items: "{{ wg_genkey_results.results | default([]) }}"
-  failed_when: false
-
-- block:
-    - name: Save private keys
-      copy:
-        dest: "{{ wireguard_pki_path }}/private/{{ item.item.item }}"  # See structure docs above
-        content: "{{ item.stdout }}"
-        mode: "0600"
-      no_log: "{{ algo_no_log|bool }}"
-      when: item.changed
-      with_items: "{{ wg_genkey_results.results }}"
-      delegate_to: localhost
-      become: false
-      # DATA STRUCTURE EXPLANATION:
-      # item = current result from wg_genkey_results.results
-      # item.item = original job object from wg_genkey.results
-      # item.item.item = actual username from original loop
-      # item.stdout = the generated private key content
-
-    - name: Touch the lock file
-      file:
-        dest: "{{ config_prefix|default('/') }}etc/wireguard/private_{{ item }}.lock"
-        state: touch
-      with_items:
-        - "{{ users }}"
-        - "{{ IP_subject_alt_name }}"
-  when: wg_genkey_results.changed
-
-- name: Delete the preshared lock files
-  file:
-    dest: "{{ config_prefix|default('/') }}etc/wireguard/preshared_{{ item }}.lock"
-    state: absent
-  when: keys_clean_all|bool
+- name: Save base64 encoded private key
+  copy:
+    dest: "{{ wireguard_pki_path }}/private/{{ item }}"
+    content: "{{ lookup('file', wireguard_pki_path + '/private/' + item + '.raw') | b64encode }}"
+    mode: "0600"
   with_items:
     - "{{ users }}"
     - "{{ IP_subject_alt_name }}"
 
-- name: Generate preshared keys (parallel)
-  command: wg genpsk
-  register: wg_genpsk
-  args:
-    creates: "{{ config_prefix|default('/') }}etc/wireguard/preshared_{{ item }}.lock"
+- name: Generate raw preshared keys
+  community.crypto.openssl_privatekey:
+    type: X25519
+    path: "{{ wireguard_pki_path }}/preshared/{{ item }}.raw"
+    format: raw
+    mode: "0600"
   with_items:
     - "{{ users }}"
     - "{{ IP_subject_alt_name }}"
-  async: 30
-  poll: 0
-  # Same structure pattern as private keys above
 
-- name: Wait for preshared key generation to complete
-  async_status:
-    jid: "{{ item.ansible_job_id }}"
-  with_items: "{{ wg_genpsk.results }}"
-  register: wg_genpsk_results
-  until: wg_genpsk_results.finished
-  retries: 15
-  delay: 2
-  # Creates same triple-nested structure as wg_genkey_results
-  failed_when: >
-    wg_genpsk_results.failed or
-    (wg_genpsk_results.finished and wg_genpsk_results.rc != 0)
-
-- name: Display WireGuard preshared key generation failure details (if any)
-  debug:
-    msg: |
-      WireGuard preshared key generation failed for user: {{ item.item.item }}
-      Error details: {{ item.stderr | default('No stderr available') }}
-      Return code: {{ item.rc | default('Unknown') }}
-
-      Common causes:
-      - WireGuard tools not properly installed
-      - Insufficient entropy for key generation
-      - Permission issues in key directory
-      - Filesystem full or read-only
-
-      Troubleshooting:
-      - Verify WireGuard installation: wg --version
-      - Check entropy: cat /proc/sys/kernel/random/entropy_avail
-      - Check disk space: df -h /opt/algo
-  when: item.rc is defined and item.rc != 0
-  with_items: "{{ wg_genpsk_results.results | default([]) }}"
-  failed_when: false
-
-- block:
-    - name: Save preshared keys
-      copy:
-        dest: "{{ wireguard_pki_path }}/preshared/{{ item.item.item }}"  # Triple nested (see docs above)
-        content: "{{ item.stdout }}"
-        mode: "0600"
-      no_log: "{{ algo_no_log|bool }}"
-      when: item.changed
-      with_items: "{{ wg_genpsk_results.results }}"
-      delegate_to: localhost
-      become: false
-
-    - name: Touch the preshared lock file
-      file:
-        dest: "{{ config_prefix|default('/') }}etc/wireguard/preshared_{{ item }}.lock"
-        state: touch
-      with_items:
-        - "{{ users }}"
-        - "{{ IP_subject_alt_name }}"
-  when: wg_genpsk_results.changed
+- name: Save base64 encoded preshared keys
+  copy:
+    dest: "{{ wireguard_pki_path }}/preshared/{{ item }}"
+    content: "{{ lookup('file', wireguard_pki_path + '/preshared/' + item + '.raw') | b64encode }}"
+    mode: "0600"
+  with_items:
+    - "{{ users }}"
+    - "{{ IP_subject_alt_name }}"
 
 - name: Generate public keys
-  shell: |
-    set -o pipefail
-    echo "{{ lookup('file', wireguard_pki_path + '/private/' + item) }}" |
-    wg pubkey
-  register: wg_pubkey
-  changed_when: false
-  args:
-    executable: bash
+  x25519_pubkey:
+    private_key_path: "{{ wireguard_pki_path }}/private/{{ item }}.raw"
+    public_key_path: "{{ wireguard_pki_path }}/public/{{ item }}"
   with_items:
     - "{{ users }}"
     - "{{ IP_subject_alt_name }}"
-
-- name: Save public keys
-  copy:
-    dest: "{{ wireguard_pki_path }}/public/{{ item['item'] }}"
-    content: "{{ item['stdout'] }}"
-    mode: "0600"
-  no_log: "{{ algo_no_log|bool }}"
-  with_items: "{{ wg_pubkey['results'] }}"
-  delegate_to: localhost
-  become: false
