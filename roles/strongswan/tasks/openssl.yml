@@ -44,6 +44,9 @@
         privatekey_passphrase: "{{ CA_password }}"
         common_name: "{{ IP_subject_alt_name }}"
         use_common_name_for_san: true
+        # COMPATIBILITY FIX: Generate Subject Key Identifier for proper Authority Key Identifier creation
+        # This enables more complete AKI generation in signed certificates (partial fix for macOS/iOS)
+        create_subject_key_identifier: true
         basic_constraints:
           - 'CA:TRUE'
           - 'pathlen:0'
@@ -58,29 +61,25 @@
           - clientAuth                    # Allows signing client certificates
           - '1.3.6.1.5.5.7.3.17'        # IPsec End Entity OID - VPN-specific usage
         extended_key_usage_critical: true
-        # Name constraints from defaults/main.yml template - prevents CA from issuing certs for public domains
-        name_constraints_permitted:
-          - "{{ subjectAltName_type }}:{{ IP_subject_alt_name }}{{ '/255.255.255.255' if subjectAltName_type == 'IP' else '' }}"
-          - "email:{{ openssl_constraint_random_id }}"
-        name_constraints_excluded:
-          - "DNS:.com"
-          - "DNS:.org"
-          - "DNS:.net"
-          - "DNS:.gov"
-          - "DNS:.edu"
-          - "DNS:.mil"
-          - "DNS:.int"
-          - "email:.com"
-          - "email:.org"
-          - "email:.net"
-          - "email:.gov"
-          - "email:.edu"
-          - "email:.mil"
-          - "email:.int"
-          - "IP:10.0.0.0/255.0.0.0"
-          - "IP:172.16.0.0/255.240.0.0"
-          - "IP:192.168.0.0/255.255.0.0"
-          - "IP:::/0"  # IPv6 all addresses
+        # COMPATIBILITY FIX: Complete Name Constraints implementation matching defaults/main.yml template
+        # Fixes missing DNS and IPv6 constraints that were causing certificate size differences
+        # This ensures certificates match the format expected by legacy shell-based generation
+        name_constraints_permitted: >-
+          {{ [
+            subjectAltName_type + ':' + IP_subject_alt_name + ('/255.255.255.255' if subjectAltName_type == 'IP' else ''),
+            'DNS:' + openssl_constraint_random_id,
+            'email:' + openssl_constraint_random_id
+          ] + (
+            ['IP:' + ansible_default_ipv6['address'] + '/128'] if ipv6_support else []
+          ) }}
+        name_constraints_excluded: >-
+          {{ [
+            'DNS:.com', 'DNS:.org', 'DNS:.net', 'DNS:.gov', 'DNS:.edu', 'DNS:.mil', 'DNS:.int',
+            'email:.com', 'email:.org', 'email:.net', 'email:.gov', 'email:.edu', 'email:.mil', 'email:.int',
+            'IP:10.0.0.0/255.0.0.0', 'IP:172.16.0.0/255.240.0.0', 'IP:192.168.0.0/255.255.0.0'
+          ] + (
+            ['IP:fc00::/7', 'IP:fe80::/10', 'IP:2001:db8::/32'] if ipv6_support else ['IP:::/0']
+          ) }}
         name_constraints_critical: true
       register: ca_csr
 
@@ -115,6 +114,11 @@
         privatekey_path: "{{ ipsec_pki_path }}/private/{{ IP_subject_alt_name }}.key"
         subject_alt_name: "{{ subjectAltName.split(',') }}"
         common_name: "{{ IP_subject_alt_name }}"
+        # SECURITY FIX: Add Basic Constraints to prevent certificate chain validation errors
+        # Missing Basic Constraints was causing macOS/iOS VPN authentication failures
+        basic_constraints:
+          - 'CA:FALSE'
+        basic_constraints_critical: false
         key_usage:
           - digitalSignature
           - keyEncipherment
@@ -132,6 +136,11 @@
         subject_alt_name:
           - "email:{{ item }}@{{ openssl_constraint_random_id }}"
         common_name: "{{ item }}"
+        # SECURITY FIX: Add Basic Constraints to client certificates for proper PKI validation
+        # Missing Basic Constraints was breaking certificate chain validation on Apple devices
+        basic_constraints:
+          - 'CA:FALSE'
+        basic_constraints_critical: false
         key_usage:
           - digitalSignature
           - keyEncipherment
@@ -155,6 +164,9 @@
         ownca_not_after: "+{{ certificate_validity_days }}d"
         ownca_not_before: "-1d"
         mode: "0644"
+        # TODO: Authority Key Identifier is still incomplete (missing DirName + serial components)
+        # The community.crypto module only generates keyid, but macOS/iOS may require full AKI
+        # with issuer information. This may need further investigation or alternative approach.
 
     - name: Sign client certificates with CA
       community.crypto.x509_certificate:
