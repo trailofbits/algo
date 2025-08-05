@@ -10,8 +10,8 @@ import yaml
 
 
 def test_python_version():
-    """Ensure we're running on Python 3.10+"""
-    assert sys.version_info >= (3, 10), f"Python 3.10+ required, got {sys.version}"
+    """Ensure we're running on Python 3.11+"""
+    assert sys.version_info >= (3, 11), f"Python 3.11+ required, got {sys.version}"
     print("✓ Python version check passed")
 
 
