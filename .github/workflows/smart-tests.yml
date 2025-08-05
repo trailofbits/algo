@@ -84,10 +84,11 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+        run: uv sync
 
       - name: Check Ansible playbook syntax
         run: ansible-playbook main.yml --syntax-check
@@ -108,11 +109,13 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install jinja2 pyyaml  # For tests
+          uv sync
+          uv add jinja2 pyyaml  # For tests
           sudo apt-get update && sudo apt-get install -y shellcheck
 
       - name: Run relevant tests
@@ -149,10 +152,11 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+        run: uv sync
 
       - name: Build Docker image
         run: docker build -t local/algo:test .
@@ -181,10 +185,11 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+        run: uv sync
 
       - name: Test configuration generation
         run: |
@@ -238,8 +243,8 @@ jobs:
 
       - name: Install linting tools
         run: |
-          python -m pip install --upgrade pip
-          pip install ansible-lint ansible yamllint ruff
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          uv add ansible-lint ansible yamllint ruff
 
       - name: Install ansible dependencies
         run: ansible-galaxy collection install community.crypto

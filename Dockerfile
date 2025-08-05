@@ -13,12 +13,10 @@ RUN adduser -D -H -u 19857 algo
 RUN mkdir -p /algo && mkdir -p /algo/configs
 
 WORKDIR /algo
-COPY requirements.txt .
-RUN python3 -m pip --no-cache-dir install -U pip && \
-    python3 -m pip --no-cache-dir install virtualenv && \
-    python3 -m virtualenv .env && \
-    source .env/bin/activate && \
-    python3 -m pip --no-cache-dir install -r requirements.txt
+COPY requirements.txt pyproject.toml uv.lock ./
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH" && \
+    uv sync
 COPY . .
 RUN chmod 0755 /algo/algo-docker.sh
 

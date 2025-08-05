@@ -2,22 +2,33 @@
 
 set -e
 
-if [ -z ${VIRTUAL_ENV+x} ]
-then
-  ACTIVATE_SCRIPT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/.env/bin/activate"
-  if [ -f "$ACTIVATE_SCRIPT" ]
-  then
-    # shellcheck source=/dev/null
-    source "$ACTIVATE_SCRIPT"
-  else
-    echo "$ACTIVATE_SCRIPT not found.  Did you follow documentation to install dependencies?"
-    exit 1
-  fi
+# Check if uv is installed, if not, install it automatically
+if ! command -v uv &> /dev/null; then
+    echo "Installing uv (fast Python package manager)..."
+    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+        # Windows (Git Bash/WSL)
+        powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+    else
+        # macOS/Linux
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+    fi
+    
+    # Reload PATH to find uv
+    export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+    
+    # Verify installation worked
+    if ! command -v uv &> /dev/null; then
+        echo "Error: uv installation failed. Please restart your terminal and try again."
+        exit 1
+    fi
+    
+    echo "✓ uv installed successfully!"
 fi
 
+# Run the appropriate playbook
 case "$1" in
-  update-users) PLAYBOOK=users.yml; ARGS=( "${@:2}"  -t update-users ) ;;
-  *) PLAYBOOK=main.yml; ARGS=( "${@}" ) ;;
+  update-users) 
+    uv run ansible-playbook users.yml "${@:2}" -t update-users ;;
+  *) 
+    uv run ansible-playbook main.yml "${@}" ;;
 esac
-
-ansible-playbook ${PLAYBOOK} "${ARGS[@]}"

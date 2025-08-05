@@ -21,8 +21,8 @@ jobs:
 
       - name: Install ansible-lint and dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install ansible-lint ansible
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          uv add ansible-lint ansible
           # Install required ansible collections for comprehensive testing
           ansible-galaxy collection install -r requirements.yml
 
@@ -50,7 +50,8 @@ jobs:
 
       - name: Run yamllint
         run: |
-          pip install yamllint
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          uv add yamllint
           yamllint -c .yamllint .
 
   python-lint:
@@ -67,8 +68,8 @@ jobs:
 
       - name: Install Python linters
         run: |
-          python -m pip install --upgrade pip
-          pip install ruff
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          uv add ruff
 
       - name: Run ruff
         run: |

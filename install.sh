@@ -22,19 +22,20 @@ installRequirements() {
   export DEBIAN_FRONTEND=noninteractive
   apt-get update
   apt-get install \
-    python3-virtualenv \
+    curl \
     jq -y
+  
+  # Install uv
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 }
 
 getAlgo() {
   [ ! -d "algo" ] && git clone "https://github.com/${REPO_SLUG}" -b "${REPO_BRANCH}" algo
   cd algo
 
-  python3 -m virtualenv --python="$(command -v python3)" .env
-  # shellcheck source=/dev/null
-  . .env/bin/activate
-  python3 -m pip install -U pip virtualenv
-  python3 -m pip install -r requirements.txt
+  # uv handles all dependency installation automatically
+  uv sync
 }
 
 publicIpFromInterface() {
@@ -100,15 +101,13 @@ deployAlgo() {
   getAlgo
 
   cd /opt/algo
-  # shellcheck source=/dev/null
-  . .env/bin/activate
 
   export HOME=/root
   export ANSIBLE_LOCAL_TEMP=/root/.ansible/tmp
   export ANSIBLE_REMOTE_TEMP=/root/.ansible/tmp
 
   # shellcheck disable=SC2086
-  ansible-playbook main.yml \
+  uv run ansible-playbook main.yml \
     -e provider=local \
     -e "ondemand_cellular=${ONDEMAND_CELLULAR}" \
     -e "ondemand_wifi=${ONDEMAND_WIFI}" \

@@ -26,18 +26,19 @@ Wait a minute for Windows to install a few things in the background (it will eve
 
 ## Install Algo
 
-Run these commands in the Ubuntu Terminal to install a prerequisite package and download the Algo scripts to your home directory. Note that when using WSL you should **not** install Algo in the `/mnt/c` directory due to problems with file permissions.
+Run these commands in the Ubuntu Terminal to download Algo scripts to your home directory. Note that when using WSL you should **not** install Algo in the `/mnt/c` directory due to problems with file permissions.
 
 You may need to follow [these directions](https://devblogs.microsoft.com/commandline/copy-and-paste-arrives-for-linuxwsl-consoles/) in order to paste commands into the Ubuntu Terminal.
 
 ```shell
 cd
 umask 0002
-sudo apt update
-sudo apt install -y python3-virtualenv
 git clone https://github.com/trailofbits/algo
 cd algo
+./algo
 ```
+
+The first time you run `./algo`, it will automatically install the required Python environment (Python 3.11+) and all dependencies. No manual package installation required!
 
 ## Post installation steps
 
@@ -65,10 +66,9 @@ Ansible treats host machine directories as world writable directory and do not l
 chmod 744 .
 ```
 
-Now you can continue by following the [README](https://github.com/trailofbits/algo#deploy-the-algo-server) from the 4th step to deploy your Algo server!
-
 You'll be instructed to edit the file `config.cfg` in order to specify the Algo user accounts to be created. If you're new to Linux the simplest editor to use is `nano`. To edit the file while in the `algo` directory, run:
 ```shell
 nano config.cfg
 ```
-Once `./algo` has finished you can use the `cp` command to copy the configuration files from the `configs` directory into your Windows directory under `/mnt/c/Users` for easier access.
+
+After editing your configuration, simply run `./algo` again to deploy your VPN server. Once finished, you can use the `cp` command to copy the configuration files from the `configs` directory into your Windows directory under `/mnt/c/Users` for easier access.
