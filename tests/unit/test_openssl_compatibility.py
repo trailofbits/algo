@@ -139,7 +139,8 @@ def validate_ca_certificate_config():
     # Verify public domains are excluded
     public_domains = [".com", ".org", ".net", ".gov", ".edu", ".mil", ".int"]
     for domain in public_domains:
-        assert f'"DNS:{domain}"' in content, f"Public domain {domain} should be excluded"
+        # Handle both double quotes and single quotes in YAML
+        assert f'"DNS:{domain}"' in content or f"'DNS:{domain}'" in content, f"Public domain {domain} should be excluded"
 
     # Verify private IP ranges are excluded
     private_ranges = ["10.0.0.0", "172.16.0.0", "192.168.0.0"]
@@ -149,7 +150,8 @@ def validate_ca_certificate_config():
     # Verify email domains are excluded (Issue #153)
     email_domains = [".com", ".org", ".net", ".gov", ".edu", ".mil", ".int"]
     for domain in email_domains:
-        assert f'"email:{domain}"' in content, f"Email domain {domain} should be excluded"
+        # Handle both double quotes and single quotes in YAML
+        assert f'"email:{domain}"' in content or f"'email:{domain}'" in content, f"Email domain {domain} should be excluded"
 
     # Verify IPv6 constraints are present (Issue #153)
     assert "IP:::/0" in content, "IPv6 all addresses should be excluded"
@@ -233,7 +235,10 @@ def validate_server_certificates_config():
         assert check in server_section, f"Missing server certificate configuration: {message}"
 
     # Security check: Server certificates should NOT have clientAuth (Issue #153)
-    assert 'clientAuth' not in server_section, "Server certificates should NOT have clientAuth EKU for role separation"
+    # Look for clientAuth in extended_key_usage section, not in comments
+    eku_lines = [line for line in server_section.split('\n') if 'extended_key_usage:' in line or (line.strip().startswith('- ') and 'clientAuth' in line)]
+    has_client_auth = any('clientAuth' in line for line in eku_lines if line.strip().startswith('- '))
+    assert not has_client_auth, "Server certificates should NOT have clientAuth EKU for role separation"
 
     # Verify SAN extension is configured for Apple compatibility
     assert 'subjectAltName' in server_section, "Server certificates missing SAN configuration for Apple compatibility"
@@ -325,7 +330,10 @@ def validate_client_certificates_config():
         assert check in client_section, f"Missing client certificate configuration: {message}"
 
     # Security check: Client certificates should NOT have serverAuth (Issue #153)
-    assert 'serverAuth' not in client_section, "Client certificates must NOT have serverAuth EKU to prevent server impersonation"
+    # Look for serverAuth in extended_key_usage section, not in comments
+    eku_lines = [line for line in client_section.split('\n') if 'extended_key_usage:' in line or (line.strip().startswith('- ') and 'serverAuth' in line)]
+    has_server_auth = any('serverAuth' in line for line in eku_lines if line.strip().startswith('- '))
+    assert not has_server_auth, "Client certificates must NOT have serverAuth EKU to prevent server impersonation"
 
     # Verify client certificates use unique email domains (Issue #153)
     assert 'openssl_constraint_random_id' in client_section, "Client certificates should use unique email domain per deployment"
