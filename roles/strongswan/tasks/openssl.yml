@@ -54,7 +54,7 @@
           - keyCertSign
           - cRLSign
         key_usage_critical: true
-        # CA restricted to VPN certificate issuance only  
+        # CA restricted to VPN certificate issuance only
         extended_key_usage:
           - '1.3.6.1.5.5.7.3.17'        # IPsec End Entity OID - VPN-specific usage
         extended_key_usage_critical: true
