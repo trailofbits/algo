@@ -33,7 +33,7 @@ jobs:
         run: uv sync
 
       - name: Check Ansible playbook syntax
-        run: ansible-playbook main.yml --syntax-check
+        run: uv run ansible-playbook main.yml --syntax-check
 
   basic-tests:
     name: Basic sanity tests
@@ -52,21 +52,20 @@ jobs:
       - name: Install uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
-      - name: Install dependencies  
+      - name: Install dependencies
         run: |
           uv sync
-          uv add jinja2  # For template rendering tests
           sudo apt-get update && sudo apt-get install -y shellcheck
 
       - name: Run basic sanity tests
         run: |
-          python tests/unit/test_basic_sanity.py
-          python tests/unit/test_config_validation.py
-          python tests/unit/test_user_management.py
-          python tests/unit/test_openssl_compatibility.py
-          python tests/unit/test_cloud_provider_configs.py
-          python tests/unit/test_template_rendering.py
-          python tests/unit/test_generated_configs.py
+          uv run python tests/unit/test_basic_sanity.py
+          uv run python tests/unit/test_config_validation.py
+          uv run python tests/unit/test_user_management.py
+          uv run python tests/unit/test_openssl_compatibility.py
+          uv run python tests/unit/test_cloud_provider_configs.py
+          uv run python tests/unit/test_template_rendering.py
+          uv run python tests/unit/test_generated_configs.py
 
   docker-build:
     name: Docker build test
@@ -97,7 +96,7 @@ jobs:
           docker run --rm local/algo:test /algo/algo --help
 
       - name: Run Docker deployment tests
-        run: python tests/unit/test_docker_localhost_deployment.py
+        run: uv run python tests/unit/test_docker_localhost_deployment.py
 
   config-generation:
     name: Configuration generation test
@@ -181,7 +180,7 @@ jobs:
       - name: Run Ansible check mode for ${{ matrix.provider }}
         run: |
           # Run ansible in check mode to validate playbooks work
-          ansible-playbook main.yml \
+          uv run ansible-playbook main.yml \
             -i "localhost," \
             -c local \
             -e @test-${{ matrix.provider }}.cfg \

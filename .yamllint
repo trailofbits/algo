@@ -6,6 +6,7 @@ extends: default
 ignore: |
   files/cloud-init/
   .env/
+  .venv/
   .ansible/
   configs/
   tests/integration/test-configs/

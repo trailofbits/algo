@@ -91,7 +91,7 @@ jobs:
         run: uv sync
 
       - name: Check Ansible playbook syntax
-        run: ansible-playbook main.yml --syntax-check
+        run: uv run ansible-playbook main.yml --syntax-check
 
   basic-tests:
     name: Basic Sanity Tests
@@ -115,25 +115,24 @@ jobs:
       - name: Install dependencies
         run: |
           uv sync
-          uv add jinja2 pyyaml  # For tests
           sudo apt-get update && sudo apt-get install -y shellcheck
 
       - name: Run relevant tests
         run: |
           # Always run basic sanity
-          python tests/unit/test_basic_sanity.py
+          uv run python tests/unit/test_basic_sanity.py
 
           # Run other tests based on what changed
           if [[ "${{ needs.changed-files.outputs.run_basic_tests }}" == "true" ]]; then
-            python tests/unit/test_config_validation.py
-            python tests/unit/test_user_management.py
-            python tests/unit/test_openssl_compatibility.py
-            python tests/unit/test_cloud_provider_configs.py
-            python tests/unit/test_generated_configs.py
+            uv run python tests/unit/test_config_validation.py
+            uv run python tests/unit/test_user_management.py
+            uv run python tests/unit/test_openssl_compatibility.py
+            uv run python tests/unit/test_cloud_provider_configs.py
+            uv run python tests/unit/test_generated_configs.py
           fi
 
           if [[ "${{ needs.changed-files.outputs.run_template_tests }}" == "true" ]]; then
-            python tests/unit/test_template_rendering.py
+            uv run python tests/unit/test_template_rendering.py
           fi
 
   docker-tests:
@@ -166,7 +165,7 @@ jobs:
           docker run --rm local/algo:test /algo/algo --help
 
       - name: Run Docker deployment tests
-        run: python tests/unit/test_docker_localhost_deployment.py
+        run: uv run python tests/unit/test_docker_localhost_deployment.py
 
   config-tests:
     name: Configuration Tests
@@ -215,7 +214,7 @@ jobs:
           endpoint: 10.0.0.1
           EOF
 
-          ansible-playbook main.yml \
+          uv run ansible-playbook main.yml \
             -i "localhost," \
             -c local \
             -e @test-local.cfg \
@@ -241,22 +240,22 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Install linting tools
+      - name: Install dependencies
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
-          uv add ansible-lint ansible yamllint ruff
+          uv sync
 
       - name: Install ansible dependencies
-        run: ansible-galaxy collection install community.crypto
+        run: uv run ansible-galaxy collection install community.crypto
 
       - name: Run relevant linters
         run: |
           # Always run if lint files changed
           if [[ "${{ needs.changed-files.outputs.run_lint }}" == "true" ]]; then
             # Run all linters
-            ruff check . || true
-            yamllint . || true
-            ansible-lint || true
+            uv run ruff check . || true
+            uv run --with yamllint yamllint . || true
+            uv run --with ansible-lint ansible-lint || true
 
             # Check shell scripts if any changed
             if git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep -q '\.sh$'; then

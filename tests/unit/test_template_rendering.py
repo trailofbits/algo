@@ -57,7 +57,7 @@ def test_template_syntax():
     templates = find_templates()
 
     # Skip some paths that aren't real templates
-    skip_paths = ['.git/', 'venv/', 'configs/']
+    skip_paths = ['.git/', 'venv/', '.venv/', '.env/', 'configs/']
 
     # Skip templates that use Ansible-specific filters
     skip_templates = ['vpn-dict.j2', 'mobileconfig.j2', 'dnscrypt-proxy.toml.j2']
