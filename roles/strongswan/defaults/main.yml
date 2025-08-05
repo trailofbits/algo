@@ -37,7 +37,7 @@ nameConstraints: >-
   ,permitted;IP:{{ ansible_default_ipv6['address'] }}/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff
   ,excluded;IP:fc00:0:0:0:0:0:0:0/fe00:0:0:0:0:0:0:0,excluded;IP:fe80:0:0:0:0:0:0:0/ffc0:0:0:0:0:0:0:0,excluded;IP:2001:db8:0:0:0:0:0:0/ffff:fff8:0:0:0:0:0:0
   {%- else -%}
-  ,excluded;IP:0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0
+  ,excluded;IP:::/0
   {%- endif -%}
 openssl_bin: openssl
 strongswan_enabled_plugins:
