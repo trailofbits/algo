@@ -73,10 +73,13 @@
                 </dict>
                 <key>DeadPeerDetectionRate</key>
                 <string>Medium</string>
+                <!-- MOBIKE allows VPN to survive network changes (WiFi to cellular) -->
                 <key>DisableMOBIKE</key>
                 <integer>0</integer>
+                <!-- Disable IKEv2 redirects for security -->
                 <key>DisableRedirect</key>
                 <integer>1</integer>
+                <!-- Disable CRL checking for performance and reliability -->
                 <key>EnableCertificateRevocationCheck</key>
                 <integer>0</integer>
                 <key>EnablePFS</key>
@@ -96,6 +99,7 @@
                 <string>{{ item.0 }}@{{ openssl_constraint_random_id }}</string>
                 <key>PayloadCertificateUUID</key>
                 <string>{{ pkcs12_PayloadCertificateUUID }}</string>
+                <!-- Use ECDSA P-384 certificates for strong security -->
                 <key>CertificateType</key>
                 <string>ECDSA384</string>
                 <key>ServerCertificateIssuerCommonName</key>
@@ -106,14 +110,13 @@
                 <string>{{ IP_subject_alt_name }}</string>
                 <key>RemoteIdentifier</key>
                 <string>{{ IP_subject_alt_name }}</string>
-                <!-- Enhanced certificate validation -->
-                <key>DisableMOBIKE</key>
-                <integer>0</integer>
+                <!-- Use server-provided internal IP assignment -->
                 <key>UseConfigurationAttributeInternalIPSubnet</key>
                 <integer>0</integer>
             </dict>
             <key>IPv4</key>
             <dict>
+                <!-- Override primary network interface for full VPN routing -->
                 <key>OverridePrimary</key>
                 <integer>1</integer>
             </dict>

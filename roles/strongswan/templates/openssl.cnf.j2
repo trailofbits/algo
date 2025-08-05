@@ -138,6 +138,8 @@ subjectKeyIdentifier=hash
 authorityKeyIdentifier=keyid:always,issuer:always
 
 basicConstraints = critical,CA:true,pathlen:0
+# Name constraints provide defense-in-depth security by restricting the scope of certificates
+# this CA can issue, preventing misuse if the CA key is compromised
 nameConstraints = {{ nameConstraints }}
 
 # Restrict CA to only sign VPN-related certificates
