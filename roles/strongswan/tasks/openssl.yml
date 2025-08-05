@@ -37,9 +37,7 @@
         curve: secp384r1
         mode: "0600"
 
-    # CRITICAL: Create CA certificate with proper security constraints
-    # Name constraints provide defense-in-depth security by restricting the scope of certificates
-    # this CA can issue, preventing misuse if the CA key is compromised
+    # CA certificate with name constraints to prevent certificate misuse (Issue #75)
     - name: Create certificate signing request (CSR) for CA certificate with security constraints
       community.crypto.openssl_csr_pipe:
         privatekey_path: "{{ ipsec_pki_path }}/private/cakey.pem"
@@ -54,14 +52,13 @@
           - keyCertSign
           - cRLSign
         key_usage_critical: true
-        # Restrict CA to only sign VPN-related certificates
+        # CA can sign both server and client certs, restricted to VPN use only
         extended_key_usage:
-          - serverAuth
-          - clientAuth
-          - '1.3.6.1.5.5.7.3.17'  # IPsec End Entity
+          - serverAuth                    # Allows signing server certificates
+          - clientAuth                    # Allows signing client certificates  
+          - '1.3.6.1.5.5.7.3.17'        # IPsec End Entity OID - VPN-specific usage
         extended_key_usage_critical: true
-        # Name constraints to restrict certificate scope - using simplified format
-        # Note: Complex IPv6 and conditional constraints from defaults/main.yml need manual implementation
+        # Name constraints from defaults/main.yml template - prevents CA from issuing certs for public domains
         name_constraints_permitted:
           - "{{ subjectAltName_type }}:{{ IP_subject_alt_name }}{{ '/255.255.255.255' if subjectAltName_type == 'IP' else '' }}"
           - "email:{{ openssl_constraint_random_id }}"
@@ -83,7 +80,7 @@
           - "IP:10.0.0.0/255.0.0.0"
           - "IP:172.16.0.0/255.240.0.0"
           - "IP:192.168.0.0/255.255.0.0"
-          - "IP:0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0"
+          - "IP:0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0"  # IPv6 all zeros
         name_constraints_critical: true
       register: ca_csr
 
@@ -112,10 +109,7 @@
         - "{{ IP_subject_alt_name }}"
       register: client_key_jobs
 
-    # Create CSRs with proper Subject Alternative Names
-    # CRITICAL: Server certificates need SAN extension for modern clients,
-    # especially macOS/iOS which perform strict certificate validation for IKEv2.
-    # Without SAN containing the server IP, clients will reject the certificate.
+    # Server certificate with SAN extension - required for modern Apple devices
     - name: Create CSRs for server certificate with SAN
       community.crypto.openssl_csr_pipe:
         privatekey_path: "{{ ipsec_pki_path }}/private/{{ IP_subject_alt_name }}.key"
@@ -125,10 +119,10 @@
           - digitalSignature
           - keyEncipherment
         key_usage_critical: false
-        # Server authentication for IKEv2 VPN connections
+        # Server auth EKU required for IKEv2 server certificates (Issue #75)
         extended_key_usage:
-          - serverAuth
-          - '1.3.6.1.5.5.7.3.17'  # IPsec End Entity
+          - serverAuth                    # Server Authentication (RFC 5280)
+          - '1.3.6.1.5.5.7.3.17'        # IPsec End Entity (RFC 4945)
         extended_key_usage_critical: false
       register: server_csr
 
@@ -142,15 +136,14 @@
           - digitalSignature
           - keyEncipherment
         key_usage_critical: false
-        # Client certificates should not have serverAuth
+        # Client certs restricted to clientAuth only - prevents clients from impersonating the VPN server
         extended_key_usage:
-          - clientAuth
-          - '1.3.6.1.5.5.7.3.17'  # IPsec End Entity
+          - clientAuth                    # Client Authentication (RFC 5280)
+          - '1.3.6.1.5.5.7.3.17'        # IPsec End Entity (RFC 4945)
         extended_key_usage_critical: false
       with_items: "{{ users }}"
       register: client_csr_jobs
 
-    # Sign server certificate with proper extensions
     - name: Sign server certificate with CA
       community.crypto.x509_certificate:
         csr_content: "{{ server_csr.csr }}"
@@ -163,7 +156,6 @@
         ownca_not_before: "-1d"
         mode: "0644"
 
-    # Sign client certificates with CA
     - name: Sign client certificates with CA
       community.crypto.x509_certificate:
         csr_content: "{{ item.csr }}"
@@ -186,7 +178,7 @@
         certificate_path: "{{ ipsec_pki_path }}/certs/{{ item }}.crt"
         passphrase: "{{ p12_export_password }}"
         mode: "0600"
-        encryption_level: "compatibility2022"
+        encryption_level: "compatibility2022"  # Apple device compatibility
       with_items: "{{ users }}"
 
     - name: Generate p12 files with CA certificate included
@@ -199,7 +191,7 @@
           - "{{ ipsec_pki_path }}/cacert.pem"
         passphrase: "{{ p12_export_password }}"
         mode: "0600"
-        encryption_level: "compatibility2022"
+        encryption_level: "compatibility2022"  # Apple device compatibility
       with_items: "{{ users }}"
 
     - name: Copy the p12 certificates
@@ -228,16 +220,20 @@
       set_fact:
         all_users: "{{ lookup('file', ipsec_pki_path + '/all-users').splitlines() }}"
 
-    - name: Set revoked certificates as a fact
+    # Certificate Revocation List (CRL) for removed users
+    - name: Calculate current timestamp for CRL
+      set_fact:
+        crl_timestamp: "{{ '%Y%m%d%H%M%SZ' | strftime(ansible_date_time.epoch | int) }}"
+
+    - name: Identify users whose certificates need revocation
+      set_fact:
+        users_to_revoke: "{{ all_users | difference(users) }}"
+
+    - name: Build revoked certificates list
       set_fact:
         revoked_certificates: >-
-          [{% set now = '%Y%m%d%H%M%SZ' | strftime(ansible_date_time.epoch | int) -%}
-          {% for user in all_users | difference(users) -%}
-            {
-              "path": "{{ ipsec_pki_path }}/certs/{{ user }}.crt",
-              "revocation_date": "{{ now }}"
-            }{{ "," if not loop.last else "" }}
-          {% endfor %}]
+          {{ users_to_revoke | map('regex_replace', '^(.*)$',
+             '{"path": "' + ipsec_pki_path + '/certs/\1.crt", "revocation_date": "' + crl_timestamp + '"}') | list }}
 
     - name: Generate a CRL
       community.crypto.x509_crl:

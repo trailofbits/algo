@@ -51,7 +51,7 @@ algo/
 
 ### Current Versions (MUST maintain compatibility)
 ```
-ansible==9.2.0      # Stay within 9.x for stability
+ansible==11.8.0     # Stay current to get latest security, performance and bugfixes
 jinja2~=3.1.6      # Security fix for CVE-2025-27516
 netaddr==1.3.0     # Network address manipulation
 ```
