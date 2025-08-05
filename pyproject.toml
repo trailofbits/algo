@@ -2,11 +2,11 @@
 name = "algo"
 description = "Set up a personal IPSEC VPN in the cloud"
 version = "0.1.0"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 
 [tool.ruff]
 # Ruff configuration
-target-version = "py310"
+target-version = "py311"
 line-length = 120
 
 [tool.ruff.lint]

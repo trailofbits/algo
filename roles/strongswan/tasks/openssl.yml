@@ -15,13 +15,9 @@
         recurse: true
         mode: "0700"
       with_items:
-        - ecparams
         - certs
-        - crl
-        - newcerts
         - private
         - public
-        - reqs
 
     - name: Ensure the config directories exist
       file:
@@ -33,229 +29,176 @@
         - apple
         - manual
 
-    - name: Ensure the files exist
-      file:
-        dest: "{{ ipsec_pki_path }}/{{ item }}"
-        state: touch
-      with_items:
-        - .rnd
-        - private/.rnd
-        - index.txt
-        - index.txt.attr
-        - serial
+    - name: Create private key with password protection
+      community.crypto.openssl_privatekey:
+        path: "{{ ipsec_pki_path }}/private/cakey.pem"
+        passphrase: "{{ CA_password }}"
+        type: ECC
+        curve: secp384r1
+        mode: "0600"
 
-    - name: Generate the openssl server configs
-      template:
-        src: openssl.cnf.j2
-        dest: "{{ ipsec_pki_path }}/openssl.cnf"
+    # CA certificate with name constraints to prevent certificate misuse (Issue #75)
+    - name: Create certificate signing request (CSR) for CA certificate with security constraints
+      community.crypto.openssl_csr_pipe:
+        privatekey_path: "{{ ipsec_pki_path }}/private/cakey.pem"
+        privatekey_passphrase: "{{ CA_password }}"
+        common_name: "{{ IP_subject_alt_name }}"
+        use_common_name_for_san: true
+        # Generate Subject Key Identifier for proper Authority Key Identifier creation
+        create_subject_key_identifier: true
+        basic_constraints:
+          - 'CA:TRUE'
+          - 'pathlen:0'        # Prevents sub-CA creation - limits certificate chain depth if CA key compromised
+        basic_constraints_critical: true
+        key_usage:
+          - keyCertSign
+          - cRLSign
+        key_usage_critical: true
+        # CA restricted to VPN certificate issuance only
+        extended_key_usage:
+          - '1.3.6.1.5.5.7.3.17'        # IPsec End Entity OID - VPN-specific usage
+        extended_key_usage_critical: true
+        # Name Constraints: Defense-in-depth security restricting certificate scope to prevent misuse
+        # Limits CA to only issue certificates for this specific VPN deployment's resources
+        name_constraints_permitted: >-
+          {{ [
+            subjectAltName_type + ':' + IP_subject_alt_name + ('/255.255.255.255' if subjectAltName_type == 'IP' else ''),
+            'DNS:' + openssl_constraint_random_id,        # Per-deployment UUID prevents cross-deployment reuse
+            'email:' + openssl_constraint_random_id       # Unique email domain isolates certificate scope
+          ] + (
+            ['IP:' + ansible_default_ipv6['address'] + '/128'] if ipv6_support else []
+          ) }}
+        # Block public domains/networks to prevent certificate abuse for impersonation attacks
+        name_constraints_excluded: >-
+          {{ [
+            'DNS:.com', 'DNS:.org', 'DNS:.net', 'DNS:.gov', 'DNS:.edu', 'DNS:.mil', 'DNS:.int',  # Public TLD exclusion
+            'email:.com', 'email:.org', 'email:.net', 'email:.gov', 'email:.edu', 'email:.mil', 'email:.int',  # Email domain exclusion
+            'IP:10.0.0.0/255.0.0.0', 'IP:172.16.0.0/255.240.0.0', 'IP:192.168.0.0/255.255.0.0'  # RFC 1918: prevents lateral movement
+          ] + (
+            ['IP:fc00::/7', 'IP:fe80::/10', 'IP:2001:db8::/32'] if ipv6_support else ['IP:::/0']  # IPv6: ULA/link-local/doc ranges or all
+          ) }}
+        name_constraints_critical: true
+      register: ca_csr
 
-    - name: Build the CA pair
-      shell: >
-        umask 077;
-        {{ openssl_bin }} ecparam -name secp384r1 -out ecparams/secp384r1.pem &&
-        {{ openssl_bin }} req -utf8 -new
-        -newkey ec:ecparams/secp384r1.pem
-        -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName }}"))
-        -keyout private/cakey.pem
-        -out cacert.pem -x509 -days 3650
-        -batch
-        -passout pass:"{{ CA_password }}" &&
-        touch {{ IP_subject_alt_name }}_ca_generated
-      args:
-        chdir: "{{ ipsec_pki_path }}"
-        creates: "{{ IP_subject_alt_name }}_ca_generated"
-        executable: bash
+    - name: Create self-signed CA certificate from CSR
+      community.crypto.x509_certificate:
+        path: "{{ ipsec_pki_path }}/cacert.pem"
+        csr_content: "{{ ca_csr.csr }}"
+        privatekey_path: "{{ ipsec_pki_path }}/private/cakey.pem"
+        privatekey_passphrase: "{{ CA_password }}"
+        provider: selfsigned
+        mode: "0644"
 
     - name: Copy the CA certificate
       copy:
         src: "{{ ipsec_pki_path }}/cacert.pem"
         dest: "{{ ipsec_config_path }}/manual/cacert.pem"
 
-    - name: Generate the serial number
-      shell: echo 01 > serial && touch serial_generated
-      args:
-        chdir: "{{ ipsec_pki_path }}"
-        creates: serial_generated
-
-    # Generate server certificate with proper Subject Alternative Name (SAN)
-    # CRITICAL: Must use -extensions server_exts to include SAN extension.
-    # The SAN extension is required for modern certificate validation,
-    # especially on macOS/iOS clients connecting via IKEv2.
-    # Without SAN containing the server IP, clients will reject the certificate.
-    - name: Build the server pair
-      shell: >
-        umask 077;
-        {{ openssl_bin }} req -utf8 -new
-        -newkey ec:ecparams/secp384r1.pem
-        -config openssl.cnf
-        -keyout private/{{ IP_subject_alt_name }}.key
-        -out reqs/{{ IP_subject_alt_name }}.req -nodes
-        -passin pass:"{{ CA_password }}"
-        -subj "/CN={{ IP_subject_alt_name }}" -batch &&
-        {{ openssl_bin }} ca -utf8
-        -in reqs/{{ IP_subject_alt_name }}.req
-        -out certs/{{ IP_subject_alt_name }}.crt
-        -config openssl.cnf
-        -extensions server_exts
-        -days 3650 -batch
-        -passin pass:"{{ CA_password }}"
-        -subj "/CN={{ IP_subject_alt_name }}" &&
-        touch certs/{{ IP_subject_alt_name }}_crt_generated
-      args:
-        chdir: "{{ ipsec_pki_path }}"
-        creates: certs/{{ IP_subject_alt_name }}_crt_generated
-        executable: bash
-
-    - name: Generate client private keys and certificate requests (parallel)
-      shell: >
-        umask 077;
-        {{ openssl_bin }} req -utf8 -new
-        -newkey ec:ecparams/secp384r1.pem
-        -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName_USER }}"))
-        -keyout private/{{ item }}.key
-        -out reqs/{{ item }}.req -nodes
-        -passin pass:"{{ CA_password }}"
-        -subj "/CN={{ item }}" -batch &&
-        touch reqs/{{ item }}_req_generated
-      args:
-        chdir: "{{ ipsec_pki_path }}"
-        creates: reqs/{{ item }}_req_generated
-        executable: bash
-      with_items: "{{ users }}"
-      async: 60
-      poll: 0
+    - name: Create private keys for users and server
+      community.crypto.openssl_privatekey:
+        path: "{{ ipsec_pki_path }}/private/{{ item }}.key"
+        type: ECC
+        curve: secp384r1
+        mode: "0600"
+      with_items:
+        - "{{ users }}"
+        - "{{ IP_subject_alt_name }}"
       register: client_key_jobs
 
-    - name: Wait for client key generation to complete
-      async_status:
-        jid: "{{ item.ansible_job_id }}"
-      with_items: "{{ client_key_jobs.results }}"
-      register: client_key_results
-      until: client_key_results.finished
-      retries: 30
-      delay: 2
-      failed_when: >
-        client_key_results.failed or
-        (client_key_results.finished and client_key_results.rc != 0)
+    # Server certificate with SAN extension - required for modern Apple devices
+    - name: Create CSRs for server certificate with SAN
+      community.crypto.openssl_csr_pipe:
+        privatekey_path: "{{ ipsec_pki_path }}/private/{{ IP_subject_alt_name }}.key"
+        subject_alt_name: "{{ subjectAltName.split(',') }}"
+        common_name: "{{ IP_subject_alt_name }}"
+        # Add Basic Constraints to prevent certificate chain validation errors
+        basic_constraints:
+          - 'CA:FALSE'
+        basic_constraints_critical: false
+        key_usage:
+          - digitalSignature
+          - keyEncipherment
+        key_usage_critical: false
+        # Server auth EKU required for IKEv2 server certificates (Issue #75)
+        # NOTE: clientAuth deliberately excluded to prevent role confusion attacks
+        extended_key_usage:
+          - serverAuth                    # Server Authentication (RFC 5280)
+          - '1.3.6.1.5.5.7.3.17'        # IPsec End Entity (RFC 4945)
+        extended_key_usage_critical: false
+      register: server_csr
 
-    - name: Display crypto generation failure details (if any)
-      debug:
-        msg: |
-          StrongSwan client key generation failed for user: {{ item.item }}
-          Error details: {{ item.stderr | default('No stderr available') }}
-          Return code: {{ item.rc | default('Unknown') }}
-          Command: {{ item.cmd | default('Unknown command') }}
-
-          Common causes:
-          - Insufficient entropy (try installing haveged or rng-tools)
-          - Disk space issues in /opt/algo
-          - Permission problems with OpenSSL CA database
-          - OpenSSL configuration errors
-
-          Troubleshooting:
-          - Check disk space: df -h /opt/algo
-          - Check entropy: cat /proc/sys/kernel/random/entropy_avail
-          - Verify OpenSSL config: openssl version -a
-      when: item.rc is defined and item.rc != 0
-      with_items: "{{ client_key_results.results | default([]) }}"
-      failed_when: false
-
-    - name: Sign client certificates (sequential - CA database locking required)
-      shell: >
-        umask 077;
-        {{ openssl_bin }} ca -utf8
-        -in reqs/{{ item }}.req
-        -out certs/{{ item }}.crt
-        -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName_USER }}"))
-        -days 3650 -batch
-        -passin pass:"{{ CA_password }}"
-        -subj "/CN={{ item }}" &&
-        touch certs/{{ item }}_crt_generated
-      args:
-        chdir: "{{ ipsec_pki_path }}"
-        creates: certs/{{ item }}_crt_generated
-        executable: bash
-      with_items: "{{ users }}"
-
-    - name: Build the tests pair
-      shell: >
-        umask 077;
-        {{ openssl_bin }} req -utf8 -new
-        -newkey ec:ecparams/secp384r1.pem
-        -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:google-algo-test-pair.com"))
-        -keyout private/google-algo-test-pair.com.key
-        -out reqs/google-algo-test-pair.com.req -nodes
-        -passin pass:"{{ CA_password }}"
-        -subj "/CN=google-algo-test-pair.com" -batch &&
-        {{ openssl_bin }} ca -utf8
-        -in reqs/google-algo-test-pair.com.req
-        -out certs/google-algo-test-pair.com.crt
-        -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:google-algo-test-pair.com"))
-        -days 3650 -batch
-        -passin pass:"{{ CA_password }}"
-        -subj "/CN=google-algo-test-pair.com" &&
-        touch certs/google-algo-test-pair.com_crt_generated
-      args:
-        chdir: "{{ ipsec_pki_path }}"
-        creates: certs/google-algo-test-pair.com_crt_generated
-        executable: bash
-      when: tests|default(false)|bool
-
-    - name: Build openssh public keys
-      openssl_publickey:
-        path: "{{ ipsec_pki_path }}/public/{{ item }}.pub"
+    - name: Create CSRs for client certificates
+      community.crypto.openssl_csr_pipe:
         privatekey_path: "{{ ipsec_pki_path }}/private/{{ item }}.key"
-        format: OpenSSH
+        subject_alt_name:
+          - "email:{{ item }}@{{ openssl_constraint_random_id }}"  # UUID domain prevents certificate reuse across deployments
+        common_name: "{{ item }}"
+        # Add Basic Constraints to client certificates for proper PKI validation
+        basic_constraints:
+          - 'CA:FALSE'
+        basic_constraints_critical: false
+        key_usage:
+          - digitalSignature
+          - keyEncipherment
+        key_usage_critical: false
+        # Client certs restricted to clientAuth only - prevents clients from impersonating the VPN server
+        # NOTE: serverAuth deliberately excluded to prevent server impersonation attacks
+        extended_key_usage:
+          - clientAuth                    # Client Authentication (RFC 5280)
+          - '1.3.6.1.5.5.7.3.17'        # IPsec End Entity (RFC 4945)
+        extended_key_usage_critical: false
+      with_items: "{{ users }}"
+      register: client_csr_jobs
+
+    - name: Sign server certificate with CA
+      community.crypto.x509_certificate:
+        csr_content: "{{ server_csr.csr }}"
+        path: "{{ ipsec_pki_path }}/certs/{{ IP_subject_alt_name }}.crt"
+        provider: ownca
+        ownca_path: "{{ ipsec_pki_path }}/cacert.pem"
+        ownca_privatekey_path: "{{ ipsec_pki_path }}/private/cakey.pem"
+        ownca_privatekey_passphrase: "{{ CA_password }}"
+        ownca_not_after: "+{{ certificate_validity_days }}d"
+        ownca_not_before: "-1d"
+        mode: "0644"
+
+    - name: Sign client certificates with CA
+      community.crypto.x509_certificate:
+        csr_content: "{{ item.csr }}"
+        path: "{{ ipsec_pki_path }}/certs/{{ item.item }}.crt"
+        provider: ownca
+        ownca_path: "{{ ipsec_pki_path }}/cacert.pem"
+        ownca_privatekey_path: "{{ ipsec_pki_path }}/private/cakey.pem"
+        ownca_privatekey_passphrase: "{{ CA_password }}"
+        ownca_not_after: "+{{ certificate_validity_days }}d"
+        ownca_not_before: "-1d"
+        mode: "0644"
+      with_items: "{{ client_csr_jobs.results }}"
+      register: client_sign_results
+
+    - name: Generate p12 files
+      community.crypto.openssl_pkcs12:
+        path: "{{ ipsec_pki_path }}/private/{{ item }}.p12"
+        friendly_name: "{{ item }}"
+        privatekey_path: "{{ ipsec_pki_path }}/private/{{ item }}.key"
+        certificate_path: "{{ ipsec_pki_path }}/certs/{{ item }}.crt"
+        passphrase: "{{ p12_export_password }}"
+        mode: "0600"
+        encryption_level: "compatibility2022"  # Apple device compatibility
       with_items: "{{ users }}"
 
-    - name: Get OpenSSL version
-      shell: |
-        set -o pipefail
-        {{ openssl_bin }} version |
-        cut -f 2 -d ' '
-      args:
-        executable: bash
-      register: ssl_version
-      run_once: true
-
-    - name: Set OpenSSL version fact
-      set_fact:
-        openssl_version: "{{ ssl_version.stdout }}"
-
-    - name: Build the client's p12
-      shell: >
-        umask 077;
-        {{ openssl_bin }} pkcs12
-        {{ (openssl_version is version('3', '>=')) | ternary('-legacy', '') }}
-        -in certs/{{ item }}.crt
-        -inkey private/{{ item }}.key
-        -export
-        -name {{ item }}
-        -out private/{{ item }}.p12
-        -passout pass:"{{ p12_export_password }}"
-      args:
-        chdir: "{{ ipsec_pki_path }}"
-        executable: bash
+    - name: Generate p12 files with CA certificate included
+      community.crypto.openssl_pkcs12:
+        path: "{{ ipsec_pki_path }}/private/{{ item }}_ca.p12"
+        friendly_name: "{{ item }}"
+        privatekey_path: "{{ ipsec_pki_path }}/private/{{ item }}.key"
+        certificate_path: "{{ ipsec_pki_path }}/certs/{{ item }}.crt"
+        other_certificates:
+          - "{{ ipsec_pki_path }}/cacert.pem"
+        passphrase: "{{ p12_export_password }}"
+        mode: "0600"
+        encryption_level: "compatibility2022"  # Apple device compatibility
       with_items: "{{ users }}"
-      register: p12
-
-    - name: Build the client's p12 with the CA cert included
-      shell: >
-        umask 077;
-        {{ openssl_bin }} pkcs12
-        {{ (openssl_version is version('3', '>=')) | ternary('-legacy', '') }}
-        -in certs/{{ item }}.crt
-        -inkey private/{{ item }}.key
-        -export
-        -name {{ item }}
-        -out private/{{ item }}_ca.p12
-        -certfile cacert.pem
-        -passout pass:"{{ p12_export_password }}"
-      args:
-        chdir: "{{ ipsec_pki_path }}"
-        executable: bash
-      with_items: "{{ users }}"
-      register: p12
 
     - name: Copy the p12 certificates
       copy:
@@ -264,56 +207,65 @@
       with_items:
         - "{{ users }}"
 
-    - name: Get active users
-      shell: |
-        set -o pipefail
-        grep ^V index.txt |
-        grep -v "{{ IP_subject_alt_name }}" |
-        awk '{print $5}' |
-        sed 's/\/CN=//g'
-      args:
-        executable: /bin/bash
-        chdir: "{{ ipsec_pki_path }}"
-      register: valid_certs
+    - name: Build openssh public keys
+      community.crypto.openssl_publickey:
+        path: "{{ ipsec_pki_path }}/public/{{ item }}.pub"
+        privatekey_path: "{{ ipsec_pki_path }}/private/{{ item }}.key"
+        format: OpenSSH
+      with_items: "{{ users }}"
 
-    - name: Revoke non-existing users
-      shell: >
-        {{ openssl_bin }} ca -gencrl
-        -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName_USER }}"))
-        -passin pass:"{{ CA_password }}"
-        -revoke certs/{{ item }}.crt
-        -out crl/{{ item }}.crt
-      register: gencrl
-      args:
-        chdir: "{{ ipsec_pki_path }}"
-        creates: crl/{{ item }}.crt
-        executable: bash
-      when: item.split('@')[0] not in users
-      with_items: "{{ valid_certs.stdout_lines }}"
+    - name: Add all users to the file
+      ansible.builtin.lineinfile:
+        path: "{{ ipsec_pki_path }}/all-users"
+        line: "{{ item }}"
+        create: true
+      with_items: "{{ users }}"
+      register: users_file
 
-    - name: Generate new CRL file
-      shell: >
-        {{ openssl_bin }} ca -gencrl
-        -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName=DNS:{{ IP_subject_alt_name }}"))
-        -passin pass:"{{ CA_password }}"
-        -out crl/algo.root.pem
-      when:
-        - gencrl is defined
-        - gencrl.changed
-      args:
-        chdir: "{{ ipsec_pki_path }}"
-        executable: bash
+    - name: Set all users as a fact
+      set_fact:
+        all_users: "{{ lookup('file', ipsec_pki_path + '/all-users').splitlines() }}"
+
+    # Certificate Revocation List (CRL) for removed users
+    - name: Calculate current timestamp for CRL
+      set_fact:
+        crl_timestamp: "{{ '%Y%m%d%H%M%SZ' | strftime(ansible_date_time.epoch | int) }}"
+
+    - name: Identify users whose certificates need revocation
+      set_fact:
+        users_to_revoke: "{{ all_users | difference(users) }}"
+
+    - name: Build revoked certificates list
+      set_fact:
+        revoked_certificates: >-
+          {{ users_to_revoke | map('regex_replace', '^(.*)$',
+             '{"path": "' + ipsec_pki_path + '/certs/\1.crt", "revocation_date": "' + crl_timestamp + '"}') | list }}
+
+    - name: Generate a CRL
+      community.crypto.x509_crl:
+        path: "{{ ipsec_pki_path }}/crl.pem"
+        privatekey_path: "{{ ipsec_pki_path }}/private/cakey.pem"
+        privatekey_passphrase: "{{ CA_password }}"
+        last_update: "{{ '%Y%m%d%H%M%SZ' | strftime(ansible_date_time.epoch | int) }}"
+        next_update: "{{ '%Y%m%d%H%M%SZ' | strftime((ansible_date_time.epoch | int) + (10 * 365 * 24 * 60 * 60)) }}"
+        crl_mode: generate
+        issuer:
+          CN: "{{ IP_subject_alt_name }}"
+        revoked_certificates: "{{ revoked_certificates }}"
+
+    - name: Set CRL file permissions
+      file:
+        path: "{{ ipsec_pki_path }}/crl.pem"
+        mode: "0644"
   delegate_to: localhost
   become: false
   vars:
     ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    certificate_validity_days: 3650  # 10 years - configurable certificate lifespan
 
 - name: Copy the CRL to the vpn server
   copy:
-    src: "{{ ipsec_pki_path }}/crl/algo.root.pem"
+    src: "{{ ipsec_pki_path }}/crl.pem"
     dest: "{{ config_prefix|default('/') }}etc/ipsec.d/crls/algo.root.pem"
-  when:
-    - gencrl is defined
-    - gencrl.changed
   notify:
     - rereadcrls

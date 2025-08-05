@@ -51,7 +51,7 @@ algo/
 
 ### Current Versions (MUST maintain compatibility)
 ```
-ansible==9.2.0      # Stay within 9.x for stability
+ansible==11.8.0     # Stay current to get latest security, performance and bugfixes
 jinja2~=3.1.6      # Security fix for CVE-2025-27516
 netaddr==1.3.0     # Network address manipulation
 ```
@@ -76,7 +76,7 @@ Currently unpinned in `requirements.yml`, but key ones include:
 ```toml
 # pyproject.toml configuration
 [tool.ruff]
-target-version = "py310"
+target-version = "py311"
 line-length = 120
 
 [tool.ruff.lint]
