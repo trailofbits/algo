@@ -80,7 +80,7 @@
           - "IP:10.0.0.0/255.0.0.0"
           - "IP:172.16.0.0/255.240.0.0"
           - "IP:192.168.0.0/255.255.0.0"
-          - "IP:0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0"  # IPv6 all zeros
+          - "IP:::/0"  # IPv6 all addresses
         name_constraints_critical: true
       register: ca_csr
 

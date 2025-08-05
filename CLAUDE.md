@@ -76,7 +76,7 @@ Currently unpinned in `requirements.yml`, but key ones include:
 ```toml
 # pyproject.toml configuration
 [tool.ruff]
-target-version = "py310"
+target-version = "py311"
 line-length = 120
 
 [tool.ruff.lint]

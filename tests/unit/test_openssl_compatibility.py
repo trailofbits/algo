@@ -151,7 +151,7 @@ def validate_ca_certificate_config():
         assert f'"email:{domain}"' in content, f"Email domain {domain} should be excluded"
 
     # Verify IPv6 constraints are present (Issue #153)
-    assert "IP:0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0" in content, "IPv6 all-zeros should be excluded"
+    assert "IP:::/0" in content, "IPv6 all addresses should be excluded"
 
     print("✓ CA certificate configuration has proper security constraints")
 
