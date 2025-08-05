@@ -1,2 +1,24 @@
+# Algo VPN systemd security hardening for StrongSwan
+# Enhanced hardening on top of existing AppArmor
 [Service]
-MemoryLimit=16777216
+# Privilege restrictions
+NoNewPrivileges=yes
+
+# Filesystem isolation (complements AppArmor)
+ProtectHome=yes
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+
+# Network restrictions - include IPsec kernel communication requirements
+RestrictAddressFamilies=AF_INET AF_INET6 AF_NETLINK AF_PACKET
+
+# Allow access to IPsec configuration, state, and kernel interfaces
+ReadWritePaths=/etc/ipsec.d /var/lib/strongswan
+ReadOnlyPaths=/proc/net/pfkey
+
+# System call filtering (complements AppArmor restrictions)
+# Allow crypto operations, remove cpu-emulation restriction for crypto algorithms
+SystemCallFilter=@system-service @network-io
+SystemCallFilter=~@debug @mount @swap @reboot
+SystemCallErrorNumber=EPERM

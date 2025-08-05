@@ -13,15 +13,18 @@
         dest: "{{ ipsec_pki_path }}/{{ item }}"
         state: directory
         recurse: true
+        mode: "0700"
       with_items:
         - certs
         - private
+        - public
 
     - name: Ensure the config directories exist
       file:
         dest: "{{ ipsec_config_path }}/{{ item }}"
         state: directory
         recurse: true
+        mode: "0700"
       with_items:
         - apple
         - manual
@@ -34,7 +37,10 @@
         curve: secp384r1
         mode: "0600"
 
-    - name: Create certificate signing request (CSR) for CA certificate
+    # CRITICAL: Create CA certificate with proper security constraints
+    # Name constraints provide defense-in-depth security by restricting the scope of certificates
+    # this CA can issue, preventing misuse if the CA key is compromised
+    - name: Create certificate signing request (CSR) for CA certificate with security constraints
       community.crypto.openssl_csr_pipe:
         privatekey_path: "{{ ipsec_pki_path }}/private/cakey.pem"
         privatekey_passphrase: "{{ CA_password }}"
@@ -42,10 +48,35 @@
         use_common_name_for_san: true
         basic_constraints:
           - 'CA:TRUE'
+          - 'pathlen:0'
         basic_constraints_critical: true
         key_usage:
           - keyCertSign
+          - cRLSign
         key_usage_critical: true
+        # Restrict CA to only sign VPN-related certificates
+        extended_key_usage:
+          - serverAuth
+          - clientAuth
+          - '1.3.6.1.5.5.7.3.17'  # IPsec End Entity
+        extended_key_usage_critical: true
+        # Name constraints to restrict certificate scope
+        name_constraints_permitted:
+          - "{{ subjectAltName_type }}:{{ IP_subject_alt_name }}{{ '/255.255.255.255' if subjectAltName_type == 'IP' else '' }}"
+          - "DNS:{{ openssl_constraint_random_id }}"
+          - "email:{{ openssl_constraint_random_id }}"
+        name_constraints_excluded:
+          - "DNS:.com"
+          - "DNS:.org" 
+          - "DNS:.net"
+          - "DNS:.gov"
+          - "DNS:.edu"
+          - "DNS:.mil"
+          - "DNS:.int"
+          - "IP:10.0.0.0/255.0.0.0"
+          - "IP:172.16.0.0/255.240.0.0"
+          - "IP:192.168.0.0/255.255.0.0"
+        name_constraints_critical: true
       register: ca_csr
 
     - name: Create self-signed CA certificate from CSR
@@ -55,8 +86,14 @@
         privatekey_path: "{{ ipsec_pki_path }}/private/cakey.pem"
         privatekey_passphrase: "{{ CA_password }}"
         provider: selfsigned
+        mode: "0644"
 
-    - name: Create private keys
+    - name: Copy the CA certificate
+      copy:
+        src: "{{ ipsec_pki_path }}/cacert.pem"
+        dest: "{{ ipsec_config_path }}/manual/cacert.pem"
+
+    - name: Create private keys for users and server
       community.crypto.openssl_privatekey:
         path: "{{ ipsec_pki_path }}/private/{{ item }}.key"
         type: ECC
@@ -67,17 +104,59 @@
         - "{{ IP_subject_alt_name }}"
       register: client_key_jobs
 
-    - name: Create CSRs
+    # Create CSRs with proper Subject Alternative Names
+    # CRITICAL: Server certificates need SAN extension for modern clients,
+    # especially macOS/iOS which perform strict certificate validation for IKEv2.
+    # Without SAN containing the server IP, clients will reject the certificate.
+    - name: Create CSRs for server certificate with SAN
+      community.crypto.openssl_csr_pipe:
+        privatekey_path: "{{ ipsec_pki_path }}/private/{{ IP_subject_alt_name }}.key"
+        subject_alt_name: "{{ subjectAltName.split(',') }}"
+        common_name: "{{ IP_subject_alt_name }}"
+        key_usage:
+          - digitalSignature
+          - keyEncipherment
+        key_usage_critical: false
+        # Server authentication for IKEv2 VPN connections
+        extended_key_usage:
+          - serverAuth
+          - '1.3.6.1.5.5.7.3.17'  # IPsec End Entity
+        extended_key_usage_critical: false
+      register: server_csr
+
+    - name: Create CSRs for client certificates
       community.crypto.openssl_csr_pipe:
         privatekey_path: "{{ ipsec_pki_path }}/private/{{ item }}.key"
-        subject_alt_name: "{{ subjectAltName | split(',') if item == IP_subject_alt_name else [subjectAltName_USER] }}"
+        subject_alt_name: 
+          - "email:{{ item }}@{{ openssl_constraint_random_id }}"
         common_name: "{{ item }}"
-      with_items:
-        - "{{ users }}"
-        - "{{ IP_subject_alt_name }}"
+        key_usage:
+          - digitalSignature
+          - keyEncipherment
+        key_usage_critical: false
+        # Client certificates should not have serverAuth
+        extended_key_usage:
+          - clientAuth
+          - '1.3.6.1.5.5.7.3.17'  # IPsec End Entity
+        extended_key_usage_critical: false
+      with_items: "{{ users }}"
       register: client_csr_jobs
 
-    - name: Sign clients certificates with our CA
+    # Sign server certificate with proper extensions
+    - name: Sign server certificate with CA
+      community.crypto.x509_certificate:
+        csr_content: "{{ server_csr.csr }}"
+        path: "{{ ipsec_pki_path }}/certs/{{ IP_subject_alt_name }}.crt"
+        provider: ownca
+        ownca_path: "{{ ipsec_pki_path }}/cacert.pem"
+        ownca_privatekey_path: "{{ ipsec_pki_path }}/private/cakey.pem"
+        ownca_privatekey_passphrase: "{{ CA_password }}"
+        ownca_not_after: +3650d
+        ownca_not_before: "-1d"
+        mode: "0644"
+
+    # Sign client certificates with CA
+    - name: Sign client certificates with CA
       community.crypto.x509_certificate:
         csr_content: "{{ item.csr }}"
         path: "{{ ipsec_pki_path }}/certs/{{ item.item }}.crt"
@@ -87,6 +166,7 @@
         ownca_privatekey_passphrase: "{{ CA_password }}"
         ownca_not_after: +3650d
         ownca_not_before: "-1d"
+        mode: "0644"
       with_items: "{{ client_csr_jobs.results }}"
       register: client_sign_results
 
@@ -101,12 +181,32 @@
         encryption_level: "compatibility2022"
       with_items: "{{ users }}"
 
+    - name: Generate p12 files with CA certificate included
+      community.crypto.openssl_pkcs12:
+        path: "{{ ipsec_pki_path }}/private/{{ item }}_ca.p12"
+        friendly_name: "{{ item }}"
+        privatekey_path: "{{ ipsec_pki_path }}/private/{{ item }}.key"
+        certificate_path: "{{ ipsec_pki_path }}/certs/{{ item }}.crt"
+        other_certificates:
+          - "{{ ipsec_pki_path }}/cacert.pem"
+        passphrase: "{{ p12_export_password }}"
+        mode: "0600"
+        encryption_level: "compatibility2022"
+      with_items: "{{ users }}"
+
     - name: Copy the p12 certificates
       copy:
         src: "{{ ipsec_pki_path }}/private/{{ item }}.p12"
         dest: "{{ ipsec_config_path }}/manual/{{ item }}.p12"
       with_items:
         - "{{ users }}"
+
+    - name: Build openssh public keys
+      community.crypto.openssl_publickey:
+        path: "{{ ipsec_pki_path }}/public/{{ item }}.pub"
+        privatekey_path: "{{ ipsec_pki_path }}/private/{{ item }}.key"
+        format: OpenSSH
+      with_items: "{{ users }}"
 
     - name: Add all users to the file
       ansible.builtin.lineinfile:
@@ -142,6 +242,7 @@
         issuer:
           CN: "{{ IP_subject_alt_name }}"
         revoked_certificates: "{{ revoked_certificates }}"
+        mode: "0644"
   delegate_to: localhost
   become: false
   vars:
