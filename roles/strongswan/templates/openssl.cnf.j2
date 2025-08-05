@@ -108,8 +108,26 @@ basicConstraints	= CA:FALSE
 subjectKeyIdentifier	= hash
 authorityKeyIdentifier	= keyid,issuer:always
 
-extendedKeyUsage = serverAuth,clientAuth,1.3.6.1.5.5.7.3.17
+# Client certificates should not have serverAuth
+extendedKeyUsage = clientAuth,1.3.6.1.5.5.7.3.17
 keyUsage = digitalSignature, keyEncipherment
+
+# Server certificate extensions
+# CRITICAL: The subjectAltName (SAN) extension is REQUIRED for modern clients,
+# especially macOS/iOS which perform strict certificate validation for IKEv2.
+# Without SAN, macOS clients will reject the certificate and fail to connect.
+# The SAN must contain the server's IP address(es) that clients connect to.
+[ server_exts ]
+basicConstraints	= CA:FALSE
+subjectKeyIdentifier	= hash
+authorityKeyIdentifier	= keyid,issuer:always
+
+# Server authentication for IKEv2 VPN connections
+extendedKeyUsage = serverAuth,1.3.6.1.5.5.7.3.17
+keyUsage = digitalSignature, keyEncipherment
+
+# Subject Alternative Name extension
+subjectAltName = {{ subjectAltName }}
 
 # The Easy-RSA CA extensions
 [ easyrsa_ca ]
@@ -120,8 +138,12 @@ subjectKeyIdentifier=hash
 authorityKeyIdentifier=keyid:always,issuer:always
 
 basicConstraints = critical,CA:true,pathlen:0
+# Name constraints provide defense-in-depth security by restricting the scope of certificates
+# this CA can issue, preventing misuse if the CA key is compromised
 nameConstraints = {{ nameConstraints }}
 
+# Restrict CA to only sign VPN-related certificates
+extendedKeyUsage = critical,serverAuth,clientAuth,1.3.6.1.5.5.7.3.17
 
 # Limit key usage to CA tasks. If you really want to use the generated pair as
 # a self-signed cert, comment this out.

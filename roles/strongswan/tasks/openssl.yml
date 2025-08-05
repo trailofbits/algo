@@ -77,12 +77,17 @@
         chdir: "{{ ipsec_pki_path }}"
         creates: serial_generated
 
+    # Generate server certificate with proper Subject Alternative Name (SAN)
+    # CRITICAL: Must use -extensions server_exts to include SAN extension.
+    # The SAN extension is required for modern certificate validation,
+    # especially on macOS/iOS clients connecting via IKEv2.
+    # Without SAN containing the server IP, clients will reject the certificate.
     - name: Build the server pair
       shell: >
         umask 077;
         {{ openssl_bin }} req -utf8 -new
         -newkey ec:ecparams/secp384r1.pem
-        -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName }}"))
+        -config openssl.cnf
         -keyout private/{{ IP_subject_alt_name }}.key
         -out reqs/{{ IP_subject_alt_name }}.req -nodes
         -passin pass:"{{ CA_password }}"
@@ -90,7 +95,8 @@
         {{ openssl_bin }} ca -utf8
         -in reqs/{{ IP_subject_alt_name }}.req
         -out certs/{{ IP_subject_alt_name }}.crt
-        -config <(cat openssl.cnf <(printf "[basic_exts]\nsubjectAltName={{ subjectAltName }}"))
+        -config openssl.cnf
+        -extensions server_exts
         -days 3650 -batch
         -passin pass:"{{ CA_password }}"
         -subj "/CN={{ IP_subject_alt_name }}" &&
