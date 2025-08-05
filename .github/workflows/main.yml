@@ -24,13 +24,9 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: '3.11'
-          cache: 'pip'
 
-      - name: Install uv
-        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh
-
-      - name: Install dependencies
-        run: uv sync
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
 
       - name: Check Ansible playbook syntax
         run: uv run ansible-playbook main.yml --syntax-check
@@ -47,25 +43,15 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: '3.11'
-          cache: 'pip'
 
-      - name: Install uv
-        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
 
-      - name: Install dependencies
-        run: |
-          uv sync
-          sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
 
       - name: Run basic sanity tests
-        run: |
-          uv run python tests/unit/test_basic_sanity.py
-          uv run python tests/unit/test_config_validation.py
-          uv run python tests/unit/test_user_management.py
-          uv run python tests/unit/test_openssl_compatibility.py
-          uv run python tests/unit/test_cloud_provider_configs.py
-          uv run python tests/unit/test_template_rendering.py
-          uv run python tests/unit/test_generated_configs.py
+        run: uv run pytest tests/unit/ -v
 
   docker-build:
     name: Docker build test
@@ -79,13 +65,9 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: '3.11'
-          cache: 'pip'
 
-      - name: Install uv
-        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh
-
-      - name: Install dependencies
-        run: uv sync
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
 
       - name: Build Docker image
         run: docker build -t local/algo:test .
@@ -96,7 +78,7 @@ jobs:
           docker run --rm local/algo:test /algo/algo --help
 
       - name: Run Docker deployment tests
-        run: uv run python tests/unit/test_docker_localhost_deployment.py
+        run: uv run pytest tests/unit/test_docker_localhost_deployment.py -v
 
   config-generation:
     name: Configuration generation test
@@ -111,13 +93,9 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: '3.11'
-          cache: 'pip'
 
-      - name: Install uv
-        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh
-
-      - name: Install dependencies
-        run: uv sync
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
 
       - name: Test configuration generation (local mode)
         run: |
@@ -141,13 +119,9 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: '3.11'
-          cache: 'pip'
 
-      - name: Install uv
-        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh
-
-      - name: Install dependencies
-        run: uv sync
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
 
       - name: Create test configuration for ${{ matrix.provider }}
         run: |

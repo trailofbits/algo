@@ -25,7 +25,8 @@ algo/
 ├── users.yml               # User management playbook
 ├── server.yml              # Server-specific tasks
 ├── config.cfg              # Main configuration file
-├── requirements.txt        # Python dependencies
+├── pyproject.toml          # Python project configuration and dependencies
+├── uv.lock                 # Exact dependency versions lockfile
 ├── requirements.yml        # Ansible collections
 ├── roles/                  # Ansible roles
 │   ├── common/            # Base system configuration
@@ -230,8 +231,8 @@ Each has specific requirements:
 ### Local Development Setup
 ```bash
 # Install dependencies
-pip install -r requirements.txt
-ansible-galaxy install -r requirements.yml
+uv sync
+uv run ansible-galaxy install -r requirements.yml
 
 # Run local deployment
 ansible-playbook main.yml -e "provider=local"
@@ -246,9 +247,10 @@ ansible-playbook users.yml -e "server=SERVER_NAME"
 
 #### Updating Dependencies
 1. Create a new branch
-2. Update requirements.txt conservatively
-3. Run all tests
-4. Document security fixes
+2. Update pyproject.toml conservatively
+3. Run `uv lock` to update lockfile
+4. Run all tests
+5. Document security fixes
 
 #### Debugging Deployment Issues
 1. Check `ansible-playbook -vvv` output

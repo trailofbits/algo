@@ -32,3 +32,26 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "library/*" = ["ALL"]  # Exclude Ansible library modules (external code)
+
+[tool.uv]
+# Centralized uv version management
+dev-dependencies = [
+    "pytest>=8.0.0",
+    "pytest-xdist>=3.0.0",  # Parallel test execution
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",                   # Verbose output
+    "--strict-markers",     # Strict marker validation
+    "--strict-config",      # Strict config validation
+    "--tb=short",          # Short traceback format
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]

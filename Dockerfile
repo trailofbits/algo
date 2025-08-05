@@ -13,10 +13,12 @@ RUN adduser -D -H -u 19857 algo
 RUN mkdir -p /algo && mkdir -p /algo/configs
 
 WORKDIR /algo
-COPY requirements.txt pyproject.toml uv.lock ./
-RUN curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh && \
-    export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH" && \
-    uv sync
+COPY pyproject.toml uv.lock ./
+
+# Copy uv binary from official distroless image (more secure than curl)
+COPY --from=ghcr.io/astral-sh/uv:0.8.5 /uv /bin/uv
+
+RUN uv sync
 COPY . .
 RUN chmod 0755 /algo/algo-docker.sh
 

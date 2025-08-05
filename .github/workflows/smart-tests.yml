@@ -40,7 +40,8 @@ jobs:
               - 'library/**'
             python:
               - '**/*.py'
-              - 'requirements.txt'
+              - 'pyproject.toml'
+              - 'uv.lock'
               - 'tests/**'
             docker:
               - 'Dockerfile*'
@@ -82,13 +83,9 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: '3.11'
-          cache: 'pip'
 
-      - name: Install uv
-        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh
-
-      - name: Install dependencies
-        run: uv sync
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
 
       - name: Check Ansible playbook syntax
         run: uv run ansible-playbook main.yml --syntax-check
@@ -107,32 +104,34 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: '3.11'
-          cache: 'pip'
 
-      - name: Install uv
-        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
 
-      - name: Install dependencies
-        run: |
-          uv sync
-          sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
 
       - name: Run relevant tests
+        env:
+          RUN_BASIC_TESTS: ${{ needs.changed-files.outputs.run_basic_tests }}
+          RUN_TEMPLATE_TESTS: ${{ needs.changed-files.outputs.run_template_tests }}
         run: |
           # Always run basic sanity
-          uv run python tests/unit/test_basic_sanity.py
+          uv run pytest tests/unit/test_basic_sanity.py -v
 
           # Run other tests based on what changed
-          if [[ "${{ needs.changed-files.outputs.run_basic_tests }}" == "true" ]]; then
-            uv run python tests/unit/test_config_validation.py
-            uv run python tests/unit/test_user_management.py
-            uv run python tests/unit/test_openssl_compatibility.py
-            uv run python tests/unit/test_cloud_provider_configs.py
-            uv run python tests/unit/test_generated_configs.py
+          if [[ "${RUN_BASIC_TESTS}" == "true" ]]; then
+            uv run pytest \
+              tests/unit/test_config_validation.py \
+              tests/unit/test_user_management.py \
+              tests/unit/test_openssl_compatibility.py \
+              tests/unit/test_cloud_provider_configs.py \
+              tests/unit/test_generated_configs.py \
+              -v
           fi
 
-          if [[ "${{ needs.changed-files.outputs.run_template_tests }}" == "true" ]]; then
-            uv run python tests/unit/test_template_rendering.py
+          if [[ "${RUN_TEMPLATE_TESTS}" == "true" ]]; then
+            uv run pytest tests/unit/test_template_rendering.py -v
           fi
 
   docker-tests:
@@ -149,13 +148,9 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: '3.11'
-          cache: 'pip'
 
-      - name: Install uv
-        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh
-
-      - name: Install dependencies
-        run: uv sync
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
 
       - name: Build Docker image
         run: docker build -t local/algo:test .
@@ -165,7 +160,7 @@ jobs:
           docker run --rm local/algo:test /algo/algo --help
 
       - name: Run Docker deployment tests
-        run: uv run python tests/unit/test_docker_localhost_deployment.py
+        run: uv run pytest tests/unit/test_docker_localhost_deployment.py -v
 
   config-tests:
     name: Configuration Tests
@@ -182,13 +177,9 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: '3.11'
-          cache: 'pip'
 
-      - name: Install uv
-        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh
-
-      - name: Install dependencies
-        run: uv sync
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
 
       - name: Test configuration generation
         run: |
@@ -238,22 +229,21 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: '3.11'
-          cache: 'pip'
 
-      - name: Install dependencies
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          uv sync
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
 
       - name: Install ansible dependencies
         run: uv run ansible-galaxy collection install community.crypto
 
       - name: Run relevant linters
+        env:
+          RUN_LINT: ${{ needs.changed-files.outputs.run_lint }}
         run: |
           # Always run if lint files changed
-          if [[ "${{ needs.changed-files.outputs.run_lint }}" == "true" ]]; then
+          if [[ "${RUN_LINT}" == "true" ]]; then
             # Run all linters
-            uv run ruff check . || true
+            uv run --with ruff ruff check . || true
             uv run --with yamllint yamllint . || true
             uv run --with ansible-lint ansible-lint || true
 
@@ -270,14 +260,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check test results
+        env:
+          SYNTAX_CHECK_RESULT: ${{ needs.syntax-check.result }}
+          BASIC_TESTS_RESULT: ${{ needs.basic-tests.result }}
+          DOCKER_TESTS_RESULT: ${{ needs.docker-tests.result }}
+          CONFIG_TESTS_RESULT: ${{ needs.config-tests.result }}
+          LINT_RESULT: ${{ needs.lint.result }}
         run: |
           # This job ensures all required tests pass
           # It will fail if any dependent job failed
-          if [[ "${{ needs.syntax-check.result }}" == "failure" ]] || \
-             [[ "${{ needs.basic-tests.result }}" == "failure" ]] || \
-             [[ "${{ needs.docker-tests.result }}" == "failure" ]] || \
-             [[ "${{ needs.config-tests.result }}" == "failure" ]] || \
-             [[ "${{ needs.lint.result }}" == "failure" ]]; then
+          if [[ "${SYNTAX_CHECK_RESULT}" == "failure" ]] || \
+             [[ "${BASIC_TESTS_RESULT}" == "failure" ]] || \
+             [[ "${DOCKER_TESTS_RESULT}" == "failure" ]] || \
+             [[ "${CONFIG_TESTS_RESULT}" == "failure" ]] || \
+             [[ "${LINT_RESULT}" == "failure" ]]; then
             echo "One or more required tests failed"
             exit 1
           fi

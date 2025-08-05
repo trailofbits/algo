@@ -15,10 +15,18 @@ def test_python_version():
     print("✓ Python version check passed")
 
 
-def test_requirements_file_exists():
-    """Check that requirements.txt exists"""
-    assert os.path.exists("requirements.txt"), "requirements.txt not found"
-    print("✓ requirements.txt exists")
+def test_pyproject_file_exists():
+    """Check that pyproject.toml exists and has dependencies"""
+    assert os.path.exists("pyproject.toml"), "pyproject.toml not found"
+
+    with open("pyproject.toml") as f:
+        content = f.read()
+        assert "dependencies" in content, "No dependencies section in pyproject.toml"
+        assert "ansible" in content, "ansible dependency not found"
+        assert "jinja2" in content, "jinja2 dependency not found"
+        assert "netaddr" in content, "netaddr dependency not found"
+
+    print("✓ pyproject.toml exists with required dependencies")
 
 
 def test_config_file_valid():
@@ -98,7 +106,7 @@ if __name__ == "__main__":
 
     tests = [
         test_python_version,
-        test_requirements_file_exists,
+        test_pyproject_file_exists,
         test_config_file_valid,
         test_ansible_syntax,
         test_shellcheck,
