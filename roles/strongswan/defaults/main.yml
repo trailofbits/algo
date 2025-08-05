@@ -12,6 +12,9 @@ algo_dns_adblocking: false
 ipv6_support: false
 dns_encryption: true
 openssl_constraint_random_id: "{{ IP_subject_alt_name | to_uuid }}.algo"
+# Subject Alternative Name (SAN) configuration - CRITICAL for client compatibility
+# Modern clients (especially macOS/iOS) REQUIRE SAN extension in server certificates
+# Without SAN, IKEv2 connections will fail with certificate validation errors
 subjectAltName_type: "{{ 'DNS' if IP_subject_alt_name|regex_search('[a-z]') else 'IP' }}"
 subjectAltName: >-
   {{ subjectAltName_type }}:{{ IP_subject_alt_name }}
@@ -21,12 +24,16 @@ nameConstraints: >-
   critical,permitted;{{ subjectAltName_type }}:{{ IP_subject_alt_name }}{{- '/255.255.255.255' if subjectAltName_type == 'IP' else '' -}}
   {%- if subjectAltName_type == 'IP' -%}
   ,permitted;DNS:{{ openssl_constraint_random_id }}
+  ,excluded;DNS:.com,excluded;DNS:.org,excluded;DNS:.net,excluded;DNS:.gov,excluded;DNS:.edu
+  ,excluded;IP:10.0.0.0/255.0.0.0,excluded;IP:172.16.0.0/255.240.0.0,excluded;IP:192.168.0.0/255.255.0.0
   {%- else -%}
   ,excluded;IP:0.0.0.0/0.0.0.0
   {%- endif -%}
   ,permitted;email:{{ openssl_constraint_random_id }}
+  ,excluded;email:.com,excluded;email:.org,excluded;email:.net,excluded;email:.gov,excluded;email:.edu
   {%- if ipv6_support -%}
   ,permitted;IP:{{ ansible_default_ipv6['address'] }}/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff
+  ,excluded;IP:fc00:0:0:0:0:0:0:0/fe00:0:0:0:0:0:0:0,excluded;IP:fe80:0:0:0:0:0:0:0/ffc0:0:0:0:0:0:0:0
   {%- else -%}
   ,excluded;IP:0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0
   {%- endif -%}

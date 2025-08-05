@@ -33,6 +33,7 @@
   with_items:
     - "{{ users }}"
 
+
 - name: Build the client ipsec secret file
   template:
     src: client_ipsec.secrets.j2

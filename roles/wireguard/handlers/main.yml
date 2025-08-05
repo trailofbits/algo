@@ -1,4 +1,8 @@
 ---
+- name: daemon-reload
+  systemd:
+    daemon_reload: yes
+
 - name: restart wireguard
   service:
     name: "{{ service_name }}"

@@ -62,3 +62,38 @@
       AmbientCapabilities=CAP_NET_BIND_SERVICE
   notify:
     - restart dnscrypt-proxy
+
+- name: Ubuntu | Apply systemd security hardening for dnscrypt-proxy
+  copy:
+    dest: /etc/systemd/system/dnscrypt-proxy.service.d/90-security-hardening.conf
+    content: |
+      # Algo VPN systemd security hardening for dnscrypt-proxy
+      # Additional hardening on top of comprehensive AppArmor
+      [Service]
+      # Privilege restrictions
+      NoNewPrivileges=yes
+
+      # Filesystem isolation (complements AppArmor)
+      ProtectSystem=strict
+      ProtectHome=yes
+      PrivateTmp=yes
+      PrivateDevices=yes
+      ProtectKernelTunables=yes
+      ProtectControlGroups=yes
+
+      # Network restrictions
+      RestrictAddressFamilies=AF_INET AF_INET6
+
+      # Allow access to dnscrypt-proxy cache (AppArmor also controls this)
+      ReadWritePaths=/var/cache/dnscrypt-proxy
+
+      # System call filtering (complements AppArmor restrictions)
+      SystemCallFilter=@system-service @network-io
+      SystemCallFilter=~@debug @mount @swap @reboot @raw-io
+      SystemCallErrorNumber=EPERM
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - daemon reload
+    - restart dnscrypt-proxy

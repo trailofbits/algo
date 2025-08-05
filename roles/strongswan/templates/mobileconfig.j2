@@ -100,10 +100,15 @@
                 <string>ECDSA384</string>
                 <key>ServerCertificateIssuerCommonName</key>
                 <string>{{ IP_subject_alt_name }}</string>
+                <key>ServerCertificateCommonName</key>
+                <string>{{ IP_subject_alt_name }}</string>
                 <key>RemoteAddress</key>
                 <string>{{ IP_subject_alt_name }}</string>
                 <key>RemoteIdentifier</key>
                 <string>{{ IP_subject_alt_name }}</string>
+                <!-- Enhanced certificate validation -->
+                <key>DisableMOBIKE</key>
+                <integer>0</integer>
                 <key>UseConfigurationAttributeInternalIPSubnet</key>
                 <integer>0</integer>
             </dict>
