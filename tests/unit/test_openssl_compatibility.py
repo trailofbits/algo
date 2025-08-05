@@ -167,7 +167,11 @@ def test_ca_certificate():
 
 def validate_server_certificates_real(cert_files):
     """Validate actual Ansible-generated server certificates"""
-    server_certs = [f for f in cert_files['server_certs'] if not f.endswith('/cacert.pem')]
+    # Filter to only actual server certificates (not client certs)
+    # Server certificates contain IP addresses in the filename
+    import re
+    server_certs = [f for f in cert_files['server_certs']
+                   if not f.endswith('/cacert.pem') and re.search(r'\d+\.\d+\.\d+\.\d+\.crt$', f)]
     if not server_certs:
         print("⚠ No server certificates found")
         return
@@ -426,8 +430,8 @@ def validate_certificate_chain_real(cert_files):
         # Verify certificate is currently valid (not expired)
         from datetime import datetime
         now = datetime.now(UTC)
-        assert certificate.not_valid_before <= now, f"Certificate {cert_path} not yet valid"
-        assert certificate.not_valid_after >= now, f"Certificate {cert_path} has expired"
+        assert certificate.not_valid_before_utc <= now, f"Certificate {cert_path} not yet valid"
+        assert certificate.not_valid_after_utc >= now, f"Certificate {cert_path} has expired"
 
         print(f"✓ Real certificate chain valid: {os.path.basename(cert_path)}")
 

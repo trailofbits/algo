@@ -22,11 +22,18 @@
       no_log: true
       register: ipaddr
 
-    - name: Set required ansible version as a fact
+    - name: Extract ansible version from requirements
       set_fact:
-        required_ansible_version: "{{ item | regex_replace('^ansible\\s*(?P<op>[~>=<]+)\\s*(?P<ver>\\d+\\.\\d+(?:\\.\\d+)?).*$', '{\"op\": \"\\g<op>\", \"ver\": \"\\g<ver>\"}') }}"
+        ansible_requirement: "{{ item }}"
       when: '"ansible" in item'
       with_items: "{{ lookup('file', 'requirements.txt').splitlines() }}"
+
+    - name: Parse ansible version requirement
+      set_fact:
+        required_ansible_version:
+          op: "{{ ansible_requirement | regex_replace('^ansible\\s*([~>=<]+)\\s*.*$', '\\1') }}"
+          ver: "{{ ansible_requirement | regex_replace('^ansible\\s*[~>=<]+\\s*(\\d+\\.\\d+(?:\\.\\d+)?).*$', '\\1') }}"
+      when: ansible_requirement is defined
 
     - name: Just get the list from default pip
       community.general.pip_package_info:
