@@ -152,7 +152,7 @@
         ownca_path: "{{ ipsec_pki_path }}/cacert.pem"
         ownca_privatekey_path: "{{ ipsec_pki_path }}/private/cakey.pem"
         ownca_privatekey_passphrase: "{{ CA_password }}"
-        ownca_not_after: +3650d
+        ownca_not_after: "+{{ certificate_validity_days }}d"
         ownca_not_before: "-1d"
         mode: "0644"
 
@@ -164,7 +164,7 @@
         ownca_path: "{{ ipsec_pki_path }}/cacert.pem"
         ownca_privatekey_path: "{{ ipsec_pki_path }}/private/cakey.pem"
         ownca_privatekey_passphrase: "{{ CA_password }}"
-        ownca_not_after: +3650d
+        ownca_not_after: "+{{ certificate_validity_days }}d"
         ownca_not_before: "-1d"
         mode: "0644"
       with_items: "{{ client_csr_jobs.results }}"
@@ -251,6 +251,7 @@
   become: false
   vars:
     ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    certificate_validity_days: 3650  # 10 years - configurable certificate lifespan
 
 - name: Copy the CRL to the vpn server
   copy:
