@@ -21,7 +21,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh
           uv sync
           uv run --with ansible-lint --with ansible ansible-galaxy collection install -r requirements.yml
 
@@ -49,7 +49,7 @@ jobs:
 
       - name: Run yamllint
         run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh
           uv run --with yamllint yamllint -c .yamllint .
 
   python-lint:
@@ -66,7 +66,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh
           uv sync
 
       - name: Run ruff

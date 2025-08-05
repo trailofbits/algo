@@ -85,7 +85,7 @@ jobs:
           cache: 'pip'
 
       - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh
 
       - name: Install dependencies
         run: uv sync
@@ -110,7 +110,7 @@ jobs:
           cache: 'pip'
 
       - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh
 
       - name: Install dependencies
         run: |
@@ -152,7 +152,7 @@ jobs:
           cache: 'pip'
 
       - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh
 
       - name: Install dependencies
         run: uv sync
@@ -185,7 +185,7 @@ jobs:
           cache: 'pip'
 
       - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh
 
       - name: Install dependencies
         run: uv sync

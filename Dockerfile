@@ -14,7 +14,7 @@ RUN mkdir -p /algo && mkdir -p /algo/configs
 
 WORKDIR /algo
 COPY requirements.txt pyproject.toml uv.lock ./
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+RUN curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh && \
     export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH" && \
     uv sync
 COPY . .

@@ -2,15 +2,77 @@
 
 set -e
 
-# Check if uv is installed, if not, install it automatically
-if ! command -v uv &> /dev/null; then
-    echo "Installing uv (fast Python package manager)..."
+# Function to install uv via package managers (most secure)
+install_uv_via_package_manager() {
+    echo "Attempting to install uv via system package manager..."
+    
+    if command -v brew &> /dev/null; then
+        echo "Using Homebrew..."
+        brew install uv && return 0
+    elif command -v apt &> /dev/null && apt list uv 2>/dev/null | grep -q uv; then
+        echo "Using apt..."
+        sudo apt update && sudo apt install -y uv && return 0
+    elif command -v dnf &> /dev/null; then
+        echo "Using dnf..."
+        sudo dnf install -y uv 2>/dev/null && return 0
+    elif command -v pacman &> /dev/null; then
+        echo "Using pacman..."
+        sudo pacman -S --noconfirm uv 2>/dev/null && return 0
+    elif command -v zypper &> /dev/null; then
+        echo "Using zypper..."
+        sudo zypper install -y uv 2>/dev/null && return 0
+    elif command -v winget &> /dev/null; then
+        echo "Using winget..."
+        winget install --id=astral-sh.uv -e && return 0
+    elif command -v scoop &> /dev/null; then
+        echo "Using scoop..."
+        scoop install uv && return 0
+    fi
+    
+    return 1
+}
+
+# Function to install uv via download (with user consent)
+install_uv_via_download() {
+    echo ""
+    echo "⚠️  SECURITY NOTICE ⚠️"
+    echo "uv is not available via system package managers on this system."
+    echo "To continue, we need to download and execute an installation script from:"
+    echo "  https://astral.sh/uv/install.sh (Linux/macOS)"
+    echo "  https://astral.sh/uv/install.ps1 (Windows)"
+    echo ""
+    echo "For maximum security, you can install uv manually instead:"
+    echo "  1. Visit: https://docs.astral.sh/uv/getting-started/installation/"
+    echo "  2. Download the binary for your platform from GitHub releases"
+    echo "  3. Verify checksums and install manually"
+    echo "  4. Then run: ./algo"
+    echo ""
+    
+    read -p "Continue with script download? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Installation cancelled. Please install uv manually and retry."
+        exit 1
+    fi
+    
+    echo "Downloading uv installation script..."
     if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
         # Windows (Git Bash/WSL)
         powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
     else
-        # macOS/Linux
-        curl -LsSf https://astral.sh/uv/install.sh | sh
+        # macOS/Linux - use the versioned script for consistency
+        curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh
+    fi
+}
+
+# Check if uv is installed, if not, install it securely
+if ! command -v uv &> /dev/null; then
+    echo "uv (Python package manager) not found. Installing..."
+    
+    # Try package managers first (most secure)
+    if ! install_uv_via_package_manager; then
+        # Fall back to download with user consent
+        install_uv_via_download
     fi
     
     # Reload PATH to find uv
@@ -19,6 +81,7 @@ if ! command -v uv &> /dev/null; then
     # Verify installation worked
     if ! command -v uv &> /dev/null; then
         echo "Error: uv installation failed. Please restart your terminal and try again."
+        echo "Or install manually from: https://docs.astral.sh/uv/getting-started/installation/"
         exit 1
     fi
     
