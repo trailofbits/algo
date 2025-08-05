@@ -10,6 +10,7 @@ import os
 import re
 import subprocess
 import sys
+from datetime import UTC
 
 from cryptography import x509
 from cryptography.x509.oid import ExtensionOID, NameOID
@@ -423,8 +424,8 @@ def validate_certificate_chain_real(cert_files):
         assert certificate.issuer == ca_certificate.subject, f"Certificate {cert_path} not signed by CA"
 
         # Verify certificate is currently valid (not expired)
-        from datetime import datetime, timezone
-        now = datetime.now(timezone.utc)
+        from datetime import datetime
+        now = datetime.now(UTC)
         assert certificate.not_valid_before <= now, f"Certificate {cert_path} not yet valid"
         assert certificate.not_valid_after >= now, f"Certificate {cert_path} has expired"
 

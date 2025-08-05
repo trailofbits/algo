@@ -246,6 +246,10 @@
         issuer:
           CN: "{{ IP_subject_alt_name }}"
         revoked_certificates: "{{ revoked_certificates }}"
+
+    - name: Set CRL file permissions
+      file:
+        path: "{{ ipsec_pki_path }}/crl.pem"
         mode: "0644"
   delegate_to: localhost
   become: false
