@@ -1,7 +1,7 @@
 ---
 - name: daemon-reload
   systemd:
-    daemon_reload: yes
+    daemon_reload: true
 
 - name: restart wireguard
   service:

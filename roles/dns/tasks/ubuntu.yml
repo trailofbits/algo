@@ -95,5 +95,5 @@
     group: root
     mode: 0644
   notify:
-    - daemon reload
+    - daemon-reload
     - restart dnscrypt-proxy
