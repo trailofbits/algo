@@ -56,9 +56,9 @@ install_uv_via_download() {
     fi
     
     echo "Downloading uv installation script..."
-    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
-        # Windows (Git Bash/WSL)
-        powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "linux-gnu" && -n "${WSL_DISTRO_NAME:-}" ]] || uname -s | grep -q "MINGW\|MSYS"; then
+        # Windows (Git Bash/WSL/MINGW) - use versioned installer
+        powershell -ExecutionPolicy ByPass -c "irm https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.ps1 | iex"
     else
         # macOS/Linux - use the versioned script for consistency
         curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh

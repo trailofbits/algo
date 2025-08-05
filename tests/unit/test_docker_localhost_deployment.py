@@ -123,7 +123,7 @@ def test_localhost_deployment_requirements():
         'Python 3.8+': sys.version_info >= (3, 8),
         'Ansible installed': subprocess.run(['which', 'ansible'], capture_output=True).returncode == 0,
         'Main playbook exists': os.path.exists('main.yml'),
-        'Requirements file exists': os.path.exists('requirements.txt'),
+        'Project config exists': os.path.exists('pyproject.toml'),
         'Config template exists': os.path.exists('config.cfg.example') or os.path.exists('config.cfg'),
     }
 

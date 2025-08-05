@@ -15,7 +15,7 @@ Vagrant.configure("2") do |config|
     # https://github.com/hashicorp/vagrant/issues/12204
     ansible.pip_install_cmd = "sudo apt-get install -y python3-pip python-is-python3 && sudo ln -s -f /usr/bin/pip3 /usr/bin/pip"
     ansible.install_mode = "pip_args_only"
-    ansible.pip_args = "-r /opt/algo/requirements.txt"
+    ansible.pip_args = "ansible==11.8.0 jinja2>=3.1.6 netaddr==1.3.0 pyyaml>=6.0.2"
     ansible.inventory_path = "/opt/algo/inventory"
     ansible.limit = "local"
     ansible.verbose = "-vvvv"

@@ -121,7 +121,7 @@ You are running an old version of `pip` that cannot download the binary `cryptog
 
 You tried to install Algo and you see an error that reads "ansible-playbook: command not found."
 
-You did not finish step 4 in the installation instructions, "[Install Algo's remaining dependencies](https://github.com/trailofbits/algo#deploy-the-algo-server)." Algo depends on [Ansible](https://github.com/ansible/ansible), an automation framework, and this error indicates that you do not have Ansible installed. Ansible is installed by `pip` when you run `python3 -m pip install -r requirements.txt`. You must complete the installation instructions to run the Algo server deployment process.
+You did not finish the installation instructions, "[Install Algo's remaining dependencies](https://github.com/trailofbits/algo#deploy-the-algo-server)." Algo depends on [Ansible](https://github.com/ansible/ansible), an automation framework, and this error indicates that you do not have Ansible installed. Dependencies are managed by uv and installed automatically when you run `./algo`. You must complete the installation instructions to run the Algo server deployment process.
 
 ### Fatal: "Failed to validate the SSL certificate"
 
@@ -138,8 +138,8 @@ You tried to install Algo and you received an error like this one:
 
 ```
 Could not fetch URL https://pypi.python.org/simple/secretstorage/: There was a problem confirming the ssl certificate: [SSL: TLSV1_ALERT_PROTOCOL_VERSION] tlsv1 alert protocol version (_ssl.c:590) - skipping
-  Could not find a version that satisfies the requirement SecretStorage<3 (from -r requirements.txt (line 2)) (from versions: )
-No matching distribution found for SecretStorage<3 (from -r requirements.txt (line 2))
+  Could not find a version that satisfies the requirement SecretStorage<3 (from pyproject.toml dependencies) (from versions: )
+No matching distribution found for SecretStorage<3 (from pyproject.toml dependencies)
 ```
 
 It's time to upgrade your python.

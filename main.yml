@@ -22,11 +22,9 @@
       no_log: true
       register: ipaddr
 
-    - name: Extract ansible version from requirements
+    - name: Extract ansible version from pyproject.toml
       set_fact:
-        ansible_requirement: "{{ item }}"
-      when: '"ansible" in item'
-      with_items: "{{ lookup('file', 'requirements.txt').splitlines() }}"
+        ansible_requirement: "{{ lookup('community.general.toml', 'pyproject.toml', 'project.dependencies') | select('match', '^ansible.*') | first }}"
 
     - name: Parse ansible version requirement
       set_fact:
@@ -55,7 +53,7 @@
         msg: >
           Ansible version is {{ pip_package_info.packages.pip.ansible.0.version }}.
           You must update the requirements to use this version of Algo.
-          Try to run python3 -m pip install -U -r requirements.txt
+          Try to run: uv sync
 
 - name: Include prompts playbook
   import_playbook: input.yml
