@@ -448,7 +448,8 @@ def validate_certificate_chain_config():
         ('ownca_path', 'CA certificate path should be specified'),
         ('ownca_privatekey_path', 'CA private key path should be specified'),
         ('ownca_privatekey_passphrase', 'CA private key should be password protected'),
-        ('ownca_not_after: +3650d', 'Certificates should have 10-year validity'),
+        ('certificate_validity_days: 3650', 'Certificate validity should be configurable (default 10 years)'),
+        ('ownca_not_after: "+{{ certificate_validity_days }}d"', 'Certificates should use configurable validity period'),
         ('ownca_not_before: "-1d"', 'Certificates should have backdated start time'),
         ('curve: secp384r1', 'Should use strong elliptic curve cryptography'),
         ('type: ECC', 'Should use elliptic curve keys for better security')
