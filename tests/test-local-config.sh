@@ -54,7 +54,7 @@ EOF
 
 # Run Ansible in check mode to verify templates work
 echo "Running Ansible in check mode..."
-ansible-playbook main.yml \
+uv run ansible-playbook main.yml \
     -i "localhost," \
     -c local \
     -e @test-config.cfg \
