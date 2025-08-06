@@ -196,7 +196,6 @@ After the process completes, new configuration files will be generated in the `c
 * Deploy from [Ansible](docs/deploy-from-ansible.md) non-interactively
 * Deploy onto a [cloud server at time of creation with shell script or cloud-init](docs/deploy-from-script-or-cloud-init-to-localhost.md)
 * Deploy to an [unsupported cloud provider](docs/deploy-to-unsupported-cloud.md)
-* Deploy to your own [FreeBSD](docs/deploy-to-freebsd.md) server
 
 If you've read all the documentation and have further questions, [create a new discussion](https://github.com/trailofbits/algo/discussions).
 

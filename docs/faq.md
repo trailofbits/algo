@@ -6,7 +6,7 @@
 * [Why aren't you using Racoon, LibreSwan, or OpenSwan?](#why-arent-you-using-racoon-libreswan-or-openswan)
 * [Why aren't you using a memory-safe or verified IKE daemon?](#why-arent-you-using-a-memory-safe-or-verified-ike-daemon)
 * [Why aren't you using OpenVPN?](#why-arent-you-using-openvpn)
-* [Why aren't you using Alpine Linux, OpenBSD, or HardenedBSD?](#why-arent-you-using-alpine-linux-openbsd-or-hardenedbsd)
+* [Why aren't you using Alpine Linux or OpenBSD?](#why-arent-you-using-alpine-linux-or-openbsd)
 * [I deployed an Algo server. Can you update it with new features?](#i-deployed-an-algo-server-can-you-update-it-with-new-features)
 * [Where did the name "Algo" come from?](#where-did-the-name-algo-come-from)
 * [Can DNS filtering be disabled?](#can-dns-filtering-be-disabled)
@@ -39,9 +39,9 @@ I would, but I don't know of any [suitable ones](https://github.com/trailofbits/
 
 OpenVPN does not have out-of-the-box client support on any major desktop or mobile operating system. This introduces user experience issues and requires the user to [update](https://www.exploit-db.com/exploits/34037/) and [maintain](https://www.exploit-db.com/exploits/20485/) the software themselves. OpenVPN depends on the security of [TLS](https://tools.ietf.org/html/rfc7457), both the [protocol](https://arstechnica.com/security/2016/08/new-attack-can-pluck-secrets-from-1-of-https-traffic-affects-top-sites/) and its [implementations](https://arstechnica.com/security/2014/04/confirmed-nasty-heartbleed-bug-exposes-openvpn-private-keys-too/), and we simply trust the server less due to [past](https://sweet32.info/) [security](https://github.com/ValdikSS/openvpn-fix-dns-leak-plugin/blob/master/README.md) [incidents](https://www.exploit-db.com/exploits/34879/).
 
-## Why aren't you using Alpine Linux, OpenBSD, or HardenedBSD?
+## Why aren't you using Alpine Linux or OpenBSD?
 
-Alpine Linux is not supported out-of-the-box by any major cloud provider. We are interested in supporting Free-, Open-, and HardenedBSD. Follow along or contribute to our BSD support in [this issue](https://github.com/trailofbits/algo/issues/35).
+Alpine Linux is not supported out-of-the-box by any major cloud provider. While we considered BSD variants in the past, Algo now focuses exclusively on Ubuntu LTS for consistency, security, and maintainability.
 
 ## I deployed an Algo server. Can you update it with new features?
 
