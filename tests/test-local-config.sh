@@ -24,7 +24,6 @@ dns_adblocking: false
 ssh_tunneling: false
 store_pki: true
 tests: true
-no_log: false
 algo_provider: local
 algo_server_name: test-server
 algo_ondemand_cellular: false
@@ -40,7 +39,6 @@ dns_encryption: false
 subjectAltName_type: IP
 subjectAltName: 127.0.0.1
 IP_subject_alt_name: 127.0.0.1
-ipsec_enabled: false
 algo_server: localhost
 algo_user: ubuntu
 ansible_ssh_user: ubuntu
