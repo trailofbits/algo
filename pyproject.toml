@@ -1,7 +1,7 @@
 [project]
 name = "algo"
 description = "Set up a personal IPSEC VPN in the cloud"
-version = "0.1.0"
+version = "2.0.0-beta"
 requires-python = ">=3.11"
 dependencies = [
     "ansible==11.8.0",
