@@ -32,6 +32,58 @@ install_uv_via_package_manager() {
     return 1
 }
 
+# Function to handle Ubuntu-specific installation alternatives
+install_uv_ubuntu_alternatives() {
+    # Check if we're on Ubuntu
+    if ! command -v lsb_release &> /dev/null || [[ "$(lsb_release -si)" != "Ubuntu" ]]; then
+        return 1  # Not Ubuntu, skip these options
+    fi
+    
+    echo ""
+    echo "Ubuntu detected. Additional trusted installation options available:"
+    echo ""
+    echo "1. pipx (official PyPI, installs ~9 packages)"
+    echo "   Command: sudo apt install pipx && pipx install uv"
+    echo ""
+    echo "2. snap (community-maintained by Canonical employee)"
+    echo "   Command: sudo snap install astral-uv --classic"
+    echo "   Source: https://github.com/lengau/uv-snap"
+    echo ""
+    echo "3. Continue to official installer script download"
+    echo ""
+    
+    while true; do
+        read -p "Choose installation method (1/2/3): " choice
+        case $choice in
+            1)
+                echo "Installing uv via pipx..."
+                if sudo apt update && sudo apt install -y pipx; then
+                    if pipx install uv; then
+                        # Add pipx bin directory to PATH
+                        export PATH="$HOME/.local/bin:$PATH"
+                        return 0
+                    fi
+                fi
+                echo "pipx installation failed, trying next option..."
+                ;;
+            2)
+                echo "Installing uv via snap..."
+                if sudo snap install astral-uv --classic; then
+                    # Snap binaries should be automatically in PATH via /snap/bin
+                    return 0
+                fi
+                echo "snap installation failed, trying next option..."
+                ;;
+            3)
+                return 1  # Continue to official installer download
+                ;;
+            *)
+                echo "Invalid option. Please choose 1, 2, or 3."
+                ;;
+        esac
+    done
+}
+
 # Function to install uv via download (with user consent)
 install_uv_via_download() {
     echo ""
@@ -71,12 +123,15 @@ if ! command -v uv &> /dev/null; then
     
     # Try package managers first (most secure)
     if ! install_uv_via_package_manager; then
-        # Fall back to download with user consent
-        install_uv_via_download
+        # Try Ubuntu-specific alternatives if available
+        if ! install_uv_ubuntu_alternatives; then
+            # Fall back to download with user consent
+            install_uv_via_download
+        fi
     fi
     
-    # Reload PATH to find uv
-    export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+    # Reload PATH to find uv (includes pipx, cargo, and snap paths)
+    export PATH="$HOME/.local/bin:$HOME/.cargo/bin:/snap/bin:$PATH"
     
     # Verify installation worked
     if ! command -v uv &> /dev/null; then
