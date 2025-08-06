@@ -43,12 +43,19 @@ The easiest way to get an Algo server running is to run it on your local system 
 
 3. **Set your configuration options.** Open `config.cfg` in your favorite text editor. Specify the users you want to create in the `users` list. Create a unique user for each device you plan to connect to your VPN. You should also review the other options before deployment, as changing your mind about them later [may require you to deploy a brand new server](https://github.com/trailofbits/algo/blob/master/docs/faq.md#i-deployed-an-algo-server-can-you-update-it-with-new-features).
 
-4. **Start the deployment.** Return to your terminal. In the Algo directory, run `./algo` and follow the instructions:
+4. **Start the deployment.** Return to your terminal. In the Algo directory, run the appropriate script for your platform:
+    
+    **macOS/Linux:**
     ```bash
     ./algo
     ```
     
-    The first time you run `./algo`, it will automatically install the required Python environment (Python 3.11+). On subsequent runs, it starts immediately and works on all platforms (macOS, Linux, Windows). There are several optional features available, none of which are required for a fully functional VPN server. These optional features are described in the [deployment documentation](docs/deploy-from-ansible.md).
+    **Windows:**
+    ```powershell
+    .\algo.ps1
+    ```
+    
+    The first time you run the script, it will automatically install the required Python environment (Python 3.11+). On subsequent runs, it starts immediately and works on all platforms (macOS, Linux, Windows). There are several optional features available, none of which are required for a fully functional VPN server. These optional features are described in the [deployment documentation](docs/deploy-from-ansible.md).
 
 That's it! You can now set up clients to connect to your VPN. Proceed to [Configure the VPN Clients](#configure-the-vpn-clients) below.
 
@@ -156,8 +163,14 @@ For IPsec users: You must have selected `yes` at the `Do you want to retain the 
 
 To add or remove users, first edit the `users` list in your `config.cfg` file. Add new usernames or remove existing ones as needed. Then navigate to the algo directory in your terminal and run:
 
+**macOS/Linux:**
 ```bash
 ./algo update-users
+```
+
+**Windows:**
+```powershell
+.\algo.ps1 update-users
 ```
 
 After the process completes, new configuration files will be generated in the `configs` directory for any new users. The Algo VPN server will be updated to contain only the users listed in the `config.cfg` file. Removed users will no longer be able to connect, and new users will have fresh certificates and configuration files ready for use.

@@ -94,6 +94,11 @@ select = ["E", "W", "F", "I", "B", "C4", "UP"]
 - Quote all variables: `"${var}"`
 - Use `set -euo pipefail` for safety
 
+#### PowerShell Scripts (PSScriptAnalyzer)
+- Use approved verbs (Get-, Set-, New-, etc.)
+- Avoid positional parameters in functions
+- Use proper error handling with try/catch
+
 #### Ansible (ansible-lint)
 - Many warnings are suppressed in `.ansible-lint`
 - Focus on errors, not warnings
@@ -130,6 +135,9 @@ ansible-lint
 yamllint .
 ruff check .
 shellcheck *.sh
+
+# PowerShell (if available)
+pwsh -Command "Invoke-ScriptAnalyzer -Path ./algo.ps1"
 ```
 
 ## Common Issues and Solutions
