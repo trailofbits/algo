@@ -2,31 +2,34 @@
 
 set -e
 
+# Track which installation method succeeded
+UV_INSTALL_METHOD=""
+
 # Function to install uv via package managers (most secure)
 install_uv_via_package_manager() {
     echo "Attempting to install uv via system package manager..."
     
     if command -v brew &> /dev/null; then
         echo "Using Homebrew..."
-        brew install uv && return 0
+        brew install uv && UV_INSTALL_METHOD="Homebrew" && return 0
     elif command -v apt &> /dev/null && apt list uv 2>/dev/null | grep -q uv; then
         echo "Using apt..."
-        sudo apt update && sudo apt install -y uv && return 0
+        sudo apt update && sudo apt install -y uv && UV_INSTALL_METHOD="apt" && return 0
     elif command -v dnf &> /dev/null; then
         echo "Using dnf..."
-        sudo dnf install -y uv 2>/dev/null && return 0
+        sudo dnf install -y uv 2>/dev/null && UV_INSTALL_METHOD="dnf" && return 0
     elif command -v pacman &> /dev/null; then
         echo "Using pacman..."
-        sudo pacman -S --noconfirm uv 2>/dev/null && return 0
+        sudo pacman -S --noconfirm uv 2>/dev/null && UV_INSTALL_METHOD="pacman" && return 0
     elif command -v zypper &> /dev/null; then
         echo "Using zypper..."
-        sudo zypper install -y uv 2>/dev/null && return 0
+        sudo zypper install -y uv 2>/dev/null && UV_INSTALL_METHOD="zypper" && return 0
     elif command -v winget &> /dev/null; then
         echo "Using winget..."
-        winget install --id=astral-sh.uv -e && return 0
+        winget install --id=astral-sh.uv -e && UV_INSTALL_METHOD="winget" && return 0
     elif command -v scoop &> /dev/null; then
         echo "Using scoop..."
-        scoop install uv && return 0
+        scoop install uv && UV_INSTALL_METHOD="scoop" && return 0
     fi
     
     return 1
@@ -61,6 +64,7 @@ install_uv_ubuntu_alternatives() {
                     if pipx install uv; then
                         # Add pipx bin directory to PATH
                         export PATH="$HOME/.local/bin:$PATH"
+                        UV_INSTALL_METHOD="pipx"
                         return 0
                     fi
                 fi
@@ -70,6 +74,7 @@ install_uv_ubuntu_alternatives() {
                 echo "Installing uv via snap..."
                 if sudo snap install astral-uv --classic; then
                     # Snap binaries should be automatically in PATH via /snap/bin
+                    UV_INSTALL_METHOD="snap"
                     return 0
                 fi
                 echo "snap installation failed, trying next option..."
@@ -111,9 +116,11 @@ install_uv_via_download() {
     if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "linux-gnu" && -n "${WSL_DISTRO_NAME:-}" ]] || uname -s | grep -q "MINGW\|MSYS"; then
         # Windows (Git Bash/WSL/MINGW) - use versioned installer
         powershell -ExecutionPolicy ByPass -c "irm https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.ps1 | iex"
+        UV_INSTALL_METHOD="official installer (Windows)"
     else
         # macOS/Linux - use the versioned script for consistency
         curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh
+        UV_INSTALL_METHOD="official installer"
     fi
 }
 
@@ -142,7 +149,7 @@ if ! command -v uv &> /dev/null; then
         exit 1
     fi
     
-    echo "✓ uv installed successfully!"
+    echo "✓ uv installed successfully via ${UV_INSTALL_METHOD}!"
 fi
 
 # Run the appropriate playbook
