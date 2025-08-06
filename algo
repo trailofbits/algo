@@ -53,7 +53,7 @@ install_uv_ubuntu_alternatives() {
     echo ""
     
     while true; do
-        read -p "Choose installation method (1/2/3): " choice
+        read -r -p "Choose installation method (1/2/3): " choice
         case $choice in
             1)
                 echo "Installing uv via pipx..."
