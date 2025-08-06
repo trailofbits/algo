@@ -9,4 +9,3 @@
     state: restarted
     daemon_reload: true
   when: ansible_distribution == 'Ubuntu'
-

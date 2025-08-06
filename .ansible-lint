@@ -5,6 +5,7 @@ exclude_paths:
   - tests/legacy-lxd/
   - tests/
   - files/cloud-init/  # Cloud-init files have special format requirements
+  - playbooks/  # These are task files included by other playbooks, not standalone playbooks
 
 skip_list:
   - 'package-latest'  # Package installs should not use latest - needed for updates
