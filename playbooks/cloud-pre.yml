@@ -16,15 +16,25 @@
               > /dev/tty || true
       tags: debug
 
-    - name: Install the requirements
-      pip:
-        state: present
-        name:
-          - pyOpenSSL>=0.15
-          - segno
-      tags:
-        - always
-        - skip_ansible_lint
+    # Install cloud provider specific dependencies
+    - name: Install cloud provider dependencies
+      shell: uv pip install '.[{{ cloud_provider_extra }}]'
+      vars:
+        cloud_provider_extra: >-
+          {%- if algo_provider in ['ec2', 'lightsail'] -%}aws
+          {%- elif algo_provider == 'azure' -%}azure
+          {%- elif algo_provider == 'gce' -%}gcp
+          {%- elif algo_provider == 'hetzner' -%}hetzner
+          {%- elif algo_provider == 'linode' -%}linode
+          {%- elif algo_provider == 'openstack' -%}openstack
+          {%- elif algo_provider == 'cloudstack' -%}cloudstack
+          {%- else -%}{{ algo_provider }}
+          {%- endif -%}
+      when: algo_provider != "local"
+      changed_when: false
+
+  # Note: pyOpenSSL and segno are now included in pyproject.toml dependencies
+  # and installed automatically by uv sync
   delegate_to: localhost
   become: false
 

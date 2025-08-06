@@ -1,7 +1,3 @@
 ---
-- name: Install requirements
-  pip:
-    requirements: https://raw.githubusercontent.com/ansible-collections/azure/v3.7.0/requirements.txt
-    state: latest
-    virtualenv_python: python3
-  no_log: true
+# Azure dependencies are now managed via pyproject.toml optional dependencies
+# They will be installed automatically when needed

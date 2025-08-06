@@ -1,8 +1,3 @@
 ---
-- name: Install requirements
-  pip:
-    name:
-      - boto>=2.5
-      - boto3
-    state: latest
-    virtualenv_python: python3
+# AWS dependencies are now managed via pyproject.toml optional dependencies
+# They will be installed automatically when needed
