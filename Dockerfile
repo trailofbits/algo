@@ -20,13 +20,11 @@ RUN apk --no-cache add ${PACKAGES} && \
 
 WORKDIR /algo
 
-# Copy dependency files first for better layer caching
-COPY pyproject.toml uv.lock ./
-
 # Copy uv binary from official image (using latest tag for automatic updates)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
-# Install Python dependencies
+# Copy dependency files and install in single layer for better optimization
+COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
 # Copy application code
