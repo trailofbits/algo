@@ -98,6 +98,7 @@ select = ["E", "W", "F", "I", "B", "C4", "UP"]
 - Use approved verbs (Get-, Set-, New-, etc.)
 - Avoid positional parameters in functions
 - Use proper error handling with try/catch
+- **Note**: Algo's PowerShell script is a WSL wrapper since Ansible doesn't run natively on Windows
 
 #### Ansible (ansible-lint)
 - Many warnings are suppressed in `.ansible-lint`

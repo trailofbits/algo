@@ -2,13 +2,13 @@
 
 You have three options to run Algo on Windows:
 
-1. **PowerShell Script** (Recommended) - Native Windows support
-2. **Windows Subsystem for Linux (WSL)** - Full Linux environment  
-3. **Git Bash/MSYS2** - Unix-like shell environment
+1. **PowerShell Script** (Recommended) - Automated WSL wrapper for easy use
+2. **Windows Subsystem for Linux (WSL)** - Direct Linux environment access
+3. **Git Bash/MSYS2** - Unix-like shell environment (limited compatibility)
 
 ## Option 1: PowerShell Script (Recommended)
 
-The easiest way to run Algo on Windows. Simply download the repository and run:
+The PowerShell script provides the easiest Windows experience by automatically using WSL when needed:
 
 ```powershell
 git clone https://github.com/trailofbits/algo
@@ -16,10 +16,14 @@ cd algo
 .\algo.ps1
 ```
 
-The script will automatically:
-- Install the Python package manager `uv` via winget or scoop
-- Set up the required Python environment
-- Run Algo with full functionality
+**How it works:**
+- Detects if you're already in WSL and uses the standard Unix approach
+- On native Windows, automatically runs Algo via WSL (since Ansible requires Unix)
+- Provides clear guidance if WSL isn't installed
+
+**Requirements:**
+- Windows Subsystem for Linux (WSL) with Ubuntu 22.04
+- If WSL isn't installed, the script will guide you through installation
 
 ## Option 2: Windows Subsystem for Linux (WSL)
 
@@ -95,6 +99,9 @@ cd algo
 - Familiar Unix-like environment
 
 **Cons**:
-- May have compatibility issues with some Ansible modules
+- **Limited compatibility**: Ansible may not work properly due to Windows/Unix differences
+- **Not officially supported**: May encounter unpredictable issues
 - Less robust than WSL or PowerShell options
 - Requires Git for Windows installation
+
+**Note**: This approach is not recommended due to Ansible's Unix requirements. Use WSL-based options instead.

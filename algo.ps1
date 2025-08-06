@@ -4,7 +4,50 @@ param(
     [string[]]$Arguments
 )
 
-# Function to install uv via package managers
+# Check if we're running in WSL
+function Test-WSL {
+    return $env:WSL_DISTRO_NAME -or $env:WSLENV -or (Get-Command wsl -ErrorAction SilentlyContinue)
+}
+
+# Function to run Algo in WSL
+function Invoke-AlgoInWSL {
+    param($Arguments)
+    
+    Write-Host "NOTICE: Ansible requires a Unix-like environment."
+    Write-Host "Attempting to run Algo via Windows Subsystem for Linux (WSL)..."
+    Write-Host ""
+    
+    if (-not (Get-Command wsl -ErrorAction SilentlyContinue)) {
+        Write-Host "ERROR: WSL is not installed or not available." -ForegroundColor Red
+        Write-Host ""
+        Write-Host "To use Algo on Windows, you need WSL. Please:"
+        Write-Host "1. Install WSL: Run 'wsl --install -d Ubuntu-22.04' in PowerShell as Administrator"
+        Write-Host "2. Restart your computer when prompted"
+        Write-Host "3. Set up Ubuntu and try running this script again"
+        Write-Host ""
+        Write-Host "Alternatively, see: https://github.com/trailofbits/algo/blob/master/docs/deploy-from-windows.md"
+        exit 1
+    }
+    
+    # Check if a default WSL distribution is set
+    $wslList = wsl -l -v 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: No WSL distributions found." -ForegroundColor Red
+        Write-Host "Please install a Linux distribution: wsl --install -d Ubuntu-22.04"
+        exit 1
+    }
+    
+    Write-Host "Running Algo in WSL..."
+    if ($Arguments.Count -gt 0 -and $Arguments[0] -eq "update-users") {
+        $remainingArgs = $Arguments[1..($Arguments.Count-1)] -join " "
+        wsl bash -c "cd /mnt/c/$(pwd | Split-Path -Leaf) && ./algo update-users $remainingArgs"
+    } else {
+        $allArgs = $Arguments -join " "
+        wsl bash -c "cd /mnt/c/$(pwd | Split-Path -Leaf) && ./algo $allArgs"
+    }
+}
+
+# Function to install uv via package managers (for WSL scenarios)
 function Install-UvViaPackageManager {
     Write-Host "Attempting to install uv via system package manager..."
     
@@ -12,7 +55,7 @@ function Install-UvViaPackageManager {
     if (Get-Command winget -ErrorAction SilentlyContinue) {
         Write-Host "Using winget..."
         try {
-            winget install --id=astral-sh.uv -e --silent
+            winget install --id=astral-sh.uv -e --silent --accept-source-agreements --accept-package-agreements
             return $true
         } catch {
             Write-Host "winget installation failed: $($_.Exception.Message)"
@@ -36,13 +79,13 @@ function Install-UvViaPackageManager {
 # Function to install uv via download (with user consent)
 function Install-UvViaDownload {
     Write-Host ""
-    Write-Host "⚠️  SECURITY NOTICE ⚠️"
-    Write-Host "uv is not available via system package managers on this system."
+    Write-Host "Security Notice: uv is not available via system package managers on this system."
     Write-Host "To continue, we need to download and execute an installation script from:"
     Write-Host "  https://astral.sh/uv/install.ps1 (Windows)"
     Write-Host ""
     Write-Host "For maximum security, you can install uv manually instead:"
-    Write-Host "  1. Visit: https://docs.astral.sh/uv/getting-started/installation/"
+    $installUrl = "https://docs.astral.sh/uv/getting-started/installation/"
+    Write-Host "  1. Visit: $installUrl"
     Write-Host "  2. Download the binary for your platform from GitHub releases"
     Write-Host "  3. Verify checksums and install manually"
     Write-Host "  4. Then run: .\algo.ps1"
@@ -72,42 +115,22 @@ function Update-PathEnvironment {
 
 # Main execution
 try {
-    # Check if uv is installed
-    if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
-        Write-Host "uv (Python package manager) not found. Installing..."
-        
-        # Try package managers first (most secure)
-        $packageInstalled = Install-UvViaPackageManager
-        
-        # Fall back to download if package managers failed
-        if (-not $packageInstalled) {
-            $downloadInstalled = Install-UvViaDownload
-            if (-not $downloadInstalled) {
-                throw "uv installation failed"
-            }
-        }
-        
-        # Refresh PATH to find uv
-        Update-PathEnvironment
-        
-        # Verify installation worked
-        if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
-            throw "uv installation failed. Please restart your terminal and try again."
-        }
-        
-        Write-Host "✓ uv installed successfully!"
+    # Check if we're in WSL already
+    if (Test-WSL) {
+        Write-Host "Running in WSL environment, using standard approach..."
+        # In WSL, we can use the normal Linux approach
+        & bash -c "./algo $($Arguments -join ' ')"
+        exit $LASTEXITCODE
     }
     
-    # Run the appropriate playbook
-    if ($Arguments.Count -gt 0 -and $Arguments[0] -eq "update-users") {
-        $remainingArgs = $Arguments[1..($Arguments.Count-1)]
-        & uv run ansible-playbook users.yml @remainingArgs -t update-users
-    } else {
-        & uv run ansible-playbook main.yml @Arguments
-    }
+    # We're on native Windows - Ansible won't work directly
+    # Try to use WSL instead
+    Invoke-AlgoInWSL $Arguments
     
 } catch {
     Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
-    Write-Host "Or install manually from: https://docs.astral.sh/uv/getting-started/installation/"
+    $manualInstallUrl = "https://docs.astral.sh/uv/getting-started/installation/"
+    Write-Host "For manual installation: $manualInstallUrl"
+    Write-Host "For WSL setup: https://github.com/trailofbits/algo/blob/master/docs/deploy-from-windows.md"
     exit 1
 }

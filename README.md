@@ -55,7 +55,7 @@ The easiest way to get an Algo server running is to run it on your local system 
     .\algo.ps1
     ```
     
-    The first time you run the script, it will automatically install the required Python environment (Python 3.11+). On subsequent runs, it starts immediately and works on all platforms (macOS, Linux, Windows). There are several optional features available, none of which are required for a fully functional VPN server. These optional features are described in the [deployment documentation](docs/deploy-from-ansible.md).
+    The first time you run the script, it will automatically install the required Python environment (Python 3.11+). On subsequent runs, it starts immediately and works on all platforms (macOS, Linux, Windows via WSL). The Windows PowerShell script automatically uses WSL when needed, since Ansible requires a Unix-like environment. There are several optional features available, none of which are required for a fully functional VPN server. These optional features are described in the [deployment documentation](docs/deploy-from-ansible.md).
 
 That's it! You can now set up clients to connect to your VPN. Proceed to [Configure the VPN Clients](#configure-the-vpn-clients) below.
 
