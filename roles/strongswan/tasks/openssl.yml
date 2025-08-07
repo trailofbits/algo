@@ -60,22 +60,25 @@
         extended_key_usage_critical: true
         # Name Constraints: Defense-in-depth security restricting certificate scope to prevent misuse
         # Limits CA to only issue certificates for this specific VPN deployment's resources
+        # Per-deployment UUID prevents cross-deployment reuse, unique email domain isolates certificate scope
         name_constraints_permitted: >-
           {{ [
             subjectAltName_type + ':' + IP_subject_alt_name + ('/255.255.255.255' if subjectAltName_type == 'IP' else ''),
-            'DNS:' + openssl_constraint_random_id,        # Per-deployment UUID prevents cross-deployment reuse
-            'email:' + openssl_constraint_random_id       # Unique email domain isolates certificate scope
+            'DNS:' + openssl_constraint_random_id,
+            'email:' + openssl_constraint_random_id
           ] + (
             ['IP:' + ansible_default_ipv6['address'] + '/128'] if ipv6_support else []
           ) }}
         # Block public domains/networks to prevent certificate abuse for impersonation attacks
+        # Public TLD exclusion, Email domain exclusion, RFC 1918: prevents lateral movement
+        # IPv6: ULA/link-local/doc ranges or all
         name_constraints_excluded: >-
           {{ [
-            'DNS:.com', 'DNS:.org', 'DNS:.net', 'DNS:.gov', 'DNS:.edu', 'DNS:.mil', 'DNS:.int',  # Public TLD exclusion
-            'email:.com', 'email:.org', 'email:.net', 'email:.gov', 'email:.edu', 'email:.mil', 'email:.int',  # Email domain exclusion
-            'IP:10.0.0.0/255.0.0.0', 'IP:172.16.0.0/255.240.0.0', 'IP:192.168.0.0/255.255.0.0'  # RFC 1918: prevents lateral movement
+            'DNS:.com', 'DNS:.org', 'DNS:.net', 'DNS:.gov', 'DNS:.edu', 'DNS:.mil', 'DNS:.int',
+            'email:.com', 'email:.org', 'email:.net', 'email:.gov', 'email:.edu', 'email:.mil', 'email:.int',
+            'IP:10.0.0.0/255.0.0.0', 'IP:172.16.0.0/255.240.0.0', 'IP:192.168.0.0/255.255.0.0'
           ] + (
-            ['IP:fc00::/7', 'IP:fe80::/10', 'IP:2001:db8::/32'] if ipv6_support else ['IP:::/0']  # IPv6: ULA/link-local/doc ranges or all
+            ['IP:fc00::/7', 'IP:fe80::/10', 'IP:2001:db8::/32'] if ipv6_support else ['IP:::/0']
           ) }}
         name_constraints_critical: true
       register: ca_csr
