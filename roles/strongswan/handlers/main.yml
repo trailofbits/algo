@@ -9,4 +9,14 @@
   service: name=apparmor state=restarted
 
 - name: rereadcrls
-  shell: ipsec rereadcrls; ipsec purgecrls
+  shell: |
+    # Wait for ipsec daemon to be ready (up to 10 seconds)
+    for i in $(seq 1 10); do
+      if ipsec statusall >/dev/null 2>&1; then
+        ipsec rereadcrls && ipsec purgecrls
+        exit 0
+      fi
+      sleep 1
+    done
+    # If daemon still not ready, try anyway but don't fail the playbook
+    ipsec rereadcrls; ipsec purgecrls || true
