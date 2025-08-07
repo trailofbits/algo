@@ -57,3 +57,4 @@
     CLOUDSTACK_KEY: "{{ algo_cs_key }}"
     CLOUDSTACK_SECRET: "{{ algo_cs_token }}"
     CLOUDSTACK_ENDPOINT: "{{ algo_cs_url }}"
+  no_log: true

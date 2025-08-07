@@ -7,6 +7,7 @@
   when:
     - scaleway_token is undefined
     - lookup('env','SCW_TOKEN')|length <= 0
+  no_log: true
 
 - pause:
     prompt: |
@@ -27,3 +28,4 @@
       {% if region is defined %}{{ region }}
       {%- elif _algo_region.user_input %}{{ scaleway_regions[_algo_region.user_input | int -1 ]['alias'] }}
       {%- else %}{{ scaleway_regions.0.alias }}{% endif %}
+  no_log: true

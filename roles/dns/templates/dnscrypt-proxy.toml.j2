@@ -137,8 +137,11 @@ lb_strategy = 'p2'
 
 
 ## Log level (0-6, default: 2 - 0 is very verbose, 6 only contains fatal errors)
+## Privacy enhancement: Set to 4 (warnings and errors only) to reduce information disclosure
+## Lower levels may log DNS queries and connection details that could compromise privacy
+## Level 4 provides essential error information while minimizing privacy-sensitive logging
 
-log_level = 2
+log_level = 4
 
 
 ## log file for the application
@@ -147,8 +150,11 @@ log_level = 2
 
 
 ## Use the system logger (syslog on Unix, Event Log on Windows)
+## Privacy enhancement: Disabled by default to prevent DNS query logging in system logs
+## DNS queries logged to syslog can reveal browsing patterns and compromise privacy
+## Enable only if required for debugging purposes
 
-use_syslog = true
+use_syslog = false
 
 
 ## Delay, in minutes, after which certificates are reloaded
@@ -332,6 +338,9 @@ cache_neg_max_ttl = 600
 ###############################
 
 ## Log client queries to a file
+## Privacy warning: Enabling query logging will record all DNS requests
+## which can reveal detailed browsing patterns and compromise user privacy
+## Only enable for debugging purposes and disable immediately after use
 
 [query_log]
 
@@ -358,6 +367,8 @@ cache_neg_max_ttl = 600
 ## Log queries for nonexistent zones
 ## These queries can reveal the presence of malware, broken/obsolete applications,
 ## and devices signaling their presence to 3rd parties.
+## Privacy warning: This logging can still reveal browsing patterns and queried domains
+## Only enable for security monitoring purposes when necessary
 
 [nx_log]
 

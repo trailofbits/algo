@@ -1,0 +1,61 @@
+---
+# Configure rsyslog to filter out VPN-related logs for privacy
+
+- name: Create rsyslog privacy configuration directory
+  file:
+    path: /etc/rsyslog.d
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Configure rsyslog to exclude VPN-related logs
+  template:
+    src: 49-privacy-vpn-filter.conf.j2
+    dest: /etc/rsyslog.d/49-privacy-vpn-filter.conf
+    mode: '0644'
+    owner: root
+    group: root
+  notify: restart rsyslog
+  when: privacy_log_filtering.exclude_vpn_logs | bool
+
+- name: Configure rsyslog to filter kernel VPN logs
+  template:
+    src: 48-privacy-kernel-filter.conf.j2
+    dest: /etc/rsyslog.d/48-privacy-kernel-filter.conf
+    mode: '0644'
+    owner: root
+    group: root
+  notify: restart rsyslog
+  when: privacy_log_filtering.filter_kernel_vpn_logs | bool
+
+- name: Configure rsyslog to exclude detailed auth logs (optional)
+  template:
+    src: 47-privacy-auth-filter.conf.j2
+    dest: /etc/rsyslog.d/47-privacy-auth-filter.conf
+    mode: '0644'
+    owner: root
+    group: root
+  notify: restart rsyslog
+  when: privacy_log_filtering.exclude_auth_logs | bool
+
+- name: Create rsyslog privacy filter for SSH success logs
+  template:
+    src: 46-privacy-ssh-filter.conf.j2
+    dest: /etc/rsyslog.d/46-privacy-ssh-filter.conf
+    mode: '0644'
+    owner: root
+    group: root
+  notify: restart rsyslog
+  when: privacy_advanced.disable_ssh_success_logs | bool
+
+- name: Test rsyslog configuration
+  command: rsyslogd -N1
+  register: rsyslog_test
+  changed_when: false
+  failed_when: rsyslog_test.rc != 0
+
+- name: Display rsyslog test results
+  debug:
+    msg: "Rsyslog configuration test passed"
+  when: rsyslog_test.rc == 0

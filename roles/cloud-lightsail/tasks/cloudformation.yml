@@ -17,3 +17,4 @@
       Environment: Algo
       Lightsail: true
   register: stack
+  no_log: true

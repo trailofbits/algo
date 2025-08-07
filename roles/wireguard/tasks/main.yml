@@ -72,6 +72,7 @@
           args:
             chdir: "{{ wireguard_config_path }}"
             executable: bash
+          no_log: true
       become: false
       delegate_to: localhost
 

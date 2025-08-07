@@ -36,6 +36,7 @@
         type: ECC
         curve: secp384r1
         mode: "0600"
+      no_log: true
 
     # CA certificate with name constraints to prevent certificate misuse (Issue #75)
     - name: Create certificate signing request (CSR) for CA certificate with security constraints
@@ -91,6 +92,7 @@
         privatekey_passphrase: "{{ CA_password }}"
         provider: selfsigned
         mode: "0644"
+      no_log: true
 
     - name: Copy the CA certificate
       copy:
@@ -164,6 +166,7 @@
         ownca_not_after: "+{{ certificate_validity_days }}d"
         ownca_not_before: "-1d"
         mode: "0644"
+      no_log: true
 
     - name: Sign client certificates with CA
       community.crypto.x509_certificate:
@@ -178,6 +181,7 @@
         mode: "0644"
       with_items: "{{ client_csr_jobs.results }}"
       register: client_sign_results
+      no_log: true
 
     - name: Generate p12 files
       community.crypto.openssl_pkcs12:
@@ -189,6 +193,7 @@
         mode: "0600"
         encryption_level: "compatibility2022"  # Apple device compatibility
       with_items: "{{ users }}"
+      no_log: true
 
     - name: Generate p12 files with CA certificate included
       community.crypto.openssl_pkcs12:
@@ -202,6 +207,7 @@
         mode: "0600"
         encryption_level: "compatibility2022"  # Apple device compatibility
       with_items: "{{ users }}"
+      no_log: true
 
     - name: Copy the p12 certificates
       copy:
@@ -255,6 +261,7 @@
         issuer:
           CN: "{{ IP_subject_alt_name }}"
         revoked_certificates: "{{ revoked_certificates }}"
+      no_log: true
 
     - name: Set CRL file permissions
       file:

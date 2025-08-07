@@ -4,6 +4,7 @@
     tenant: "{{ azure_tenant | default(lookup('env','AZURE_TENANT'), true) }}"
     client_id: "{{ azure_client_id | default(lookup('env','AZURE_CLIENT_ID'), true) }}"
     subscription_id: "{{ azure_subscription_id | default(lookup('env','AZURE_SUBSCRIPTION_ID'), true) }}"
+  no_log: true
 
 - block:
     - name: Set the default region

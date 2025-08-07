@@ -177,6 +177,11 @@
             - algo_ssh_tunneling
           tags: ssh_tunneling
 
+        - import_role:
+            name: privacy
+          when: privacy_enhancements_enabled | default(true)
+          tags: privacy
+
         - block:
             - name: Dump the configuration
               copy:
