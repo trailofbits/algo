@@ -1,16 +1,15 @@
 ---
 - name: restart strongswan
-  block:
-    - name: restart strongswan service
-      service: name={{ strongswan_service }} state=restarted
+  service: name={{ strongswan_service }} state=restarted
+  notify: wait for strongswan
 
-    - name: wait for strongswan to be ready
-      wait_for:
-        port: 500
-        host: 127.0.0.1
-        delay: 2
-        timeout: 30
-        state: started
+- name: wait for strongswan
+  wait_for:
+    port: 500
+    host: 127.0.0.1
+    delay: 2
+    timeout: 30
+    state: started
 
 - name: daemon-reload
   systemd: daemon_reload=true
@@ -19,13 +18,12 @@
   service: name=apparmor state=restarted
 
 - name: rereadcrls
-  block:
-    - name: reload certificate revocation lists
-      command: ipsec rereadcrls
-      register: rereadcrls_result
-      retries: 3
-      delay: 2
-      until: rereadcrls_result.rc == 0
+  command: ipsec rereadcrls
+  register: rereadcrls_result
+  retries: 3
+  delay: 2
+  until: rereadcrls_result.rc == 0
+  notify: purgecrls
 
-    - name: purge old certificate revocation lists
-      command: ipsec purgecrls
+- name: purgecrls
+  command: ipsec purgecrls
