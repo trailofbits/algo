@@ -1,6 +1,16 @@
 ---
 - name: restart strongswan
-  service: name={{ strongswan_service }} state=restarted
+  block:
+    - name: restart strongswan service
+      service: name={{ strongswan_service }} state=restarted
+
+    - name: wait for strongswan to be ready
+      wait_for:
+        port: 500
+        host: 127.0.0.1
+        delay: 2
+        timeout: 30
+        state: started
 
 - name: daemon-reload
   systemd: daemon_reload=true
@@ -9,14 +19,13 @@
   service: name=apparmor state=restarted
 
 - name: rereadcrls
-  shell: |
-    # Wait for ipsec daemon to be ready (up to 10 seconds)
-    for i in $(seq 1 10); do
-      if ipsec statusall >/dev/null 2>&1; then
-        ipsec rereadcrls && ipsec purgecrls
-        exit 0
-      fi
-      sleep 1
-    done
-    # If daemon still not ready, try anyway but don't fail the playbook
-    ipsec rereadcrls; ipsec purgecrls || true
+  block:
+    - name: reload certificate revocation lists
+      command: ipsec rereadcrls
+      register: rereadcrls_result
+      retries: 3
+      delay: 2
+      until: rereadcrls_result.rc == 0
+
+    - name: purge old certificate revocation lists
+      command: ipsec purgecrls
