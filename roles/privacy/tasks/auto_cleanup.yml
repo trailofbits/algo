@@ -49,7 +49,7 @@
     owner: root
     group: root
   when: privacy_advanced.clear_logs_on_shutdown | bool
-  notify: 
+  notify:
     - reload systemd
     - enable privacy shutdown cleanup
 
@@ -65,6 +65,6 @@
     apt-get clean
     apt-get autoclean
   changed_when: false
-  when: 
+  when:
     - privacy_auto_cleanup.enabled | bool
     - privacy_auto_cleanup.clean_package_cache | bool
