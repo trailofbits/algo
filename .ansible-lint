@@ -16,7 +16,6 @@ skip_list:
   - 'var-naming[pattern]'  # Variable naming patterns
   - 'no-free-form'  # Avoid free-form syntax - some legacy usage
   - 'key-order[task]'  # Task key order
-  - 'jinja[spacing]'  # Jinja2 spacing
   - 'name[casing]'  # Name casing
   - 'yaml[document-start]'  # YAML document start
   - 'role-name'  # Role naming convention - too many cloud-* roles
@@ -35,6 +34,8 @@ enable_list:
   - partial-become
   - name[play]  # All plays should be named
   - yaml[new-line-at-end-of-file]  # Files should end with newline
+  - jinja[invalid]  # Invalid Jinja2 syntax (catches template errors)
+  - jinja[spacing]  # Proper spacing in Jinja2 expressions
 
 # Rules we're actively working on fixing
 # Move these from skip_list to enable_list as we fix them
