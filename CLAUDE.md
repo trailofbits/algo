@@ -141,6 +141,34 @@ shellcheck *.sh
 pwsh -Command "Invoke-ScriptAnalyzer -Path ./algo.ps1"
 ```
 
+### Writing Effective Tests - Mutation Testing Approach
+
+When writing tests, **always verify that your test actually detects the failure case**. This is a form of lightweight mutation testing that ensures tests add real value:
+
+1. **Write the test for the bug/issue you're preventing**
+2. **Temporarily introduce the bug** to verify the test fails
+3. **Fix the bug** and verify the test passes
+4. **Document what specific issue the test prevents**
+
+Example from our codebase:
+```python
+def test_regression_openssl_inline_comments():
+    """Tests that we detect inline comments in Jinja2 expressions."""
+    # This pattern SHOULD fail (has inline comments)
+    problematic = "{{ ['DNS:' + id,  # comment ] }}"
+    assert not validate(problematic), "Should detect inline comments"
+    
+    # This pattern SHOULD pass (no inline comments)  
+    fixed = "{{ ['DNS:' + id] }}"
+    assert validate(fixed), "Should pass without comments"
+```
+
+This practice ensures:
+- Tests aren't just checking happy paths
+- Tests will actually catch regressions
+- The test's purpose is clear to future maintainers
+- We avoid false confidence from tests that always pass
+
 ## Common Issues and Solutions
 
 ### 1. Ansible-lint "name[missing]" Warnings
