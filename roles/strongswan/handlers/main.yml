@@ -1,15 +1,6 @@
 ---
 - name: restart strongswan
   service: name={{ strongswan_service }} state=restarted
-  notify: wait for strongswan
-
-- name: wait for strongswan
-  wait_for:
-    port: 500
-    host: 127.0.0.1
-    delay: 2
-    timeout: 30
-    state: started
 
 - name: daemon-reload
   systemd: daemon_reload=true
@@ -18,12 +9,28 @@
   service: name=apparmor state=restarted
 
 - name: rereadcrls
-  command: ipsec rereadcrls
-  register: rereadcrls_result
-  retries: 3
-  delay: 2
-  until: rereadcrls_result.rc == 0
-  notify: purgecrls
+  shell: |
+    # Check if StrongSwan is actually running
+    if ! systemctl is-active --quiet strongswan-starter 2>/dev/null && \
+       ! systemctl is-active --quiet strongswan 2>/dev/null && \
+       ! service strongswan status >/dev/null 2>&1; then
+      echo "StrongSwan is not running, skipping CRL reload"
+      exit 0
+    fi
 
-- name: purgecrls
-  command: ipsec purgecrls
+    # StrongSwan is running, wait a moment for it to stabilize
+    sleep 2
+
+    # Try to reload CRLs with retries
+    for attempt in 1 2 3; do
+      if ipsec rereadcrls 2>/dev/null && ipsec purgecrls 2>/dev/null; then
+        echo "Successfully reloaded CRLs"
+        exit 0
+      fi
+      echo "Attempt $attempt failed, retrying..."
+      sleep 2
+    done
+
+    # If StrongSwan is running but we can't reload CRLs, that's a real problem
+    echo "Failed to reload CRLs after 3 attempts"
+    exit 1
