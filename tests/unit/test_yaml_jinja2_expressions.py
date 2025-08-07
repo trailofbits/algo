@@ -4,9 +4,9 @@ Test that Jinja2 expressions within YAML files are valid.
 This catches issues like inline comments in Jinja2 expressions within YAML task files.
 """
 import re
-import sys
 from pathlib import Path
 
+import pytest
 import yaml
 from jinja2 import Environment, StrictUndefined, TemplateSyntaxError
 
@@ -260,13 +260,11 @@ def validate_yaml_file(yaml_path, check_inline_comments_only=False):
     return len(inline_comment_errors) > 0, inline_comment_errors, other_errors
 
 
-def test_specific_openssl_expressions():
+def test_regression_openssl_inline_comments():
     """
-    Test the specific expressions that had the inline comment bug.
-    This is a regression test for the exact issue that was reported.
+    Regression test for the specific OpenSSL inline comment bug that was reported.
+    Tests that we correctly detect inline comments in the exact pattern that caused the issue.
     """
-    print("\n🔬 Testing specific OpenSSL expressions (regression test)...")
-
     # The problematic expression that was reported
     problematic_expr = """{{ [
   subjectAltName_type + ':' + IP_subject_alt_name + ('/255.255.255.255' if subjectAltName_type == 'IP' else ''),
@@ -285,95 +283,122 @@ def test_specific_openssl_expressions():
   ['IP:' + ansible_default_ipv6['address'] + '/128'] if ipv6_support else []
 ) }}"""
 
+    # Test the problematic expression - should fail
+    expr_with_comments = {
+        'type': 'variable',
+        'content': problematic_expr[2:-2],  # Remove {{ }}
+        'full': problematic_expr
+    }
+    is_valid, error = validate_jinja2_expression(expr_with_comments)
+    assert not is_valid, "Should have detected inline comments in problematic expression"
+    assert "inline comment" in error.lower(), f"Expected inline comment error, got: {error}"
+
+    # Test the fixed expression - should pass
+    expr_fixed = {
+        'type': 'variable',
+        'content': fixed_expr[2:-2],  # Remove {{ }}
+        'full': fixed_expr
+    }
+    is_valid, error = validate_jinja2_expression(expr_fixed)
+    assert is_valid, f"Fixed expression should pass but got error: {error}"
+
+
+def test_edge_cases_inline_comments():
+    """
+    Test various edge cases for inline comment detection.
+    Ensures we correctly handle hashes in strings, escaped hashes, and various comment patterns.
+    """
     test_cases = [
-        ('Problematic (with inline comments)', problematic_expr, False),
-        ('Fixed (without inline comments)', fixed_expr, True),
+        # (expression, should_pass, description)
+        ("{{ 'string with # hash' }}", True, "Hash in string should pass"),
+        ('{{ "another # in string" }}', True, "Hash in double-quoted string should pass"),
+        ("{{ var # comment }}", False, "Simple inline comment should fail"),
+        ("{{ var1 + var2  # This is an inline comment }}", False, "Inline comment with text should fail"),
+        (r"{{ '\#' + 'escaped hash' }}", True, "Escaped hash should pass"),
+        ("{% if true # comment %}", False, "Comment in control block should fail"),
+        ("{% for item in list # loop comment %}", False, "Comment in for loop should fail"),
+        ("{{ {'key': 'value # not a comment'} }}", True, "Hash in dict string value should pass"),
+        ("{{ url + '/#anchor' }}", True, "URL fragment should pass"),
+        ("{{ '#FF0000' }}", True, "Hex color code should pass"),
+        ("{{ var }}  # comment outside", True, "Comment outside expression should pass"),
+        ("""{{ [
+            'item1',  # comment here
+            'item2'
+        ] }}""", False, "Multi-line with inline comment should fail"),
     ]
 
-    errors = []
-    for name, expr_content, should_pass in test_cases:
+    for expr_str, should_pass, description in test_cases:
+        # For the "comment outside" case, extract just the Jinja2 expression
+        if '{{' in expr_str and '#' in expr_str and expr_str.index('#') > expr_str.index('}}'):
+            # Comment is outside the expression - extract just the expression part
+            match = re.search(r'(\{\{.+?\}\})', expr_str)
+            if match:
+                actual_expr = match.group(1)
+                expr_type = 'variable'
+                content = actual_expr[2:-2].strip()
+            else:
+                continue
+        elif expr_str.strip().startswith('{{'):
+            expr_type = 'variable'
+            content = expr_str.strip()[2:-2]
+            actual_expr = expr_str.strip()
+        elif expr_str.strip().startswith('{%'):
+            expr_type = 'control'
+            content = expr_str.strip()[2:-2]
+            actual_expr = expr_str.strip()
+        else:
+            continue
+
         expr = {
-            'type': 'variable',
-            'content': expr_content[2:-2],  # Remove {{ }}
-            'full': expr_content
+            'type': expr_type,
+            'content': content,
+            'full': actual_expr
         }
 
         is_valid, error = validate_jinja2_expression(expr)
 
-        if should_pass and not is_valid:
-            errors.append(f"❌ {name}: Should have passed but failed with: {error}")
-        elif not should_pass and is_valid:
-            errors.append(f"❌ {name}: Should have failed but passed")
+        if should_pass:
+            assert is_valid, f"{description}: {error}"
         else:
-            status = "✅" if should_pass else "⚠️"
-            result = "passed" if is_valid else f"failed with: {error}"
-            print(f"  {status} {name}: {result}")
-
-    if errors:
-        print("\n❌ Regression test FAILED:")
-        for error in errors:
-            print(f"    {error}")
-        return False
-    else:
-        print("  ✅ Regression test passed - would have caught the bug!")
-        return True
+            assert not is_valid, f"{description}: Should have failed but passed"
+            assert "inline comment" in (error or "").lower(), f"{description}: Expected inline comment error, got: {error}"
 
 
-def main():
-    """Main test function."""
-    print("🔍 Validating Jinja2 expressions in YAML files for inline comments...\n")
-
-    # First run the regression test
-    regression_passed = test_specific_openssl_expressions()
-
-    # Find all YAML files
+def test_yaml_files_no_inline_comments():
+    """
+    Test that all YAML files in the project don't contain inline comments in Jinja2 expressions.
+    """
     yaml_files = find_yaml_files_with_jinja2()
-    print(f"\n📁 Found {len(yaml_files)} YAML files to check")
-
+    
     all_inline_comment_errors = []
     files_with_inline_comments = []
-    files_checked = 0
 
-    # Validate each file - focus on inline comments
     for yaml_file in yaml_files:
-        has_inline_comments, inline_errors, other_errors = validate_yaml_file(yaml_file, check_inline_comments_only=True)
-        files_checked += 1
-
+        has_inline_comments, inline_errors, _ = validate_yaml_file(yaml_file, check_inline_comments_only=True)
+        
         if has_inline_comments:
-            files_with_inline_comments.append(yaml_file)
+            files_with_inline_comments.append(str(yaml_file))
             all_inline_comment_errors.extend(inline_errors)
 
-    # Report results
-    print(f"\n✅ Checked {files_checked} YAML files for inline comments in Jinja2 expressions")
+    # Assert no inline comments found
+    assert not all_inline_comment_errors, (
+        f"Found inline comments in {len(files_with_inline_comments)} files:\n" +
+        "\n".join(all_inline_comment_errors[:10])  # Show first 10 errors
+    )
 
-    if all_inline_comment_errors:
-        print(f"\n❌ Found inline comment issues in {len(files_with_inline_comments)} files:\n")
-        # Show all inline comment errors since these are critical
-        for error in all_inline_comment_errors:
-            print(f"  ERROR: {error}")
-    else:
-        print("\n✅ No inline comments found in Jinja2 expressions!")
 
-    # Check the specific file that had the bug
+def test_openssl_file_specifically():
+    """
+    Specifically test the OpenSSL file that had the original bug.
+    """
     openssl_file = Path('roles/strongswan/tasks/openssl.yml')
-    if openssl_file.exists():
-        print(f"\n🎯 Checking {openssl_file} specifically...")
-        has_inline_comments, inline_errors, other_errors = validate_yaml_file(openssl_file)
-        if not has_inline_comments:
-            print(f"  ✅ {openssl_file} has no inline comments in Jinja2 expressions")
-        else:
-            print(f"  ❌ {openssl_file} has inline comments in Jinja2 expressions:")
-            for error in inline_errors:
-                print(f"    {error}")
-
-    if all_inline_comment_errors or not regression_passed:
-        print("\n❌ Found inline comment issues that need to be fixed")
-        print("💡 Move comments outside of {{ }} and {% %} expressions")
-        return 1
-    else:
-        print("\n✅ All YAML files are free of inline comments in Jinja2 expressions!")
-        return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+    
+    if not openssl_file.exists():
+        pytest.skip(f"{openssl_file} not found")
+    
+    has_inline_comments, inline_errors, _ = validate_yaml_file(openssl_file)
+    
+    assert not has_inline_comments, (
+        f"Found inline comments in {openssl_file}:\n" +
+        "\n".join(inline_errors)
+    )
