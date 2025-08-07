@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=68.0.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "algo"
 description = "Set up a personal IPSEC VPN in the cloud"
@@ -11,6 +15,10 @@ dependencies = [
     "pyopenssl>=0.15",
     "segno>=1.6.0",
 ]
+
+[tool.setuptools]
+# Explicitly disable package discovery since Algo is not a Python package
+py-modules = []
 
 [project.optional-dependencies]
 # Cloud provider dependencies (installed automatically based on provider selection)

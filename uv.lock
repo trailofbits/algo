@@ -20,7 +20,7 @@ wheels = [
 [[package]]
 name = "algo"
 version = "2.0.0b0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "ansible" },
     { name = "jinja2" },
