@@ -25,7 +25,8 @@ algo/
 ├── users.yml               # User management playbook
 ├── server.yml              # Server-specific tasks
 ├── config.cfg              # Main configuration file
-├── requirements.txt        # Python dependencies
+├── pyproject.toml          # Python project configuration and dependencies
+├── uv.lock                 # Exact dependency versions lockfile
 ├── requirements.yml        # Ansible collections
 ├── roles/                  # Ansible roles
 │   ├── common/            # Base system configuration
@@ -92,12 +93,25 @@ select = ["E", "W", "F", "I", "B", "C4", "UP"]
 #### Shell Scripts (shellcheck)
 - Quote all variables: `"${var}"`
 - Use `set -euo pipefail` for safety
-- FreeBSD rc scripts will show false positives (ignore)
+
+#### PowerShell Scripts (PSScriptAnalyzer)
+- Use approved verbs (Get-, Set-, New-, etc.)
+- Avoid positional parameters in functions
+- Use proper error handling with try/catch
+- **Note**: Algo's PowerShell script is a WSL wrapper since Ansible doesn't run natively on Windows
 
 #### Ansible (ansible-lint)
 - Many warnings are suppressed in `.ansible-lint`
 - Focus on errors, not warnings
 - Common suppressions: `name[missing]`, `risky-file-permissions`
+
+#### Documentation Style
+- Avoid excessive header nesting (prefer 2-3 levels maximum)
+- Don't overuse bold formatting in lists - use sparingly for emphasis only
+- Write flowing paragraphs instead of choppy bullet-heavy sections
+- Keep formatting clean and readable - prefer natural text over visual noise
+- Use numbered lists for procedures, simple bullets for feature lists
+- Example: "Navigate to Network → Interfaces" not "**Navigate** to **Network** → **Interfaces**"
 
 ### Git Workflow
 1. Create feature branches from `master`
@@ -122,6 +136,9 @@ ansible-lint
 yamllint .
 ruff check .
 shellcheck *.sh
+
+# PowerShell (if available)
+pwsh -Command "Invoke-ScriptAnalyzer -Path ./algo.ps1"
 ```
 
 ## Common Issues and Solutions
@@ -131,10 +148,6 @@ shellcheck *.sh
 - Too many tasks to fix immediately (113+)
 - Focus on new code having proper names
 
-### 2. FreeBSD rc Script Warnings
-- Variables like `rcvar`, `start_cmd` appear unused to shellcheck
-- These are used by the rc.subr framework
-- Safe to ignore these specific warnings
 
 ### 3. Jinja2 Template Complexity
 - Many templates use Ansible-specific filters
@@ -176,7 +189,6 @@ shellcheck *.sh
 ### Operating Systems
 - **Primary**: Ubuntu 20.04/22.04 LTS
 - **Secondary**: Debian 11/12
-- **Special**: FreeBSD (requires platform-specific code)
 - **Clients**: Windows, macOS, iOS, Android, Linux
 
 ### Cloud Providers
@@ -230,8 +242,8 @@ Each has specific requirements:
 ### Local Development Setup
 ```bash
 # Install dependencies
-pip install -r requirements.txt
-ansible-galaxy install -r requirements.yml
+uv sync
+uv run ansible-galaxy install -r requirements.yml
 
 # Run local deployment
 ansible-playbook main.yml -e "provider=local"
@@ -246,9 +258,10 @@ ansible-playbook users.yml -e "server=SERVER_NAME"
 
 #### Updating Dependencies
 1. Create a new branch
-2. Update requirements.txt conservatively
-3. Run all tests
-4. Document security fixes
+2. Update pyproject.toml conservatively
+3. Run `uv lock` to update lockfile
+4. Run all tests
+5. Document security fixes
 
 #### Debugging Deployment Issues
 1. Check `ansible-playbook -vvv` output

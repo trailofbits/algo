@@ -4,8 +4,8 @@
 
 ### What We Test Now
 1. **Basic Sanity** (`test_basic_sanity.py`)
-   - Python version >= 3.10
-   - requirements.txt exists
+   - Python version >= 3.11
+   - pyproject.toml exists and has dependencies
    - config.cfg is valid YAML
    - Ansible playbook syntax
    - Shell scripts pass shellcheck

@@ -48,10 +48,11 @@ jobs:
             openssl \
             linux-headers-$(uname -r)
 
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
       - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+        run: uv sync
 
       - name: Create test configuration
         run: |
@@ -223,7 +224,7 @@ jobs:
           docker run --rm --entrypoint /bin/sh algo:ci-test -c "cd /algo && ./algo --help" || true
 
           # Test that required binaries exist in the virtual environment
-          docker run --rm --entrypoint /bin/sh algo:ci-test -c "cd /algo && source .env/bin/activate && which ansible"
+          docker run --rm --entrypoint /bin/sh algo:ci-test -c "cd /algo && uv run which ansible"
           docker run --rm --entrypoint /bin/sh algo:ci-test -c "which python3"
           docker run --rm --entrypoint /bin/sh algo:ci-test -c "which rsync"
 

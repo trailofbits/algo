@@ -22,11 +22,9 @@
       no_log: true
       register: ipaddr
 
-    - name: Extract ansible version from requirements
+    - name: Extract ansible version from pyproject.toml
       set_fact:
-        ansible_requirement: "{{ item }}"
-      when: '"ansible" in item'
-      with_items: "{{ lookup('file', 'requirements.txt').splitlines() }}"
+        ansible_requirement: "{{ lookup('file', 'pyproject.toml') | regex_search('ansible==[0-9]+\\.[0-9]+\\.[0-9]+') }}"
 
     - name: Parse ansible version requirement
       set_fact:
@@ -35,9 +33,14 @@
           ver: "{{ ansible_requirement | regex_replace('^ansible\\s*[~>=<]+\\s*(\\d+\\.\\d+(?:\\.\\d+)?).*$', '\\1') }}"
       when: ansible_requirement is defined
 
-    - name: Just get the list from default pip
-      community.general.pip_package_info:
-      register: pip_package_info
+    - name: Get current ansible package version
+      command: uv pip list
+      register: uv_package_list
+      changed_when: false
+
+    - name: Extract ansible version from uv package list
+      set_fact:
+        current_ansible_version: "{{ uv_package_list.stdout | regex_search('ansible\\s+([0-9]+\\.[0-9]+\\.[0-9]+)', '\\1') | first }}"
 
     - name: Verify Python meets Algo VPN requirements
       assert:
@@ -50,12 +53,12 @@
     - name: Verify Ansible meets Algo VPN requirements
       assert:
         that:
-          - pip_package_info.packages.pip.ansible.0.version is version(required_ansible_version.ver, required_ansible_version.op)
+          - current_ansible_version is version(required_ansible_version.ver, required_ansible_version.op)
           - not ipaddr.failed
         msg: >
-          Ansible version is {{ pip_package_info.packages.pip.ansible.0.version }}.
+          Ansible version is {{ current_ansible_version }}.
           You must update the requirements to use this version of Algo.
-          Try to run python3 -m pip install -U -r requirements.txt
+          Try to run: uv sync
 
 - name: Include prompts playbook
   import_playbook: input.yml

@@ -14,10 +14,6 @@
   tags:
     - update-users
 
-- include_tasks: freebsd.yml
-  when: '"FreeBSD" in OS.stdout'
-  tags:
-    - update-users
 
 - name: Sysctl tuning
   sysctl: name="{{ item.item }}" value="{{ item.value }}"

@@ -9,9 +9,3 @@
     state: restarted
     daemon_reload: true
   when: ansible_distribution == 'Ubuntu'
-
-- name: restart dnscrypt-proxy
-  service:
-    name: dnscrypt-proxy
-    state: restarted
-  when: ansible_distribution == 'FreeBSD'

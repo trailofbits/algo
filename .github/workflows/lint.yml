@@ -17,24 +17,22 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: '3.11'
-          cache: 'pip'
 
-      - name: Install ansible-lint and dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install ansible-lint ansible
-          # Install required ansible collections for comprehensive testing
-          ansible-galaxy collection install -r requirements.yml
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
+
+      - name: Install Ansible collections
+        run: uv run --with ansible-lint --with ansible ansible-galaxy collection install -r requirements.yml
 
       - name: Run ansible-lint
         run: |
-          ansible-lint .
+          uv run --with ansible-lint ansible-lint .
 
       - name: Run playbook dry-run check (catch runtime issues)
         run: |
           # Test main playbook logic without making changes
           # This catches filter warnings, collection issues, and runtime errors
-          ansible-playbook main.yml --check --connection=local \
+          uv run ansible-playbook main.yml --check --connection=local \
             -e "server_ip=test" \
             -e "server_name=ci-test" \
             -e "IP_subject_alt_name=192.168.1.1" \
@@ -48,10 +46,11 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
+
       - name: Run yamllint
-        run: |
-          pip install yamllint
-          yamllint -c .yamllint .
+        run: uv run --with yamllint yamllint -c .yamllint .
 
   python-lint:
     name: Python linting
@@ -63,17 +62,14 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: '3.11'
-          cache: 'pip'
 
-      - name: Install Python linters
-        run: |
-          python -m pip install --upgrade pip
-          pip install ruff
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
 
       - name: Run ruff
         run: |
           # Fast Python linter
-          ruff check . || true  # Start with warnings only
+          uv run --with ruff ruff check .
 
   shellcheck:
     name: Shell script linting
@@ -88,3 +84,47 @@ jobs:
           sudo apt-get update && sudo apt-get install -y shellcheck
           # Check all shell scripts, not just algo and install.sh
           find . -type f -name "*.sh" -not -path "./.git/*" -exec shellcheck {} \;
+
+  powershell-lint:
+    name: PowerShell script linting
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Install PowerShell
+        run: |
+          # Install PowerShell Core
+          wget -q https://github.com/PowerShell/PowerShell/releases/download/v7.4.0/powershell_7.4.0-1.deb_amd64.deb
+          sudo dpkg -i powershell_7.4.0-1.deb_amd64.deb
+          sudo apt-get install -f
+
+      - name: Install PSScriptAnalyzer
+        run: |
+          pwsh -Command "Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser"
+
+      - name: Run PowerShell syntax check
+        run: |
+          # Check syntax by parsing the script
+          pwsh -NoProfile -NonInteractive -Command "
+            try {
+              \$null = [System.Management.Automation.PSParser]::Tokenize((Get-Content -Path './algo.ps1' -Raw), [ref]\$null)
+              Write-Host '✓ PowerShell syntax check passed'
+            } catch {
+              Write-Error 'PowerShell syntax error: ' + \$_.Exception.Message
+              exit 1
+            }
+          "
+
+      - name: Run PSScriptAnalyzer
+        run: |
+          pwsh -Command "
+            \$results = Invoke-ScriptAnalyzer -Path './algo.ps1' -Severity Warning,Error
+            if (\$results.Count -gt 0) {
+              \$results | Format-Table -AutoSize
+              exit 1
+            } else {
+              Write-Host '✓ PSScriptAnalyzer check passed'
+            }
+          "

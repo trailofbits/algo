@@ -13,7 +13,7 @@ sudo apt update && sudo apt upgrade
 
 # Install WireGuard:
 sudo apt install wireguard
-# Note: openresolv is no longer needed on Ubuntu 22.10+
+# Note: openresolv is no longer needed on Ubuntu 22.04 LTS+
 ```
 
 For installation on other Linux distributions, see the [Installation](https://www.wireguard.com/install/) page on the WireGuard site.

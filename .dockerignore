@@ -1,18 +1,44 @@
-.dockerignore
-.git
-.github
+# Version control and CI
+.git/
+.github/
 .gitignore
-.travis.yml
-CONTRIBUTING.md
-Dockerfile
-README.md
-config.cfg
-configs
-docs
+
+# Development environment  
 .env
-logo.png
-tests
+.venv/
+.ruff_cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Documentation and metadata
+docs/
+tests/
+README.md
 CHANGELOG.md
+CONTRIBUTING.md
 PULL_REQUEST_TEMPLATE.md
+SECURITY.md
+logo.png
+.travis.yml
+
+# Build artifacts and configs
+configs/
+Dockerfile
+.dockerignore
 Vagrantfile
-Makefile
+
+# User configuration (should be bind-mounted)
+config.cfg
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+Thumbs.db

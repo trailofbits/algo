@@ -18,10 +18,6 @@
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
   tags: always
 
-- name: Include tasks for FreeBSD
-  include_tasks: freebsd.yml
-  when: ansible_distribution == 'FreeBSD'
-  tags: always
 
 - name: Generate keys
   import_tasks: keys.yml
