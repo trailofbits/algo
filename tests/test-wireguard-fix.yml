@@ -1,0 +1,66 @@
+---
+# Test the corrected WireGuard async pattern
+- name: Test corrected WireGuard async pattern
+  hosts: localhost
+  gather_facts: no
+  vars:
+    test_users: ["testuser1", "testuser2"]
+    IP_subject_alt_name: "127.0.0.1"
+    wireguard_pki_path: "/tmp/test-fixed-wireguard"
+
+  tasks:
+    - name: Create test directory
+      file:
+        path: "{{ wireguard_pki_path }}/private"
+        state: directory
+        mode: '0700'
+
+    - name: Generate keys (parallel) - simulating wg genkey
+      command: echo "mock_private_key_for_{{ item }}"
+      register: wg_genkey
+      with_items:
+        - "{{ test_users }}"
+        - "{{ IP_subject_alt_name }}"
+      async: 10
+      poll: 0
+
+    - name: Wait for completion - simulating async_status
+      async_status:
+        jid: "{{ item.ansible_job_id }}"
+      with_items: "{{ wg_genkey.results }}"
+      register: wg_genkey_results
+      until: wg_genkey_results.finished
+      retries: 15
+      delay: 1
+
+    - name: Save using CORRECTED pattern - item.item.item
+      copy:
+        dest: "{{ wireguard_pki_path }}/private/{{ item.item.item }}"
+        content: "{{ item.stdout }}"
+        mode: "0600"
+      when: item.changed
+      with_items: "{{ wg_genkey_results.results }}"
+
+    - name: Verify files were created with correct names
+      stat:
+        path: "{{ wireguard_pki_path }}/private/{{ item }}"
+      register: file_check
+      loop:
+        - "testuser1"
+        - "testuser2"
+        - "127.0.0.1"
+
+    - name: Assert all files exist
+      assert:
+        that:
+          - item.stat.exists
+        msg: "File should exist: {{ item.stat.path }}"
+      loop: "{{ file_check.results }}"
+
+    - name: Cleanup
+      file:
+        path: "{{ wireguard_pki_path }}"
+        state: absent
+
+    - debug:
+        msg: "✅ WireGuard async fix test PASSED - item.item.item is the correct pattern!"

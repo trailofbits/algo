@@ -10,15 +10,23 @@ import yaml
 
 
 def test_python_version():
-    """Ensure we're running on Python 3.10+"""
-    assert sys.version_info >= (3, 10), f"Python 3.10+ required, got {sys.version}"
+    """Ensure we're running on Python 3.11+"""
+    assert sys.version_info >= (3, 11), f"Python 3.11+ required, got {sys.version}"
     print("✓ Python version check passed")
 
 
-def test_requirements_file_exists():
-    """Check that requirements.txt exists"""
-    assert os.path.exists("requirements.txt"), "requirements.txt not found"
-    print("✓ requirements.txt exists")
+def test_pyproject_file_exists():
+    """Check that pyproject.toml exists and has dependencies"""
+    assert os.path.exists("pyproject.toml"), "pyproject.toml not found"
+
+    with open("pyproject.toml") as f:
+        content = f.read()
+        assert "dependencies" in content, "No dependencies section in pyproject.toml"
+        assert "ansible" in content, "ansible dependency not found"
+        assert "jinja2" in content, "jinja2 dependency not found"
+        assert "netaddr" in content, "netaddr dependency not found"
+
+    print("✓ pyproject.toml exists with required dependencies")
 
 
 def test_config_file_valid():
@@ -31,7 +39,7 @@ def test_config_file_valid():
             assert isinstance(config, dict), "config.cfg should parse as a dictionary"
             print("✓ config.cfg is valid YAML")
         except yaml.YAMLError as e:
-            raise AssertionError(f"config.cfg is not valid YAML: {e}")
+            raise AssertionError(f"config.cfg is not valid YAML: {e}") from e
 
 
 def test_ansible_syntax():
@@ -73,17 +81,37 @@ def test_dockerfile_exists():
     print("✓ Dockerfile exists and looks valid")
 
 
+def test_cloud_init_header_format():
+    """Check that cloud-init header is exactly '#cloud-config' without space"""
+    cloud_init_file = "files/cloud-init/base.yml"
+    assert os.path.exists(cloud_init_file), f"{cloud_init_file} not found"
+
+    with open(cloud_init_file) as f:
+        first_line = f.readline().rstrip('\n\r')
+
+    # The first line MUST be exactly "#cloud-config" (no space after #)
+    # This regression was introduced in PR #14775 and broke DigitalOcean deployments
+    # See: https://github.com/trailofbits/algo/issues/14800
+    assert first_line == "#cloud-config", (
+        f"cloud-init header must be exactly '#cloud-config' (no space), "
+        f"got '{first_line}'. This breaks cloud-init YAML parsing and causes SSH timeouts."
+    )
+
+    print("✓ cloud-init header format is correct")
+
+
 if __name__ == "__main__":
     # Change to repo root
     os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
     tests = [
         test_python_version,
-        test_requirements_file_exists,
+        test_pyproject_file_exists,
         test_config_file_valid,
         test_ansible_syntax,
         test_shellcheck,
         test_dockerfile_exists,
+        test_cloud_init_header_format,
     ]
 
     failed = 0

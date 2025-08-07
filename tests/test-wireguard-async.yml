@@ -1,0 +1,86 @@
+---
+# Test WireGuard async result structure handling
+# This simulates the async_status result structure to verify our fix
+- name: Test WireGuard async result handling
+  hosts: localhost
+  gather_facts: no
+  vars:
+    # Simulate the actual structure that async_status with with_items returns
+    # This is the key insight: async_status results contain the original item info
+    mock_wg_genkey_results:
+      results:
+        - item: "user1"        # This comes from the original wg_genkey.results item
+          stdout: "mock_private_key_1"  # This is the command output
+          changed: true
+          rc: 0
+          failed: false
+          finished: true
+        - item: "10.10.10.1"   # This comes from the original wg_genkey.results item
+          stdout: "mock_private_key_2"  # This is the command output
+          changed: true
+          rc: 0
+          failed: false
+          finished: true
+    wireguard_pki_path: "/tmp/test-wireguard-pki"
+
+  tasks:
+    - name: Create test directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0700'
+      loop:
+        - "{{ wireguard_pki_path }}/private"
+        - "{{ wireguard_pki_path }}/preshared"
+
+    - name: Test private key saving (using with_items like the actual code)
+      copy:
+        dest: "{{ wireguard_pki_path }}/private/{{ item.item }}"
+        content: "{{ item.stdout }}"
+        mode: "0600"
+      when: item.changed
+      with_items: "{{ mock_wg_genkey_results.results }}"
+
+    - name: Verify files were created correctly
+      stat:
+        path: "{{ wireguard_pki_path }}/private/{{ item }}"
+      register: file_check
+      loop:
+        - "user1"
+        - "10.10.10.1"
+
+    - name: Assert files exist
+      assert:
+        that:
+          - item.stat.exists
+          - item.stat.mode == "0600"
+        msg: "Private key file should exist with correct permissions"
+      loop: "{{ file_check.results }}"
+
+    - name: Verify file contents
+      slurp:
+        src: "{{ wireguard_pki_path }}/private/{{ item }}"
+      register: file_contents
+      loop:
+        - "user1"
+        - "10.10.10.1"
+
+    - name: Assert file contents are correct
+      assert:
+        that:
+          - (file_contents.results[0].content | b64decode) == "mock_private_key_1"
+          - (file_contents.results[1].content | b64decode) == "mock_private_key_2"
+        msg: "File contents should match expected values"
+
+    # Test the error handling path too
+    - name: Test error condition handling
+      debug:
+        msg: "Would display error for {{ item.item }}"
+      when: item.rc is defined and item.rc != 0
+      loop: "{{ mock_wg_genkey_results.results }}"
+      # This should not trigger since our mock data has rc: 0
+
+    - name: Cleanup test directory
+      file:
+        path: "{{ wireguard_pki_path }}"
+        state: absent

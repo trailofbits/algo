@@ -49,7 +49,10 @@
 - debug:
     var: IP_subject_alt_name
 
-- name: Wait 600 seconds for target connection to become reachable/usable
+- name: Wait for target connection to become reachable/usable
   wait_for_connection:
+    delay: 10         # Wait 10 seconds before first attempt (conservative)
+    timeout: 480      # Reduce from 600 to 480 seconds (8 minutes - safer)
+    sleep: 10         # Check every 10 seconds (less aggressive polling)
   delegate_to: "{{ item }}"
   loop: "{{ groups['vpn-host'] }}"

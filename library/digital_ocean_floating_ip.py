@@ -3,7 +3,11 @@
 # (c) 2015, Patrick F. Marques <patrickfmarques@gmail.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+import json
+import time
 
+from ansible.module_utils.basic import AnsibleModule, env_fallback
+from ansible.module_utils.digital_ocean import DigitalOceanHelper
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
@@ -104,12 +108,6 @@ data:
     }
 '''
 
-import json
-import time
-
-from ansible.module_utils.basic import AnsibleModule, env_fallback
-from ansible.module_utils.digital_ocean import DigitalOceanHelper
-
 
 class Response:
 
@@ -138,9 +136,8 @@ def wait_action(module, rest, ip, action_id, timeout=10):
     end_time = time.time() + 10
     while time.time() < end_time:
         response = rest.get(f'floating_ips/{ip}/actions/{action_id}')
-        status_code = response.status_code
+        # status_code = response.status_code  # TODO: check status_code == 200?
         status = response.json['action']['status']
-        # TODO: check status_code == 200?
         if status == 'completed':
             return True
         elif status == 'errored':
@@ -150,7 +147,7 @@ def wait_action(module, rest, ip, action_id, timeout=10):
 
 
 def core(module):
-    api_token = module.params['oauth_token']
+    # api_token = module.params['oauth_token']  # unused for now
     state = module.params['state']
     ip = module.params['ip']
     droplet_id = module.params['droplet_id']
@@ -185,7 +182,7 @@ def get_floating_ip_details(module, rest):
     if status_code == 200:
         return json_data['floating_ip']
     else:
-        module.fail_json(msg="Error assigning floating ip [{0}: {1}]".format(
+        module.fail_json(msg="Error assigning floating ip [{}: {}]".format(
             status_code, json_data["message"]), region=module.params['region'])
 
 
@@ -205,7 +202,7 @@ def assign_floating_id_to_droplet(module, rest):
 
         module.exit_json(changed=True, data=json_data)
     else:
-        module.fail_json(msg="Error creating floating ip [{0}: {1}]".format(
+        module.fail_json(msg="Error creating floating ip [{}: {}]".format(
             status_code, json_data["message"]), region=module.params['region'])
 
 
@@ -247,26 +244,26 @@ def create_floating_ips(module, rest):
         if status_code == 202:
             module.exit_json(changed=True, data=json_data)
         else:
-            module.fail_json(msg="Error creating floating ip [{0}: {1}]".format(
+            module.fail_json(msg="Error creating floating ip [{}: {}]".format(
                 status_code, json_data["message"]), region=module.params['region'])
 
 
 def main():
     module = AnsibleModule(
-        argument_spec=dict(
-            state=dict(choices=['present', 'absent'], default='present'),
-            ip=dict(aliases=['id'], required=False),
-            region=dict(required=False),
-            droplet_id=dict(required=False, type='int'),
-            oauth_token=dict(
-                no_log=True,
+        argument_spec={
+            'state': {'choices': ['present', 'absent'], 'default': 'present'},
+            'ip': {'aliases': ['id'], 'required': False},
+            'region': {'required': False},
+            'droplet_id': {'required': False, 'type': 'int'},
+            'oauth_token': {
+                'no_log': True,
                 # Support environment variable for DigitalOcean OAuth Token
-                fallback=(env_fallback, ['DO_API_TOKEN', 'DO_API_KEY', 'DO_OAUTH_TOKEN']),
-                required=True,
-            ),
-            validate_certs=dict(type='bool', default=True),
-            timeout=dict(type='int', default=30),
-        ),
+                'fallback': (env_fallback, ['DO_API_TOKEN', 'DO_API_KEY', 'DO_OAUTH_TOKEN']),
+                'required': True,
+            },
+            'validate_certs': {'type': 'bool', 'default': True},
+            'timeout': {'type': 'int', 'default': 30},
+        },
         required_if=[
             ('state', 'delete', ['ip'])
         ],

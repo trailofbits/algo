@@ -1,7 +1,7 @@
 """Test fixtures for Algo unit tests"""
-import os
-import yaml
 from pathlib import Path
+
+import yaml
 
 
 def load_test_variables():

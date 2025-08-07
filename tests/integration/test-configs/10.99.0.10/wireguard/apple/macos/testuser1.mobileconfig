@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PayloadContent</key>
+	<array>
+<dict>
+	<key>IPv4</key>
+  <dict>
+      <key>OverridePrimary</key>
+      <integer>1</integer>
+  </dict>
+	<key>PayloadDescription</key>
+	<string>Configures VPN settings</string>
+	<key>PayloadDisplayName</key>
+	<string>algo-test-server</string>
+	<key>PayloadIdentifier</key>
+	<string>com.apple.vpn.managed.algo-test-server3B9A4690-0B5D-5BC3-A5C5-21305566D87F</string>
+	<key>PayloadType</key>
+	<string>com.apple.vpn.managed</string>
+	<key>PayloadUUID</key>
+	<string>algo-test-server3B9A4690-0B5D-5BC3-A5C5-21305566D87F</string>
+	<key>PayloadVersion</key>
+	<integer>1</integer>
+	<key>Proxies</key>
+	<dict>
+		<key>HTTPEnable</key>
+		<integer>0</integer>
+		<key>HTTPSEnable</key>
+		<integer>0</integer>
+	</dict>
+	<key>UserDefinedName</key>
+	<string>AlgoVPN algo-test-server</string>
+	<key>VPN</key>
+	<dict>
+    <key>OnDemandEnabled</key>
+    <integer>0</integer>
+    <key>OnDemandRules</key>
+    <array>
+      <dict>
+        <key>Action</key>
+        <string>Connect</string>
+      </dict>
+    </array>
+		<key>AuthenticationMethod</key>
+		<string>Password</string>
+		<key>RemoteAddress</key>
+		<string>10.99.0.10:51820</string>
+	</dict>
+	<key>VPNSubType</key>
+	<string>com.wireguard.macos</string>
+	<key>VPNType</key>
+	<string>VPN</string>
+	<key>VendorConfig</key>
+	<dict>
+		<key>WgQuickConfig</key>
+		<string>[Interface]
+        PrivateKey = OC3EYbHLzszqmYqFlC22bnPDoTHp4ORULg9vCphbcEY=
+        Address = 10.19.49.2 
+        DNS =  8.8.8.8,8.8.4.4 
+
+        [Peer]
+        PublicKey = IJFSpegTMGKoK5EtJaX2uH/hBWxq8ZpNOJIBMZnE4w0=
+        PresharedKey = CSLeU66thNW52DkY6MVJ2A5VodnxbsC7EklcrHPCKco=
+        AllowedIPs = 0.0.0.0/0,::/0
+        Endpoint = 10.99.0.10:51820
+</string>
+	</dict>
+</dict>  </array>
+  <key>PayloadDisplayName</key>
+  <string>AlgoVPN algo-test-server WireGuard</string>
+  <key>PayloadIdentifier</key>
+  <string>donut.local.9D99E158-71EF-58AB-A74C-CC609791EEBF</string>
+  <key>PayloadOrganization</key>
+  <string>AlgoVPN</string>
+  <key>PayloadRemovalDisallowed</key>
+  <false/>
+  <key>PayloadType</key>
+  <string>Configuration</string>
+  <key>PayloadUUID</key>
+  <string>ADE17621-2434-5FE8-995B-C2531F35DCCB</string>
+  <key>PayloadVersion</key>
+  <integer>1</integer>
+</dict>
+</plist>

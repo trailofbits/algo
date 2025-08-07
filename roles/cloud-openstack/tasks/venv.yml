@@ -1,6 +1,3 @@
 ---
-- name: Install requirements
-  pip:
-    name: shade
-    state: latest
-    virtualenv_python: python3
+# OpenStack dependencies are now managed via pyproject.toml optional dependencies
+# They will be installed automatically when needed

@@ -1,4 +1,30 @@
 ---
+# Discover AWS credentials from standard locations
+- name: Set AWS credentials file path
+  set_fact:
+    aws_credentials_path: "{{ lookup('env', 'AWS_SHARED_CREDENTIALS_FILE') | default(lookup('env', 'HOME') + '/.aws/credentials', true) }}"
+    aws_profile: "{{ lookup('env', 'AWS_PROFILE') | default('default', true) }}"
+
+# Try to read credentials from file if not already provided
+- block:
+    - name: Check if AWS credentials file exists
+      stat:
+        path: "{{ aws_credentials_path }}"
+      register: aws_creds_file
+      delegate_to: localhost
+
+    - name: Read AWS credentials from file
+      set_fact:
+        _file_access_key: "{{ lookup('ini', 'aws_access_key_id', section=aws_profile, file=aws_credentials_path, errors='ignore') | default('', true) }}"
+        _file_secret_key: "{{ lookup('ini', 'aws_secret_access_key', section=aws_profile, file=aws_credentials_path, errors='ignore') | default('', true) }}"
+        _file_session_token: "{{ lookup('ini', 'aws_session_token', section=aws_profile, file=aws_credentials_path, errors='ignore') | default('', true) }}"
+      when: aws_creds_file.stat.exists
+      no_log: true
+  when:
+    - aws_access_key is undefined
+    - lookup('env','AWS_ACCESS_KEY_ID')|length <= 0
+
+# Prompt for credentials if still not available
 - pause:
     prompt: |
       Enter your AWS Access Key ID (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
@@ -8,6 +34,7 @@
   when:
     - aws_access_key is undefined
     - lookup('env','AWS_ACCESS_KEY_ID')|length <= 0
+    - _file_access_key is undefined or _file_access_key|length <= 0
 
 - pause:
     prompt: |
@@ -17,10 +44,25 @@
   when:
     - aws_secret_key is undefined
     - lookup('env','AWS_SECRET_ACCESS_KEY')|length <= 0
+    - _file_secret_key is undefined or _file_secret_key|length <= 0
 
+# Set final credentials with proper precedence
 - set_fact:
-    access_key: "{{ aws_access_key | default(_aws_access_key.user_input|default(None)) | default(lookup('env','AWS_ACCESS_KEY_ID'), true) }}"
-    secret_key: "{{ aws_secret_key | default(_aws_secret_key.user_input|default(None)) | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true) }}"
+    access_key: >-
+      {{ aws_access_key
+         | default(lookup('env', 'AWS_ACCESS_KEY_ID'))
+         | default(_file_access_key)
+         | default(_aws_access_key.user_input | default(None)) }}
+    secret_key: >-
+      {{ aws_secret_key
+         | default(lookup('env', 'AWS_SECRET_ACCESS_KEY'))
+         | default(_file_secret_key)
+         | default(_aws_secret_key.user_input | default(None)) }}
+    session_token: >-
+      {{ aws_session_token
+         | default(lookup('env', 'AWS_SESSION_TOKEN'))
+         | default(_file_session_token)
+         | default('') }}
   no_log: true
 
 - block:
@@ -28,6 +70,7 @@
       aws_region_info:
         aws_access_key: "{{ access_key }}"
         aws_secret_key: "{{ secret_key }}"
+        aws_session_token: "{{ session_token if session_token else omit }}"
         region: us-east-1
       register: _aws_regions
       no_log: true
@@ -69,6 +112,7 @@
       ec2_eip_info:
         aws_access_key: "{{ access_key }}"
         aws_secret_key: "{{ secret_key }}"
+        aws_session_token: "{{ session_token if session_token else omit }}"
         region: "{{ algo_region }}"
       register: raw_eip_addresses
       no_log: true

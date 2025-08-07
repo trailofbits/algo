@@ -1,14 +1,10 @@
 # Troubleshooting
 
-First of all, check [this](https://github.com/trailofbits/algo#features) and ensure that you are deploying to the supported ubuntu version.
+First of all, check [this](https://github.com/trailofbits/algo#features) and ensure that you are deploying to Ubuntu 22.04 LTS, the only supported server platform.
 
   * [Installation Problems](#installation-problems)
-     * [Error: "You have not agreed to the Xcode license agreements"](#error-you-have-not-agreed-to-the-xcode-license-agreements)
-     * [Error: checking whether the C compiler works... no](#error-checking-whether-the-c-compiler-works-no)
-     * [Error: "fatal error: 'openssl/opensslv.h' file not found"](#error-fatal-error-opensslopensslvh-file-not-found)
-     * [Error: "TypeError: must be str, not bytes"](#error-typeerror-must-be-str-not-bytes)
+     * [Python version is not supported](#python-version-is-not-supported)
      * [Error: "ansible-playbook: command not found"](#error-ansible-playbook-command-not-found)
-     * [Error: "Could not fetch URL ... TLSV1_ALERT_PROTOCOL_VERSION](#could-not-fetch-url--tlsv1_alert_protocol_version)
      * [Fatal: "Failed to validate the SSL certificate for ..."](#fatal-failed-to-validate-the-SSL-certificate)
      * [Bad owner or permissions on .ssh](#bad-owner-or-permissions-on-ssh)
      * [The region you want is not available](#the-region-you-want-is-not-available)
@@ -19,6 +15,7 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
      * [Azure: The client xxx with object id xxx does not have authorization to perform action Microsoft.Resources/subscriptions/resourcegroups/write' over scope](#azure-deployment-permissions-error)
      * [Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid](#windows-the-value-of-parameter-linuxconfigurationsshpublickeyskeydata-is-invalid)
      * [Docker: Failed to connect to the host via ssh](#docker-failed-to-connect-to-the-host-via-ssh)
+     * [Windows: "The parameter is incorrect" error when connecting](#windows-the-parameter-is-incorrect-error-when-connecting)
      * [Error: Failed to create symlinks for deploying to localhost](#error-failed-to-create-symlinks-for-deploying-to-localhost)
      * [Wireguard: Unable to find 'configs/...' in expected paths](#wireguard-unable-to-find-configs-in-expected-paths)
      * [Ubuntu Error: "unable to write 'random state'" when generating CA password](#ubuntu-error-unable-to-write-random-state-when-generating-ca-password)
@@ -30,7 +27,6 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
      * [Error: "The VPN Service payload could not be installed."](#error-the-vpn-service-payload-could-not-be-installed)
      * [Little Snitch is broken when connected to the VPN](#little-snitch-is-broken-when-connected-to-the-vpn)
      * [I can't get my router to connect to the Algo server](#i-cant-get-my-router-to-connect-to-the-algo-server)
-     * [I can't get Network Manager to connect to the Algo server](#i-cant-get-network-manager-to-connect-to-the-algo-server)
      * [Various websites appear to be offline through the VPN](#various-websites-appear-to-be-offline-through-the-vpn)
      * [Clients appear stuck in a reconnection loop](#clients-appear-stuck-in-a-reconnection-loop)
      * [Wireguard: clients can connect on Wifi but not LTE](#wireguard-clients-can-connect-on-wifi-but-not-lte)
@@ -43,84 +39,13 @@ Look here if you have a problem running the installer to set up a new Algo serve
 
 ### Python version is not supported
 
-The minimum Python version required to run Algo is 3.8. Most modern operation systems should have it by default, but if the OS you are using doesn't meet the requirements, you have to upgrade. See the official documentation for your OS, or manual download it from https://www.python.org/downloads/. Otherwise, you may [deploy from docker](deploy-from-docker.md)
-
-### Error: "You have not agreed to the Xcode license agreements"
-
-On macOS, you tried to install the dependencies with pip and encountered the following error:
-
-```
-Downloading cffi-1.9.1.tar.gz (407kB): 407kB downloaded
-  Running setup.py (path:/private/tmp/pip_build_root/cffi/setup.py) egg_info for package cffi
-
-You have not agreed to the Xcode license agreements, please run 'xcodebuild -license' (for user-level acceptance) or 'sudo xcodebuild -license' (for system-wide acceptance) from within a Terminal window to review and agree to the Xcode license agreements.
-
-    No working compiler found, or bogus compiler options
-    passed to the compiler from Python's distutils module.
-    See the error messages above.
-
-----------------------------------------
-Cleaning up...
-Command python setup.py egg_info failed with error code 1 in /private/tmp/pip_build_root/cffi
-Storing debug log for failure in /Users/algore/Library/Logs/pip.log
-```
-
-The Xcode compiler is installed but requires you to accept its license agreement prior to using it. Run `xcodebuild -license` to agree and then retry installing the dependencies.
-
-### Error: checking whether the C compiler works... no
-
-On macOS, you tried to install the dependencies with pip and encountered the following error:
-
-```
-Failed building wheel for pycrypto
-Running setup.py clean for pycrypto
-Failed to build pycrypto
-...
-copying lib/Crypto/Signature/PKCS1_v1_5.py -> build/lib.macosx-10.6-intel-2.7/Crypto/Signature
-running build_ext
-running build_configure
-checking for gcc... gcc
-checking whether the C compiler works... no
-configure: error: in '/private/var/folders/3f/q33hl6_x6_nfyjg29fcl9qdr0000gp/T/pip-build-DB5VZp/pycrypto': configure: error: C compiler cannot create executables See config.log for more details
-Traceback (most recent call last):
-File "", line 1, in
-...
-cmd_obj.run()
-File "/private/var/folders/3f/q33hl6_x6_nfyjg29fcl9qdr0000gp/T/pip-build-DB5VZp/pycrypto/setup.py", line 278, in run
-raise RuntimeError("autoconf error")
-RuntimeError: autoconf error
-```
-
-You don't have a working compiler installed. You should install the XCode compiler by opening your terminal and running `xcode-select --install`.
-
-### Error: "fatal error: 'openssl/opensslv.h' file not found"
-
-On macOS, you tried to install `cryptography` and encountered the following error:
-
-```
-build/temp.macosx-10.12-intel-2.7/_openssl.c:434:10: fatal error: 'openssl/opensslv.h' file not found
-
-#include <openssl/opensslv.h>
-
-        ^
-
-1 error generated.
-
-error: command 'cc' failed with exit status 1
-
-----------------------------------------
-Cleaning up...
-Command /usr/bin/python -c "import setuptools, tokenize;__file__='/private/tmp/pip_build_root/cryptography/setup.py';exec(compile(getattr(tokenize, 'open', open)(__file__).read().replace('\r\n', '\n'), __file__, 'exec'))" install --record /tmp/pip-sREEE5-record/install-record.txt --single-version-externally-managed --compile failed with error code 1 in /private/tmp/pip_build_root/cryptography
-Storing debug log for failure in /Users/algore/Library/Logs/pip.log
-```
-
-You are running an old version of `pip` that cannot download the binary `cryptography` dependency. Upgrade to a new version of `pip` by running `sudo python3 -m pip install -U pip`.
+The minimum Python version required to run Algo is 3.11. Most modern operation systems should have it by default, but if the OS you are using doesn't meet the requirements, you have to upgrade. See the official documentation for your OS, or manual download it from https://www.python.org/downloads/. Otherwise, you may [deploy from docker](deploy-from-docker.md)
 
 ### Error: "ansible-playbook: command not found"
 
 You tried to install Algo and you see an error that reads "ansible-playbook: command not found."
 
-You did not finish step 4 in the installation instructions, "[Install Algo's remaining dependencies](https://github.com/trailofbits/algo#deploy-the-algo-server)." Algo depends on [Ansible](https://github.com/ansible/ansible), an automation framework, and this error indicates that you do not have Ansible installed. Ansible is installed by `pip` when you run `python3 -m pip install -r requirements.txt`. You must complete the installation instructions to run the Algo server deployment process.
+This indicates that Ansible is not installed or not available in your PATH. Algo automatically installs all dependencies (including Ansible) using uv when you run `./algo` for the first time. If you're seeing this error, try running `./algo` again - it should automatically install the required Python environment and dependencies. If the issue persists, ensure you're running `./algo` from the Algo project directory.
 
 ### Fatal: "Failed to validate the SSL certificate"
 
@@ -129,23 +54,7 @@ You received a message like this:
 fatal: [localhost]: FAILED! => {"changed": false, "msg": "Failed to validate the SSL certificate for api.digitalocean.com:443. Make sure your managed systems have a valid CA certificate installed. You can use validate_certs=False if you do not need to confirm the servers identity but this is unsafe and not recommended. Paths checked for this platform: /etc/ssl/certs, /etc/ansible, /usr/local/etc/openssl. The exception msg was: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1076).", "status": -1, "url": "https://api.digitalocean.com/v2/regions"}
 ```
 
-Your local system does not have a CA certificate that can validate the cloud provider's API. Are you using MacPorts instead of Homebrew? The MacPorts openssl installation does not include a CA certificate, but you can fix this by installing the [curl-ca-bundle](https://andatche.com/articles/2012/02/fixing-ssl-ca-certificates-with-openssl-from-macports/) port with `port install curl-ca-bundle`. That should do the trick.
-
-### Could not fetch URL ... TLSV1_ALERT_PROTOCOL_VERSION
-
-You tried to install Algo and you received an error like this one:
-
-```
-Could not fetch URL https://pypi.python.org/simple/secretstorage/: There was a problem confirming the ssl certificate: [SSL: TLSV1_ALERT_PROTOCOL_VERSION] tlsv1 alert protocol version (_ssl.c:590) - skipping
-  Could not find a version that satisfies the requirement SecretStorage<3 (from -r requirements.txt (line 2)) (from versions: )
-No matching distribution found for SecretStorage<3 (from -r requirements.txt (line 2))
-```
-
-It's time to upgrade your python.
-
-`brew upgrade python3`
-
-You can also download python 3.7.x from python.org.
+Your local system does not have a CA certificate that can validate the cloud provider's API. This typically occurs with custom Python installations. Try reinstalling Python using Homebrew (`brew install python3`) or ensure your system has proper CA certificates installed.
 
 ### Bad owner or permissions on .ssh
 
@@ -234,9 +143,9 @@ The error is caused because Digital Ocean changed its API to treat the tag argum
 An exception occurred during task execution. To see the full traceback, use -vvv. 
 The error was: FileNotFoundError: [Errno 2] No such file or directory: '/home/ubuntu/.azure/azureProfile.json'
 fatal: [localhost]: FAILED! => {"changed": false, "module_stderr": "Traceback (most recent call last):
-File \"/usr/local/lib/python3.6/dist-packages/azure/cli/core/_session.py\", line 39, in load
+File \"/usr/local/lib/python3.11/dist-packages/azure/cli/core/_session.py\", line 39, in load
 with codecs_open(self.filename, 'r', encoding=self._encoding) as f:
-File \"/usr/lib/python3.6/codecs.py\", line 897, in open\n    file = builtins.open(filename, mode, buffering)
+File \"/usr/lib/python3.11/codecs.py\", line 897, in open\n    file = builtins.open(filename, mode, buffering)
 FileNotFoundError: [Errno 2] No such file or directory: '/home/ubuntu/.azure/azureProfile.json'
 ", "module_stdout": "", "msg": "MODULE FAILURE
 See stdout/stderr for the exact error", "rc": 1}
@@ -294,6 +203,43 @@ You need to add the following to the ansible.cfg in repo root:
 control_path_dir=/dev/shm/ansible_control_path
 ```
 
+### Windows: "The parameter is incorrect" error when connecting
+
+When trying to connect to your Algo VPN on Windows 10/11, you may receive an error stating "The parameter is incorrect". This is a common issue that can usually be resolved by resetting your Windows networking stack.
+
+#### Solution
+
+1. **Clear the networking caches**
+   
+   Open Command Prompt as Administrator (right-click on Command Prompt and select "Run as Administrator") and run these commands:
+   ```cmd
+   netsh int ip reset
+   netsh int ipv6 reset
+   netsh winsock reset
+   ```
+   
+   Then restart your computer.
+
+2. **Reset Device Manager network adapters** (if step 1 doesn't work)
+   
+   - Open Device Manager
+   - Find "Network Adapters"
+   - Uninstall all WAN Miniport drivers (IKEv2, IP, IPv6, etc.)
+   - Click Action → Scan for hardware changes
+   - The adapters you just uninstalled should reinstall automatically
+   
+   Try connecting to the VPN again.
+
+#### What causes this issue?
+
+This error typically occurs when:
+- Windows networking stack becomes corrupted
+- After Windows updates that affect network drivers
+- When switching between different VPN configurations
+- After network-related software installations/uninstallations
+
+Note: This issue has been reported by many users and the above solution has proven effective in most cases.
+
 ### Error: Failed to create symlinks for deploying to localhost
 
 You tried to run Algo and you received an error like this one:
@@ -339,7 +285,7 @@ TASK [wireguard : Generate public keys] ****************************************
 
 fatal: [localhost]: FAILED! => {"msg": "An unhandled exception occurred while running the lookup plugin 'file'. Error was a <class 'ansible.errors.AnsibleError'>, original message: could not locate file in lookup: configs/xxx.xxx.xxx.xxx/wireguard//private/dan"}
 ```
-This error is usually hit when using the local install option on a server that isn't Ubuntu 18.04 or later. You should upgrade your server to Ubuntu 18.04 or later. If this doesn't work, try removing files in /etc/wireguard/ and the configs directories as follows:
+This error is usually hit when using the local install option on an unsupported server. Algo requires Ubuntu 22.04 LTS. You should upgrade your server to Ubuntu 22.04 LTS. If this doesn't work, try removing files in /etc/wireguard/ and the configs directories as follows:
 
 ```ssh
 sudo rm -rf /etc/wireguard/*
@@ -418,10 +364,6 @@ Little Snitch is not compatible with IPSEC VPNs due to a known bug in macOS and 
 
 In order to connect to the Algo VPN server, your router must support IKEv2, ECC certificate-based authentication, and the cipher suite we use. See the ipsec.conf files we generate in the `config` folder for more information. Note that we do not officially support routers as clients for Algo VPN at this time, though patches and documentation for them are welcome (for example, see open issues for [Ubiquiti](https://github.com/trailofbits/algo/issues/307) and [pfSense](https://github.com/trailofbits/algo/issues/292)).
 
-### I can't get Network Manager to connect to the Algo server
-
-You're trying to connect Ubuntu or Debian to the Algo server through the Network Manager GUI but it's not working. Many versions of Ubuntu and some older versions of Debian bundle a [broken version of Network Manager](https://github.com/trailofbits/algo/issues/263) without support for modern standards or the strongSwan server. You must upgrade to Ubuntu 17.04 or Debian 9 Stretch, each of which contain the required minimum version of Network Manager.
-
 ### Various websites appear to be offline through the VPN
 
 This issue appears occasionally due to issues with [MTU](https://en.wikipedia.org/wiki/Maximum_transmission_unit) size. Different networks may require the MTU to be within a specific range to correctly pass traffic. We made an effort to set the MTU to the most conservative, most compatible size by default but problems may still occur.
@@ -493,7 +435,7 @@ For IPsec on Linux you can change the MTU of your network interface to match the
 ```
 sudo ifconfig eth0 mtu 1440
 ```
-To make the change take affect after a reboot, on Ubuntu 18.04 and later edit the relevant file in the `/etc/netplan` directory (see `man netplan`).
+To make the change take effect after a reboot, on Ubuntu 22.04 LTS edit the relevant file in the `/etc/netplan` directory (see `man netplan`).
 
 #### Note for WireGuard iOS users
 

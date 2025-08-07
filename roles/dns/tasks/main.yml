@@ -3,9 +3,6 @@
   include_tasks: ubuntu.yml
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
-- name: Include tasks for FreeBSD
-  include_tasks: freebsd.yml
-  when: ansible_distribution == 'FreeBSD'
 
 - name: dnscrypt-proxy ip-blacklist configured
   template:

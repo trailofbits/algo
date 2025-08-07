@@ -1,0 +1,10 @@
+LICENSE
+README.md
+pyproject.toml
+algo.egg-info/PKG-INFO
+algo.egg-info/SOURCES.txt
+algo.egg-info/dependency_links.txt
+algo.egg-info/requires.txt
+algo.egg-info/top_level.txt
+tests/test_cloud_init_template.py
+tests/test_package_preinstall.py

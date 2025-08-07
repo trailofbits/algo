@@ -1,6 +1,16 @@
 ---
 extends: default
 
+# Cloud-init files must be excluded from normal YAML rules
+# The #cloud-config header cannot have a space and cannot have --- document start
+ignore: |
+  files/cloud-init/
+  .env/
+  .venv/
+  .ansible/
+  configs/
+  tests/integration/test-configs/
+
 rules:
   line-length:
     max: 160

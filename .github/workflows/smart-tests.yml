@@ -1,6 +1,7 @@
+---
 name: Smart Test Selection
 
-on:
+'on':
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -22,11 +23,11 @@ jobs:
       run_lint: ${{ steps.filter.outputs.lint }}
       run_integration: ${{ steps.filter.outputs.integration }}
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           persist-credentials: false
-          
-      - uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50  # v2.11.1
+
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36  # v3.0.2
         id: filter
         with:
           filters: |
@@ -39,7 +40,8 @@ jobs:
               - 'library/**'
             python:
               - '**/*.py'
-              - 'requirements.txt'
+              - 'pyproject.toml'
+              - 'uv.lock'
               - 'tests/**'
             docker:
               - 'Dockerfile*'
@@ -75,21 +77,18 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           persist-credentials: false
-      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: '3.11'
-          cache: 'pip'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
 
       - name: Check Ansible playbook syntax
-        run: ansible-playbook main.yml --syntax-check
+        run: uv run ansible-playbook main.yml --syntax-check
 
   basic-tests:
     name: Basic Sanity Tests
@@ -99,37 +98,40 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           persist-credentials: false
-      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: '3.11'
-          cache: 'pip'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install jinja2 pyyaml  # For tests
-          sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
 
       - name: Run relevant tests
+        env:
+          RUN_BASIC_TESTS: ${{ needs.changed-files.outputs.run_basic_tests }}
+          RUN_TEMPLATE_TESTS: ${{ needs.changed-files.outputs.run_template_tests }}
         run: |
           # Always run basic sanity
-          python tests/unit/test_basic_sanity.py
-          
+          uv run pytest tests/unit/test_basic_sanity.py -v
+
           # Run other tests based on what changed
-          if [[ "${{ needs.changed-files.outputs.run_basic_tests }}" == "true" ]]; then
-            python tests/unit/test_config_validation.py
-            python tests/unit/test_user_management.py
-            python tests/unit/test_openssl_compatibility.py
-            python tests/unit/test_cloud_provider_configs.py
-            python tests/unit/test_generated_configs.py
+          if [[ "${RUN_BASIC_TESTS}" == "true" ]]; then
+            uv run pytest \
+              tests/unit/test_config_validation.py \
+              tests/unit/test_user_management.py \
+              tests/unit/test_openssl_compatibility.py \
+              tests/unit/test_cloud_provider_configs.py \
+              tests/unit/test_generated_configs.py \
+              -v
           fi
-          
-          if [[ "${{ needs.changed-files.outputs.run_template_tests }}" == "true" ]]; then
-            python tests/unit/test_template_rendering.py
+
+          if [[ "${RUN_TEMPLATE_TESTS}" == "true" ]]; then
+            uv run pytest tests/unit/test_template_rendering.py -v
           fi
 
   docker-tests:
@@ -140,18 +142,15 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           persist-credentials: false
-      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: '3.11'
-          cache: 'pip'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
 
       - name: Build Docker image
         run: docker build -t local/algo:test .
@@ -161,7 +160,7 @@ jobs:
           docker run --rm local/algo:test /algo/algo --help
 
       - name: Run Docker deployment tests
-        run: python tests/unit/test_docker_localhost_deployment.py
+        run: uv run pytest tests/unit/test_docker_localhost_deployment.py -v
 
   config-tests:
     name: Configuration Tests
@@ -172,18 +171,15 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           persist-credentials: false
-      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: '3.11'
-          cache: 'pip'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
 
       - name: Test configuration generation
         run: |
@@ -208,8 +204,8 @@ jobs:
           server: test-server
           endpoint: 10.0.0.1
           EOF
-          
-          ansible-playbook main.yml \
+
+          uv run ansible-playbook main.yml \
             -i "localhost," \
             -c local \
             -e @test-local.cfg \
@@ -227,31 +223,30 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           persist-credentials: false
-      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: '3.11'
-          cache: 'pip'
 
-      - name: Install linting tools
-        run: |
-          python -m pip install --upgrade pip
-          pip install ansible-lint ansible yamllint ruff
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
 
       - name: Install ansible dependencies
-        run: ansible-galaxy collection install community.crypto
+        run: uv run ansible-galaxy collection install community.crypto
 
       - name: Run relevant linters
+        env:
+          RUN_LINT: ${{ needs.changed-files.outputs.run_lint }}
         run: |
           # Always run if lint files changed
-          if [[ "${{ needs.changed-files.outputs.run_lint }}" == "true" ]]; then
+          if [[ "${RUN_LINT}" == "true" ]]; then
             # Run all linters
-            ruff check . || true
-            yamllint . || true
-            ansible-lint || true
-            
+            uv run --with ruff ruff check . || true
+            uv run --with yamllint yamllint . || true
+            uv run --with ansible-lint ansible-lint || true
+
             # Check shell scripts if any changed
             if git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep -q '\.sh$'; then
               find . -name "*.sh" -type f -exec shellcheck {} + || true
@@ -265,14 +260,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check test results
+        env:
+          SYNTAX_CHECK_RESULT: ${{ needs.syntax-check.result }}
+          BASIC_TESTS_RESULT: ${{ needs.basic-tests.result }}
+          DOCKER_TESTS_RESULT: ${{ needs.docker-tests.result }}
+          CONFIG_TESTS_RESULT: ${{ needs.config-tests.result }}
+          LINT_RESULT: ${{ needs.lint.result }}
         run: |
           # This job ensures all required tests pass
           # It will fail if any dependent job failed
-          if [[ "${{ needs.syntax-check.result }}" == "failure" ]] || \
-             [[ "${{ needs.basic-tests.result }}" == "failure" ]] || \
-             [[ "${{ needs.docker-tests.result }}" == "failure" ]] || \
-             [[ "${{ needs.config-tests.result }}" == "failure" ]] || \
-             [[ "${{ needs.lint.result }}" == "failure" ]]; then
+          if [[ "${SYNTAX_CHECK_RESULT}" == "failure" ]] || \
+             [[ "${BASIC_TESTS_RESULT}" == "failure" ]] || \
+             [[ "${DOCKER_TESTS_RESULT}" == "failure" ]] || \
+             [[ "${CONFIG_TESTS_RESULT}" == "failure" ]] || \
+             [[ "${LINT_RESULT}" == "failure" ]]; then
             echo "One or more required tests failed"
             exit 1
           fi

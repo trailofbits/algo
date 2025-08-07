@@ -2,6 +2,10 @@
 
 
 
+import json
+
+from ansible.module_utils.gcp_utils import GcpModule, GcpSession, navigate_hash
+
 ################################################################################
 # Documentation
 ################################################################################
@@ -9,19 +13,12 @@
 ANSIBLE_METADATA = {'metadata_version': '1.1', 'status': ["preview"], 'supported_by': 'community'}
 
 ################################################################################
-# Imports
-################################################################################
-import json
-
-from ansible.module_utils.gcp_utils import GcpModule, GcpSession, navigate_hash
-
-################################################################################
 # Main
 ################################################################################
 
 
 def main():
-    module = GcpModule(argument_spec=dict(filters=dict(type='list', elements='str'), scope=dict(required=True, type='str')))
+    module = GcpModule(argument_spec={'filters': {'type': 'list', 'elements': 'str'}, 'scope': {'required': True, 'type': 'str'}})
 
     if module._name == 'gcp_compute_image_facts':
         module.deprecate("The 'gcp_compute_image_facts' module has been renamed to 'gcp_compute_regions_info'", version='2.13')
@@ -59,7 +56,7 @@ def query_options(filters):
         for f in filters:
             # For multiple queries, all queries should have ()
             if f[0] != '(' and f[-1] != ')':
-                queries.append("(%s)" % ''.join(f))
+                queries.append("({})".format(''.join(f)))
             else:
                 queries.append(f)
 
@@ -79,7 +76,7 @@ def return_if_object(module, response):
         module.raise_for_status(response)
         result = response.json()
     except getattr(json.decoder, 'JSONDecodeError', ValueError) as inst:
-        module.fail_json(msg="Invalid JSON response with error: %s" % inst)
+        module.fail_json(msg=f"Invalid JSON response with error: {inst}")
 
     if navigate_hash(result, ['error', 'errors']):
         module.fail_json(msg=navigate_hash(result, ['error', 'errors']))

@@ -1,0 +1,59 @@
+---
+# Test playbook for BSD IPv6 address selection
+# Run with: ansible-playbook tests/test_bsd_ipv6.yml -e algo_debug=true
+
+- name: Test BSD IPv6 address selection logic
+  hosts: localhost
+  gather_facts: no
+  vars:
+    # Simulate BSD system facts with link-local as default
+    ansible_default_ipv6:
+      address: "fe80::1%em0"
+      interface: "em0"
+      prefix: "64"
+      gateway: "fe80::1"
+
+    # Simulate interface facts with multiple IPv6 addresses
+    ansible_facts:
+      em0:
+        ipv6:
+          - address: "fe80::1%em0"
+            prefix: "64"
+          - address: "2001:db8::1"
+            prefix: "64"
+          - address: "2001:db8::2"
+            prefix: "64"
+
+    # Simulate all_ipv6_addresses fact
+    ansible_all_ipv6_addresses:
+      - "fe80::1%em0"
+      - "2001:db8::1"
+      - "2001:db8::2"
+
+    ipv6_support: true
+    algo_debug: true
+
+  tasks:
+    - name: Show initial IPv6 facts
+      debug:
+        msg: "Initial ansible_default_ipv6: {{ ansible_default_ipv6 }}"
+
+    - name: Include BSD IPv6 fix tasks
+      include_tasks: ../roles/common/tasks/bsd_ipv6_facts.yml
+
+    - name: Show fixed IPv6 facts
+      debug:
+        msg: |
+          Fixed ansible_default_ipv6: {{ ansible_default_ipv6 }}
+          Global IPv6 address: {{ global_ipv6_address | default('not found') }}
+          Global IPv6 prefix: {{ global_ipv6_prefix | default('not found') }}
+
+    - name: Verify fix worked
+      assert:
+        that:
+          - ansible_default_ipv6.address == "2001:db8::1"
+          - global_ipv6_address == "2001:db8::1"
+          - "'%' not in ansible_default_ipv6.address"
+          - not ansible_default_ipv6.address.startswith('fe80:')
+        fail_msg: "BSD IPv6 address selection failed"
+        success_msg: "BSD IPv6 address selection successful"

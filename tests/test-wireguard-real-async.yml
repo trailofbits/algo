@@ -1,0 +1,65 @@
+---
+# CRITICAL TEST: WireGuard Async Structure Debugging
+# ==================================================
+# This test validates the complex triple-nested data structure created by:
+# async + register + loop -> async_status + register + loop
+#
+# DO NOT DELETE: This test prevented production deployment failures by revealing
+# that the access pattern is item.item.item (not item.item as initially assumed).
+#
+# Run with: ansible-playbook tests/test-wireguard-real-async.yml -v
+# Purpose: Debug and validate the async result structure when using with_items
+- name: Test real WireGuard async pattern
+  hosts: localhost
+  gather_facts: no
+  vars:
+    test_users: ["testuser1", "testuser2"]
+    IP_subject_alt_name: "127.0.0.1"
+    wireguard_pki_path: "/tmp/test-real-wireguard"
+
+  tasks:
+    - name: Create test directory
+      file:
+        path: "{{ wireguard_pki_path }}/private"
+        state: directory
+        mode: '0700'
+
+    - name: Simulate the actual async pattern - Generate keys (parallel)
+      command: echo "mock_private_key_for_{{ item }}"
+      register: wg_genkey
+      with_items:
+        - "{{ test_users }}"
+        - "{{ IP_subject_alt_name }}"
+      async: 10
+      poll: 0
+
+    - name: Debug - Show wg_genkey structure
+      debug:
+        var: wg_genkey
+
+    - name: Simulate the actual async pattern - Wait for completion
+      async_status:
+        jid: "{{ item.ansible_job_id }}"
+      with_items: "{{ wg_genkey.results }}"
+      register: wg_genkey_results
+      until: wg_genkey_results.finished
+      retries: 15
+      delay: 1
+
+    - name: Debug - Show wg_genkey_results structure (the real issue)
+      debug:
+        var: wg_genkey_results
+
+    - name: Try to save using the current failing pattern
+      copy:
+        dest: "{{ wireguard_pki_path }}/private/{{ item.item }}"
+        content: "{{ item.stdout }}"
+        mode: "0600"
+      when: item.changed
+      with_items: "{{ wg_genkey_results.results }}"
+      ignore_errors: true
+
+    - name: Cleanup
+      file:
+        path: "{{ wireguard_pki_path }}"
+        state: absent

@@ -21,7 +21,7 @@
     unique_name: true
     ipv6: true
     ssh_keys: "{{ do_ssh_key.data.ssh_key.id }}"
-    user_data: "{{ lookup('template', 'files/cloud-init/base.yml') }}"
+    user_data: "{{ lookup('template', 'files/cloud-init/base.yml') | string }}"
     tags:
       - Environment:Algo
   register: digital_ocean_droplet

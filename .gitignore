@@ -3,9 +3,10 @@
 configs/*
 inventory_users
 *.kate-swp
-*env
+.env/
+.venv/
 .DS_Store
-venvs/*
-!venvs/.gitinit
 .vagrant
 .ansible/
+__pycache__/
+*.pyc

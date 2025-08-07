@@ -18,13 +18,11 @@
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
   tags: always
 
-- name: Include tasks for FreeBSD
-  include_tasks: freebsd.yml
-  when: ansible_distribution == 'FreeBSD'
-  tags: always
 
 - name: Generate keys
   import_tasks: keys.yml
+  delegate_to: localhost
+  become: false
   tags: update-users
 
 - block:
@@ -40,7 +38,7 @@
           with_items: "{{ users }}"
 
         - set_fact:
-            wireguard_users: "{{ (lookup('file', wireguard_pki_path + 'index.txt')).split('\n') }}"
+            wireguard_users: "{{ (lookup('file', wireguard_pki_path + '/index.txt')).split('\n') }}"
 
         - name: WireGuard users config generated
           template:

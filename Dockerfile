@@ -1,33 +1,56 @@
-FROM python:3.11-alpine
+# syntax=docker/dockerfile:1
+FROM python:3.12-alpine
 
 ARG VERSION="git"
-ARG PACKAGES="bash libffi openssh-client openssl rsync tini gcc libffi-dev linux-headers make musl-dev openssl-dev rust cargo"
+# Removed rust/cargo (not needed with uv), simplified package list
+ARG PACKAGES="bash openssh-client openssl rsync tini"
 
 LABEL name="algo" \
       version="${VERSION}" \
       description="Set up a personal IPsec VPN in the cloud" \
-      maintainer="Trail of Bits <http://github.com/trailofbits/algo>"
+      maintainer="Trail of Bits <https://github.com/trailofbits/algo>" \
+      org.opencontainers.image.source="https://github.com/trailofbits/algo" \
+      org.opencontainers.image.description="Algo VPN - Set up a personal IPsec VPN in the cloud" \
+      org.opencontainers.image.licenses="AGPL-3.0"
 
-RUN apk --no-cache add ${PACKAGES}
-RUN adduser -D -H -u 19857 algo
-RUN mkdir -p /algo && mkdir -p /algo/configs
+# Install system packages in a single layer
+RUN apk --no-cache add ${PACKAGES} && \
+    adduser -D -H -u 19857 algo && \
+    mkdir -p /algo /algo/configs
 
 WORKDIR /algo
-COPY requirements.txt .
-RUN python3 -m pip --no-cache-dir install -U pip && \
-    python3 -m pip --no-cache-dir install virtualenv && \
-    python3 -m virtualenv .env && \
-    source .env/bin/activate && \
-    python3 -m pip --no-cache-dir install -r requirements.txt
-COPY . .
-RUN chmod 0755 /algo/algo-docker.sh
 
-# Because of the bind mounting of `configs/`, we need to run as the `root` user
-# This may break in cases where user namespacing is enabled, so hopefully Docker
-# sorts out a way to set permissions on bind-mounted volumes (`docker run -v`)
-# before userns becomes default
-# Note that not running as root will break if we don't have a matching userid
-# in the container. The filesystem has also been set up to assume root.
+# Copy uv binary from official image (using latest tag for automatic updates)
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
+
+# Copy dependency files and install in single layer for better optimization
+COPY pyproject.toml uv.lock ./
+RUN uv sync --locked --no-dev
+
+# Copy application code
+COPY . .
+
+# Set executable permissions and prepare runtime
+RUN chmod 0755 /algo/algo-docker.sh && \
+    chown -R algo:algo /algo && \
+    # Create volume mount point with correct ownership
+    mkdir -p /data && \
+    chown algo:algo /data
+
+# Multi-arch support metadata
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+RUN printf "Built on: %s\nTarget: %s\n" "${BUILDPLATFORM}" "${TARGETPLATFORM}" > /algo/build-info
+
+# Note: Running as root for bind mount compatibility with algo-docker.sh
+# The script handles /data volume permissions and needs root access
+# This is a Docker limitation with bind-mounted volumes
 USER root
+
+# Health check to ensure container is functional
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD /bin/uv --version || exit 1
+
+VOLUME ["/data"]
 CMD [ "/algo/algo-docker.sh" ]
 ENTRYPOINT [ "/sbin/tini", "--" ]

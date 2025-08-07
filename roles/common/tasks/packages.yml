@@ -1,0 +1,63 @@
+---
+- name: Initialize package lists
+  set_fact:
+    algo_packages: "{{ tools | default([]) if not performance_preinstall_packages | default(false) else [] }}"
+    algo_packages_optional: []
+  when: performance_parallel_packages | default(true)
+
+- name: Add StrongSwan packages
+  set_fact:
+    algo_packages: "{{ algo_packages + ['strongswan'] }}"
+  when:
+    - performance_parallel_packages | default(true)
+    - ipsec_enabled | default(false)
+
+- name: Add WireGuard packages
+  set_fact:
+    algo_packages: "{{ algo_packages + ['wireguard'] }}"
+  when:
+    - performance_parallel_packages | default(true)
+    - wireguard_enabled | default(true)
+
+- name: Add DNS packages
+  set_fact:
+    algo_packages: "{{ algo_packages + ['dnscrypt-proxy'] }}"
+  when:
+    - performance_parallel_packages | default(true)
+    # dnscrypt-proxy handles both DNS ad-blocking and DNS-over-HTTPS/TLS encryption
+    # Install if user wants either ad-blocking OR encrypted DNS (or both)
+    - algo_dns_adblocking | default(false) or dns_encryption | default(false)
+
+- name: Add kernel headers to optional packages
+  set_fact:
+    algo_packages_optional: "{{ algo_packages_optional + ['linux-headers-generic', 'linux-headers-' + ansible_kernel] }}"
+  when:
+    - performance_parallel_packages | default(true)
+    - install_headers | default(false)
+
+- name: Install all packages in batch (performance optimization)
+  apt:
+    name: "{{ algo_packages | unique }}"
+    state: present
+    update_cache: true
+    install_recommends: true
+  when:
+    - performance_parallel_packages | default(true)
+    - algo_packages | length > 0
+
+- name: Install optional packages in batch
+  apt:
+    name: "{{ algo_packages_optional | unique }}"
+    state: present
+  when:
+    - performance_parallel_packages | default(true)
+    - algo_packages_optional | length > 0
+
+- name: Debug - Show batched packages
+  debug:
+    msg:
+      - "Batch installed {{ algo_packages | length }} main packages: {{ algo_packages | unique | join(', ') }}"
+      - "Batch installed {{ algo_packages_optional | length }} optional packages: {{ algo_packages_optional | unique | join(', ') }}"
+  when:
+    - performance_parallel_packages | default(true)
+    - (algo_packages | length > 0 or algo_packages_optional | length > 0)

@@ -1,64 +1,81 @@
-# Amazon EC2 cloud setup
+# Amazon EC2 Cloud Setup
 
-## AWS account creation
+This guide walks you through setting up Algo VPN on Amazon EC2, including account creation, permissions configuration, and deployment process.
 
-Creating an Amazon AWS account requires giving Amazon a phone number that can receive a call and has a number pad to enter a PIN challenge displayed in the browser. This phone system prompt occasionally fails to correctly validate input, but try again (request a new PIN in the browser) until you succeed.
+## AWS Account Creation
 
-### Select an EC2 plan
+Creating an Amazon AWS account requires providing a phone number that can receive automated calls with PIN verification. The phone verification system occasionally fails, but you can request a new PIN and try again until it succeeds.
 
-The cheapest EC2 plan you can choose is the "Free Plan" a.k.a. the ["AWS Free Tier"](https://aws.amazon.com/free/). It is only available to new AWS customers, it has limits on usage, and it converts to standard pricing after 12 months (the "introductory period"). After you exceed the usage limits, after the 12 month period, or if you are an existing AWS customer, then you will pay standard pay-as-you-go service prices.
+## Choose Your EC2 Plan
 
-*Note*: Your Algo instance will not stop working when you hit the bandwidth limit, you will just start accumulating service charges on your AWS account.
+### AWS Free Tier
 
-As of the time of this writing (June 2024), the Free Tier limits include "750 hours of Amazon EC2 Linux t2.micro (some regions like the Middle East (Bahrain) region and the EU (Stockholm) region [do not offer t2.micro instances](https://aws.amazon.com/free/free-tier-faqs/)) or t3.micro instance usage" per month, [100 GB of bandwidth (outbound) per month](https://repost.aws/questions/QUAT1NfOeZSAK5z8KXXO9jgA/do-amazon-aws-ec2-free-tier-have-a-bandwidth-limit#ANNZSAFFk3T0Kv7ZHnZwf9Mw) from [November 2021](https://aws.amazon.com/blogs/aws/aws-free-tier-data-transfer-expansion-100-gb-from-regions-and-1-tb-from-amazon-cloudfront-per-month/), and 30 GB of cloud storage. Algo will not even use 1% of the storage limit, but you may have to monitor your bandwidth usage or keep an eye out for the email from Amazon when you are about to exceed the Free Tier limits.
+The most cost-effective option for new AWS customers is the [AWS Free Tier](https://aws.amazon.com/free/), which provides:
 
-If you are not eligible for the free tier plan or have passed the 12 months of the introductory period, you can switch to [AWS Graviton](https://aws.amazon.com/ec2/graviton/) instances that are generally cheaper. To use the graviton instances, make the following changes in the ec2 section of your `config.cfg` file:
-* Set the `size` to `t4g.nano`
-* Set the `arch` to `arm64`
+- 750 hours of Amazon EC2 Linux t2.micro or t3.micro instance usage per month
+- 100 GB of outbound data transfer per month
+- 30 GB of cloud storage
 
-> Currently, among all the instance sizes available on AWS, the t4g.nano instance is the least expensive option that does not require any promotional offers. However, AWS is currently running a promotion that provides a free trial of the `t4g.small` instance until December 31, 2023, which is available to all customers. For more information about this promotion, please refer to the [documentation](https://aws.amazon.com/ec2/faqs/#t4g-instances).
+The Free Tier is available for 12 months from account creation. Some regions like Middle East (Bahrain) and EU (Stockholm) don't offer t2.micro instances, but t3.micro is available as an alternative.
 
-Additional configurations are documented in the [EC2 section of the deploy from ansible guide](https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md#amazon-ec2)
+Note that your Algo instance will continue working if you exceed bandwidth limits - you'll just start accruing standard charges on your AWS account.
 
-### Create an AWS permissions policy
+### Cost-Effective Alternatives
 
-In the AWS console, find the policies menu: click Services > IAM > Policies. Click Create Policy.
+If you're not eligible for the Free Tier or prefer more predictable costs, consider AWS Graviton instances. To use Graviton instances, modify your `config.cfg` file:
 
-Here, you have the policy editor. Switch to the JSON tab and copy-paste over the existing empty policy with [the minimum required AWS policy needed for Algo deployment](https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md#minimum-required-iam-permissions-for-deployment).
+```yaml
+ec2:
+  size: t4g.nano
+  arch: arm64
+```
 
-When prompted to name the policy, name it `AlgoVPN_Provisioning`.
+The t4g.nano instance is currently the least expensive option without promotional requirements. AWS is also running a promotion offering free t4g.small instances until December 31, 2025 - see the [AWS documentation](https://aws.amazon.com/ec2/faqs/#t4g-instances) for details.
+
+For additional EC2 configuration options, see the [deploy from ansible guide](https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md#amazon-ec2).
+
+## Set Up IAM Permissions
+
+### Create IAM Policy
+
+1. In the AWS console, navigate to Services → IAM → Policies
+2. Click "Create Policy"
+3. Switch to the JSON tab
+4. Replace the default content with the [minimum required AWS policy for Algo deployment](https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md#minimum-required-iam-permissions-for-deployment)
+5. Name the policy `AlgoVPN_Provisioning`
 
 ![Creating a new permissions policy in the AWS console.](/docs/images/aws-ec2-new-policy.png)
 
-### Set up an AWS user
+### Create IAM User
 
-In the AWS console, find the users (“Identity and Access Management”, a.k.a. IAM users) menu: click Services > IAM.
-
-Activate multi-factor authentication (MFA) on your root account. The simplest choice is the mobile app "Google Authenticator." A hardware U2F token is ideal (less prone to a phishing attack), but a TOTP authenticator like this is good enough.
+1. Navigate to Services → IAM → Users
+2. Enable multi-factor authentication (MFA) on your root account using Google Authenticator or a hardware token
+3. Click "Add User" and create a username (e.g., `algovpn`)
+4. Select "Programmatic access" 
+5. Click "Next: Permissions"
 
 ![The new user screen in the AWS console.](/docs/images/aws-ec2-new-user.png)
 
-Now "Create individual IAM users" and click Add User. Create a user name. I chose “algovpn”. Then click the box next to Programmatic Access. Then click Next.
-
-![The IAM user naming screen in the AWS console.](/docs/images/aws-ec2-new-user-name.png)
-
-Next, click “Attach existing policies directly.” Type “Algo” in the search box to filter the policies. Find “AlgoVPN_Provisioning” (the policy you created) and click the checkbox next to that. Click Next when you’re done.
+6. Choose "Attach existing policies directly"
+7. Search for "Algo" and select the `AlgoVPN_Provisioning` policy you created
+8. Click "Next: Tags" (optional), then "Next: Review"
 
 ![Attaching a policy to an IAM user in the AWS console.](/docs/images/aws-ec2-attach-policy.png)
 
-The user creation confirmation screen should look like this if you've done everything correctly.
-
-![New user creation confirmation screen in the AWS console.](/docs/images/aws-ec2-new-user-confirm.png)
-
-On the final screen, click the Download CSV button. This file includes the AWS access keys you’ll need during the Algo set-up process. Click Close, and you’re all set.
+9. Review your settings and click "Create user"
+10. Download the CSV file containing your access credentials - you'll need these for Algo deployment
 
 ![Downloading the credentials for an AWS IAM user.](/docs/images/aws-ec2-new-user-csv.png)
 
-## Using EC2 during Algo setup
+Keep the CSV file secure as it contains sensitive credentials that grant access to your AWS account.
 
-After you have downloaded Algo and installed its dependencies, the next step is running Algo to provision the VPN server on your AWS account.
+## Deploy with Algo
 
-First, you will be asked which server type to setup. You would want to enter "3" to use Amazon EC2.
+Once you've installed Algo and its dependencies, you can deploy your VPN server to EC2.
+
+### Provider Selection
+
+Run `./algo` and select Amazon EC2 when prompted:
 
 ```
 $ ./algo
@@ -81,7 +98,15 @@ Enter the number of your desired provider
 : 3
 ```
 
-Next, you will be asked for the AWS Access Key (Access Key ID) and AWS Secret Key (Secret Access Key) that you received in  the CSV file when you setup the account (don't worry if you don't see your text entered in the console; the key input is  hidden here by Algo).
+### AWS Credentials
+
+Algo will automatically detect AWS credentials in this order:
+
+1. Command-line variables
+2. Environment variables (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`)
+3. AWS credentials file (`~/.aws/credentials`)
+
+If no credentials are found, you'll be prompted to enter them manually:
 
 ```
 Enter your aws_access_key (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
@@ -94,14 +119,18 @@ Enter your aws_secret_key (http://docs.aws.amazon.com/general/latest/gr/managing
 [ABCD...]:
 ```
 
-You will be prompted for the server name to enter. Feel free to leave this as the default ("algo") if you are not certain how this will affect your setup. Here we chose to call it "algovpn".
+For detailed credential configuration options, see the [AWS Credentials guide](aws-credentials.md).
+
+### Server Configuration
+
+You'll be prompted to name your server (default is "algo"):
 
 ```
 Name the vpn server:
 [algo]: algovpn
 ```
 
-After entering the server name, the script ask which region you wish to setup your new Algo instance in. Enter the number next to name of the region.
+Next, select your preferred AWS region:
 
 ```
 What region should the server be located in?
@@ -128,8 +157,20 @@ Enter the number of your desired region
 :
 ```
 
-You will then be asked the remainder of the standard Algo setup questions.
+Choose a region close to your location for optimal performance, keeping in mind that some regions may have different pricing or instance availability.
 
-## Cleanup
+After region selection, Algo will continue with the standard setup questions for user configuration and VPN options.
 
-If you've installed Algo onto EC2 multiple times, your AWS account may become cluttered with unused or deleted resources e.g. instances, VPCs, subnets, etc. This may cause future installs to fail. The easiest way to clean up after you're done with a server is to go to "CloudFormation" from the console and delete the CloudFormation stack associated with that server. Please note that unless you've enabled termination protection on your instance, deleting the stack this way will delete your instance without warning, so be sure you are deleting the correct stack.
+## Resource Cleanup
+
+If you deploy Algo to EC2 multiple times, unused resources (instances, VPCs, subnets) may accumulate and potentially cause future deployment issues.
+
+The cleanest way to remove an Algo deployment is through CloudFormation:
+
+1. Go to the AWS console and navigate to CloudFormation
+2. Find the stack associated with your Algo server
+3. Delete the entire stack
+
+Warning: Deleting a CloudFormation stack will permanently delete your EC2 instance and all associated resources unless you've enabled termination protection. Make sure you're deleting the correct stack and have backed up any important data.
+
+This approach ensures all related AWS resources are properly cleaned up, preventing resource conflicts in future deployments.
