@@ -10,14 +10,14 @@
 
 - name: Security group created
   openstack.cloud.security_group:
-    state: "{{ state|default('present') }}"
+    state: "{{ state | default('present') }}"
     name: "{{ algo_server_name }}-security_group"
     description: AlgoVPN security group
   register: os_security_group
 
 - name: Security rules created
   openstack.cloud.security_group_rule:
-    state: "{{ state|default('present') }}"
+    state: "{{ state | default('present') }}"
     security_group: "{{ os_security_group.id }}"
     protocol: "{{ item.proto }}"
     port_range_min: "{{ item.port_min }}"
@@ -67,7 +67,7 @@
 
 - name: Server created
   openstack.cloud.server:
-    state: "{{ state|default('present') }}"
+    state: "{{ state | default('present') }}"
     name: "{{ algo_server_name }}"
     image: "{{ image_id }}"
     flavor: "{{ flavor_id }}"

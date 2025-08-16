@@ -23,7 +23,7 @@
   with_together:
     - "{{ users }}"
     - "{{ PayloadContent.results }}"
-  no_log: "{{ algo_no_log|bool }}"
+  no_log: "{{ algo_no_log | bool }}"
 
 - name: Build the client ipsec config file
   template:

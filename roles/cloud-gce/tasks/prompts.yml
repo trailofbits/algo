@@ -6,20 +6,20 @@
   register: _gce_credentials_file
   when:
     - gce_credentials_file is undefined
-    - lookup('env','GCE_CREDENTIALS_FILE_PATH')|length <= 0
+    - lookup('env', 'GCE_CREDENTIALS_FILE_PATH')|length <= 0
 
 - set_fact:
     credentials_file_path: >-
       {{ gce_credentials_file | default(_gce_credentials_file.user_input|default(None)) |
-         default(lookup('env','GCE_CREDENTIALS_FILE_PATH'), true) }}
+         default(lookup('env', 'GCE_CREDENTIALS_FILE_PATH'), true) }}
     ssh_public_key_lookup: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
 
 - set_fact:
     credentials_file_lookup: "{{ lookup('file', '{{ credentials_file_path }}') }}"
 
 - set_fact:
-    service_account_email: "{{ credentials_file_lookup.client_email | default(lookup('env','GCE_EMAIL')) }}"
-    project_id: "{{ credentials_file_lookup.project_id | default(lookup('env','GCE_PROJECT')) }}"
+    service_account_email: "{{ credentials_file_lookup.client_email | default(lookup('env', 'GCE_EMAIL')) }}"
+    project_id: "{{ credentials_file_lookup.project_id | default(lookup('env', 'GCE_PROJECT')) }}"
 
 - block:
     - name: Get regions

@@ -6,11 +6,11 @@
   register: _do_token
   when:
     - do_token is undefined
-    - lookup('env','DO_API_TOKEN')|length <= 0
+    - lookup('env', 'DO_API_TOKEN')|length <= 0
 
 - name: Set the token as a fact
   set_fact:
-    algo_do_token: "{{ do_token | default(_do_token.user_input|default(None)) | default(lookup('env','DO_API_TOKEN'), true) }}"
+    algo_do_token: "{{ do_token | default(_do_token.user_input | default(None)) | default(lookup('env', 'DO_API_TOKEN'), true) }}"
 
 - name: Get regions
   uri:

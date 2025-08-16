@@ -82,7 +82,7 @@ def main():
         module.fail_json(msg='Python module "botocore" is missing, please install it')
 
     try:
-        region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
+        region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module)
 
         client = None
         try:

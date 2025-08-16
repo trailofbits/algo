@@ -140,7 +140,7 @@
 
 - name: Install tools (legacy method)
   apt:
-    name: "{{ tools|default([]) }}"
+    name: "{{ tools | default([]) }}"
     state: present
     update_cache: true
   when:

@@ -29,7 +29,7 @@
         ports:
           - "500"
           - "4500"
-          - "{{ wireguard_port|string }}"
+          - "{{ wireguard_port | string }}"
       - ip_protocol: tcp
         ports:
           - "{{ ssh_port }}"
@@ -70,7 +70,7 @@
       - network: "{{ gcp_compute_network }}"
         access_configs:
           - name: "{{ algo_server_name }}"
-            nat_ip: "{{ gcp_compute_address|default(None) }}"
+            nat_ip: "{{ gcp_compute_address | default(None) }}"
             type: ONE_TO_ONE_NAT
     tags:
       items:
