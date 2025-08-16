@@ -2,6 +2,13 @@
 - name: Set OS specific facts
   set_fact:
     strongswan_additional_plugins: []
+
+- name: Ubuntu | Ensure af_key kernel module is loaded
+  modprobe:
+    name: af_key
+    state: present
+    persistent: present
+
 - name: Ubuntu | Install strongSwan (individual)
   apt:
     name: strongswan

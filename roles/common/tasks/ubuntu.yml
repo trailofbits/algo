@@ -161,5 +161,31 @@
   include_tasks: aip/main.yml
   when: alternative_ingress_ip
 
+- name: Ubuntu 22.04+ | Use iptables-legacy for compatibility
+  block:
+    - name: Install iptables packages
+      apt:
+        name:
+          - iptables
+          - iptables-persistent
+        state: present
+        update_cache: true
+
+    - name: Configure iptables-legacy as default
+      alternatives:
+        name: "{{ item }}"
+        path: "/usr/sbin/{{ item }}-legacy"
+      with_items:
+        - iptables
+        - ip6tables
+        - iptables-save
+        - iptables-restore
+        - ip6tables-save
+        - ip6tables-restore
+  when:
+    - ansible_distribution == "Ubuntu"
+    - ansible_distribution_version is version('22.04', '>=')
+  tags: iptables
+
 - include_tasks: iptables.yml
   tags: iptables
