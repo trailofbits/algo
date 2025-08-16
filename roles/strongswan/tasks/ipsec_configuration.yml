@@ -2,7 +2,7 @@
 - name: Setup the config files from our templates
   template:
     src: "{{ item.src }}"
-    dest: "{{ config_prefix|default('/') }}etc/{{ item.dest }}"
+    dest: "{{ config_prefix | default('/') }}etc/{{ item.dest }}"
     owner: "{{ item.owner }}"
     group: "{{ item.group }}"
     mode: "{{ item.mode }}"
@@ -10,22 +10,22 @@
     - src: strongswan.conf.j2
       dest: strongswan.conf
       owner: root
-      group: "{{ root_group|default('root') }}"
+      group: "{{ root_group | default('root') }}"
       mode: "0644"
     - src: ipsec.conf.j2
       dest: ipsec.conf
       owner: root
-      group: "{{ root_group|default('root') }}"
+      group: "{{ root_group | default('root') }}"
       mode: "0644"
     - src: ipsec.secrets.j2
       dest: ipsec.secrets
       owner: strongswan
-      group: "{{ root_group|default('root') }}"
+      group: "{{ root_group | default('root') }}"
       mode: "0600"
     - src: charon.conf.j2
       dest: strongswan.d/charon.conf
       owner: root
-      group: "{{ root_group|default('root') }}"
+      group: "{{ root_group | default('root') }}"
       mode: "0644"
   notify:
     - restart strongswan
@@ -33,7 +33,7 @@
 - name: Get loaded plugins
   shell: |
     set -o pipefail
-    find {{ config_prefix|default('/') }}etc/strongswan.d/charon/ -type f -name '*.conf' -exec basename {} \; |
+    find {{ config_prefix | default('/') }}etc/strongswan.d/charon/ -type f -name '*.conf' -exec basename {} \; |
     cut -f1 -d.
   changed_when: false
   args:
@@ -42,7 +42,7 @@
 
 - name: Disable unneeded plugins
   lineinfile:
-    dest: "{{ config_prefix|default('/') }}etc/strongswan.d/charon/{{ item }}.conf"
+    dest: "{{ config_prefix | default('/') }}etc/strongswan.d/charon/{{ item }}.conf"
     regexp: .*load.*
     line: load = no
     state: present
@@ -52,7 +52,7 @@
   with_items: "{{ strongswan_plugins.stdout_lines }}"
 
 - name: Ensure that required plugins are enabled
-  lineinfile: dest="{{ config_prefix|default('/') }}etc/strongswan.d/charon/{{ item }}.conf" regexp='.*load.*' line='load = yes' state=present
+  lineinfile: dest="{{ config_prefix | default('/') }}etc/strongswan.d/charon/{{ item }}.conf" regexp='.*load.*' line='load = yes' state=present
   notify:
     - restart strongswan
   when: item in strongswan_enabled_plugins or item in strongswan_additional_plugins

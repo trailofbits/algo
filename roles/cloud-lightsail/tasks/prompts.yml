@@ -7,7 +7,7 @@
   register: _aws_access_key
   when:
     - aws_access_key is undefined
-    - lookup('env','AWS_ACCESS_KEY_ID')|length <= 0
+    - lookup('env', 'AWS_ACCESS_KEY_ID')|length <= 0
 
 - pause:
     prompt: |
@@ -16,11 +16,11 @@
   register: _aws_secret_key
   when:
     - aws_secret_key is undefined
-    - lookup('env','AWS_SECRET_ACCESS_KEY')|length <= 0
+    - lookup('env', 'AWS_SECRET_ACCESS_KEY')|length <= 0
 
 - set_fact:
-    access_key: "{{ aws_access_key | default(_aws_access_key.user_input|default(None)) | default(lookup('env','AWS_ACCESS_KEY_ID'), true) }}"
-    secret_key: "{{ aws_secret_key | default(_aws_secret_key.user_input|default(None)) | default(lookup('env','AWS_SECRET_ACCESS_KEY'), true) }}"
+    access_key: "{{ aws_access_key | default(_aws_access_key.user_input | default(None)) | default(lookup('env', 'AWS_ACCESS_KEY_ID'), true) }}"
+    secret_key: "{{ aws_secret_key | default(_aws_secret_key.user_input | default(None)) | default(lookup('env', 'AWS_SECRET_ACCESS_KEY'), true) }}"
 
 - block:
     - name: Get regions
@@ -46,7 +46,7 @@
           What region should the server be located in?
           (https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/)
             {% for r in lightsail_regions %}
-            {{ (loop.index|string + '.').ljust(3) }} {{ r['name'].ljust(20) }} {{ r['displayName'] }}
+            {{ (loop.index | string + '.').ljust(3) }} {{ r['name'].ljust(20) }} {{ r['displayName'] }}
             {% endfor %}
 
           Enter the number of your desired region

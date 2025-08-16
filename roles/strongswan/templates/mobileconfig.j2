@@ -13,8 +13,8 @@
               <key>OnDemandRules</key>
               <array>
 {% if algo_ondemand_wifi or algo_ondemand_cellular %}
-  {% if algo_ondemand_wifi_exclude|b64decode != '_null' %}
-    {% set WIFI_EXCLUDE_LIST = (algo_ondemand_wifi_exclude|b64decode|string).split(',') %}
+  {% if algo_ondemand_wifi_exclude | b64decode != '_null' %}
+    {% set WIFI_EXCLUDE_LIST = (algo_ondemand_wifi_exclude | b64decode | string).split(',') %}
                   <dict>
                       <key>Action</key>
                       <string>Disconnect</string>
@@ -23,7 +23,7 @@
                       <key>SSIDMatch</key>
                       <array>
     {% for network_name in WIFI_EXCLUDE_LIST %}
-                          <string>{{ network_name|e }}</string>
+                          <string>{{ network_name | e }}</string>
     {% endfor %}
                       </array>
                   </dict>

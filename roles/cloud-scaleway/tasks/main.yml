@@ -37,7 +37,7 @@
         wait: true
         tags:
           - Environment:Algo
-          - AUTHORIZED_KEY={{ lookup('file', SSH_keys.public)|regex_replace(' ', '_') }}
+          - AUTHORIZED_KEY={{ lookup('file', SSH_keys.public) | regex_replace(' ', '_') }}
       register: scaleway_compute
 
     - name: Patch the cloud-init
@@ -64,7 +64,7 @@
         wait: true
         tags:
           - Environment:Algo
-          - AUTHORIZED_KEY={{ lookup('file', SSH_keys.public)|regex_replace(' ', '_') }}
+          - AUTHORIZED_KEY={{ lookup('file', SSH_keys.public) | regex_replace(' ', '_') }}
       register: algo_instance
       until: algo_instance.msg.public_ip
       retries: 3

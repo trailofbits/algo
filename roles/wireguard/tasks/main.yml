@@ -78,7 +78,7 @@
     - name: WireGuard configured
       template:
         src: server.conf.j2
-        dest: "{{ config_prefix|default('/') }}etc/wireguard/{{ wireguard_interface }}.conf"
+        dest: "{{ config_prefix | default('/') }}etc/wireguard/{{ wireguard_interface }}.conf"
         mode: "0600"
       notify: restart wireguard
   tags: update-users

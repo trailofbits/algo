@@ -6,7 +6,7 @@
   register: _scaleway_token
   when:
     - scaleway_token is undefined
-    - lookup('env','SCW_TOKEN')|length <= 0
+    - lookup('env', 'SCW_TOKEN')|length <= 0
 
 - pause:
     prompt: |
@@ -22,7 +22,7 @@
 
 - name: Set scaleway facts
   set_fact:
-    algo_scaleway_token: "{{ scaleway_token | default(_scaleway_token.user_input) | default(lookup('env','SCW_TOKEN'), true) }}"
+    algo_scaleway_token: "{{ scaleway_token | default(_scaleway_token.user_input) | default(lookup('env', 'SCW_TOKEN'), true) }}"
     algo_region: >-
       {% if region is defined %}{{ region }}
       {%- elif _algo_region.user_input %}{{ scaleway_regions[_algo_region.user_input | int -1 ]['alias'] }}

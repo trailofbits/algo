@@ -269,6 +269,6 @@
 - name: Copy the CRL to the vpn server
   copy:
     src: "{{ ipsec_pki_path }}/crl.pem"
-    dest: "{{ config_prefix|default('/') }}etc/ipsec.d/crls/algo.root.pem"
+    dest: "{{ config_prefix | default('/') }}etc/ipsec.d/crls/algo.root.pem"
   notify:
     - rereadcrls

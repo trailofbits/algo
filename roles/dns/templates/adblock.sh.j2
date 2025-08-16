@@ -5,7 +5,7 @@ TEMP="$(mktemp)"
 TEMP_SORTED="$(mktemp)"
 WHITELIST="/etc/dnscrypt-proxy/white.list"
 BLACKLIST="/etc/dnscrypt-proxy/black.list"
-BLOCKHOSTS="{{ config_prefix|default('/') }}etc/dnscrypt-proxy/blacklist.txt"
+BLOCKHOSTS="{{ config_prefix | default('/') }}etc/dnscrypt-proxy/blacklist.txt"
 BLOCKLIST_URLS="{% for url in adblock_lists %}{{ url }} {% endfor %}"
 
 #Delete the old block.hosts to make room for the updates

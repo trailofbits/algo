@@ -42,7 +42,7 @@
 
         - name: Set facts based on the input
           set_fact:
-            algo_provider: "{{ provider | default(providers_map[_algo_provider.user_input|default(omit)|int - 1]['alias']) }}"
+            algo_provider: "{{ provider | default(providers_map[_algo_provider.user_input | default(omit) | int - 1]['alias']) }}"
 
         - name: VPN server name prompt
           pause:
@@ -110,10 +110,10 @@
           set_fact:
             algo_server_name: >-
               {% if server_name is defined %}{% set _server = server_name %}
-              {%- elif _algo_server_name.user_input is defined and _algo_server_name.user_input|length > 0 -%}
+              {%- elif _algo_server_name.user_input is defined and _algo_server_name.user_input | length > 0 -%}
               {%- set _server = _algo_server_name.user_input -%}
               {%- else %}{% set _server = defaults['server_name'] %}{% endif -%}
-              {{ _server | regex_replace('(?!\.)(\W|_)', '-') }}
+              {{ _server | regex_replace('(?!\.)(\W | _)', '-') }}
             algo_ondemand_cellular: >-
               {% if ondemand_cellular is defined %}{{ ondemand_cellular | bool }}
               {%- elif _ondemand_cellular.user_input is defined %}{{ booleans_map[_ondemand_cellular.user_input] | default(defaults['ondemand_cellular']) }}
@@ -124,7 +124,7 @@
               {%- else %}false{% endif %}
             algo_ondemand_wifi_exclude: >-
               {% if ondemand_wifi_exclude is defined %}{{ ondemand_wifi_exclude | b64encode }}
-              {%- elif _ondemand_wifi_exclude.user_input is defined and _ondemand_wifi_exclude.user_input|length > 0 -%}
+              {%- elif _ondemand_wifi_exclude.user_input is defined and _ondemand_wifi_exclude.user_input | length > 0 -%}
               {{ _ondemand_wifi_exclude.user_input | b64encode }}
               {%- else %}{{ '_null' | b64encode }}{% endif %}
             algo_dns_adblocking: >-
