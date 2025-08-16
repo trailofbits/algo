@@ -10,3 +10,4 @@ inventory_users
 .ansible/
 __pycache__/
 *.pyc
+algo.egg-info/
