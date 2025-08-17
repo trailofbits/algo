@@ -6,9 +6,9 @@ These tests verify that the iptables rules templates generate correct
 NAT rules for both WireGuard and IPsec VPN traffic.
 """
 
-import pytest
-import yaml
 from pathlib import Path
+
+import pytest
 from jinja2 import Environment, FileSystemLoader
 
 
@@ -22,7 +22,7 @@ def load_template(template_name):
 def test_wireguard_nat_rules_ipv4():
     """Test that WireGuard traffic gets proper NAT rules without policy matching."""
     template = load_template('rules.v4.j2')
-    
+
     # Test with WireGuard enabled
     result = template.render(
         ipsec_enabled=False,
@@ -40,7 +40,7 @@ def test_wireguard_nat_rules_ipv4():
         ansible_ssh_port=22,
         reduce_mtu=0
     )
-    
+
     # Verify NAT rule exists without policy matching
     assert '-A POSTROUTING -s 10.49.0.0/16 -j MASQUERADE' in result
     # Verify no policy matching in WireGuard NAT rules
@@ -50,7 +50,7 @@ def test_wireguard_nat_rules_ipv4():
 def test_ipsec_nat_rules_ipv4():
     """Test that IPsec traffic gets proper NAT rules without policy matching."""
     template = load_template('rules.v4.j2')
-    
+
     # Test with IPsec enabled
     result = template.render(
         ipsec_enabled=True,
@@ -66,7 +66,7 @@ def test_ipsec_nat_rules_ipv4():
         ansible_ssh_port=22,
         reduce_mtu=0
     )
-    
+
     # Verify NAT rule exists without policy matching
     assert '-A POSTROUTING -s 10.48.0.0/16 -j MASQUERADE' in result
     # Verify no policy matching in IPsec NAT rules (this was the bug)
@@ -76,7 +76,7 @@ def test_ipsec_nat_rules_ipv4():
 def test_both_vpns_nat_rules_ipv4():
     """Test NAT rules when both VPN types are enabled."""
     template = load_template('rules.v4.j2')
-    
+
     result = template.render(
         ipsec_enabled=True,
         wireguard_enabled=True,
@@ -96,11 +96,11 @@ def test_both_vpns_nat_rules_ipv4():
         ansible_ssh_port=22,
         reduce_mtu=0
     )
-    
+
     # Both should have NAT rules
     assert '-A POSTROUTING -s 10.48.0.0/16 -j MASQUERADE' in result
     assert '-A POSTROUTING -s 10.49.0.0/16 -j MASQUERADE' in result
-    
+
     # Neither should have policy matching
     assert '-m policy --pol none' not in result
 
@@ -108,7 +108,7 @@ def test_both_vpns_nat_rules_ipv4():
 def test_alternative_ingress_snat():
     """Test that alternative ingress IP uses SNAT instead of MASQUERADE."""
     template = load_template('rules.v4.j2')
-    
+
     result = template.render(
         ipsec_enabled=True,
         wireguard_enabled=True,
@@ -128,7 +128,7 @@ def test_alternative_ingress_snat():
         ansible_ssh_port=22,
         reduce_mtu=0
     )
-    
+
     # Should use SNAT with specific IP instead of MASQUERADE
     assert '-A POSTROUTING -s 10.48.0.0/16 -j SNAT --to 192.168.1.100' in result
     assert '-A POSTROUTING -s 10.49.0.0/16 -j SNAT --to 192.168.1.100' in result
@@ -138,7 +138,7 @@ def test_alternative_ingress_snat():
 def test_ipsec_forward_rule_has_policy_match():
     """Test that IPsec FORWARD rules still use policy matching (this is correct)."""
     template = load_template('rules.v4.j2')
-    
+
     result = template.render(
         ipsec_enabled=True,
         wireguard_enabled=False,
@@ -153,7 +153,7 @@ def test_ipsec_forward_rule_has_policy_match():
         ansible_ssh_port=22,
         reduce_mtu=0
     )
-    
+
     # FORWARD rule should have policy match (this is correct and should stay)
     assert '-A FORWARD -m conntrack --ctstate NEW -s 10.48.0.0/16 -m policy --pol ipsec --dir in -j ACCEPT' in result
 
@@ -161,7 +161,7 @@ def test_ipsec_forward_rule_has_policy_match():
 def test_wireguard_forward_rule_no_policy_match():
     """Test that WireGuard FORWARD rules don't use policy matching."""
     template = load_template('rules.v4.j2')
-    
+
     result = template.render(
         ipsec_enabled=False,
         wireguard_enabled=True,
@@ -178,7 +178,7 @@ def test_wireguard_forward_rule_no_policy_match():
         ansible_ssh_port=22,
         reduce_mtu=0
     )
-    
+
     # WireGuard FORWARD rule should NOT have any policy match
     assert '-A FORWARD -m conntrack --ctstate NEW -s 10.49.0.0/16 -j ACCEPT' in result
     assert '-A FORWARD -m conntrack --ctstate NEW -s 10.49.0.0/16 -m policy' not in result
