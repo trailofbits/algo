@@ -8,9 +8,12 @@ CA_CONSTRAINTS="$(openssl verify -verbose \
   -CAfile ./configs/10.0.8.100/ipsec/.pki/cacert.pem \
   ./configs/10.0.8.100/ipsec/.pki/certs/google-algo-test-pair.com.crt 2>&1)" || true
 
-echo "$CA_CONSTRAINTS" | grep "permitted subtree violation" >/dev/null && \
-  echo "Name Constraints test passed" || \
-  (echo "Name Constraints test failed" && exit 1)
+if echo "$CA_CONSTRAINTS" | grep "permitted subtree violation" >/dev/null; then
+  echo "Name Constraints test passed"
+else
+  echo "Name Constraints test failed"
+  exit 1
+fi
 
 echo "$CA_CONSTRAINTS"
 

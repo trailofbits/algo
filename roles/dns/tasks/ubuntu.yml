@@ -16,7 +16,7 @@
         dest: /etc/apt/apt.conf.d/50-dnscrypt-proxy-unattended-upgrades
         owner: root
         group: root
-        mode: 0644
+        mode: '0644'
   when: ansible_facts['distribution_version'] is version('20.04', '<')
 
 - name: Install dnscrypt-proxy (individual)
@@ -33,7 +33,7 @@
         dest: /etc/apparmor.d/usr.bin.dnscrypt-proxy
         owner: root
         group: root
-        mode: 0600
+        mode: '0600'
       notify: restart dnscrypt-proxy
 
     - name: Ubuntu | Enforce the dnscrypt-proxy AppArmor policy
@@ -46,13 +46,14 @@
   file:
     path: /etc/systemd/system/dnscrypt-proxy.service.d/
     state: directory
-    mode: 0755
+    mode: '0755'
     owner: root
     group: root
 
 - name: Ubuntu | Add custom requirements to successfully start the unit
   copy:
     dest: /etc/systemd/system/dnscrypt-proxy.service.d/99-algo.conf
+    mode: '0644'
     content: |
       [Unit]
       After=systemd-resolved.service
@@ -93,7 +94,7 @@
       SystemCallErrorNumber=EPERM
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
   notify:
     - daemon-reload
     - restart dnscrypt-proxy

@@ -15,7 +15,7 @@
   file:
     path: /etc/systemd/system/wg-quick@{{ wireguard_interface }}.service.d/
     state: directory
-    mode: 0755
+    mode: '0755'
     owner: root
     group: root
 
@@ -48,7 +48,7 @@
       SystemCallErrorNumber=EPERM
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
   notify:
     - daemon-reload
     - restart wireguard

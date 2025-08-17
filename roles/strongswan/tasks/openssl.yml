@@ -98,6 +98,7 @@
       copy:
         src: "{{ ipsec_pki_path }}/cacert.pem"
         dest: "{{ ipsec_config_path }}/manual/cacert.pem"
+        mode: '0644'
 
     - name: Create private keys for users and server
       community.crypto.openssl_privatekey:
@@ -213,6 +214,7 @@
       copy:
         src: "{{ ipsec_pki_path }}/private/{{ item }}.p12"
         dest: "{{ ipsec_config_path }}/manual/{{ item }}.p12"
+        mode: '0600'
       with_items:
         - "{{ users }}"
 
@@ -227,6 +229,7 @@
       ansible.builtin.lineinfile:
         path: "{{ ipsec_pki_path }}/all-users"
         line: "{{ item }}"
+        mode: '0644'
         create: true
       with_items: "{{ users }}"
       register: users_file
@@ -277,5 +280,6 @@
   copy:
     src: "{{ ipsec_pki_path }}/crl.pem"
     dest: "{{ config_prefix | default('/') }}etc/ipsec.d/crls/algo.root.pem"
+    mode: '0644'
   notify:
     - rereadcrls

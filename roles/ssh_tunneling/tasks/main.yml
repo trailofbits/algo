@@ -23,7 +23,7 @@
   file:
     path: /var/jail/
     state: directory
-    mode: 0755
+    mode: '0755'
     owner: root
     group: "{{ root_group | default('root') }}"
 
@@ -87,7 +87,7 @@
           template:
             src: ssh_config.j2
             dest: "{{ ssh_tunnels_config_path }}/{{ item }}.ssh_config"
-            mode: 0700
+            mode: '0700'
           with_items: "{{ users }}"
       delegate_to: localhost
       become: false

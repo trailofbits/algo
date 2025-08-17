@@ -17,6 +17,10 @@ rules:
     level: warning
   comments:
     min-spaces-from-content: 1
+  comments-indentation: false
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true
   braces:
     max-spaces-inside: 1
   truthy:
