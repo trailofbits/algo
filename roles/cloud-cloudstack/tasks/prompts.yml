@@ -7,7 +7,7 @@
       register: _cs_key
       when:
         - cs_key is undefined
-        - lookup('env','CLOUDSTACK_KEY')|length <= 0
+        - lookup('env', 'CLOUDSTACK_KEY')|length <= 0
       no_log: true
 
     - pause:
@@ -17,7 +17,7 @@
       register: _cs_secret
       when:
         - cs_secret is undefined
-        - lookup('env','CLOUDSTACK_SECRET')|length <= 0
+        - lookup('env', 'CLOUDSTACK_SECRET')|length <= 0
       no_log: true
 
     - pause:
@@ -30,8 +30,8 @@
         - lookup('env', 'CLOUDSTACK_ENDPOINT') | length <= 0
 
     - set_fact:
-        algo_cs_key: "{{ cs_key | default(_cs_key.user_input|default(None)) | default(lookup('env', 'CLOUDSTACK_KEY'), true) }}"
-        algo_cs_token: "{{ cs_secret | default(_cs_secret.user_input|default(None)) | default(lookup('env', 'CLOUDSTACK_SECRET'), true) }}"
+        algo_cs_key: "{{ cs_key | default(_cs_key.user_input | default(None)) | default(lookup('env', 'CLOUDSTACK_KEY'), true) }}"
+        algo_cs_token: "{{ cs_secret | default(_cs_secret.user_input | default(None)) | default(lookup('env', 'CLOUDSTACK_SECRET'), true) }}"
         algo_cs_url: >-
           {{ cs_url | default(_cs_url.user_input|default(None)) |
              default(lookup('env', 'CLOUDSTACK_ENDPOINT'), true) |

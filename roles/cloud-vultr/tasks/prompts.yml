@@ -6,12 +6,12 @@
   register: _vultr_config
   when:
     - vultr_config is undefined
-    - lookup('env','VULTR_API_CONFIG')|length <= 0
+    - lookup('env', 'VULTR_API_CONFIG')|length <= 0
   no_log: true
 
 - name: Set the token as a fact
   set_fact:
-    algo_vultr_config: "{{ vultr_config | default(_vultr_config.user_input) | default(lookup('env','VULTR_API_CONFIG'), true) }}"
+    algo_vultr_config: "{{ vultr_config | default(_vultr_config.user_input) | default(lookup('env', 'VULTR_API_CONFIG'), true) }}"
   no_log: true
 
 - name: Set the Vultr API Key as a fact

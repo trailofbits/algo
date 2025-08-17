@@ -22,7 +22,7 @@
       no_log: true
   when:
     - aws_access_key is undefined
-    - lookup('env','AWS_ACCESS_KEY_ID')|length <= 0
+    - lookup('env', 'AWS_ACCESS_KEY_ID')|length <= 0
 
 # Prompt for credentials if still not available
 - pause:
@@ -33,7 +33,7 @@
   register: _aws_access_key
   when:
     - aws_access_key is undefined
-    - lookup('env','AWS_ACCESS_KEY_ID')|length <= 0
+    - lookup('env', 'AWS_ACCESS_KEY_ID')|length <= 0
     - _file_access_key is undefined or _file_access_key|length <= 0
 
 - pause:
@@ -43,7 +43,7 @@
   register: _aws_secret_key
   when:
     - aws_secret_key is undefined
-    - lookup('env','AWS_SECRET_ACCESS_KEY')|length <= 0
+    - lookup('env', 'AWS_SECRET_ACCESS_KEY')|length <= 0
     - _file_secret_key is undefined or _file_secret_key|length <= 0
 
 # Set final credentials with proper precedence

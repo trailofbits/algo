@@ -1,13 +1,13 @@
 ---
 - name: Define facts
   set_fact:
-    p12_export_password: "{{ p12_password|default(lookup('password', '/dev/null length=9 chars=ascii_letters,digits,_,@')) }}"
+    p12_export_password: "{{ p12_password | default(lookup('password', '/dev/null length=9 chars=ascii_letters,digits,_,@')) }}"
   tags: update-users
   no_log: true
 
 - name: Set facts
   set_fact:
-    CA_password: "{{ ca_password|default(lookup('password', '/dev/null length=16 chars=ascii_letters,digits,_,@')) }}"
+    CA_password: "{{ ca_password | default(lookup('password', '/dev/null length=16 chars=ascii_letters,digits,_,@')) }}"
     IP_subject_alt_name: "{{ IP_subject_alt_name }}"
   no_log: true
 
@@ -18,5 +18,5 @@
 
 - name: Check size of MTU
   set_fact:
-    reduce_mtu: "{{ 1500 - ansible_default_ipv4['mtu']|int if reduce_mtu|int == 0 and ansible_default_ipv4['mtu']|int < 1500 else reduce_mtu|int }}"
+    reduce_mtu: "{{ 1500 - ansible_default_ipv4['mtu'] | int if reduce_mtu | int == 0 and ansible_default_ipv4['mtu'] | int < 1500 else reduce_mtu | int }}"
   tags: always

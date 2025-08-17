@@ -76,10 +76,10 @@
           add_host:
             name: "{{ algo_server }}"
             groups: vpn-host
-            ansible_ssh_user: "{{ server_user|default('root') }}"
+            ansible_ssh_user: "{{ server_user | default('root') }}"
             ansible_connection: "{% if algo_server == 'localhost' %}local{% else %}ssh{% endif %}"
             ansible_python_interpreter: /usr/bin/python3
-            CA_password: "{{ CA_password|default(omit) }}"
+            CA_password: "{{ CA_password | default(omit) }}"
       rescue:
         - include_tasks: playbooks/rescue.yml
 

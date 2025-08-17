@@ -189,7 +189,7 @@
                 content: |
                   server: {{ 'localhost' if inventory_hostname == 'localhost' else inventory_hostname }}
                   server_user: {{ ansible_ssh_user }}
-                  ansible_ssh_port: "{{ ansible_ssh_port|default(22) }}"
+                  ansible_ssh_port: "{{ ansible_ssh_port | default(22) }}"
                   {% if algo_provider != "local" %}
                   ansible_ssh_private_key_file: {{ SSH_keys.private }}
                   {% endif %}
@@ -204,7 +204,7 @@
                   IP_subject_alt_name: {{ IP_subject_alt_name }}
                   ipsec_enabled: {{ ipsec_enabled }}
                   wireguard_enabled: {{ wireguard_enabled }}
-                  {% if tests|default(false)|bool %}
+                  {% if tests | default(false) | bool %}
                   ca_password: '{{ CA_password }}'
                   p12_password: '{{ p12_export_password }}'
                   {% endif %}
