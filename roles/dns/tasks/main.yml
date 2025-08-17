@@ -31,3 +31,12 @@
     name: dnscrypt-proxy
     state: started
     enabled: true
+
+- name: Ubuntu | Disable dnscrypt-proxy socket activation after service start
+  systemd:
+    name: dnscrypt-proxy.socket
+    state: stopped
+    enabled: false
+    masked: true
+  failed_when: false
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'

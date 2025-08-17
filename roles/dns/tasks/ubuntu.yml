@@ -58,11 +58,17 @@
       [Unit]
       After=systemd-resolved.service
       Requires=systemd-resolved.service
+      # Remove socket dependency to allow direct binding
+      TriggeredBy=
 
       [Service]
       AmbientCapabilities=CAP_NET_BIND_SERVICE
-  notify:
-    - restart dnscrypt-proxy
+  register: dnscrypt_override
+
+- name: Ubuntu | Reload systemd daemon if override changed
+  systemd:
+    daemon_reload: true
+  when: dnscrypt_override.changed
 
 - name: Ubuntu | Apply systemd security hardening for dnscrypt-proxy
   copy:
@@ -95,16 +101,9 @@
     owner: root
     group: root
     mode: '0644'
-  notify:
-    - daemon-reload
-    - restart dnscrypt-proxy
+  register: dnscrypt_hardening
 
-- name: Ubuntu | Disable dnscrypt-proxy socket activation
+- name: Ubuntu | Reload systemd daemon if hardening changed
   systemd:
-    name: dnscrypt-proxy.socket
-    state: stopped
-    enabled: false
-    masked: true
-  failed_when: false
-  notify:
-    - restart dnscrypt-proxy
+    daemon_reload: true
+  when: dnscrypt_hardening.changed
