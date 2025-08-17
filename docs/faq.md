@@ -62,34 +62,7 @@ You can temporarily disable DNS filtering for all IPsec clients at once with the
 
 ## Does Algo support zero logging?
 
-Algo was not originally designed for zero-logging, but recent updates have introduced privacy enhancements to significantly reduce the logging footprint. Here's what you need to know:
-
-**Recent Privacy Enhancements:**
-* **StrongSwan logging disabled by default** - Connection logs no longer record who connects, when, or from which IP
-* **DNSCrypt syslog disabled** - DNS queries are not logged to system logs
-* **Sensitive data protection** - All passwords, keys, and credentials are now hidden from Ansible logs
-* **Aggressive log rotation** - Logs are automatically rotated and deleted after 7 days
-* **Optional privacy features** - Bash history clearing, VPN log filtering, and more
-
-**What May Still Be Logged:**
-* System errors and security events (failed authentications, system updates)
-* SSH administrative access for server management
-* Cloud provider logs and metadata (outside Algo's control)
-* Kernel messages and system diagnostics needed for troubleshooting
-
-**How to Maximize Privacy:**
-* Keep the default privacy settings enabled in `config.cfg`
-* Use the privacy monitoring script: `sudo /usr/local/bin/privacy-monitor.sh`
-* Deploy on ephemeral cloud instances that can be destroyed when needed
-* Review the privacy settings in `config.cfg` for additional options
-
-**Important Limitations:**
-* WireGuard inherently shows last endpoint and handshake time via `sudo wg`
-* Cloud providers maintain their own logs and traffic metadata
-* Your ISP and destination websites can still observe traffic patterns
-* Complete zero-logging may make troubleshooting difficult
-
-The privacy enhancements are enabled by default but can be disabled if you need more detailed logging for debugging. See the `privacy_enhancements_enabled` setting in `config.cfg`.
+Yes, Algo includes privacy enhancements that minimize logging by default. StrongSwan connection logging is disabled, DNSCrypt syslog is turned off, and logs are automatically rotated after 7 days. However, some system-level logging remains for security and troubleshooting purposes. For detailed privacy configuration and limitations, see the [Privacy and Logging](#privacy-and-logging) section in the README.
 
 ## Wasn't IPSEC backdoored by the US government?
 

@@ -175,6 +175,33 @@ To add or remove users, first edit the `users` list in your `config.cfg` file. A
 
 After the process completes, new configuration files will be generated in the `configs` directory for any new users. The Algo VPN server will be updated to contain only the users listed in the `config.cfg` file. Removed users will no longer be able to connect, and new users will have fresh certificates and configuration files ready for use.
 
+## Privacy and Logging
+
+Algo takes a pragmatic approach to privacy. By default, we minimize logging while maintaining enough information for security and troubleshooting.
+
+What IS logged by default:
+* System security events (failed SSH attempts, firewall blocks, system updates)
+* Kernel messages and boot diagnostics (with reduced verbosity)
+* WireGuard client state (visible via `sudo wg` - shows last endpoint and handshake time)
+* Basic service status (service starts/stops/errors)
+* All logs automatically rotate and delete after 7 days
+
+Privacy is controlled by two main settings in `config.cfg`:
+* `strongswan_log_level: -1` - Controls StrongSwan connection logging (-1 = disabled, 2 = debug)
+* `privacy_enhancements_enabled: true` - Master switch for log rotation, history clearing, log filtering, and cleanup
+
+To enable full debugging when troubleshooting, set both `strongswan_log_level: 2` and `privacy_enhancements_enabled: false`. This will capture detailed connection logs and disable all privacy features. Remember to revert these changes after debugging.
+
+After deployment, verify your privacy settings:
+```bash
+ssh -F configs/<server_ip>/ssh_config <hostname>
+sudo /usr/local/bin/privacy-monitor.sh
+```
+
+Perfect privacy is impossible with any VPN solution. Your cloud provider sees and logs network traffic metadata regardless of your server configuration. And of course, your ISP knows you're connecting to a VPN server, even if they can't see what you're doing through it.
+
+For the highest level of privacy, treat your Algo servers as disposable. Spin up a new instance when you need it, use it for your specific purpose, then destroy it completely. The ephemeral nature of cloud infrastructure can be a privacy feature if you use it intentionally.
+
 ## Additional Documentation
 * [FAQ](docs/faq.md)
 * [Troubleshooting](docs/troubleshooting.md)
