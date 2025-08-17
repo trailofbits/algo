@@ -8,14 +8,15 @@ See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo
 
 ## Features
 
-* Supports only IKEv2 with strong crypto (AES-GCM, SHA2, and P-256) for iOS, macOS, and Linux
+* Supports only IKEv2 with strong crypto (AES-GCM, SHA2, and P-256)
 * Supports [WireGuard](https://www.wireguard.com/) for all of the above, in addition to Android and Windows 11
 * Generates .conf files and QR codes for iOS, macOS, Android, and Windows WireGuard clients
 * Generates Apple profiles to auto-configure iOS and macOS devices for IPsec - no client software required
-* Includes a helper script to add and remove users
+* Includes helper scripts to add, remove, and manage users
 * Blocks ads with a local DNS resolver (optional)
 * Sets up limited SSH users for tunneling traffic (optional)
-* Based on current versions of Ubuntu and strongSwan
+* Privacy-focused with minimal logging, automatic log rotation, and configurable privacy enhancements
+* Based on Ubuntu 22.04 LTS with automatic security updates
 * Installs to DigitalOcean, Amazon Lightsail, Amazon EC2, Vultr, Microsoft Azure, Google Compute Engine, Scaleway, OpenStack, CloudStack, Hetzner Cloud, Linode, or [your own Ubuntu server (for advanced users)](docs/deploy-to-ubuntu.md)
 
 ## Anti-features
