@@ -113,7 +113,7 @@ COMMIT
 -A FORWARD -m conntrack --ctstate NEW -s {{ strongswan_network_ipv6 }} -m policy --pol ipsec --dir in -j ACCEPT
 {% endif %}
 {% if wireguard_enabled %}
--A FORWARD -m conntrack --ctstate NEW -s {{ wireguard_network_ipv6 }} -m policy --pol none --dir in -j ACCEPT
+-A FORWARD -m conntrack --ctstate NEW -s {{ wireguard_network_ipv6 }} -j ACCEPT
 {% endif %}
 
 # Use the ICMPV6-CHECK chain, described above

@@ -113,7 +113,7 @@ COMMIT
 
 {% if wireguard_enabled %}
 # Forward any traffic from the WireGuard VPN network
--A FORWARD -m conntrack --ctstate NEW -s {{ wireguard_network_ipv4 }} -m policy --pol none --dir in -j ACCEPT
+-A FORWARD -m conntrack --ctstate NEW -s {{ wireguard_network_ipv4 }} -j ACCEPT
 {% endif %}
 
 COMMIT
