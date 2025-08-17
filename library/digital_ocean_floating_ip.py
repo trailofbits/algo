@@ -9,11 +9,9 @@ import time
 from ansible.module_utils.basic import AnsibleModule, env_fallback
 from ansible.module_utils.digital_ocean import DigitalOceanHelper
 
-ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['preview'],
-                    'supported_by': 'community'}
+ANSIBLE_METADATA = {"metadata_version": "1.1", "status": ["preview"], "supported_by": "community"}
 
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: digital_ocean_floating_ip
 short_description: Manage DigitalOcean Floating IPs
@@ -44,10 +42,10 @@ notes:
   - Version 2 of DigitalOcean API is used.
 requirements:
   - "python >= 2.6"
-'''
+"""
 
 
-EXAMPLES = '''
+EXAMPLES = """
 - name: "Create a Floating IP in region lon1"
   digital_ocean_floating_ip:
     state: present
@@ -63,10 +61,10 @@ EXAMPLES = '''
     state: absent
     ip: "1.2.3.4"
 
-'''
+"""
 
 
-RETURN = '''
+RETURN = """
 # Digital Ocean API info https://developers.digitalocean.com/documentation/v2/#floating-ips
 data:
     description: a DigitalOcean Floating IP resource
@@ -106,11 +104,10 @@ data:
         "region_slug": "nyc3"
       }
     }
-'''
+"""
 
 
 class Response:
-
     def __init__(self, resp, info):
         self.body = None
         if resp:
@@ -132,36 +129,37 @@ class Response:
     def status_code(self):
         return self.info["status"]
 
+
 def wait_action(module, rest, ip, action_id, timeout=10):
     end_time = time.time() + 10
     while time.time() < end_time:
-        response = rest.get(f'floating_ips/{ip}/actions/{action_id}')
+        response = rest.get(f"floating_ips/{ip}/actions/{action_id}")
         # status_code = response.status_code  # TODO: check status_code == 200?
-        status = response.json['action']['status']
-        if status == 'completed':
+        status = response.json["action"]["status"]
+        if status == "completed":
             return True
-        elif status == 'errored':
-            module.fail_json(msg=f'Floating ip action error [ip: {ip}: action: {action_id}]', data=json)
+        elif status == "errored":
+            module.fail_json(msg=f"Floating ip action error [ip: {ip}: action: {action_id}]", data=json)
 
-    module.fail_json(msg=f'Floating ip action timeout [ip: {ip}: action: {action_id}]', data=json)
+    module.fail_json(msg=f"Floating ip action timeout [ip: {ip}: action: {action_id}]", data=json)
 
 
 def core(module):
     # api_token = module.params['oauth_token']  # unused for now
-    state = module.params['state']
-    ip = module.params['ip']
-    droplet_id = module.params['droplet_id']
+    state = module.params["state"]
+    ip = module.params["ip"]
+    droplet_id = module.params["droplet_id"]
 
     rest = DigitalOceanHelper(module)
 
-    if state in ('present'):
-        if droplet_id is not None and module.params['ip'] is not None:
+    if state in ("present"):
+        if droplet_id is not None and module.params["ip"] is not None:
             # Lets try to associate the ip to the specified droplet
             associate_floating_ips(module, rest)
         else:
             create_floating_ips(module, rest)
 
-    elif state in ('absent'):
+    elif state in ("absent"):
         response = rest.delete(f"floating_ips/{ip}")
         status_code = response.status_code
         json_data = response.json
@@ -174,65 +172,68 @@ def core(module):
 
 
 def get_floating_ip_details(module, rest):
-    ip = module.params['ip']
+    ip = module.params["ip"]
 
     response = rest.get(f"floating_ips/{ip}")
     status_code = response.status_code
     json_data = response.json
     if status_code == 200:
-        return json_data['floating_ip']
+        return json_data["floating_ip"]
     else:
-        module.fail_json(msg="Error assigning floating ip [{}: {}]".format(
-            status_code, json_data["message"]), region=module.params['region'])
+        module.fail_json(
+            msg="Error assigning floating ip [{}: {}]".format(status_code, json_data["message"]),
+            region=module.params["region"],
+        )
 
 
 def assign_floating_id_to_droplet(module, rest):
-    ip = module.params['ip']
+    ip = module.params["ip"]
 
     payload = {
         "type": "assign",
-        "droplet_id": module.params['droplet_id'],
+        "droplet_id": module.params["droplet_id"],
     }
 
     response = rest.post(f"floating_ips/{ip}/actions", data=payload)
     status_code = response.status_code
     json_data = response.json
     if status_code == 201:
-        wait_action(module, rest, ip, json_data['action']['id'])
+        wait_action(module, rest, ip, json_data["action"]["id"])
 
         module.exit_json(changed=True, data=json_data)
     else:
-        module.fail_json(msg="Error creating floating ip [{}: {}]".format(
-            status_code, json_data["message"]), region=module.params['region'])
+        module.fail_json(
+            msg="Error creating floating ip [{}: {}]".format(status_code, json_data["message"]),
+            region=module.params["region"],
+        )
 
 
 def associate_floating_ips(module, rest):
     floating_ip = get_floating_ip_details(module, rest)
-    droplet = floating_ip['droplet']
+    droplet = floating_ip["droplet"]
 
     # TODO: If already assigned to a droplet verify if is one of the specified as valid
-    if droplet is not None and str(droplet['id']) in [module.params['droplet_id']]:
+    if droplet is not None and str(droplet["id"]) in [module.params["droplet_id"]]:
         module.exit_json(changed=False)
     else:
         assign_floating_id_to_droplet(module, rest)
 
 
 def create_floating_ips(module, rest):
-    payload = {
-    }
+    payload = {}
     floating_ip_data = None
 
-    if module.params['region'] is not None:
-        payload["region"] = module.params['region']
+    if module.params["region"] is not None:
+        payload["region"] = module.params["region"]
 
-    if module.params['droplet_id'] is not None:
-        payload["droplet_id"] = module.params['droplet_id']
+    if module.params["droplet_id"] is not None:
+        payload["droplet_id"] = module.params["droplet_id"]
 
-    floating_ips = rest.get_paginated_data(base_url='floating_ips?', data_key_name='floating_ips')
+    floating_ips = rest.get_paginated_data(base_url="floating_ips?", data_key_name="floating_ips")
 
     for floating_ip in floating_ips:
-        if floating_ip['droplet'] and floating_ip['droplet']['id'] == module.params['droplet_id']:
-            floating_ip_data = {'floating_ip': floating_ip}
+        if floating_ip["droplet"] and floating_ip["droplet"]["id"] == module.params["droplet_id"]:
+            floating_ip_data = {"floating_ip": floating_ip}
 
     if floating_ip_data:
         module.exit_json(changed=False, data=floating_ip_data)
@@ -244,36 +245,34 @@ def create_floating_ips(module, rest):
         if status_code == 202:
             module.exit_json(changed=True, data=json_data)
         else:
-            module.fail_json(msg="Error creating floating ip [{}: {}]".format(
-                status_code, json_data["message"]), region=module.params['region'])
+            module.fail_json(
+                msg="Error creating floating ip [{}: {}]".format(status_code, json_data["message"]),
+                region=module.params["region"],
+            )
 
 
 def main():
     module = AnsibleModule(
         argument_spec={
-            'state': {'choices': ['present', 'absent'], 'default': 'present'},
-            'ip': {'aliases': ['id'], 'required': False},
-            'region': {'required': False},
-            'droplet_id': {'required': False, 'type': 'int'},
-            'oauth_token': {
-                'no_log': True,
+            "state": {"choices": ["present", "absent"], "default": "present"},
+            "ip": {"aliases": ["id"], "required": False},
+            "region": {"required": False},
+            "droplet_id": {"required": False, "type": "int"},
+            "oauth_token": {
+                "no_log": True,
                 # Support environment variable for DigitalOcean OAuth Token
-                'fallback': (env_fallback, ['DO_API_TOKEN', 'DO_API_KEY', 'DO_OAUTH_TOKEN']),
-                'required': True,
+                "fallback": (env_fallback, ["DO_API_TOKEN", "DO_API_KEY", "DO_OAUTH_TOKEN"]),
+                "required": True,
             },
-            'validate_certs': {'type': 'bool', 'default': True},
-            'timeout': {'type': 'int', 'default': 30},
+            "validate_certs": {"type": "bool", "default": True},
+            "timeout": {"type": "int", "default": 30},
         },
-        required_if=[
-            ('state', 'delete', ['ip'])
-        ],
-        mutually_exclusive=[
-            ['region', 'droplet_id']
-        ],
+        required_if=[("state", "delete", ["ip"])],
+        mutually_exclusive=[["region", "droplet_id"]],
     )
 
     core(module)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

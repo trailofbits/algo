@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 
-
 import json
 
 from ansible.module_utils.gcp_utils import GcpModule, GcpSession, navigate_hash
@@ -10,7 +9,7 @@ from ansible.module_utils.gcp_utils import GcpModule, GcpSession, navigate_hash
 # Documentation
 ################################################################################
 
-ANSIBLE_METADATA = {'metadata_version': '1.1', 'status': ["preview"], 'supported_by': 'community'}
+ANSIBLE_METADATA = {"metadata_version": "1.1", "status": ["preview"], "supported_by": "community"}
 
 ################################################################################
 # Main
@@ -18,20 +17,24 @@ ANSIBLE_METADATA = {'metadata_version': '1.1', 'status': ["preview"], 'supported
 
 
 def main():
-    module = GcpModule(argument_spec={'filters': {'type': 'list', 'elements': 'str'}, 'scope': {'required': True, 'type': 'str'}})
+    module = GcpModule(
+        argument_spec={"filters": {"type": "list", "elements": "str"}, "scope": {"required": True, "type": "str"}}
+    )
 
-    if module._name == 'gcp_compute_image_facts':
-        module.deprecate("The 'gcp_compute_image_facts' module has been renamed to 'gcp_compute_regions_info'", version='2.13')
+    if module._name == "gcp_compute_image_facts":
+        module.deprecate(
+            "The 'gcp_compute_image_facts' module has been renamed to 'gcp_compute_regions_info'", version="2.13"
+        )
 
-    if not module.params['scopes']:
-        module.params['scopes'] = ['https://www.googleapis.com/auth/compute']
+    if not module.params["scopes"]:
+        module.params["scopes"] = ["https://www.googleapis.com/auth/compute"]
 
-    items = fetch_list(module, collection(module), query_options(module.params['filters']))
-    if items.get('items'):
-        items = items.get('items')
+    items = fetch_list(module, collection(module), query_options(module.params["filters"]))
+    if items.get("items"):
+        items = items.get("items")
     else:
         items = []
-    return_value = {'resources': items}
+    return_value = {"resources": items}
     module.exit_json(**return_value)
 
 
@@ -40,14 +43,14 @@ def collection(module):
 
 
 def fetch_list(module, link, query):
-    auth = GcpSession(module, 'compute')
-    response = auth.get(link, params={'filter': query})
+    auth = GcpSession(module, "compute")
+    response = auth.get(link, params={"filter": query})
     return return_if_object(module, response)
 
 
 def query_options(filters):
     if not filters:
-        return ''
+        return ""
 
     if len(filters) == 1:
         return filters[0]
@@ -55,12 +58,12 @@ def query_options(filters):
         queries = []
         for f in filters:
             # For multiple queries, all queries should have ()
-            if f[0] != '(' and f[-1] != ')':
-                queries.append("({})".format(''.join(f)))
+            if f[0] != "(" and f[-1] != ")":
+                queries.append("({})".format("".join(f)))
             else:
                 queries.append(f)
 
-        return ' '.join(queries)
+        return " ".join(queries)
 
 
 def return_if_object(module, response):
@@ -75,11 +78,11 @@ def return_if_object(module, response):
     try:
         module.raise_for_status(response)
         result = response.json()
-    except getattr(json.decoder, 'JSONDecodeError', ValueError) as inst:
+    except getattr(json.decoder, "JSONDecodeError", ValueError) as inst:
         module.fail_json(msg=f"Invalid JSON response with error: {inst}")
 
-    if navigate_hash(result, ['error', 'errors']):
-        module.fail_json(msg=navigate_hash(result, ['error', 'errors']))
+    if navigate_hash(result, ["error", "errors"]):
+        module.fail_json(msg=navigate_hash(result, ["error", "errors"]))
 
     return result
 

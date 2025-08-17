@@ -14,13 +14,13 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, TemplateSyntaxError, meta
 
 
-def find_jinja2_templates(root_dir: str = '.') -> list[Path]:
+def find_jinja2_templates(root_dir: str = ".") -> list[Path]:
     """Find all Jinja2 template files in the project."""
     templates = []
-    patterns = ['**/*.j2', '**/*.jinja2', '**/*.yml.j2', '**/*.conf.j2']
+    patterns = ["**/*.j2", "**/*.jinja2", "**/*.yml.j2", "**/*.conf.j2"]
 
     # Skip these directories
-    skip_dirs = {'.git', '.venv', 'venv', '.env', 'configs', '__pycache__', '.cache'}
+    skip_dirs = {".git", ".venv", "venv", ".env", "configs", "__pycache__", ".cache"}
 
     for pattern in patterns:
         for path in Path(root_dir).glob(pattern):
@@ -39,25 +39,25 @@ def check_inline_comments_in_expressions(template_content: str, template_path: P
     errors = []
 
     # Pattern to find Jinja2 expressions
-    jinja_pattern = re.compile(r'\{\{.*?\}\}|\{%.*?%\}', re.DOTALL)
+    jinja_pattern = re.compile(r"\{\{.*?\}\}|\{%.*?%\}", re.DOTALL)
 
     for match in jinja_pattern.finditer(template_content):
         expression = match.group()
-        lines = expression.split('\n')
+        lines = expression.split("\n")
 
         for i, line in enumerate(lines):
             # Check for # that's not in a string
             # Simple heuristic: if # appears after non-whitespace and not in quotes
-            if '#' in line:
+            if "#" in line:
                 # Remove quoted strings to avoid false positives
-                cleaned = re.sub(r'"[^"]*"', '', line)
-                cleaned = re.sub(r"'[^']*'", '', cleaned)
+                cleaned = re.sub(r'"[^"]*"', "", line)
+                cleaned = re.sub(r"'[^']*'", "", cleaned)
 
-                if '#' in cleaned:
+                if "#" in cleaned:
                     # Check if it's likely a comment (has text after it)
-                    hash_pos = cleaned.index('#')
-                    if hash_pos > 0 and cleaned[hash_pos-1:hash_pos] != '\\':
-                        line_num = template_content[:match.start()].count('\n') + i + 1
+                    hash_pos = cleaned.index("#")
+                    if hash_pos > 0 and cleaned[hash_pos - 1 : hash_pos] != "\\":
+                        line_num = template_content[: match.start()].count("\n") + i + 1
                         errors.append(
                             f"{template_path}:{line_num}: Inline comment (#) found in Jinja2 expression. "
                             f"Move comments outside the expression."
@@ -83,11 +83,24 @@ def check_undefined_variables(template_path: Path) -> list[str]:
 
         # Common Ansible variables that are always available
         ansible_builtins = {
-            'ansible_default_ipv4', 'ansible_default_ipv6', 'ansible_hostname',
-            'ansible_distribution', 'ansible_distribution_version', 'ansible_facts',
-            'inventory_hostname', 'hostvars', 'groups', 'group_names',
-            'play_hosts', 'ansible_version', 'ansible_user', 'ansible_host',
-            'item', 'ansible_loop', 'ansible_index', 'lookup'
+            "ansible_default_ipv4",
+            "ansible_default_ipv6",
+            "ansible_hostname",
+            "ansible_distribution",
+            "ansible_distribution_version",
+            "ansible_facts",
+            "inventory_hostname",
+            "hostvars",
+            "groups",
+            "group_names",
+            "play_hosts",
+            "ansible_version",
+            "ansible_user",
+            "ansible_host",
+            "item",
+            "ansible_loop",
+            "ansible_index",
+            "lookup",
         }
 
         # Filter out known Ansible variables
@@ -95,9 +108,7 @@ def check_undefined_variables(template_path: Path) -> list[str]:
 
         # Only report if there are truly unknown variables
         if unknown_vars and len(unknown_vars) < 20:  # Avoid noise from templates with many vars
-            errors.append(
-                f"{template_path}: Uses undefined variables: {', '.join(sorted(unknown_vars))}"
-            )
+            errors.append(f"{template_path}: Uses undefined variables: {', '.join(sorted(unknown_vars))}")
 
     except Exception:
         # Don't report parse errors here, they're handled elsewhere
@@ -116,9 +127,9 @@ def validate_template_syntax(template_path: Path) -> tuple[bool, list[str]]:
     # Skip full parsing for templates that use Ansible-specific features heavily
     # We still check for inline comments but skip full template parsing
     ansible_specific_templates = {
-        'dnscrypt-proxy.toml.j2',  # Uses |bool filter
-        'mobileconfig.j2',          # Uses |to_uuid filter and complex item structures
-        'vpn-dict.j2',              # Uses |to_uuid filter
+        "dnscrypt-proxy.toml.j2",  # Uses |bool filter
+        "mobileconfig.j2",  # Uses |to_uuid filter and complex item structures
+        "vpn-dict.j2",  # Uses |to_uuid filter
     }
 
     if template_path.name in ansible_specific_templates:
@@ -139,18 +150,15 @@ def validate_template_syntax(template_path: Path) -> tuple[bool, list[str]]:
         errors.extend(check_inline_comments_in_expressions(template_content, template_path))
 
         # Try to parse the template
-        env = Environment(
-            loader=FileSystemLoader(template_path.parent),
-            undefined=StrictUndefined
-        )
+        env = Environment(loader=FileSystemLoader(template_path.parent), undefined=StrictUndefined)
 
         # Add mock Ansible filters to avoid syntax errors
-        env.filters['bool'] = lambda x: x
-        env.filters['to_uuid'] = lambda x: x
-        env.filters['b64encode'] = lambda x: x
-        env.filters['b64decode'] = lambda x: x
-        env.filters['regex_replace'] = lambda x, y, z: x
-        env.filters['default'] = lambda x, d: x if x else d
+        env.filters["bool"] = lambda x: x
+        env.filters["to_uuid"] = lambda x: x
+        env.filters["b64encode"] = lambda x: x
+        env.filters["b64decode"] = lambda x: x
+        env.filters["regex_replace"] = lambda x, y, z: x
+        env.filters["default"] = lambda x, d: x if x else d
 
         # This will raise TemplateSyntaxError if there's a syntax problem
         env.get_template(template_path.name)
@@ -178,18 +186,20 @@ def check_common_antipatterns(template_path: Path) -> list[str]:
             content = f.read()
 
         # Check for missing spaces around filters
-        if re.search(r'\{\{[^}]+\|[^ ]', content):
+        if re.search(r"\{\{[^}]+\|[^ ]", content):
             warnings.append(f"{template_path}: Missing space after filter pipe (|)")
 
         # Check for deprecated 'when' in Jinja2 (should use if)
-        if re.search(r'\{%\s*when\s+', content):
+        if re.search(r"\{%\s*when\s+", content):
             warnings.append(f"{template_path}: Use 'if' instead of 'when' in Jinja2 templates")
 
         # Check for extremely long expressions (harder to debug)
-        for match in re.finditer(r'\{\{(.+?)\}\}', content, re.DOTALL):
+        for match in re.finditer(r"\{\{(.+?)\}\}", content, re.DOTALL):
             if len(match.group(1)) > 200:
-                line_num = content[:match.start()].count('\n') + 1
-                warnings.append(f"{template_path}:{line_num}: Very long expression (>200 chars), consider breaking it up")
+                line_num = content[: match.start()].count("\n") + 1
+                warnings.append(
+                    f"{template_path}:{line_num}: Very long expression (>200 chars), consider breaking it up"
+                )
 
     except Exception:
         pass  # Ignore errors in anti-pattern checking

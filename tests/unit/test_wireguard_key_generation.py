@@ -3,6 +3,7 @@
 Test WireGuard key generation - focused on x25519_pubkey module integration
 Addresses test gap identified in tests/README.md line 63-67: WireGuard private/public key generation
 """
+
 import base64
 import os
 import subprocess
@@ -10,13 +11,13 @@ import sys
 import tempfile
 
 # Add library directory to path to import our custom module
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'library'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "library"))
 
 
 def test_wireguard_tools_available():
     """Test that WireGuard tools are available for validation"""
     try:
-        result = subprocess.run(['wg', '--version'], capture_output=True, text=True)
+        result = subprocess.run(["wg", "--version"], capture_output=True, text=True)
         assert result.returncode == 0, "WireGuard tools not available"
         print(f"✓ WireGuard tools available: {result.stdout.strip()}")
         return True
@@ -29,6 +30,7 @@ def test_x25519_module_import():
     """Test that our custom x25519_pubkey module can be imported and used"""
     try:
         import x25519_pubkey  # noqa: F401
+
         print("✓ x25519_pubkey module imports successfully")
         return True
     except ImportError as e:
@@ -37,16 +39,17 @@ def test_x25519_module_import():
 
 def generate_test_private_key():
     """Generate a test private key using the same method as Algo"""
-    with tempfile.NamedTemporaryFile(suffix='.raw', delete=False) as temp_file:
+    with tempfile.NamedTemporaryFile(suffix=".raw", delete=False) as temp_file:
         raw_key_path = temp_file.name
 
     try:
         # Generate 32 random bytes for X25519 private key (same as community.crypto does)
         import secrets
+
         raw_data = secrets.token_bytes(32)
 
         # Write raw key to file (like community.crypto openssl_privatekey with format: raw)
-        with open(raw_key_path, 'wb') as f:
+        with open(raw_key_path, "wb") as f:
             f.write(raw_data)
 
         assert len(raw_data) == 32, f"Private key should be 32 bytes, got {len(raw_data)}"
@@ -83,7 +86,7 @@ def test_x25519_pubkey_from_raw_file():
             def exit_json(self, **kwargs):
                 self.result = kwargs
 
-        with tempfile.NamedTemporaryFile(suffix='.pub', delete=False) as temp_pub:
+        with tempfile.NamedTemporaryFile(suffix=".pub", delete=False) as temp_pub:
             public_key_path = temp_pub.name
 
         try:
@@ -95,11 +98,9 @@ def test_x25519_pubkey_from_raw_file():
 
             try:
                 # Mock the module call
-                mock_module = MockModule({
-                    'private_key_path': raw_key_path,
-                    'public_key_path': public_key_path,
-                    'private_key_b64': None
-                })
+                mock_module = MockModule(
+                    {"private_key_path": raw_key_path, "public_key_path": public_key_path, "private_key_b64": None}
+                )
 
                 x25519_pubkey.AnsibleModule = lambda **kwargs: mock_module
 
@@ -107,8 +108,8 @@ def test_x25519_pubkey_from_raw_file():
                 run_module()
 
                 # Check the result
-                assert 'public_key' in mock_module.result
-                assert mock_module.result['changed']
+                assert "public_key" in mock_module.result
+                assert mock_module.result["changed"]
                 assert os.path.exists(public_key_path)
 
                 with open(public_key_path) as f:
@@ -160,11 +161,7 @@ def test_x25519_pubkey_from_b64_string():
         original_AnsibleModule = x25519_pubkey.AnsibleModule
 
         try:
-            mock_module = MockModule({
-                'private_key_b64': b64_key,
-                'private_key_path': None,
-                'public_key_path': None
-            })
+            mock_module = MockModule({"private_key_b64": b64_key, "private_key_path": None, "public_key_path": None})
 
             x25519_pubkey.AnsibleModule = lambda **kwargs: mock_module
 
@@ -172,8 +169,8 @@ def test_x25519_pubkey_from_b64_string():
             run_module()
 
             # Check the result
-            assert 'public_key' in mock_module.result
-            derived_pubkey = mock_module.result['public_key']
+            assert "public_key" in mock_module.result
+            derived_pubkey = mock_module.result["public_key"]
 
             # Validate base64 format
             try:
@@ -222,21 +219,17 @@ def test_wireguard_validation():
         original_AnsibleModule = x25519_pubkey.AnsibleModule
 
         try:
-            mock_module = MockModule({
-                'private_key_b64': b64_key,
-                'private_key_path': None,
-                'public_key_path': None
-            })
+            mock_module = MockModule({"private_key_b64": b64_key, "private_key_path": None, "public_key_path": None})
 
             x25519_pubkey.AnsibleModule = lambda **kwargs: mock_module
             run_module()
 
-            derived_pubkey = mock_module.result['public_key']
+            derived_pubkey = mock_module.result["public_key"]
 
         finally:
             x25519_pubkey.AnsibleModule = original_AnsibleModule
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.conf', delete=False) as temp_config:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".conf", delete=False) as temp_config:
             # Create a WireGuard config using our keys
             wg_config = f"""[Interface]
 PrivateKey = {b64_key}
@@ -251,16 +244,12 @@ AllowedIPs = 10.19.49.2/32
 
         try:
             # Test that WireGuard can parse our config
-            result = subprocess.run([
-                'wg-quick', 'strip', config_path
-            ], capture_output=True, text=True)
+            result = subprocess.run(["wg-quick", "strip", config_path], capture_output=True, text=True)
 
             assert result.returncode == 0, f"WireGuard rejected our config: {result.stderr}"
 
             # Test key derivation with wg pubkey command
-            wg_result = subprocess.run([
-                'wg', 'pubkey'
-            ], input=b64_key, capture_output=True, text=True)
+            wg_result = subprocess.run(["wg", "pubkey"], input=b64_key, capture_output=True, text=True)
 
             if wg_result.returncode == 0:
                 wg_derived = wg_result.stdout.strip()
@@ -286,8 +275,8 @@ def test_key_consistency():
     raw_key_path, b64_key = generate_test_private_key()
 
     try:
-        def derive_pubkey_from_same_key():
 
+        def derive_pubkey_from_same_key():
             class MockModule:
                 def __init__(self, params):
                     self.params = params
@@ -305,16 +294,18 @@ def test_key_consistency():
             original_AnsibleModule = x25519_pubkey.AnsibleModule
 
             try:
-                mock_module = MockModule({
-                    'private_key_b64': b64_key,  # SAME key each time
-                    'private_key_path': None,
-                    'public_key_path': None
-                })
+                mock_module = MockModule(
+                    {
+                        "private_key_b64": b64_key,  # SAME key each time
+                        "private_key_path": None,
+                        "public_key_path": None,
+                    }
+                )
 
                 x25519_pubkey.AnsibleModule = lambda **kwargs: mock_module
                 run_module()
 
-                return mock_module.result['public_key']
+                return mock_module.result["public_key"]
 
             finally:
                 x25519_pubkey.AnsibleModule = original_AnsibleModule

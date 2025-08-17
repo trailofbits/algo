@@ -3,6 +3,7 @@
 Test that generated configuration files have valid syntax
 This validates WireGuard, StrongSwan, SSH, and other configs
 """
+
 import re
 import subprocess
 import sys
@@ -11,7 +12,7 @@ import sys
 def check_command_available(cmd):
     """Check if a command is available on the system"""
     try:
-        subprocess.run([cmd, '--version'], capture_output=True, check=False)
+        subprocess.run([cmd, "--version"], capture_output=True, check=False)
         return True
     except FileNotFoundError:
         return False
@@ -37,51 +38,50 @@ PersistentKeepalive = 25
     errors = []
 
     # Check for required sections
-    if '[Interface]' not in sample_config:
+    if "[Interface]" not in sample_config:
         errors.append("Missing [Interface] section")
-    if '[Peer]' not in sample_config:
+    if "[Peer]" not in sample_config:
         errors.append("Missing [Peer] section")
 
     # Validate Interface section
-    interface_match = re.search(r'\[Interface\](.*?)\[Peer\]', sample_config, re.DOTALL)
+    interface_match = re.search(r"\[Interface\](.*?)\[Peer\]", sample_config, re.DOTALL)
     if interface_match:
         interface_section = interface_match.group(1)
 
         # Check required fields
-        if not re.search(r'Address\s*=', interface_section):
+        if not re.search(r"Address\s*=", interface_section):
             errors.append("Missing Address in Interface section")
-        if not re.search(r'PrivateKey\s*=', interface_section):
+        if not re.search(r"PrivateKey\s*=", interface_section):
             errors.append("Missing PrivateKey in Interface section")
 
         # Validate IP addresses
-        address_match = re.search(r'Address\s*=\s*([^\n]+)', interface_section)
+        address_match = re.search(r"Address\s*=\s*([^\n]+)", interface_section)
         if address_match:
-            addresses = address_match.group(1).split(',')
+            addresses = address_match.group(1).split(",")
             for addr in addresses:
                 addr = addr.strip()
                 # Basic IP validation
-                if not re.match(r'^\d+\.\d+\.\d+\.\d+/\d+$', addr) and \
-                   not re.match(r'^[0-9a-fA-F:]+/\d+$', addr):
+                if not re.match(r"^\d+\.\d+\.\d+\.\d+/\d+$", addr) and not re.match(r"^[0-9a-fA-F:]+/\d+$", addr):
                     errors.append(f"Invalid IP address format: {addr}")
 
     # Validate Peer section
-    peer_match = re.search(r'\[Peer\](.*)', sample_config, re.DOTALL)
+    peer_match = re.search(r"\[Peer\](.*)", sample_config, re.DOTALL)
     if peer_match:
         peer_section = peer_match.group(1)
 
         # Check required fields
-        if not re.search(r'PublicKey\s*=', peer_section):
+        if not re.search(r"PublicKey\s*=", peer_section):
             errors.append("Missing PublicKey in Peer section")
-        if not re.search(r'AllowedIPs\s*=', peer_section):
+        if not re.search(r"AllowedIPs\s*=", peer_section):
             errors.append("Missing AllowedIPs in Peer section")
-        if not re.search(r'Endpoint\s*=', peer_section):
+        if not re.search(r"Endpoint\s*=", peer_section):
             errors.append("Missing Endpoint in Peer section")
 
         # Validate endpoint format
-        endpoint_match = re.search(r'Endpoint\s*=\s*([^\n]+)', peer_section)
+        endpoint_match = re.search(r"Endpoint\s*=\s*([^\n]+)", peer_section)
         if endpoint_match:
             endpoint = endpoint_match.group(1).strip()
-            if not re.match(r'^[\d\.\:]+:\d+$', endpoint):
+            if not re.match(r"^[\d\.\:]+:\d+$", endpoint):
                 errors.append(f"Invalid Endpoint format: {endpoint}")
 
     if errors:
@@ -132,33 +132,32 @@ conn ikev2-pubkey
     errors = []
 
     # Check for required sections
-    if 'config setup' not in sample_config:
+    if "config setup" not in sample_config:
         errors.append("Missing 'config setup' section")
-    if 'conn %default' not in sample_config:
+    if "conn %default" not in sample_config:
         errors.append("Missing 'conn %default' section")
 
     # Validate connection settings
-    conn_pattern = re.compile(r'conn\s+(\S+)')
+    conn_pattern = re.compile(r"conn\s+(\S+)")
     connections = conn_pattern.findall(sample_config)
 
     if len(connections) < 2:  # Should have at least %default and one other
         errors.append("Not enough connection definitions")
 
     # Check for required parameters in connections
-    required_params = ['keyexchange', 'left', 'right']
+    required_params = ["keyexchange", "left", "right"]
     for param in required_params:
-        if f'{param}=' not in sample_config:
+        if f"{param}=" not in sample_config:
             errors.append(f"Missing required parameter: {param}")
 
     # Validate IP subnet formats
-    subnet_pattern = re.compile(r'(left|right)subnet\s*=\s*([^\n]+)')
+    subnet_pattern = re.compile(r"(left|right)subnet\s*=\s*([^\n]+)")
     for match in subnet_pattern.finditer(sample_config):
-        subnets = match.group(2).split(',')
+        subnets = match.group(2).split(",")
         for subnet in subnets:
             subnet = subnet.strip()
-            if subnet != '0.0.0.0/0' and subnet != '::/0':
-                if not re.match(r'^\d+\.\d+\.\d+\.\d+/\d+$', subnet) and \
-                   not re.match(r'^[0-9a-fA-F:]+/\d+$', subnet):
+            if subnet != "0.0.0.0/0" and subnet != "::/0":
+                if not re.match(r"^\d+\.\d+\.\d+\.\d+/\d+$", subnet) and not re.match(r"^[0-9a-fA-F:]+/\d+$", subnet):
                     errors.append(f"Invalid subnet format: {subnet}")
 
     if errors:
@@ -188,21 +187,21 @@ def test_ssh_config_syntax():
     errors = []
 
     # Parse SSH config format
-    lines = sample_config.strip().split('\n')
+    lines = sample_config.strip().split("\n")
     current_host = None
 
     for line in lines:
         line = line.strip()
-        if not line or line.startswith('#'):
+        if not line or line.startswith("#"):
             continue
 
-        if line.startswith('Host '):
+        if line.startswith("Host "):
             current_host = line.split()[1]
-        elif current_host and ' ' in line:
+        elif current_host and " " in line:
             key, value = line.split(None, 1)
 
             # Validate common SSH options
-            if key == 'Port':
+            if key == "Port":
                 try:
                     port = int(value)
                     if not 1 <= port <= 65535:
@@ -210,7 +209,7 @@ def test_ssh_config_syntax():
                 except ValueError:
                     errors.append(f"Port must be a number: {value}")
 
-            elif key == 'LocalForward':
+            elif key == "LocalForward":
                 # Format: LocalForward [bind_address:]port host:hostport
                 parts = value.split()
                 if len(parts) != 2:
@@ -256,35 +255,35 @@ COMMIT
     errors = []
 
     # Check table definitions
-    tables = re.findall(r'\*(\w+)', sample_rules)
-    if 'filter' not in tables:
+    tables = re.findall(r"\*(\w+)", sample_rules)
+    if "filter" not in tables:
         errors.append("Missing *filter table")
-    if 'nat' not in tables:
+    if "nat" not in tables:
         errors.append("Missing *nat table")
 
     # Check for COMMIT statements
-    commit_count = sample_rules.count('COMMIT')
+    commit_count = sample_rules.count("COMMIT")
     if commit_count != len(tables):
         errors.append(f"Number of COMMIT statements ({commit_count}) doesn't match tables ({len(tables)})")
 
     # Validate chain policies
-    chain_pattern = re.compile(r'^:(\w+)\s+(ACCEPT|DROP|REJECT)\s+\[\d+:\d+\]', re.MULTILINE)
+    chain_pattern = re.compile(r"^:(\w+)\s+(ACCEPT|DROP|REJECT)\s+\[\d+:\d+\]", re.MULTILINE)
     chains = chain_pattern.findall(sample_rules)
 
-    required_chains = [('INPUT', 'DROP'), ('FORWARD', 'DROP'), ('OUTPUT', 'ACCEPT')]
+    required_chains = [("INPUT", "DROP"), ("FORWARD", "DROP"), ("OUTPUT", "ACCEPT")]
     for chain, _policy in required_chains:
         if not any(c[0] == chain for c in chains):
             errors.append(f"Missing required chain: {chain}")
 
     # Validate rule syntax
-    rule_pattern = re.compile(r'^-[AI]\s+(\w+)', re.MULTILINE)
+    rule_pattern = re.compile(r"^-[AI]\s+(\w+)", re.MULTILINE)
     rules = rule_pattern.findall(sample_rules)
 
     if len(rules) < 5:
         errors.append("Insufficient firewall rules")
 
     # Check for essential security rules
-    if '-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT' not in sample_rules:
+    if "-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT" not in sample_rules:
         errors.append("Missing stateful connection tracking rule")
 
     if errors:
@@ -320,27 +319,26 @@ addn-hosts=/var/lib/algo/dns/adblock.hosts
     errors = []
 
     # Parse config
-    for line in sample_config.strip().split('\n'):
+    for line in sample_config.strip().split("\n"):
         line = line.strip()
-        if not line or line.startswith('#'):
+        if not line or line.startswith("#"):
             continue
 
         # Most dnsmasq options are key=value or just key
-        if '=' in line:
-            key, value = line.split('=', 1)
+        if "=" in line:
+            key, value = line.split("=", 1)
 
             # Validate specific options
-            if key == 'interface':
-                if not re.match(r'^[a-zA-Z0-9\-_]+$', value):
+            if key == "interface":
+                if not re.match(r"^[a-zA-Z0-9\-_]+$", value):
                     errors.append(f"Invalid interface name: {value}")
 
-            elif key == 'server':
+            elif key == "server":
                 # Basic IP validation
-                if not re.match(r'^\d+\.\d+\.\d+\.\d+$', value) and \
-                   not re.match(r'^[0-9a-fA-F:]+$', value):
+                if not re.match(r"^\d+\.\d+\.\d+\.\d+$", value) and not re.match(r"^[0-9a-fA-F:]+$", value):
                     errors.append(f"Invalid DNS server IP: {value}")
 
-            elif key == 'cache-size':
+            elif key == "cache-size":
                 try:
                     size = int(value)
                     if size < 0:
@@ -349,9 +347,9 @@ addn-hosts=/var/lib/algo/dns/adblock.hosts
                     errors.append(f"Cache size must be a number: {value}")
 
     # Check for required options
-    required = ['interface', 'server']
+    required = ["interface", "server"]
     for req in required:
-        if f'{req}=' not in sample_config:
+        if f"{req}=" not in sample_config:
             errors.append(f"Missing required option: {req}")
 
     if errors:

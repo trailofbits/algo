@@ -3,6 +3,7 @@
 Test that Ansible templates render correctly
 This catches undefined variables, syntax errors, and logic bugs
 """
+
 import os
 import sys
 from pathlib import Path
@@ -22,20 +23,20 @@ def mock_to_uuid(value):
 
 def mock_bool(value):
     """Mock the bool filter"""
-    return str(value).lower() in ('true', '1', 'yes', 'on')
+    return str(value).lower() in ("true", "1", "yes", "on")
 
 
 def mock_lookup(type, path):
     """Mock the lookup function"""
     # Return fake data for file lookups
-    if type == 'file':
-        if 'private' in path:
-            return 'MOCK_PRIVATE_KEY_BASE64=='
-        elif 'public' in path:
-            return 'MOCK_PUBLIC_KEY_BASE64=='
-        elif 'preshared' in path:
-            return 'MOCK_PRESHARED_KEY_BASE64=='
-    return 'MOCK_LOOKUP_DATA'
+    if type == "file":
+        if "private" in path:
+            return "MOCK_PRIVATE_KEY_BASE64=="
+        elif "public" in path:
+            return "MOCK_PUBLIC_KEY_BASE64=="
+        elif "preshared" in path:
+            return "MOCK_PRESHARED_KEY_BASE64=="
+    return "MOCK_LOOKUP_DATA"
 
 
 def get_test_variables():
@@ -47,8 +48,8 @@ def get_test_variables():
 def find_templates():
     """Find all Jinja2 template files in the repo"""
     templates = []
-    for pattern in ['**/*.j2', '**/*.jinja2', '**/*.yml.j2']:
-        templates.extend(Path('.').glob(pattern))
+    for pattern in ["**/*.j2", "**/*.jinja2", "**/*.yml.j2"]:
+        templates.extend(Path(".").glob(pattern))
     return templates
 
 
@@ -57,10 +58,10 @@ def test_template_syntax():
     templates = find_templates()
 
     # Skip some paths that aren't real templates
-    skip_paths = ['.git/', 'venv/', '.venv/', '.env/', 'configs/']
+    skip_paths = [".git/", "venv/", ".venv/", ".env/", "configs/"]
 
     # Skip templates that use Ansible-specific filters
-    skip_templates = ['vpn-dict.j2', 'mobileconfig.j2', 'dnscrypt-proxy.toml.j2']
+    skip_templates = ["vpn-dict.j2", "mobileconfig.j2", "dnscrypt-proxy.toml.j2"]
 
     errors = []
     skipped = 0
@@ -76,10 +77,7 @@ def test_template_syntax():
 
         try:
             template_dir = template_path.parent
-            env = Environment(
-                loader=FileSystemLoader(template_dir),
-                undefined=StrictUndefined
-            )
+            env = Environment(loader=FileSystemLoader(template_dir), undefined=StrictUndefined)
 
             # Just try to load the template - this checks syntax
             env.get_template(template_path.name)
@@ -103,13 +101,13 @@ def test_template_syntax():
 def test_critical_templates():
     """Test that critical templates render with test data"""
     critical_templates = [
-        'roles/wireguard/templates/client.conf.j2',
-        'roles/strongswan/templates/ipsec.conf.j2',
-        'roles/strongswan/templates/ipsec.secrets.j2',
-        'roles/dns/templates/adblock.sh.j2',
-        'roles/dns/templates/dnsmasq.conf.j2',
-        'roles/common/templates/rules.v4.j2',
-        'roles/common/templates/rules.v6.j2',
+        "roles/wireguard/templates/client.conf.j2",
+        "roles/strongswan/templates/ipsec.conf.j2",
+        "roles/strongswan/templates/ipsec.secrets.j2",
+        "roles/dns/templates/adblock.sh.j2",
+        "roles/dns/templates/dnsmasq.conf.j2",
+        "roles/common/templates/rules.v4.j2",
+        "roles/common/templates/rules.v6.j2",
     ]
 
     test_vars = get_test_variables()
@@ -123,21 +121,18 @@ def test_critical_templates():
             template_dir = os.path.dirname(template_path)
             template_name = os.path.basename(template_path)
 
-            env = Environment(
-                loader=FileSystemLoader(template_dir),
-                undefined=StrictUndefined
-            )
+            env = Environment(loader=FileSystemLoader(template_dir), undefined=StrictUndefined)
 
             # Add mock functions
-            env.globals['lookup'] = mock_lookup
-            env.filters['to_uuid'] = mock_to_uuid
-            env.filters['bool'] = mock_bool
+            env.globals["lookup"] = mock_lookup
+            env.filters["to_uuid"] = mock_to_uuid
+            env.filters["bool"] = mock_bool
 
             template = env.get_template(template_name)
 
             # Add item context for templates that use loops
-            if 'client' in template_name:
-                test_vars['item'] = ('test-user', 'test-user')
+            if "client" in template_name:
+                test_vars["item"] = ("test-user", "test-user")
 
             # Try to render
             output = template.render(**test_vars)
@@ -163,17 +158,17 @@ def test_variable_consistency():
     """Check that commonly used variables are defined consistently"""
     # Variables that should be used consistently across templates
     common_vars = [
-        'server_name',
-        'IP_subject_alt_name',
-        'wireguard_port',
-        'wireguard_network',
-        'dns_servers',
-        'users',
+        "server_name",
+        "IP_subject_alt_name",
+        "wireguard_port",
+        "wireguard_network",
+        "dns_servers",
+        "users",
     ]
 
     # Check if main.yml defines these
-    if os.path.exists('main.yml'):
-        with open('main.yml') as f:
+    if os.path.exists("main.yml"):
+        with open("main.yml") as f:
             content = f.read()
 
         missing = []
@@ -192,28 +187,19 @@ def test_wireguard_ipv6_endpoints():
     """Test that WireGuard client configs properly format IPv6 endpoints"""
     test_cases = [
         # IPv4 address - should not be bracketed
-        {
-            'IP_subject_alt_name': '192.168.1.100',
-            'expected_endpoint': 'Endpoint = 192.168.1.100:51820'
-        },
+        {"IP_subject_alt_name": "192.168.1.100", "expected_endpoint": "Endpoint = 192.168.1.100:51820"},
         # IPv6 address - should be bracketed
         {
-            'IP_subject_alt_name': '2600:3c01::f03c:91ff:fedf:3b2a',
-            'expected_endpoint': 'Endpoint = [2600:3c01::f03c:91ff:fedf:3b2a]:51820'
+            "IP_subject_alt_name": "2600:3c01::f03c:91ff:fedf:3b2a",
+            "expected_endpoint": "Endpoint = [2600:3c01::f03c:91ff:fedf:3b2a]:51820",
         },
         # Hostname - should not be bracketed
-        {
-            'IP_subject_alt_name': 'vpn.example.com',
-            'expected_endpoint': 'Endpoint = vpn.example.com:51820'
-        },
+        {"IP_subject_alt_name": "vpn.example.com", "expected_endpoint": "Endpoint = vpn.example.com:51820"},
         # IPv6 with zone ID - should be bracketed
-        {
-            'IP_subject_alt_name': 'fe80::1%eth0',
-            'expected_endpoint': 'Endpoint = [fe80::1%eth0]:51820'
-        },
+        {"IP_subject_alt_name": "fe80::1%eth0", "expected_endpoint": "Endpoint = [fe80::1%eth0]:51820"},
     ]
 
-    template_path = 'roles/wireguard/templates/client.conf.j2'
+    template_path = "roles/wireguard/templates/client.conf.j2"
     if not os.path.exists(template_path):
         print(f"⚠ Skipping IPv6 endpoint test - {template_path} not found")
         return
@@ -225,24 +211,23 @@ def test_wireguard_ipv6_endpoints():
         try:
             # Set up test variables
             test_vars = {**base_vars, **test_case}
-            test_vars['item'] = ('test-user', 'test-user')
+            test_vars["item"] = ("test-user", "test-user")
 
             # Render template
-            env = Environment(
-                loader=FileSystemLoader('roles/wireguard/templates'),
-                undefined=StrictUndefined
-            )
-            env.globals['lookup'] = mock_lookup
+            env = Environment(loader=FileSystemLoader("roles/wireguard/templates"), undefined=StrictUndefined)
+            env.globals["lookup"] = mock_lookup
 
-            template = env.get_template('client.conf.j2')
+            template = env.get_template("client.conf.j2")
             output = template.render(**test_vars)
 
             # Check if the expected endpoint format is in the output
-            if test_case['expected_endpoint'] not in output:
-                errors.append(f"Expected '{test_case['expected_endpoint']}' for IP '{test_case['IP_subject_alt_name']}' but not found in output")
+            if test_case["expected_endpoint"] not in output:
+                errors.append(
+                    f"Expected '{test_case['expected_endpoint']}' for IP '{test_case['IP_subject_alt_name']}' but not found in output"
+                )
                 # Print relevant part of output for debugging
-                for line in output.split('\n'):
-                    if 'Endpoint' in line:
+                for line in output.split("\n"):
+                    if "Endpoint" in line:
                         errors.append(f"  Found: {line.strip()}")
 
         except Exception as e:
@@ -262,27 +247,27 @@ def test_template_conditionals():
     test_cases = [
         # WireGuard enabled, IPsec disabled
         {
-            'wireguard_enabled': True,
-            'ipsec_enabled': False,
-            'dns_encryption': True,
-            'dns_adblocking': True,
-            'algo_ssh_tunneling': False,
+            "wireguard_enabled": True,
+            "ipsec_enabled": False,
+            "dns_encryption": True,
+            "dns_adblocking": True,
+            "algo_ssh_tunneling": False,
         },
         # IPsec enabled, WireGuard disabled
         {
-            'wireguard_enabled': False,
-            'ipsec_enabled': True,
-            'dns_encryption': False,
-            'dns_adblocking': False,
-            'algo_ssh_tunneling': True,
+            "wireguard_enabled": False,
+            "ipsec_enabled": True,
+            "dns_encryption": False,
+            "dns_adblocking": False,
+            "algo_ssh_tunneling": True,
         },
         # Both enabled
         {
-            'wireguard_enabled': True,
-            'ipsec_enabled': True,
-            'dns_encryption': True,
-            'dns_adblocking': True,
-            'algo_ssh_tunneling': True,
+            "wireguard_enabled": True,
+            "ipsec_enabled": True,
+            "dns_encryption": True,
+            "dns_adblocking": True,
+            "algo_ssh_tunneling": True,
         },
     ]
 
@@ -294,7 +279,7 @@ def test_template_conditionals():
 
         # Test a few templates that have conditionals
         conditional_templates = [
-            'roles/common/templates/rules.v4.j2',
+            "roles/common/templates/rules.v4.j2",
         ]
 
         for template_path in conditional_templates:
@@ -305,23 +290,19 @@ def test_template_conditionals():
                 template_dir = os.path.dirname(template_path)
                 template_name = os.path.basename(template_path)
 
-                env = Environment(
-                    loader=FileSystemLoader(template_dir),
-                    undefined=StrictUndefined
-                )
+                env = Environment(loader=FileSystemLoader(template_dir), undefined=StrictUndefined)
 
                 # Add mock functions
-                env.globals['lookup'] = mock_lookup
-                env.filters['to_uuid'] = mock_to_uuid
-                env.filters['bool'] = mock_bool
+                env.globals["lookup"] = mock_lookup
+                env.filters["to_uuid"] = mock_to_uuid
+                env.filters["bool"] = mock_bool
 
                 template = env.get_template(template_name)
                 output = template.render(**test_vars)
 
                 # Verify conditionals work
-                if test_case.get('wireguard_enabled'):
-                    assert str(test_vars['wireguard_port']) in output, \
-                        f"WireGuard port missing when enabled (case {i})"
+                if test_case.get("wireguard_enabled"):
+                    assert str(test_vars["wireguard_port"]) in output, f"WireGuard port missing when enabled (case {i})"
 
             except Exception as e:
                 print(f"✗ Conditional test failed for {template_path} case {i}: {e}")

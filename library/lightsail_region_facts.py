@@ -3,12 +3,9 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
+ANSIBLE_METADATA = {"metadata_version": "1.1", "status": ["preview"], "supported_by": "community"}
 
-ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['preview'],
-                    'supported_by': 'community'}
-
-DOCUMENTATION = '''
+DOCUMENTATION = """
 ---
 module: lightsail_region_facts
 short_description: Gather facts about AWS Lightsail regions.
@@ -24,15 +21,15 @@ requirements:
 extends_documentation_fragment:
   - aws
   - ec2
-'''
+"""
 
 
-EXAMPLES = '''
+EXAMPLES = """
 # Gather facts about all regions
 - lightsail_region_facts:
-'''
+"""
 
-RETURN = '''
+RETURN = """
 regions:
     returned: on success
     description: >
@@ -46,12 +43,13 @@ regions:
                 "displayName": "Virginia",
                 "name": "us-east-1"
             }]"
-'''
+"""
 
 import traceback
 
 try:
     import botocore
+
     HAS_BOTOCORE = True
 except ImportError:
     HAS_BOTOCORE = False
@@ -86,18 +84,19 @@ def main():
 
         client = None
         try:
-            client = boto3_conn(module, conn_type='client', resource='lightsail',
-                                region=region, endpoint=ec2_url, **aws_connect_kwargs)
+            client = boto3_conn(
+                module, conn_type="client", resource="lightsail", region=region, endpoint=ec2_url, **aws_connect_kwargs
+            )
         except (botocore.exceptions.ClientError, botocore.exceptions.ValidationError) as e:
-            module.fail_json(msg='Failed while connecting to the lightsail service: %s' % e, exception=traceback.format_exc())
+            module.fail_json(
+                msg="Failed while connecting to the lightsail service: %s" % e, exception=traceback.format_exc()
+            )
 
-        response = client.get_regions(
-            includeAvailabilityZones=False
-        )
+        response = client.get_regions(includeAvailabilityZones=False)
         module.exit_json(changed=False, data=response)
     except (botocore.exceptions.ClientError, Exception) as e:
         module.fail_json(msg=str(e), exception=traceback.format_exc())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
