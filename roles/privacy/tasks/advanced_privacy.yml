@@ -10,8 +10,16 @@
   loop:
     - { name: 'kernel.printk', value: '3 4 1 3' }
     - { name: 'kernel.dmesg_restrict', value: '1' }
-    - { name: 'net.core.bpf_jit_enable', value: '0' }
   when: privacy_advanced.reduce_kernel_verbosity | bool
+
+- name: Disable BPF JIT if available (optional security hardening)
+  sysctl:
+    name: net.core.bpf_jit_enable
+    value: '0'
+    state: present
+    reload: yes
+  when: privacy_advanced.reduce_kernel_verbosity | bool
+  ignore_errors: yes
 
 - name: Configure kernel parameters for privacy
   lineinfile:
@@ -23,9 +31,17 @@
     - "# Privacy enhancements - reduce kernel logging"
     - "kernel.printk = 3 4 1 3"
     - "kernel.dmesg_restrict = 1"
-    - "# Disable BPF JIT to reduce attack surface"
-    - "net.core.bpf_jit_enable = 0"
+    - "# Note: net.core.bpf_jit_enable may not be available on all kernels"
   when: privacy_advanced.reduce_kernel_verbosity | bool
+
+- name: Add BPF JIT disable to sysctl config if kernel supports it
+  lineinfile:
+    path: /etc/sysctl.d/99-privacy.conf
+    line: "net.core.bpf_jit_enable = 0  # Disable BPF JIT to reduce attack surface"
+    create: yes
+    mode: '0644'
+  when: privacy_advanced.reduce_kernel_verbosity | bool
+  ignore_errors: yes
 
 - name: Configure journal settings for privacy
   lineinfile:
