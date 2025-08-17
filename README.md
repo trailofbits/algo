@@ -8,7 +8,7 @@ See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo
 
 ## Features
 
-* Supports only IKEv2 with strong crypto (AES-GCM, SHA2, and P-256)
+* Supports only IKEv2 with strong crypto (AES-GCM, SHA2, and P-256) for iOS, MacOS, and Linux
 * Supports [WireGuard](https://www.wireguard.com/) for all of the above, in addition to Android and Windows 11
 * Generates .conf files and QR codes for iOS, macOS, Android, and Windows WireGuard clients
 * Generates Apple profiles to auto-configure iOS and macOS devices for IPsec - no client software required

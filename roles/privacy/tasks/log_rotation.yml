@@ -2,6 +2,16 @@
 # Aggressive log rotation configuration for privacy
 # Reduces log retention time and implements more frequent rotation
 
+- name: Check if default rsyslog logrotate config exists
+  stat:
+    path: /etc/logrotate.d/rsyslog
+  register: rsyslog_logrotate
+
+- name: Disable default rsyslog logrotate to prevent conflicts
+  command: mv /etc/logrotate.d/rsyslog /etc/logrotate.d/rsyslog.disabled
+  when: rsyslog_logrotate.stat.exists
+  changed_when: rsyslog_logrotate.stat.exists
+
 - name: Configure aggressive logrotate for system logs
   template:
     src: privacy-logrotate.j2
@@ -46,6 +56,5 @@
     owner: root
     group: root
 
-- name: Force immediate log rotation to apply new settings
-  command: /usr/sbin/logrotate -f /etc/logrotate.conf
-  changed_when: false
+# Note: We don't force immediate rotation as it can cause conflicts
+# The new settings will apply on the next scheduled rotation
