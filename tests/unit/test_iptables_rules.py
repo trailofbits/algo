@@ -212,5 +212,35 @@ def test_output_interface_in_nat_rules():
     assert "-A POSTROUTING -s 10.48.0.0/16 -j MASQUERADE" not in result
 
 
+def test_dns_firewall_restricted_to_vpn():
+    """Test that DNS access is restricted to VPN clients only."""
+    template = load_template("rules.v4.j2")
+
+    result = template.render(
+        ipsec_enabled=True,
+        wireguard_enabled=True,
+        strongswan_network="10.48.0.0/16",
+        wireguard_network_ipv4="10.49.0.0/16",
+        strongswan_network_ipv6="2001:db8::/48",
+        wireguard_network_ipv6="2001:db8:a160::/48",
+        wireguard_port=51820,
+        wireguard_port_avoid=53,
+        wireguard_port_actual=51820,
+        ansible_default_ipv4={"interface": "eth0"},
+        snat_aipv4=None,
+        BetweenClients_DROP=True,
+        block_smb=True,
+        block_netbios=True,
+        local_service_ip="172.23.198.242",
+        ansible_ssh_port=22,
+        reduce_mtu=0,
+    )
+
+    # DNS should only be accessible from VPN subnets
+    assert "-A INPUT -s 10.48.0.0/16,10.49.0.0/16 -d 172.23.198.242 -p udp --dport 53 -j ACCEPT" in result
+    # Should NOT have unrestricted DNS access
+    assert "-A INPUT -d 172.23.198.242 -p udp --dport 53 -j ACCEPT" not in result
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
