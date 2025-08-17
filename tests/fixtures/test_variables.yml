@@ -72,6 +72,12 @@ CA_password: test-ca-pass
 # System
 ansible_ssh_port: 4160
 ansible_python_interpreter: /usr/bin/python3
+ansible_default_ipv4:
+  interface: eth0
+  address: 10.0.0.1
+ansible_default_ipv6:
+  interface: eth0
+  address: 'fd9d:bc11:4020::1'
 BetweenClients_DROP: 'Y'
 ssh_tunnels_config_path: /etc/ssh/ssh_tunnels
 config_prefix: /etc/algo

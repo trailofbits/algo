@@ -41,8 +41,8 @@ def test_wireguard_nat_rules_ipv4():
         reduce_mtu=0
     )
 
-    # Verify NAT rule exists without policy matching
-    assert '-A POSTROUTING -s 10.49.0.0/16 -j MASQUERADE' in result
+    # Verify NAT rule exists with output interface and without policy matching
+    assert '-A POSTROUTING -s 10.49.0.0/16 -o eth0 -j MASQUERADE' in result
     # Verify no policy matching in WireGuard NAT rules
     assert '-A POSTROUTING -s 10.49.0.0/16 -m policy' not in result
 
@@ -67,8 +67,8 @@ def test_ipsec_nat_rules_ipv4():
         reduce_mtu=0
     )
 
-    # Verify NAT rule exists without policy matching
-    assert '-A POSTROUTING -s 10.48.0.0/16 -j MASQUERADE' in result
+    # Verify NAT rule exists with output interface and without policy matching
+    assert '-A POSTROUTING -s 10.48.0.0/16 -o eth0 -j MASQUERADE' in result
     # Verify no policy matching in IPsec NAT rules (this was the bug)
     assert '-A POSTROUTING -s 10.48.0.0/16 -m policy --pol none' not in result
 
@@ -97,9 +97,9 @@ def test_both_vpns_nat_rules_ipv4():
         reduce_mtu=0
     )
 
-    # Both should have NAT rules
-    assert '-A POSTROUTING -s 10.48.0.0/16 -j MASQUERADE' in result
-    assert '-A POSTROUTING -s 10.49.0.0/16 -j MASQUERADE' in result
+    # Both should have NAT rules with output interface
+    assert '-A POSTROUTING -s 10.48.0.0/16 -o eth0 -j MASQUERADE' in result
+    assert '-A POSTROUTING -s 10.49.0.0/16 -o eth0 -j MASQUERADE' in result
 
     # Neither should have policy matching
     assert '-m policy --pol none' not in result
@@ -129,9 +129,9 @@ def test_alternative_ingress_snat():
         reduce_mtu=0
     )
 
-    # Should use SNAT with specific IP instead of MASQUERADE
-    assert '-A POSTROUTING -s 10.48.0.0/16 -j SNAT --to 192.168.1.100' in result
-    assert '-A POSTROUTING -s 10.49.0.0/16 -j SNAT --to 192.168.1.100' in result
+    # Should use SNAT with specific IP and output interface instead of MASQUERADE
+    assert '-A POSTROUTING -s 10.48.0.0/16 -o eth0 -j SNAT --to 192.168.1.100' in result
+    assert '-A POSTROUTING -s 10.49.0.0/16 -o eth0 -j SNAT --to 192.168.1.100' in result
     assert 'MASQUERADE' not in result
 
 
