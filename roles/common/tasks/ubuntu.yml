@@ -123,6 +123,7 @@
       - apparmor-utils
       - uuid-runtime
       - coreutils
+      - iptables
       - iptables-persistent
       - cgroup-tools
       - openssl
@@ -180,10 +181,6 @@
       with_items:
         - iptables
         - ip6tables
-        - iptables-save
-        - iptables-restore
-        - ip6tables-save
-        - ip6tables-restore
   when:
     - ansible_distribution == "Ubuntu"
     - ansible_distribution_version is version('22.04', '>=')
