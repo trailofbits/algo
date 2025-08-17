@@ -58,8 +58,6 @@
       [Unit]
       After=systemd-resolved.service
       Requires=systemd-resolved.service
-      # Remove socket dependency to allow direct binding
-      TriggeredBy=
 
       [Service]
       AmbientCapabilities=CAP_NET_BIND_SERVICE
