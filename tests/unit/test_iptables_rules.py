@@ -184,5 +184,33 @@ def test_wireguard_forward_rule_no_policy_match():
     assert '-A FORWARD -m conntrack --ctstate NEW -s 10.49.0.0/16 -m policy' not in result
 
 
+def test_output_interface_in_nat_rules():
+    """Test that output interface is specified in NAT rules."""
+    template = load_template('rules.v4.j2')
+    
+    result = template.render(
+        snat_aipv4=False,
+        wireguard_enabled=True,
+        ipsec_enabled=True,
+        wireguard_network_ipv4='10.49.0.0/16',
+        strongswan_network='10.48.0.0/16',
+        ansible_default_ipv4={'interface': 'eth0', 'address': '10.0.0.1'},
+        ansible_default_ipv6={'interface': 'eth0', 'address': 'fd9d:bc11:4020::1'},
+        wireguard_port_actual=51820,
+        wireguard_port_avoid=53,
+        wireguard_port=51820,
+        ansible_ssh_port=22,
+        reduce_mtu=0
+    )
+    
+    # Check that output interface is specified for both VPNs
+    assert '-A POSTROUTING -s 10.49.0.0/16 -o eth0 -j MASQUERADE' in result
+    assert '-A POSTROUTING -s 10.48.0.0/16 -o eth0 -j MASQUERADE' in result
+    
+    # Ensure we don't have rules without output interface
+    assert '-A POSTROUTING -s 10.49.0.0/16 -j MASQUERADE' not in result
+    assert '-A POSTROUTING -s 10.48.0.0/16 -j MASQUERADE' not in result
+
+
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
