@@ -98,3 +98,13 @@
   notify:
     - daemon-reload
     - restart dnscrypt-proxy
+
+- name: Ubuntu | Disable dnscrypt-proxy socket activation
+  systemd:
+    name: dnscrypt-proxy.socket
+    state: stopped
+    enabled: false
+    masked: true
+  failed_when: false
+  notify:
+    - restart dnscrypt-proxy
