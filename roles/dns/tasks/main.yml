@@ -8,6 +8,7 @@
   template:
     src: ip-blacklist.txt.j2
     dest: "{{ config_prefix | default('/') }}etc/dnscrypt-proxy/ip-blacklist.txt"
+    mode: '0644'
   notify:
     - restart dnscrypt-proxy
 
@@ -15,6 +16,7 @@
   template:
     src: dnscrypt-proxy.toml.j2
     dest: "{{ config_prefix | default('/') }}etc/dnscrypt-proxy/dnscrypt-proxy.toml"
+    mode: '0644'
   notify:
     - restart dnscrypt-proxy
 

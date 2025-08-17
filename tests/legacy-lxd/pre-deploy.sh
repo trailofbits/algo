@@ -22,7 +22,7 @@ lxc profile set default raw.lxc 'lxc.apparmor.profile = unconfined'
 lxc profile set default security.privileged true
 lxc profile show default
 
-lxc init ubuntu:${UBUNTU_VERSION} algo
+lxc init ubuntu:"${UBUNTU_VERSION}" algo
 lxc network attach lxdbr0 algo eth0 eth0
 lxc config device set algo eth0 ipv4.address 10.0.8.100
 lxc start algo

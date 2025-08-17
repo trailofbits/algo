@@ -1,0 +1,57 @@
+---
+# Privacy enhancement configuration defaults
+# These settings can be overridden in config.cfg
+
+# Enable privacy enhancements (disabled for debugging when false)
+privacy_enhancements_enabled: true
+
+# Log rotation settings
+privacy_log_rotation:
+  # Maximum age for system logs in days
+  max_age: 7
+  # Maximum size for individual log files in MB
+  max_size: 10
+  # Number of rotated files to keep
+  rotate_count: 3
+  # Compress rotated logs
+  compress: true
+  # Force daily rotation regardless of size
+  daily_rotation: true
+
+# History clearing settings
+privacy_history_clearing:
+  # Clear bash history after deployment
+  clear_bash_history: true
+  # Clear system command history
+  clear_system_history: true
+  # Disable bash history persistence for service users
+  disable_service_history: true
+
+# Log filtering settings
+privacy_log_filtering:
+  # Exclude VPN connection logs from persistent storage
+  exclude_vpn_logs: true
+  # Exclude authentication logs (be careful with this)
+  exclude_auth_logs: false
+  # Filter kernel logs related to VPN traffic
+  filter_kernel_vpn_logs: true
+
+# Automatic cleanup settings
+privacy_auto_cleanup:
+  # Enable automatic log cleanup
+  enabled: true
+  # Cleanup frequency (daily, weekly, monthly)
+  frequency: "daily"
+  # Clean up temporary files older than N days
+  temp_files_max_age: 1
+  # Clean up old package cache
+  clean_package_cache: true
+
+# Advanced privacy settings
+privacy_advanced:
+  # Disable logging of successful SSH connections
+  disable_ssh_success_logs: false
+  # Reduce kernel log verbosity
+  reduce_kernel_verbosity: true
+  # Clear logs on shutdown (use with caution)
+  clear_logs_on_shutdown: false

@@ -1,0 +1,99 @@
+---
+# Advanced privacy settings for enhanced anonymity
+
+- name: Reduce kernel log verbosity for privacy
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: yes
+  loop:
+    - { name: 'kernel.printk', value: '3 4 1 3' }
+    - { name: 'kernel.dmesg_restrict', value: '1' }
+  when: privacy_advanced.reduce_kernel_verbosity | bool
+
+- name: Disable BPF JIT if available (optional security hardening)
+  sysctl:
+    name: net.core.bpf_jit_enable
+    value: '0'
+    state: present
+    reload: yes
+  when: privacy_advanced.reduce_kernel_verbosity | bool
+  ignore_errors: yes
+
+- name: Configure kernel parameters for privacy
+  lineinfile:
+    path: /etc/sysctl.d/99-privacy.conf
+    line: "{{ item }}"
+    create: yes
+    mode: '0644'
+  loop:
+    - "# Privacy enhancements - reduce kernel logging"
+    - "kernel.printk = 3 4 1 3"
+    - "kernel.dmesg_restrict = 1"
+    - "# Note: net.core.bpf_jit_enable may not be available on all kernels"
+  when: privacy_advanced.reduce_kernel_verbosity | bool
+
+- name: Add BPF JIT disable to sysctl config if kernel supports it
+  lineinfile:
+    path: /etc/sysctl.d/99-privacy.conf
+    line: "net.core.bpf_jit_enable = 0  # Disable BPF JIT to reduce attack surface"
+    create: yes
+    mode: '0644'
+  when: privacy_advanced.reduce_kernel_verbosity | bool
+  ignore_errors: yes
+
+- name: Configure journal settings for privacy
+  lineinfile:
+    path: /etc/systemd/journald.conf
+    regexp: "^#?{{ item.key }}="
+    line: "{{ item.key }}={{ item.value }}"
+    backup: yes
+  loop:
+    - { key: 'MaxRetentionSec', value: '{{ privacy_log_rotation.max_age * 24 * 3600 }}' }
+    - { key: 'MaxFileSec', value: '1day' }
+    - { key: 'SystemMaxUse', value: '100M' }
+    - { key: 'SystemMaxFileSize', value: '{{ privacy_log_rotation.max_size }}M' }
+    - { key: 'ForwardToSyslog', value: 'no' }
+  notify: restart systemd-journald
+
+- name: Disable persistent systemd journal
+  file:
+    path: /var/log/journal
+    state: absent
+  when: privacy_advanced.reduce_kernel_verbosity | bool
+
+- name: Create journal configuration for volatile storage only
+  lineinfile:
+    path: /etc/systemd/journald.conf
+    regexp: "^#?Storage="
+    line: "Storage=volatile"
+    backup: yes
+  notify: restart systemd-journald
+
+- name: Configure rsyslog for minimal logging
+  template:
+    src: privacy-rsyslog.conf.j2
+    dest: /etc/rsyslog.d/45-privacy-minimal.conf
+    mode: '0644'
+    owner: root
+    group: root
+  notify: restart rsyslog
+
+- name: Set up privacy monitoring script
+  template:
+    src: privacy-monitor.sh.j2
+    dest: /usr/local/bin/privacy-monitor.sh
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Display privacy configuration summary
+  debug:
+    msg:
+      - "Privacy enhancements applied:"
+      - "  - Log retention: {{ privacy_log_rotation.max_age }} days"
+      - "  - VPN log filtering: {{ privacy_log_filtering.exclude_vpn_logs | bool }}"
+      - "  - History clearing: {{ privacy_history_clearing.clear_bash_history | bool }}"
+      - "  - Auto cleanup: {{ privacy_auto_cleanup.enabled | bool }}"
+      - "  - Kernel verbosity reduction: {{ privacy_advanced.reduce_kernel_verbosity | bool }}"

@@ -8,6 +8,7 @@
   when:
     - aws_access_key is undefined
     - lookup('env', 'AWS_ACCESS_KEY_ID')|length <= 0
+  no_log: true
 
 - pause:
     prompt: |
@@ -17,10 +18,12 @@
   when:
     - aws_secret_key is undefined
     - lookup('env', 'AWS_SECRET_ACCESS_KEY')|length <= 0
+  no_log: true
 
 - set_fact:
     access_key: "{{ aws_access_key | default(_aws_access_key.user_input | default(None)) | default(lookup('env', 'AWS_ACCESS_KEY_ID'), true) }}"
     secret_key: "{{ aws_secret_key | default(_aws_secret_key.user_input | default(None)) | default(lookup('env', 'AWS_SECRET_ACCESS_KEY'), true) }}"
+  no_log: true
 
 - block:
     - name: Get regions
@@ -29,6 +32,7 @@
         aws_secret_key: "{{ secret_key }}"
         region: us-east-1
       register: _lightsail_regions
+      no_log: true
 
     - name: Set facts about the regions
       set_fact:

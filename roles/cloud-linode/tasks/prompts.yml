@@ -7,10 +7,12 @@
   when:
     - linode_token is undefined
     - lookup('env', 'LINODE_API_TOKEN')|length <= 0
+  no_log: true
 
 - name: Set the token as a fact
   set_fact:
     algo_linode_token: "{{ linode_token | default(_linode_token.user_input | default(None)) | default(lookup('env', 'LINODE_API_TOKEN'), true) }}"
+  no_log: true
 
 - name: Get regions
   uri:

@@ -20,3 +20,4 @@
     tags:
       Environment: Algo
   register: stack
+  no_log: true

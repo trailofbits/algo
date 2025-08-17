@@ -10,6 +10,7 @@
 * [I deployed an Algo server. Can you update it with new features?](#i-deployed-an-algo-server-can-you-update-it-with-new-features)
 * [Where did the name "Algo" come from?](#where-did-the-name-algo-come-from)
 * [Can DNS filtering be disabled?](#can-dns-filtering-be-disabled)
+* [Does Algo support zero logging?](#does-algo-support-zero-logging)
 * [Wasn't IPSEC backdoored by the US government?](#wasnt-ipsec-backdoored-by-the-us-government)
 * [What inbound ports are used?](#what-inbound-ports-are-used)
 * [How do I monitor user activity?](#how-do-i-monitor-user-activity)
@@ -58,6 +59,10 @@ Algo is short for "Al Gore", the **V**ice **P**resident of **N**etworks everywhe
 ## Can DNS filtering be disabled?
 
 You can temporarily disable DNS filtering for all IPsec clients at once with the following workaround: SSH to your Algo server (using the 'shell access' command printed upon a successful deployment), edit `/etc/ipsec.conf`, and change `rightdns=<random_ip>` to `rightdns=8.8.8.8`. Then run `sudo systemctl restart strongswan`. DNS filtering for WireGuard clients has to be disabled on each client device separately by modifying the settings in the app, or by directly modifying the `DNS` setting on the `clientname.conf` file. If all else fails, we recommend deploying a new Algo server without the adblocking feature enabled.
+
+## Does Algo support zero logging?
+
+Yes, Algo includes privacy enhancements that minimize logging by default. StrongSwan connection logging is disabled, DNSCrypt syslog is turned off, and logs are automatically rotated after 7 days. However, some system-level logging remains for security and troubleshooting purposes. For detailed privacy configuration and limitations, see the [Privacy and Logging](#privacy-and-logging) section in the README.
 
 ## Wasn't IPSEC backdoored by the US government?
 

@@ -19,7 +19,7 @@
   template:
     src: mobileconfig.j2
     dest: "{{ ipsec_config_path }}/apple/{{ item.0 }}.mobileconfig"
-    mode: 0600
+    mode: '0600'
   with_together:
     - "{{ users }}"
     - "{{ PayloadContent.results }}"
@@ -29,7 +29,7 @@
   template:
     src: client_ipsec.conf.j2
     dest: "{{ ipsec_config_path }}/manual/{{ item }}.conf"
-    mode: 0600
+    mode: '0600'
   with_items:
     - "{{ users }}"
 
@@ -38,7 +38,7 @@
   template:
     src: client_ipsec.secrets.j2
     dest: "{{ ipsec_config_path }}/manual/{{ item }}.secrets"
-    mode: 0600
+    mode: '0600'
   with_items:
     - "{{ users }}"
 
@@ -46,4 +46,4 @@
   file:
     path: "{{ ipsec_config_path }}"
     state: directory
-    mode: 0700
+    mode: '0700'

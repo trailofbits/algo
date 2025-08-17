@@ -177,10 +177,16 @@
             - algo_ssh_tunneling
           tags: ssh_tunneling
 
+        - import_role:
+            name: privacy
+          when: privacy_enhancements_enabled | default(true)
+          tags: privacy
+
         - block:
             - name: Dump the configuration
               copy:
                 dest: configs/{{ IP_subject_alt_name }}/.config.yml
+                mode: '0644'
                 content: |
                   server: {{ 'localhost' if inventory_hostname == 'localhost' else inventory_hostname }}
                   server_user: {{ ansible_ssh_user }}

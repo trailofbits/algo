@@ -17,6 +17,7 @@
   with_items:
     - "{{ users }}"
     - "{{ IP_subject_alt_name }}"
+  no_log: true
 
 - name: Generate raw preshared keys
   community.crypto.openssl_privatekey:
@@ -36,6 +37,7 @@
   with_items:
     - "{{ users }}"
     - "{{ IP_subject_alt_name }}"
+  no_log: true
 
 - name: Generate public keys
   x25519_pubkey:
@@ -44,3 +46,13 @@
   with_items:
     - "{{ users }}"
     - "{{ IP_subject_alt_name }}"
+  no_log: true
+
+- name: Set permissions for public keys
+  file:
+    path: "{{ wireguard_pki_path }}/public/{{ item }}"
+    mode: '0644'
+  with_items:
+    - "{{ users }}"
+    - "{{ IP_subject_alt_name }}"
+  no_log: true

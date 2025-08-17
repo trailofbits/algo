@@ -7,10 +7,12 @@
   when:
     - hcloud_token is undefined
     - lookup('env', 'HCLOUD_TOKEN')|length <= 0
+  no_log: true
 
 - name: Set the token as a fact
   set_fact:
     algo_hcloud_token: "{{ hcloud_token | default(_hcloud_token.user_input | default(None)) | default(lookup('env', 'HCLOUD_TOKEN'), true) }}"
+  no_log: true
 
 - name: Get regions
   hetzner.hcloud.datacenter_info:

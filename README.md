@@ -8,14 +8,15 @@ See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo
 
 ## Features
 
-* Supports only IKEv2 with strong crypto (AES-GCM, SHA2, and P-256) for iOS, macOS, and Linux
+* Supports only IKEv2 with strong crypto (AES-GCM, SHA2, and P-256) for iOS, MacOS, and Linux
 * Supports [WireGuard](https://www.wireguard.com/) for all of the above, in addition to Android and Windows 11
 * Generates .conf files and QR codes for iOS, macOS, Android, and Windows WireGuard clients
 * Generates Apple profiles to auto-configure iOS and macOS devices for IPsec - no client software required
-* Includes a helper script to add and remove users
+* Includes helper scripts to add, remove, and manage users
 * Blocks ads with a local DNS resolver (optional)
 * Sets up limited SSH users for tunneling traffic (optional)
-* Based on current versions of Ubuntu and strongSwan
+* Privacy-focused with minimal logging, automatic log rotation, and configurable privacy enhancements
+* Based on Ubuntu 22.04 LTS with automatic security updates
 * Installs to DigitalOcean, Amazon Lightsail, Amazon EC2, Vultr, Microsoft Azure, Google Compute Engine, Scaleway, OpenStack, CloudStack, Hetzner Cloud, Linode, or [your own Ubuntu server (for advanced users)](docs/deploy-to-ubuntu.md)
 
 ## Anti-features
@@ -174,6 +175,33 @@ To add or remove users, first edit the `users` list in your `config.cfg` file. A
 ```
 
 After the process completes, new configuration files will be generated in the `configs` directory for any new users. The Algo VPN server will be updated to contain only the users listed in the `config.cfg` file. Removed users will no longer be able to connect, and new users will have fresh certificates and configuration files ready for use.
+
+## Privacy and Logging
+
+Algo takes a pragmatic approach to privacy. By default, we minimize logging while maintaining enough information for security and troubleshooting.
+
+What IS logged by default:
+* System security events (failed SSH attempts, firewall blocks, system updates)
+* Kernel messages and boot diagnostics (with reduced verbosity)
+* WireGuard client state (visible via `sudo wg` - shows last endpoint and handshake time)
+* Basic service status (service starts/stops/errors)
+* All logs automatically rotate and delete after 7 days
+
+Privacy is controlled by two main settings in `config.cfg`:
+* `strongswan_log_level: -1` - Controls StrongSwan connection logging (-1 = disabled, 2 = debug)
+* `privacy_enhancements_enabled: true` - Master switch for log rotation, history clearing, log filtering, and cleanup
+
+To enable full debugging when troubleshooting, set both `strongswan_log_level: 2` and `privacy_enhancements_enabled: false`. This will capture detailed connection logs and disable all privacy features. Remember to revert these changes after debugging.
+
+After deployment, verify your privacy settings:
+```bash
+ssh -F configs/<server_ip>/ssh_config <hostname>
+sudo /usr/local/bin/privacy-monitor.sh
+```
+
+Perfect privacy is impossible with any VPN solution. Your cloud provider sees and logs network traffic metadata regardless of your server configuration. And of course, your ISP knows you're connecting to a VPN server, even if they can't see what you're doing through it.
+
+For the highest level of privacy, treat your Algo servers as disposable. Spin up a new instance when you need it, use it for your specific purpose, then destroy it completely. The ephemeral nature of cloud infrastructure can be a privacy feature if you use it intentionally.
 
 ## Additional Documentation
 * [FAQ](docs/faq.md)

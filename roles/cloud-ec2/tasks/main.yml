@@ -15,6 +15,7 @@
       architecture: "{{ cloud_providers.ec2.image.arch }}"
       name: ubuntu/images/hvm-ssd/{{ cloud_providers.ec2.image.name }}-*64-server-*
   register: ami_search
+  no_log: true
 
 - name: Set the ami id as a fact
   set_fact:

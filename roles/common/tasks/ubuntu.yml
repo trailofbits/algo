@@ -77,6 +77,7 @@
     section: Resolve
     option: FallbackDNS
     value: "{{ dns_servers.ipv4 | join(' ') }}"
+    mode: '0644'
   notify:
     - restart systemd-resolved
 
@@ -84,6 +85,7 @@
   template:
     src: 10-algo-lo100.network.j2
     dest: /etc/systemd/network/10-algo-lo100.network
+    mode: '0644'
   notify:
     - restart systemd-networkd
 
@@ -121,6 +123,7 @@
       - apparmor-utils
       - uuid-runtime
       - coreutils
+      - iptables
       - iptables-persistent
       - cgroup-tools
       - openssl
@@ -178,10 +181,6 @@
       with_items:
         - iptables
         - ip6tables
-        - iptables-save
-        - iptables-restore
-        - ip6tables-save
-        - ip6tables-restore
   when:
     - ansible_distribution == "Ubuntu"
     - ansible_distribution_version is version('22.04', '>=')
