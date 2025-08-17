@@ -55,7 +55,5 @@
     group: root
   when: privacy_history_clearing.clear_bash_history | bool
 
-- name: Clear current session history
-  shell: history -c
-  changed_when: false
-  when: privacy_history_clearing.clear_bash_history | bool
+# Note: We don't clear current session history as each Ansible task
+# runs in its own shell session, making this operation ineffective
