@@ -176,19 +176,38 @@ This practice ensures:
 - Too many tasks to fix immediately (113+)
 - Focus on new code having proper names
 
+### 2. dnscrypt-proxy Service Failures
+**Problem:** "Unit dnscrypt-proxy.socket is masked" or service won't start
+- The service has `Requires=dnscrypt-proxy.socket` dependency
+- Masking the socket prevents the service from starting
+- **Solution:** Configure socket properly instead of fighting it (see systemd section above)
 
-### 3. Jinja2 Template Complexity
+### 3. DNS Not Accessible to VPN Clients
+**Symptoms:** VPN connects but no internet access
+- First check: `sudo ss -ulnp | grep :53` on the server
+- If only showing 127.0.0.53 or 127.0.2.1, socket activation is misconfigured
+- Check firewall allows VPN subnets: `-A INPUT -s {{ subnets }} -d {{ local_service_ip }}`
+- **Never** allow DNS from all sources (0.0.0.0/0) - security risk!
+
+### 4. Multi-homed Systems and NAT
+**DigitalOcean and other providers with multiple IPs:**
+- Servers may have both public and private IPs on same interface
+- MASQUERADE needs output interface: `-o {{ ansible_default_ipv4['interface'] }}`
+- Don't overengineer with SNAT - MASQUERADE with interface works fine
+- Use `alternative_ingress_ip` option only when truly needed
+
+### 5. Jinja2 Template Complexity
 - Many templates use Ansible-specific filters
 - Test templates with `tests/unit/test_template_rendering.py`
 - Mock Ansible filters when testing
 
-### 4. OpenSSL Version Compatibility
+### 6. OpenSSL Version Compatibility
 ```yaml
 # Check version and use appropriate flags
 {{ (openssl_version is version('3', '>=')) | ternary('-legacy', '') }}
 ```
 
-### 5. IPv6 Endpoint Formatting
+### 7. IPv6 Endpoint Formatting
 - WireGuard configs must bracket IPv6 addresses
 - Template logic: `{% if ':' in IP %}[{{ IP }}]:{{ port }}{% else %}{{ IP }}:{{ port }}{% endif %}`
 
@@ -223,8 +242,10 @@ This practice ensures:
 Each has specific requirements:
 - **AWS**: Requires boto3, specific AMI IDs
 - **Azure**: Complex networking setup
-- **DigitalOcean**: Simple API, good for testing
+- **DigitalOcean**: Simple API, good for testing (watch for multiple IPs on eth0)
 - **Local**: KVM/Docker for development
+
+**Testing Note:** DigitalOcean droplets often have both public and private IPs on the same interface, making them excellent test cases for multi-IP scenarios and NAT issues.
 
 ### Architecture Considerations
 - Support both x86_64 and ARM64
@@ -265,6 +286,15 @@ Each has specific requirements:
 - Linter compliance
 - Conservative approach
 
+### Time Wasters to Avoid (Lessons Learned)
+**Don't spend time on these unless absolutely necessary:**
+1. **Converting MASQUERADE to SNAT** - MASQUERADE works fine for Algo's use case
+2. **Fighting systemd socket activation** - Configure it properly instead
+3. **Debugging NAT before checking DNS** - Most "routing" issues are DNS issues
+4. **Complex IPsec policy matching** - Keep NAT rules simple
+5. **Testing on existing servers** - Always test on fresh deployments
+6. **Adding `-m policy --pol none`** - This breaks NAT, don't use it
+
 ## Working with Algo
 
 ### Local Development Setup
@@ -296,6 +326,30 @@ ansible-playbook users.yml -e "server=SERVER_NAME"
 2. Verify cloud provider credentials
 3. Check firewall rules
 4. Review generated configs in `configs/`
+
+### Troubleshooting VPN Connectivity
+
+#### "VPN connects but can't route traffic" - Check in this order:
+1. **DNS first** - `sudo ss -ulnp | grep :53` - Is dnscrypt-proxy listening on VPN IPs?
+2. **Packet counters** - `sudo iptables -L FORWARD -v -n | grep -E '10.49|10.48'` - Are packets reaching the firewall?
+3. **NAT counters** - `sudo iptables -t nat -L POSTROUTING -v -n` - Is NAT happening?
+4. **Service status** - `sudo systemctl status dnscrypt-proxy` - Is the DNS service running?
+
+**Important:** Most "routing" issues are actually DNS issues. Always check DNS first.
+
+#### systemd and dnscrypt-proxy
+- Ubuntu's dnscrypt-proxy package uses socket activation by default
+- The default socket listens on 127.0.2.1:53, NOT the VPN service IPs
+- Work WITH systemd, not against it:
+  ```yaml
+  # Create socket override at /etc/systemd/system/dnscrypt-proxy.socket.d/override.conf
+  [Socket]
+  ListenStream=  # Clear defaults
+  ListenStream=172.x.x.x:53  # Add VPN IP
+  ```
+- Use empty `listen_addresses = []` in dnscrypt-proxy.toml when using socket activation
+- **Never** use `TriggeredBy=` in systemd units (it's not a valid directive)
+- Don't mask sockets that services depend on - just disable them
 
 ## Important Context for LLMs
 
