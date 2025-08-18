@@ -3,7 +3,6 @@
   include_tasks: ubuntu.yml
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
-
 - name: dnscrypt-proxy ip-blacklist configured
   template:
     src: ip-blacklist.txt.j2
@@ -26,11 +25,12 @@
 
 - meta: flush_handlers
 
-- name: Ubuntu | Ensure dnscrypt-proxy socket is enabled
+- name: Ubuntu | Ensure dnscrypt-proxy socket is enabled and started
   systemd:
     name: dnscrypt-proxy.socket
     enabled: true
     state: started
+    daemon_reload: true
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
 - name: dnscrypt-proxy enabled and started

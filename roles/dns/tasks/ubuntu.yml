@@ -76,10 +76,15 @@
       NoDelay=true
       DeferAcceptSec=1
     mode: '0644'
+  register: socket_override
   notify:
     - daemon-reload
     - restart dnscrypt-proxy.socket
     - restart dnscrypt-proxy
+
+- name: Ubuntu | Flush handlers to restart socket if needed
+  meta: flush_handlers
+  when: socket_override.changed
 
 - name: Ubuntu | Add custom requirements to successfully start the unit
   copy:
