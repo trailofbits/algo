@@ -9,6 +9,16 @@
     state: present
     persistent: present
 
+- name: Ubuntu | Enable route_localnet for IPsec traffic on main interface
+  sysctl:
+    name: "net.ipv4.conf.{{ ansible_default_ipv4['interface'] }}.route_localnet"
+    value: 1
+    sysctl_set: true
+    state: present
+    reload: true
+  when: ipsec_enabled
+  tags: always
+
 - name: Ubuntu | Install strongSwan (individual)
   apt:
     name: strongswan
