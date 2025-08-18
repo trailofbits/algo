@@ -37,10 +37,16 @@
 ## List of local addresses and ports to listen to. Can be IPv4 and/or IPv6.
 ## Note: When using systemd socket activation, choose an empty set (i.e. [] ).
 
+{% if ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian' %}
+# Using systemd socket activation on Ubuntu/Debian
+listen_addresses = []
+{% else %}
+# Direct binding on non-systemd systems
 listen_addresses  = [
   '{{ local_service_ip }}:53'{% if ipv6_support %},
   '[{{ local_service_ipv6 }}]:53'{% endif %}
   ]
+{% endif %}
 
 
 ## Maximum number of simultaneous client connections to accept

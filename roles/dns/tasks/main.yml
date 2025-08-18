@@ -26,12 +26,11 @@
 
 - meta: flush_handlers
 
-- name: Ubuntu | Stop and disable dnscrypt-proxy socket before starting service
+- name: Ubuntu | Ensure dnscrypt-proxy socket is enabled
   systemd:
     name: dnscrypt-proxy.socket
-    state: stopped
-    enabled: false
-  failed_when: false
+    enabled: true
+    state: started
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
 - name: dnscrypt-proxy enabled and started

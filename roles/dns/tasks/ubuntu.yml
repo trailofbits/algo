@@ -50,6 +50,37 @@
     owner: root
     group: root
 
+- name: Ubuntu | Ensure socket override directory exists
+  file:
+    path: /etc/systemd/system/dnscrypt-proxy.socket.d/
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Ubuntu | Configure dnscrypt-proxy socket to listen on VPN IPs
+  copy:
+    dest: /etc/systemd/system/dnscrypt-proxy.socket.d/10-algo-override.conf
+    content: |
+      [Socket]
+      # Clear default listeners
+      ListenStream=
+      ListenDatagram=
+      # Add VPN service IPs
+      ListenStream={{ local_service_ip }}:53
+      ListenDatagram={{ local_service_ip }}:53
+      {% if ipv6_support %}
+      ListenStream=[{{ local_service_ipv6 }}]:53
+      ListenDatagram=[{{ local_service_ipv6 }}]:53
+      {% endif %}
+      NoDelay=true
+      DeferAcceptSec=1
+    mode: '0644'
+  notify:
+    - daemon-reload
+    - restart dnscrypt-proxy.socket
+    - restart dnscrypt-proxy
+
 - name: Ubuntu | Add custom requirements to successfully start the unit
   copy:
     dest: /etc/systemd/system/dnscrypt-proxy.service.d/99-algo.conf
