@@ -52,12 +52,3 @@
   notify:
     - daemon-reload
     - restart wireguard
-
-- name: Ubuntu | Enable route_localnet for WireGuard interface
-  sysctl:
-    name: "net.ipv4.conf.{{ wireguard_interface }}.route_localnet"
-    value: 1
-    sysctl_set: true
-    state: present
-    reload: true
-  tags: always

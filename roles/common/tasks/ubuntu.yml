@@ -136,6 +136,8 @@
         value: 1
       - item: "{{ 'net.ipv6.conf.all.forwarding' if ipv6_support else none }}"
         value: 1
+      - item: net.ipv4.conf.all.route_localnet
+        value: 1
 
 - name: Install packages (batch optimization)
   include_tasks: packages.yml
