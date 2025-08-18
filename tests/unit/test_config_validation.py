@@ -2,6 +2,7 @@
 """
 Test configuration file validation without deployment
 """
+
 import configparser
 import os
 import re
@@ -28,14 +29,14 @@ Endpoint = 192.168.1.1:51820
     config = configparser.ConfigParser()
     config.read_string(sample_config)
 
-    assert 'Interface' in config, "Missing [Interface] section"
-    assert 'Peer' in config, "Missing [Peer] section"
+    assert "Interface" in config, "Missing [Interface] section"
+    assert "Peer" in config, "Missing [Peer] section"
 
     # Validate required fields
-    assert config['Interface'].get('PrivateKey'), "Missing PrivateKey"
-    assert config['Interface'].get('Address'), "Missing Address"
-    assert config['Peer'].get('PublicKey'), "Missing PublicKey"
-    assert config['Peer'].get('AllowedIPs'), "Missing AllowedIPs"
+    assert config["Interface"].get("PrivateKey"), "Missing PrivateKey"
+    assert config["Interface"].get("Address"), "Missing Address"
+    assert config["Peer"].get("PublicKey"), "Missing PublicKey"
+    assert config["Peer"].get("AllowedIPs"), "Missing AllowedIPs"
 
     print("✓ WireGuard config format validation passed")
 
@@ -43,7 +44,7 @@ Endpoint = 192.168.1.1:51820
 def test_base64_key_format():
     """Test that keys are in valid base64 format"""
     # Base64 keys can have variable length, just check format
-    key_pattern = re.compile(r'^[A-Za-z0-9+/]+=*$')
+    key_pattern = re.compile(r"^[A-Za-z0-9+/]+=*$")
 
     test_keys = [
         "aGVsbG8gd29ybGQgdGhpcyBpcyBub3QgYSByZWFsIGtleQo=",
@@ -58,8 +59,8 @@ def test_base64_key_format():
 
 def test_ip_address_format():
     """Test IP address and CIDR notation validation"""
-    ip_pattern = re.compile(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d{1,2}$')
-    endpoint_pattern = re.compile(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$')
+    ip_pattern = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/\d{1,2}$")
+    endpoint_pattern = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$")
 
     # Test CIDR notation
     assert ip_pattern.match("10.19.49.2/32"), "Invalid CIDR notation"
@@ -74,11 +75,7 @@ def test_ip_address_format():
 def test_mobile_config_xml():
     """Test that mobile config files would be valid XML"""
     # First check if xmllint is available
-    xmllint_check = subprocess.run(
-        ['which', 'xmllint'],
-        capture_output=True,
-        text=True
-    )
+    xmllint_check = subprocess.run(["which", "xmllint"], capture_output=True, text=True)
 
     if xmllint_check.returncode != 0:
         print("⚠ Skipping XML validation test (xmllint not installed)")
@@ -99,17 +96,13 @@ def test_mobile_config_xml():
 </dict>
 </plist>"""
 
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.mobileconfig', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".mobileconfig", delete=False) as f:
         f.write(sample_mobileconfig)
         temp_file = f.name
 
     try:
         # Use xmllint to validate
-        result = subprocess.run(
-            ['xmllint', '--noout', temp_file],
-            capture_output=True,
-            text=True
-        )
+        result = subprocess.run(["xmllint", "--noout", temp_file], capture_output=True, text=True)
 
         assert result.returncode == 0, f"XML validation failed: {result.stderr}"
         print("✓ Mobile config XML validation passed")

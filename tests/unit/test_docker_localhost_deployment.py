@@ -3,6 +3,7 @@
 Simplified Docker-based localhost deployment tests
 Verifies services can start and config files exist in expected locations
 """
+
 import os
 import subprocess
 import sys
@@ -11,7 +12,7 @@ import sys
 def check_docker_available():
     """Check if Docker is available"""
     try:
-        result = subprocess.run(['docker', '--version'], capture_output=True, text=True)
+        result = subprocess.run(["docker", "--version"], capture_output=True, text=True)
         return result.returncode == 0
     except FileNotFoundError:
         return False
@@ -31,8 +32,8 @@ AllowedIPs = 10.19.49.2/32,fd9d:bc11:4020::2/128
 """
 
     # Just validate the format
-    required_sections = ['[Interface]', '[Peer]']
-    required_fields = ['PrivateKey', 'Address', 'PublicKey', 'AllowedIPs']
+    required_sections = ["[Interface]", "[Peer]"]
+    required_fields = ["PrivateKey", "Address", "PublicKey", "AllowedIPs"]
 
     for section in required_sections:
         if section not in config:
@@ -68,15 +69,15 @@ conn ikev2-pubkey
 """
 
     # Validate format
-    if 'config setup' not in config:
+    if "config setup" not in config:
         print("✗ Missing 'config setup' section")
         return False
 
-    if 'conn %default' not in config:
+    if "conn %default" not in config:
         print("✗ Missing 'conn %default' section")
         return False
 
-    if 'keyexchange=ikev2' not in config:
+    if "keyexchange=ikev2" not in config:
         print("✗ Missing IKEv2 configuration")
         return False
 
@@ -87,19 +88,19 @@ conn ikev2-pubkey
 def test_docker_algo_image():
     """Test that the Algo Docker image can be built"""
     # Check if Dockerfile exists
-    if not os.path.exists('Dockerfile'):
+    if not os.path.exists("Dockerfile"):
         print("✗ Dockerfile not found")
         return False
 
     # Read Dockerfile and validate basic structure
-    with open('Dockerfile') as f:
+    with open("Dockerfile") as f:
         dockerfile_content = f.read()
 
     required_elements = [
-        'FROM',  # Base image
-        'RUN',   # Build commands
-        'COPY',  # Copy Algo files
-        'python' # Python dependency
+        "FROM",  # Base image
+        "RUN",  # Build commands
+        "COPY",  # Copy Algo files
+        "python",  # Python dependency
     ]
 
     missing = []
@@ -115,16 +116,14 @@ def test_docker_algo_image():
     return True
 
 
-
-
 def test_localhost_deployment_requirements():
     """Test that localhost deployment requirements are met"""
     requirements = {
-        'Python 3.8+': sys.version_info >= (3, 8),
-        'Ansible installed': subprocess.run(['which', 'ansible'], capture_output=True).returncode == 0,
-        'Main playbook exists': os.path.exists('main.yml'),
-        'Project config exists': os.path.exists('pyproject.toml'),
-        'Config template exists': os.path.exists('config.cfg.example') or os.path.exists('config.cfg'),
+        "Python 3.8+": sys.version_info >= (3, 8),
+        "Ansible installed": subprocess.run(["which", "ansible"], capture_output=True).returncode == 0,
+        "Main playbook exists": os.path.exists("main.yml"),
+        "Project config exists": os.path.exists("pyproject.toml"),
+        "Config template exists": os.path.exists("config.cfg.example") or os.path.exists("config.cfg"),
     }
 
     all_met = True
@@ -136,10 +135,6 @@ def test_localhost_deployment_requirements():
             all_met = False
 
     return all_met
-
-
-
-
 
 
 if __name__ == "__main__":

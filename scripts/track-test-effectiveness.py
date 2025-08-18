@@ -3,6 +3,7 @@
 Track test effectiveness by analyzing CI failures and correlating with issues/PRs
 This helps identify which tests actually catch bugs vs just failing randomly
 """
+
 import json
 import subprocess
 from collections import defaultdict
@@ -12,7 +13,7 @@ from pathlib import Path
 
 def get_github_api_data(endpoint):
     """Fetch data from GitHub API"""
-    cmd = ['gh', 'api', endpoint]
+    cmd = ["gh", "api", endpoint]
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
         print(f"Error fetching {endpoint}: {result.stderr}")
@@ -25,40 +26,38 @@ def analyze_workflow_runs(repo_owner, repo_name, days_back=30):
     since = (datetime.now() - timedelta(days=days_back)).isoformat()
 
     # Get workflow runs
-    runs = get_github_api_data(
-        f'/repos/{repo_owner}/{repo_name}/actions/runs?created=>{since}&status=failure'
-    )
+    runs = get_github_api_data(f"/repos/{repo_owner}/{repo_name}/actions/runs?created=>{since}&status=failure")
 
     if not runs:
         return {}
 
     test_failures = defaultdict(list)
 
-    for run in runs.get('workflow_runs', []):
+    for run in runs.get("workflow_runs", []):
         # Get jobs for this run
-        jobs = get_github_api_data(
-            f'/repos/{repo_owner}/{repo_name}/actions/runs/{run["id"]}/jobs'
-        )
+        jobs = get_github_api_data(f"/repos/{repo_owner}/{repo_name}/actions/runs/{run['id']}/jobs")
 
         if not jobs:
             continue
 
-        for job in jobs.get('jobs', []):
-            if job['conclusion'] == 'failure':
+        for job in jobs.get("jobs", []):
+            if job["conclusion"] == "failure":
                 # Try to extract which test failed from logs
-                logs_url = job.get('logs_url')
+                logs_url = job.get("logs_url")
                 if logs_url:
                     # Parse logs to find test failures
-                    test_name = extract_failed_test(job['name'], run['id'])
+                    test_name = extract_failed_test(job["name"], run["id"])
                     if test_name:
-                        test_failures[test_name].append({
-                            'run_id': run['id'],
-                            'run_number': run['run_number'],
-                            'date': run['created_at'],
-                            'branch': run['head_branch'],
-                            'commit': run['head_sha'][:7],
-                            'pr': extract_pr_number(run)
-                        })
+                        test_failures[test_name].append(
+                            {
+                                "run_id": run["id"],
+                                "run_number": run["run_number"],
+                                "date": run["created_at"],
+                                "branch": run["head_branch"],
+                                "commit": run["head_sha"][:7],
+                                "pr": extract_pr_number(run),
+                            }
+                        )
 
     return test_failures
 
@@ -67,47 +66,44 @@ def extract_failed_test(job_name, run_id):
     """Extract test name from job - this is simplified"""
     # Map job names to test categories
     job_to_tests = {
-        'Basic sanity tests': 'test_basic_sanity',
-        'Ansible syntax check': 'ansible_syntax',
-        'Docker build test': 'docker_tests',
-        'Configuration generation test': 'config_generation',
-        'Ansible dry-run validation': 'ansible_dry_run'
+        "Basic sanity tests": "test_basic_sanity",
+        "Ansible syntax check": "ansible_syntax",
+        "Docker build test": "docker_tests",
+        "Configuration generation test": "config_generation",
+        "Ansible dry-run validation": "ansible_dry_run",
     }
     return job_to_tests.get(job_name, job_name)
 
 
 def extract_pr_number(run):
     """Extract PR number from workflow run"""
-    for pr in run.get('pull_requests', []):
-        return pr['number']
+    for pr in run.get("pull_requests", []):
+        return pr["number"]
     return None
 
 
 def correlate_with_issues(repo_owner, repo_name, test_failures):
     """Correlate test failures with issues/PRs that fixed them"""
-    correlations = defaultdict(lambda: {'caught_bugs': 0, 'false_positives': 0})
+    correlations = defaultdict(lambda: {"caught_bugs": 0, "false_positives": 0})
 
     for test_name, failures in test_failures.items():
         for failure in failures:
-            if failure['pr']:
+            if failure["pr"]:
                 # Check if PR was merged (indicating it fixed a real issue)
-                pr = get_github_api_data(
-                    f'/repos/{repo_owner}/{repo_name}/pulls/{failure["pr"]}'
-                )
+                pr = get_github_api_data(f"/repos/{repo_owner}/{repo_name}/pulls/{failure['pr']}")
 
-                if pr and pr.get('merged'):
+                if pr and pr.get("merged"):
                     # Check PR title/body for bug indicators
-                    title = pr.get('title', '').lower()
-                    body = pr.get('body', '').lower()
+                    title = pr.get("title", "").lower()
+                    body = pr.get("body", "").lower()
 
-                    bug_keywords = ['fix', 'bug', 'error', 'issue', 'broken', 'fail']
-                    is_bug_fix = any(keyword in title or keyword in body
-                                    for keyword in bug_keywords)
+                    bug_keywords = ["fix", "bug", "error", "issue", "broken", "fail"]
+                    is_bug_fix = any(keyword in title or keyword in body for keyword in bug_keywords)
 
                     if is_bug_fix:
-                        correlations[test_name]['caught_bugs'] += 1
+                        correlations[test_name]["caught_bugs"] += 1
                     else:
-                        correlations[test_name]['false_positives'] += 1
+                        correlations[test_name]["false_positives"] += 1
 
     return correlations
 
@@ -133,8 +129,8 @@ def generate_effectiveness_report(test_failures, correlations):
     scores = []
     for test_name, failures in test_failures.items():
         failure_count = len(failures)
-        caught = correlations[test_name]['caught_bugs']
-        false_pos = correlations[test_name]['false_positives']
+        caught = correlations[test_name]["caught_bugs"]
+        false_pos = correlations[test_name]["false_positives"]
 
         # Calculate effectiveness (bugs caught / total failures)
         if failure_count > 0:
@@ -159,12 +155,12 @@ def generate_effectiveness_report(test_failures, correlations):
         elif effectiveness > 0.8:
             report.append(f"- ✅ `{test_name}` is highly effective ({effectiveness:.0%})")
 
-    return '\n'.join(report)
+    return "\n".join(report)
 
 
 def save_metrics(test_failures, correlations):
     """Save metrics to JSON for historical tracking"""
-    metrics_file = Path('.metrics/test-effectiveness.json')
+    metrics_file = Path(".metrics/test-effectiveness.json")
     metrics_file.parent.mkdir(exist_ok=True)
 
     # Load existing metrics
@@ -176,38 +172,34 @@ def save_metrics(test_failures, correlations):
 
     # Add current metrics
     current = {
-        'date': datetime.now().isoformat(),
-        'test_failures': {
-            test: len(failures) for test, failures in test_failures.items()
-        },
-        'effectiveness': {
+        "date": datetime.now().isoformat(),
+        "test_failures": {test: len(failures) for test, failures in test_failures.items()},
+        "effectiveness": {
             test: {
-                'caught_bugs': data['caught_bugs'],
-                'false_positives': data['false_positives'],
-                'score': data['caught_bugs'] / (data['caught_bugs'] + data['false_positives'])
-                        if (data['caught_bugs'] + data['false_positives']) > 0 else 0
+                "caught_bugs": data["caught_bugs"],
+                "false_positives": data["false_positives"],
+                "score": data["caught_bugs"] / (data["caught_bugs"] + data["false_positives"])
+                if (data["caught_bugs"] + data["false_positives"]) > 0
+                else 0,
             }
             for test, data in correlations.items()
-        }
+        },
     }
 
     historical.append(current)
 
     # Keep last 12 months of data
     cutoff = datetime.now() - timedelta(days=365)
-    historical = [
-        h for h in historical
-        if datetime.fromisoformat(h['date']) > cutoff
-    ]
+    historical = [h for h in historical if datetime.fromisoformat(h["date"]) > cutoff]
 
-    with open(metrics_file, 'w') as f:
+    with open(metrics_file, "w") as f:
         json.dump(historical, f, indent=2)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Configure these for your repo
-    REPO_OWNER = 'trailofbits'
-    REPO_NAME = 'algo'
+    REPO_OWNER = "trailofbits"
+    REPO_NAME = "algo"
 
     print("Analyzing test effectiveness...")
 
@@ -223,9 +215,9 @@ if __name__ == '__main__':
     print("\n" + report)
 
     # Save report
-    report_file = Path('.metrics/test-effectiveness-report.md')
+    report_file = Path(".metrics/test-effectiveness-report.md")
     report_file.parent.mkdir(exist_ok=True)
-    with open(report_file, 'w') as f:
+    with open(report_file, "w") as f:
         f.write(report)
     print(f"\nReport saved to: {report_file}")
 

@@ -37,11 +37,11 @@ COMMIT
 # Allow traffic from the VPN network to the outside world, and replies
 {% if ipsec_enabled %}
 # For IPsec traffic - NAT the decrypted packets from the VPN subnet
--A POSTROUTING -s {{ strongswan_network_ipv6 }} {{ '-j SNAT --to ' + ipv6_egress_ip | ansible.utils.ipaddr('address') if alternative_ingress_ip else '-j MASQUERADE' }}
+-A POSTROUTING -s {{ strongswan_network_ipv6 }} -o {{ ansible_default_ipv6['interface'] }} {{ '-j SNAT --to ' + ipv6_egress_ip | ansible.utils.ipaddr('address') if alternative_ingress_ip else '-j MASQUERADE' }}
 {% endif %}
 {% if wireguard_enabled %}
 # For WireGuard traffic - NAT packets from the VPN subnet
--A POSTROUTING -s {{ wireguard_network_ipv6 }} {{ '-j SNAT --to ' + ipv6_egress_ip | ansible.utils.ipaddr('address') if alternative_ingress_ip else '-j MASQUERADE' }}
+-A POSTROUTING -s {{ wireguard_network_ipv6 }} -o {{ ansible_default_ipv6['interface'] }} {{ '-j SNAT --to ' + ipv6_egress_ip | ansible.utils.ipaddr('address') if alternative_ingress_ip else '-j MASQUERADE' }}
 {% endif %}
 
 COMMIT
@@ -95,8 +95,8 @@ COMMIT
 # DUMMY interfaces are the proper way to install IPs without assigning them any
 # particular virtual (tun,tap,...) or physical (ethernet) interface.
 
-# Accept DNS traffic to the local DNS resolver
--A INPUT -d {{ local_service_ipv6 }}/128 -p udp --dport 53 -j ACCEPT
+# Accept DNS traffic to the local DNS resolver from VPN clients only
+-A INPUT -s {{ subnets | join(',') }} -d {{ local_service_ipv6 }}/128 -p udp --dport 53 -j ACCEPT
 
 # Drop traffic between VPN clients
 -A FORWARD -s {{ subnets | join(',') }} -d {{ subnets | join(',') }} -j {{ "DROP" if BetweenClients_DROP else "ACCEPT" }}

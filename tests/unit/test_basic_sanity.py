@@ -2,6 +2,7 @@
 """
 Basic sanity tests for Algo VPN that don't require deployment
 """
+
 import os
 import subprocess
 import sys
@@ -44,11 +45,7 @@ def test_config_file_valid():
 
 def test_ansible_syntax():
     """Check that main playbook has valid syntax"""
-    result = subprocess.run(
-        ["ansible-playbook", "main.yml", "--syntax-check"],
-        capture_output=True,
-        text=True
-    )
+    result = subprocess.run(["ansible-playbook", "main.yml", "--syntax-check"], capture_output=True, text=True)
 
     assert result.returncode == 0, f"Ansible syntax check failed:\n{result.stderr}"
     print("✓ Ansible playbook syntax is valid")
@@ -60,11 +57,7 @@ def test_shellcheck():
 
     for script in shell_scripts:
         if os.path.exists(script):
-            result = subprocess.run(
-                ["shellcheck", script],
-                capture_output=True,
-                text=True
-            )
+            result = subprocess.run(["shellcheck", script], capture_output=True, text=True)
             assert result.returncode == 0, f"Shellcheck failed for {script}:\n{result.stdout}"
             print(f"✓ {script} passed shellcheck")
 
@@ -87,7 +80,7 @@ def test_cloud_init_header_format():
     assert os.path.exists(cloud_init_file), f"{cloud_init_file} not found"
 
     with open(cloud_init_file) as f:
-        first_line = f.readline().rstrip('\n\r')
+        first_line = f.readline().rstrip("\n\r")
 
     # The first line MUST be exactly "#cloud-config" (no space after #)
     # This regression was introduced in PR #14775 and broke DigitalOcean deployments

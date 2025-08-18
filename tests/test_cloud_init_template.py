@@ -24,6 +24,7 @@ import yaml
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+
 def create_expected_cloud_init():
     """
     Create the expected cloud-init content that should be generated
@@ -74,6 +75,7 @@ runcmd:
   - systemctl restart sshd.service
 """
 
+
 class TestCloudInitTemplate:
     """Test class for cloud-init template validation."""
 
@@ -98,10 +100,7 @@ class TestCloudInitTemplate:
 
         parsed = self.test_yaml_validity()
 
-        required_sections = [
-            'package_update', 'package_upgrade', 'packages',
-            'users', 'write_files', 'runcmd'
-        ]
+        required_sections = ["package_update", "package_upgrade", "packages", "users", "write_files", "runcmd"]
 
         missing = [section for section in required_sections if section not in parsed]
         assert not missing, f"Missing required sections: {missing}"
@@ -114,35 +113,30 @@ class TestCloudInitTemplate:
 
         parsed = self.test_yaml_validity()
 
-        write_files = parsed.get('write_files', [])
+        write_files = parsed.get("write_files", [])
         assert write_files, "write_files section should be present"
 
         # Find sshd_config file
         sshd_config = None
         for file_entry in write_files:
-            if file_entry.get('path') == '/etc/ssh/sshd_config':
+            if file_entry.get("path") == "/etc/ssh/sshd_config":
                 sshd_config = file_entry
                 break
 
         assert sshd_config, "sshd_config file should be in write_files"
 
-        content = sshd_config.get('content', '')
+        content = sshd_config.get("content", "")
         assert content, "sshd_config should have content"
 
         # Check required SSH configurations
-        required_configs = [
-            'Port 4160',
-            'AllowGroups algo',
-            'PermitRootLogin no',
-            'PasswordAuthentication no'
-        ]
+        required_configs = ["Port 4160", "AllowGroups algo", "PermitRootLogin no", "PasswordAuthentication no"]
 
         missing = [config for config in required_configs if config not in content]
         assert not missing, f"Missing SSH configurations: {missing}"
 
         # Verify proper formatting - first line should be Port directive
-        lines = content.strip().split('\n')
-        assert lines[0].strip() == 'Port 4160', f"First line should be 'Port 4160', got: {repr(lines[0])}"
+        lines = content.strip().split("\n")
+        assert lines[0].strip() == "Port 4160", f"First line should be 'Port 4160', got: {repr(lines[0])}"
 
         print("✅ SSH configuration correct")
 
@@ -152,26 +146,26 @@ class TestCloudInitTemplate:
 
         parsed = self.test_yaml_validity()
 
-        users = parsed.get('users', [])
+        users = parsed.get("users", [])
         assert users, "users section should be present"
 
         # Find algo user
         algo_user = None
         for user in users:
-            if isinstance(user, dict) and user.get('name') == 'algo':
+            if isinstance(user, dict) and user.get("name") == "algo":
                 algo_user = user
                 break
 
         assert algo_user, "algo user should be defined"
 
         # Check required user properties
-        required_props = ['sudo', 'groups', 'shell', 'ssh_authorized_keys']
+        required_props = ["sudo", "groups", "shell", "ssh_authorized_keys"]
         missing = [prop for prop in required_props if prop not in algo_user]
         assert not missing, f"algo user missing properties: {missing}"
 
         # Verify sudo configuration
-        sudo_config = algo_user.get('sudo', '')
-        assert 'NOPASSWD:ALL' in sudo_config, f"sudo config should allow passwordless access: {sudo_config}"
+        sudo_config = algo_user.get("sudo", "")
+        assert "NOPASSWD:ALL" in sudo_config, f"sudo config should allow passwordless access: {sudo_config}"
 
         print("✅ User creation correct")
 
@@ -181,13 +175,13 @@ class TestCloudInitTemplate:
 
         parsed = self.test_yaml_validity()
 
-        runcmd = parsed.get('runcmd', [])
+        runcmd = parsed.get("runcmd", [])
         assert runcmd, "runcmd section should be present"
 
         # Check for SSH restart command
         ssh_restart_found = False
         for cmd in runcmd:
-            if 'systemctl restart sshd' in str(cmd):
+            if "systemctl restart sshd" in str(cmd):
                 ssh_restart_found = True
                 break
 
@@ -202,18 +196,18 @@ class TestCloudInitTemplate:
         cloud_init_content = create_expected_cloud_init()
 
         # Extract the sshd_config content lines
-        lines = cloud_init_content.split('\n')
+        lines = cloud_init_content.split("\n")
         in_sshd_content = False
         sshd_lines = []
 
         for line in lines:
-            if 'content: |' in line:
+            if "content: |" in line:
                 in_sshd_content = True
                 continue
             elif in_sshd_content:
-                if line.strip() == '' and len(sshd_lines) > 0:
+                if line.strip() == "" and len(sshd_lines) > 0:
                     break
-                if line.startswith('runcmd:'):
+                if line.startswith("runcmd:"):
                     break
                 sshd_lines.append(line)
 
@@ -225,10 +219,12 @@ class TestCloudInitTemplate:
 
         for line in non_empty_lines:
             # Each line should start with exactly 6 spaces
-            assert line.startswith('      ') and not line.startswith('       '), \
+            assert line.startswith("      ") and not line.startswith("       "), (
                 f"Line should have exactly 6 spaces indentation: {repr(line)}"
+            )
 
         print("✅ Indentation is consistent")
+
 
 def run_tests():
     """Run all tests manually (for non-pytest usage)."""
@@ -257,6 +253,7 @@ def run_tests():
     except Exception as e:
         print(f"❌ Unexpected error: {e}")
         return False
+
 
 if __name__ == "__main__":
     success = run_tests()

@@ -1,4 +1,5 @@
 """Test fixtures for Algo unit tests"""
+
 from pathlib import Path
 
 import yaml
@@ -6,7 +7,7 @@ import yaml
 
 def load_test_variables():
     """Load test variables from YAML fixture"""
-    fixture_path = Path(__file__).parent / 'test_variables.yml'
+    fixture_path = Path(__file__).parent / "test_variables.yml"
     with open(fixture_path) as f:
         return yaml.safe_load(f)
 
