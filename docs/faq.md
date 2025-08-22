@@ -7,6 +7,8 @@
 * [Why aren't you using a memory-safe or verified IKE daemon?](#why-arent-you-using-a-memory-safe-or-verified-ike-daemon)
 * [Why aren't you using OpenVPN?](#why-arent-you-using-openvpn)
 * [Why aren't you using Alpine Linux or OpenBSD?](#why-arent-you-using-alpine-linux-or-openbsd)
+* [Why does Algo support only a single cipher suite?](#why-does-algo-support-only-a-single-cipher-suite)
+* [Why doesn't Algo support censorship circumvention?](#why-doesnt-algo-support-censorship-circumvention)
 * [I deployed an Algo server. Can you update it with new features?](#i-deployed-an-algo-server-can-you-update-it-with-new-features)
 * [Where did the name "Algo" come from?](#where-did-the-name-algo-come-from)
 * [Can DNS filtering be disabled?](#can-dns-filtering-be-disabled)
@@ -43,6 +45,31 @@ OpenVPN does not have out-of-the-box client support on any major desktop or mobi
 ## Why aren't you using Alpine Linux or OpenBSD?
 
 Alpine Linux is not supported out-of-the-box by any major cloud provider. While we considered BSD variants in the past, Algo now focuses exclusively on Ubuntu LTS for consistency, security, and maintainability.
+
+## Why does Algo support only a single cipher suite?
+
+Algo deliberately supports only one modern cipher suite (AES256-GCM with SHA2 and P-256) rather than offering a menu of cryptographic options. This design decision enhances security by:
+
+1. **Eliminating downgrade attacks** - With no weaker ciphers available, attackers cannot force connections to use vulnerable algorithms
+2. **Reducing complexity** - A single, well-tested configuration minimizes the chance of implementation errors
+3. **Ensuring modern clients only** - This approach naturally filters out outdated systems that might have unpatched vulnerabilities
+4. **Simplifying audits** - Security researchers can focus on validating one strong configuration rather than multiple combinations
+
+The chosen cipher suite (AES256-GCM-SHA512 with ECP384) represents current cryptographic best practices and is supported by all modern operating systems (macOS 10.11+, iOS 10+, Windows 10+, and current Linux distributions). If your device doesn't support this cipher suite, it's likely outdated and shouldn't be trusted for secure communications anyway.
+
+## Why doesn't Algo support censorship circumvention?
+
+Algo is designed for privacy and security, not censorship avoidance. This distinction is important for several reasons:
+
+1. **Different threat models** - Censorship circumvention requires techniques like traffic obfuscation and protocol mimicry that add complexity and potential vulnerabilities. Algo focuses on protecting your data from eavesdroppers and ensuring confidential communications.
+
+2. **Legal considerations** - Operating VPNs to bypass censorship is illegal in several countries. We don't want to encourage users to break local laws or put themselves at legal risk.
+
+3. **Security focus** - Adding censorship circumvention tools would expand our codebase significantly, making it harder to audit and maintain the high security standards Algo promises. Each additional component is a potential attack vector.
+
+4. **Separation of concerns** - Tools like Tor, Shadowsocks, and V2Ray are specifically designed for censorship circumvention with teams dedicated to that cat-and-mouse game. Algo maintains its effectiveness by staying focused on its core mission: providing a secure, private VPN that "just works."
+
+If you need to bypass censorship, consider purpose-built tools designed for that specific threat model. Algo will give you privacy from your ISP and security on untrusted networks, but it won't hide the fact that you're using a VPN or help you access blocked content in restrictive countries.
 
 ## I deployed an Algo server. Can you update it with new features?
 
