@@ -137,10 +137,10 @@ The error is caused because Digital Ocean changed its API to treat the tag argum
 6. Run algo as directed
 
 ### Azure: No such file or directory: '/home/username/.azure/azureProfile.json'
- 
+
  ```
  TASK [cloud-azure : Create AlgoVPN Server] *****************************************************************************************************************************************************************
-An exception occurred during task execution. To see the full traceback, use -vvv. 
+An exception occurred during task execution. To see the full traceback, use -vvv.
 The error was: FileNotFoundError: [Errno 2] No such file or directory: '/home/ubuntu/.azure/azureProfile.json'
 fatal: [localhost]: FAILED! => {"changed": false, "module_stderr": "Traceback (most recent call last):
 File \"/usr/local/lib/python3.11/dist-packages/azure/cli/core/_session.py\", line 39, in load
@@ -210,24 +210,24 @@ When trying to connect to your Algo VPN on Windows 10/11, you may receive an err
 #### Solution
 
 1. **Clear the networking caches**
-   
+
    Open Command Prompt as Administrator (right-click on Command Prompt and select "Run as Administrator") and run these commands:
    ```cmd
    netsh int ip reset
    netsh int ipv6 reset
    netsh winsock reset
    ```
-   
+
    Then restart your computer.
 
 2. **Reset Device Manager network adapters** (if step 1 doesn't work)
-   
+
    - Open Device Manager
    - Find "Network Adapters"
    - Uninstall all WAN Miniport drivers (IKEv2, IP, IPv6, etc.)
    - Click Action → Scan for hardware changes
    - The adapters you just uninstalled should reinstall automatically
-   
+
    Try connecting to the VPN again.
 
 #### What causes this issue?
@@ -271,9 +271,9 @@ You should remove the files in /etc/wireguard/ and configs/ as follows:
 ```ssh
 sudo rm -rf /etc/wireguard/*
 rm -rf configs/*
-``` 
+```
 
-And then immediately re-run `./algo` and provide a domain name or IP address in response to the question referenced above. 
+And then immediately re-run `./algo` and provide a domain name or IP address in response to the question referenced above.
 
 ### Wireguard: Unable to find 'configs/...' in expected paths
 

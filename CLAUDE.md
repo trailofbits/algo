@@ -157,8 +157,8 @@ def test_regression_openssl_inline_comments():
     # This pattern SHOULD fail (has inline comments)
     problematic = "{{ ['DNS:' + id,  # comment ] }}"
     assert not validate(problematic), "Should detect inline comments"
-    
-    # This pattern SHOULD pass (no inline comments)  
+
+    # This pattern SHOULD pass (no inline comments)
     fixed = "{{ ['DNS:' + id] }}"
     assert validate(fixed), "Should pass without comments"
 ```

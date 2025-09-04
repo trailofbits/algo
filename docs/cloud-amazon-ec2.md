@@ -51,7 +51,7 @@ For additional EC2 configuration options, see the [deploy from ansible guide](ht
 1. Navigate to Services → IAM → Users
 2. Enable multi-factor authentication (MFA) on your root account using Google Authenticator or a hardware token
 3. Click "Add User" and create a username (e.g., `algovpn`)
-4. Select "Programmatic access" 
+4. Select "Programmatic access"
 5. Click "Next: Permissions"
 
 ![The new user screen in the AWS console.](/docs/images/aws-ec2-new-user.png)

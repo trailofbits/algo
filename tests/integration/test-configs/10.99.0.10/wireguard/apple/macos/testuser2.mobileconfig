@@ -56,8 +56,8 @@
 		<key>WgQuickConfig</key>
 		<string>[Interface]
         PrivateKey = yKU40Lrt5xutKuXHcJipej0wdqPVExuGmjoPzBar/GI=
-        Address = 10.19.49.3 
-        DNS =  8.8.8.8,8.8.4.4 
+        Address = 10.19.49.3
+        DNS =  8.8.8.8,8.8.4.4
 
         [Peer]
         PublicKey = IJFSpegTMGKoK5EtJaX2uH/hBWxq8ZpNOJIBMZnE4w0=

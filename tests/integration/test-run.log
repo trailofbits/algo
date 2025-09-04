@@ -139,7 +139,7 @@ Building Docker images...
 #29 5.354     Found existing installation: Jinja2 3.0.3
 #29 5.355     Uninstalling Jinja2-3.0.3:
 #29 5.660       Successfully uninstalled Jinja2-3.0.3
-#29 16.17 
+#29 16.17
 #29 16.17 Successfully installed ansible-9.1.0 ansible-core-2.16.14 jinja2-3.1.6 resolvelib-1.0.1
 #29 16.17 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
 #29 DONE 16.3s
@@ -206,202 +206,202 @@ algo-server  | Fetched 38.3 MB in 3s (12.0 MB/s)
 algo-server  | Reading package lists...
 algo-server  | [WARNING]: Found variable using reserved name: no_log
 algo-server  | Using /algo/ansible.cfg as config file
-algo-server  | 
+algo-server  |
 algo-server  | PLAY [Algo VPN Setup] **********************************************************
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Gathering Facts] *********************************************************
 algo-server  | ok: [localhost]
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Playbook dir stat] *******************************************************
 algo-server  | ok: [localhost] => {"changed": false, "stat": {"atime": 1754231772.3685358, "attr_flags": "", "attributes": [], "block_size": 4096, "blocks": 8, "charset": "unknown", "ctime": 1754231775.268547, "dev": 48, "device_type": 0, "executable": true, "exists": true, "gid": 0, "gr_name": "root", "inode": 5790103, "isblk": false, "ischr": false, "isdir": true, "isfifo": false, "isgid": false, "islnk": false, "isreg": false, "issock": false, "isuid": false, "mimetype": "unknown", "mode": "0755", "mtime": 1754231775.268547, "nlink": 1, "path": "/algo", "pw_name": "root", "readable": true, "rgrp": true, "roth": true, "rusr": true, "size": 4096, "uid": 0, "version": null, "wgrp": false, "woth": false, "writeable": true, "wusr": true, "xgrp": true, "xoth": true, "xusr": true}}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Ensure Ansible is not being run in a world writable directory] ***********
 algo-server  | ok: [localhost] => {
 algo-server  |     "changed": false,
 algo-server  |     "msg": "All assertions passed"
 algo-server  | }
-algo-server  | [DEPRECATION WARNING]: Use 'ansible.utils.ipaddr' module instead. This feature 
-algo-server  | will be removed from ansible.netcommon in a release after 2024-01-01. 
-algo-server  | Deprecation warnings can be disabled by setting deprecation_warnings=False in 
+algo-server  | [DEPRECATION WARNING]: Use 'ansible.utils.ipaddr' module instead. This feature
+algo-server  | will be removed from ansible.netcommon in a release after 2024-01-01.
+algo-server  | Deprecation warnings can be disabled by setting deprecation_warnings=False in
 algo-server  | ansible.cfg.
 algo-server  | [WARNING]: The value '' is not a valid IP address or network, passing this
 algo-server  | value to ipaddr filter might result in breaking change in future.
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Ensure the requirements installed] ***************************************
 algo-server  | ok: [localhost] => {"censored": "the output has been hidden due to the fact that 'no_log: true' was specified for this result"}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Set required ansible version as a fact] **********************************
 algo-server  | ok: [localhost] => (item=ansible==9.1.0) => {"ansible_facts": {"required_ansible_version": {"op": "==", "ver": "9.1.0"}}, "ansible_loop_var": "item", "changed": false, "item": "ansible==9.1.0"}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Just get the list from default pip] **************************************
 algo-server  | ok: [localhost] => {"changed": false, "packages": {"pip": {"Babel": [{"name": "Babel", "source": "pip", "version": "2.8.0"}], "Jinja2": [{"name": "Jinja2", "source": "pip", "version": "3.1.6"}], "MarkupSafe": [{"name": "MarkupSafe", "source": "pip", "version": "2.0.1"}], "PyGObject": [{"name": "PyGObject", "source": "pip", "version": "3.42.1"}], "PyYAML": [{"name": "PyYAML", "source": "pip", "version": "5.4.1"}], "ansible": [{"name": "ansible", "source": "pip", "version": "9.1.0"}], "ansible-base": [{"name": "ansible-base", "source": "pip", "version": "2.10.8"}], "ansible-core": [{"name": "ansible-core", "source": "pip", "version": "2.16.14"}], "apache-libcloud": [{"name": "apache-libcloud", "source": "pip", "version": "3.2.0"}], "argcomplete": [{"name": "argcomplete", "source": "pip", "version": "1.8.1"}], "certifi": [{"name": "certifi", "source": "pip", "version": "2020.6.20"}], "chardet": [{"name": "chardet", "source": "pip", "version": "4.0.0"}], "cryptography": [{"name": "cryptography", "source": "pip", "version": "3.4.8"}], "dbus-python": [{"name": "dbus-python", "source": "pip", "version": "1.2.18"}], "dnspython": [{"name": "dnspython", "source": "pip", "version": "2.1.0"}], "httplib2": [{"name": "httplib2", "source": "pip", "version": "0.20.2"}], "idna": [{"name": "idna", "source": "pip", "version": "3.3"}], "jmespath": [{"name": "jmespath", "source": "pip", "version": "0.10.0"}], "lockfile": [{"name": "lockfile", "source": "pip", "version": "0.12.2"}], "netaddr": [{"name": "netaddr", "source": "pip", "version": "0.8.0"}], "ntlm-auth": [{"name": "ntlm-auth", "source": "pip", "version": "1.4.0"}], "packaging": [{"name": "packaging", "source": "pip", "version": "21.3"}], "pip": [{"name": "pip", "source": "pip", "version": "25.2"}], "pycryptodomex": [{"name": "pycryptodomex", "source": "pip", "version": "3.11.0"}], "pykerberos": [{"name": "pykerberos", "source": "pip", "version": "1.1.14"}], "pyparsing": [{"name": "pyparsing", "source": "pip", "version": "2.4.7"}], "pytz": [{"name": "pytz", "source": "pip", "version": "2022.1"}], "pywinrm": [{"name": "pywinrm", "source": "pip", "version": "0.3.0"}], "requests": [{"name": "requests", "source": "pip", "version": "2.25.1"}], "requests-kerberos": [{"name": "requests-kerberos", "source": "pip", "version": "0.12.0"}], "requests-ntlm": [{"name": "requests-ntlm", "source": "pip", "version": "1.1.0"}], "requests-toolbelt": [{"name": "requests-toolbelt", "source": "pip", "version": "0.9.1"}], "resolvelib": [{"name": "resolvelib", "source": "pip", "version": "1.0.1"}], "selinux": [{"name": "selinux", "source": "pip", "version": "3.3"}], "setuptools": [{"name": "setuptools", "source": "pip", "version": "59.6.0"}], "simplejson": [{"name": "simplejson", "source": "pip", "version": "3.17.6"}], "six": [{"name": "six", "source": "pip", "version": "1.16.0"}], "urllib3": [{"name": "urllib3", "source": "pip", "version": "1.26.5"}], "wheel": [{"name": "wheel", "source": "pip", "version": "0.37.1"}], "xmltodict": [{"name": "xmltodict", "source": "pip", "version": "0.12.0"}]}}}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Verify Python meets Algo VPN requirements] *******************************
 algo-server  | ok: [localhost] => {
 algo-server  |     "changed": false,
 algo-server  |     "msg": "All assertions passed"
 algo-server  | }
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Verify Ansible meets Algo VPN requirements] ******************************
 algo-server  | ok: [localhost] => {
 algo-server  |     "changed": false,
 algo-server  |     "msg": "All assertions passed"
 algo-server  | }
-algo-server  | 
+algo-server  |
 algo-server  | PLAY [Ask user for the input] **************************************************
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Gathering Facts] *********************************************************
 algo-server  | ok: [localhost]
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Set facts based on the input] ********************************************
 algo-server  | ok: [localhost] => {"ansible_facts": {"algo_provider": "local"}, "changed": false}
 algo-server  | [WARNING]: Not waiting for response to prompt as stdin is not interactive
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Cellular On Demand prompt] ***********************************************
 algo-server  | ok: [localhost] => {"changed": false, "delta": 0, "echo": true, "rc": 0, "start": "2025-08-03 14:36:20.857514", "stderr": "", "stdout": "Paused for 0.0 minutes", "stop": "2025-08-03 14:36:20.858168", "user_input": ""}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Wi-Fi On Demand prompt] **************************************************
 algo-server  | ok: [localhost] => {"changed": false, "delta": 0, "echo": true, "rc": 0, "start": "2025-08-03 14:36:20.869924", "stderr": "", "stdout": "Paused for 0.0 minutes", "stop": "2025-08-03 14:36:20.870503", "user_input": ""}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Set facts based on the input] ********************************************
 algo-server  | ok: [localhost] => {"ansible_facts": {"algo_dns_adblocking": false, "algo_ondemand_cellular": false, "algo_ondemand_wifi": false, "algo_ondemand_wifi_exclude": "X251bGw=", "algo_server_name": "algo", "algo_ssh_tunneling": false, "algo_store_pki": true}, "changed": false}
-algo-server  | 
+algo-server  |
 algo-server  | PLAY [Provision the server] ****************************************************
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Gathering Facts] *********************************************************
 algo-server  | ok: [localhost]
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Display the invocation environment] **************************************
 algo-server  | changed: [localhost] => {"changed": true, "cmd": "./algo-showenv.sh  'algo_provider \"local\"'    'algo_ondemand_cellular \"False\"'  'algo_ondemand_wifi \"False\"'  'algo_ondemand_wifi_exclude \"X251bGw=\"'    'algo_dns_adblocking \"False\"'  'algo_ssh_tunneling \"False\"'  'wireguard_enabled \"True\"'  'dns_encryption \"False\"'  > /dev/tty || true\n", "delta": "0:00:00.000892", "end": "2025-08-03 14:36:21.491766", "msg": "", "rc": 0, "start": "2025-08-03 14:36:21.490874", "stderr": "/bin/sh: 1: cannot create /dev/tty: No such device or address", "stderr_lines": ["/bin/sh: 1: cannot create /dev/tty: No such device or address"], "stdout": "", "stdout_lines": []}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Install the requirements] ************************************************
 algo-server  | changed: [localhost] => {"changed": true, "cmd": ["/usr/bin/python3", "-m", "pip.__main__", "install", "pyOpenSSL>=0.15", "segno"], "name": ["pyOpenSSL>=0.15", "segno"], "requirements": null, "state": "present", "stderr": "WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.\n", "stderr_lines": ["WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning."], "stdout": "Collecting pyOpenSSL>=0.15\n  Downloading pyopenssl-25.1.0-py3-none-any.whl.metadata (17 kB)\nCollecting segno\n  Downloading segno-1.6.6-py3-none-any.whl.metadata (7.7 kB)\nCollecting cryptography<46,>=41.0.5 (from pyOpenSSL>=0.15)\n  Downloading cryptography-45.0.5-cp37-abi3-manylinux_2_34_aarch64.whl.metadata (5.7 kB)\nCollecting typing-extensions>=4.9 (from pyOpenSSL>=0.15)\n  Downloading typing_extensions-4.14.1-py3-none-any.whl.metadata (3.0 kB)\nCollecting cffi>=1.14 (from cryptography<46,>=41.0.5->pyOpenSSL>=0.15)\n  Downloading cffi-1.17.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (1.5 kB)\nCollecting pycparser (from cffi>=1.14->cryptography<46,>=41.0.5->pyOpenSSL>=0.15)\n  Downloading pycparser-2.22-py3-none-any.whl.metadata (943 bytes)\nDownloading pyopenssl-25.1.0-py3-none-any.whl (56 kB)\nDownloading cryptography-45.0.5-cp37-abi3-manylinux_2_34_aarch64.whl (4.2 MB)\n   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.2/4.2 MB 11.6 MB/s  0:00:00\nDownloading segno-1.6.6-py3-none-any.whl (76 kB)\nDownloading cffi-1.17.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (448 kB)\nDownloading typing_extensions-4.14.1-py3-none-any.whl (43 kB)\nDownloading pycparser-2.22-py3-none-any.whl (117 kB)\nInstalling collected packages: typing-extensions, segno, pycparser, cffi, cryptography, pyOpenSSL\n  Attempting uninstall: cryptography\n    Found existing installation: cryptography 3.4.8\n    Uninstalling cryptography-3.4.8:\n      Successfully uninstalled cryptography-3.4.8\n\nSuccessfully installed cffi-1.17.1 cryptography-45.0.5 pyOpenSSL-25.1.0 pycparser-2.22 segno-1.6.6 typing-extensions-4.14.1\n", "stdout_lines": ["Collecting pyOpenSSL>=0.15", "  Downloading pyopenssl-25.1.0-py3-none-any.whl.metadata (17 kB)", "Collecting segno", "  Downloading segno-1.6.6-py3-none-any.whl.metadata (7.7 kB)", "Collecting cryptography<46,>=41.0.5 (from pyOpenSSL>=0.15)", "  Downloading cryptography-45.0.5-cp37-abi3-manylinux_2_34_aarch64.whl.metadata (5.7 kB)", "Collecting typing-extensions>=4.9 (from pyOpenSSL>=0.15)", "  Downloading typing_extensions-4.14.1-py3-none-any.whl.metadata (3.0 kB)", "Collecting cffi>=1.14 (from cryptography<46,>=41.0.5->pyOpenSSL>=0.15)", "  Downloading cffi-1.17.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (1.5 kB)", "Collecting pycparser (from cffi>=1.14->cryptography<46,>=41.0.5->pyOpenSSL>=0.15)", "  Downloading pycparser-2.22-py3-none-any.whl.metadata (943 bytes)", "Downloading pyopenssl-25.1.0-py3-none-any.whl (56 kB)", "Downloading cryptography-45.0.5-cp37-abi3-manylinux_2_34_aarch64.whl (4.2 MB)", "   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.2/4.2 MB 11.6 MB/s  0:00:00", "Downloading segno-1.6.6-py3-none-any.whl (76 kB)", "Downloading cffi-1.17.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (448 kB)", "Downloading typing_extensions-4.14.1-py3-none-any.whl (43 kB)", "Downloading pycparser-2.22-py3-none-any.whl (117 kB)", "Installing collected packages: typing-extensions, segno, pycparser, cffi, cryptography, pyOpenSSL", "  Attempting uninstall: cryptography", "    Found existing installation: cryptography 3.4.8", "    Uninstalling cryptography-3.4.8:", "      Successfully uninstalled cryptography-3.4.8", "", "Successfully installed cffi-1.17.1 cryptography-45.0.5 pyOpenSSL-25.1.0 pycparser-2.22 segno-1.6.6 typing-extensions-4.14.1"], "version": null, "virtualenv": null}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Include a provisioning role] *********************************************
-algo-server  | 
+algo-server  |
 algo-server  | TASK [local : pause] ***********************************************************
 algo-server  | ok: [localhost] => {"changed": false, "delta": 0, "echo": true, "rc": 0, "start": "2025-08-03 14:36:23.852371", "stderr": "", "stdout": "Paused for 0.0 minutes", "stop": "2025-08-03 14:36:23.852907", "user_input": ""}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [local : Set the facts] ***************************************************
 algo-server  | ok: [localhost] => {"ansible_facts": {"cloud_instance_ip": "localhost"}, "changed": false}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [local : Set the facts] ***************************************************
 algo-server  | ok: [localhost] => {"ansible_facts": {"IP_subject_alt_name": "10.99.0.10"}, "changed": false}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Set subjectAltName as a fact] ********************************************
 algo-server  | ok: [localhost] => {"ansible_facts": {"IP_subject_alt_name": "10.99.0.10"}, "changed": false}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Add the server to an inventory group] ************************************
 algo-server  | changed: [localhost] => {"add_host": {"groups": ["vpn-host"], "host_name": "localhost", "host_vars": {"IP_subject_alt_name": "10.99.0.10", "algo_dns_adblocking": false, "algo_ondemand_cellular": false, "algo_ondemand_wifi": false, "algo_ondemand_wifi_exclude": "X251bGw=", "algo_provider": "local", "algo_server_name": "algo-test-server", "algo_ssh_tunneling": false, "algo_store_pki": true, "alternative_ingress_ip": false, "ansible_connection": "local", "ansible_python_interpreter": "/usr/bin/python3", "ansible_ssh_port": "22", "ansible_ssh_user": "root", "cloudinit": false}}, "changed": true}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [debug] *******************************************************************
 algo-server  | ok: [localhost] => {
 algo-server  |     "IP_subject_alt_name": "10.99.0.10"
 algo-server  | }
 algo-server  | [WARNING]: Reset is not implemented for this connection
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Wait 600 seconds for target connection to become reachable/usable] *******
 algo-server  | ok: [localhost] => (item=localhost) => {"ansible_loop_var": "item", "changed": false, "elapsed": 0, "item": "localhost"}
-algo-server  | 
+algo-server  |
 algo-server  | PLAY [Configure the server and install required software] **********************
-algo-server  | 
+algo-server  |
 algo-server  | TASK [common : Check the system] ***********************************************
 algo-server  | ok: [localhost] => {"changed": false, "rc": 0, "stderr": "", "stderr_lines": [], "stdout": "Linux algo-server 6.8.0-50-generic #51-Ubuntu SMP PREEMPT_DYNAMIC Sat Nov  9 18:03:35 UTC 2024 aarch64 aarch64 aarch64 GNU/Linux\n", "stdout_lines": ["Linux algo-server 6.8.0-50-generic #51-Ubuntu SMP PREEMPT_DYNAMIC Sat Nov  9 18:03:35 UTC 2024 aarch64 aarch64 aarch64 GNU/Linux"]}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [common : include_tasks] **************************************************
 algo-server  | included: /algo/roles/common/tasks/ubuntu.yml for localhost
-algo-server  | 
+algo-server  |
 algo-server  | TASK [common : Gather facts] ***************************************************
 algo-server  | ok: [localhost]
-algo-server  | 
+algo-server  |
 algo-server  | TASK [common : Install unattended-upgrades] ************************************
 algo-server  | changed: [localhost] => {"cache_update_time": 1754231778, "cache_updated": false, "changed": true, "stderr": "debconf: delaying package configuration, since apt-utils is not installed\n", "stderr_lines": ["debconf: delaying package configuration, since apt-utils is not installed"], "stdout": "Reading package lists...\nBuilding dependency tree...\nReading state information...\nThe following additional packages will be installed:\n  libnss-systemd libpam-systemd python3-distro-info systemd-sysv\nSuggested packages:\n  bsd-mailx default-mta | mail-transport-agent needrestart powermgmt-base\nThe following NEW packages will be installed:\n  libnss-systemd libpam-systemd python3-distro-info systemd-sysv\n  unattended-upgrades\n0 upgraded, 5 newly installed, 0 to remove and 0 not upgraded.\nNeed to get 405 kB of archives.\nAfter this operation, 1853 kB of additional disk space will be used.\nGet:1 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 systemd-sysv arm64 249.11-0ubuntu3.16 [10.5 kB]\nGet:2 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 libnss-systemd arm64 249.11-0ubuntu3.16 [133 kB]\nGet:3 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 libpam-systemd arm64 249.11-0ubuntu3.16 [205 kB]\nGet:4 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 python3-distro-info all 1.1ubuntu0.2 [6554 B]\nGet:5 http://ports.ubuntu.com/ubuntu-ports jammy/main arm64 unattended-upgrades all 2.8ubuntu1 [49.4 kB]\nFetched 405 kB in 0s (3673 kB/s)\nSelecting previously unselected package systemd-sysv.\r\n(Reading database ... \r(Reading database ... 5%\r(Reading database ... 10%\r(Reading database ... 15%\r(Reading database ... 20%\r(Reading database ... 25%\r(Reading database ... 30%\r(Reading database ... 35%\r(Reading database ... 40%\r(Reading database ... 45%\r(Reading database ... 50%\r(Reading database ... 55%\r(Reading database ... 60%\r(Reading database ... 65%\r(Reading database ... 70%\r(Reading database ... 75%\r(Reading database ... 80%\r(Reading database ... 85%\r(Reading database ... 90%\r(Reading database ... 95%\r(Reading database ... 100%\r(Reading database ... 73818 files and directories currently installed.)\r\nPreparing to unpack .../systemd-sysv_249.11-0ubuntu3.16_arm64.deb ...\r\nUnpacking systemd-sysv (249.11-0ubuntu3.16) ...\r\nSelecting previously unselected package libnss-systemd:arm64.\r\nPreparing to unpack .../libnss-systemd_249.11-0ubuntu3.16_arm64.deb ...\r\nUnpacking libnss-systemd:arm64 (249.11-0ubuntu3.16) ...\r\nSelecting previously unselected package libpam-systemd:arm64.\r\nPreparing to unpack .../libpam-systemd_249.11-0ubuntu3.16_arm64.deb ...\r\nUnpacking libpam-systemd:arm64 (249.11-0ubuntu3.16) ...\r\nSelecting previously unselected package python3-distro-info.\r\nPreparing to unpack .../python3-distro-info_1.1ubuntu0.2_all.deb ...\r\nUnpacking python3-distro-info (1.1ubuntu0.2) ...\r\nSelecting previously unselected package unattended-upgrades.\r\nPreparing to unpack .../unattended-upgrades_2.8ubuntu1_all.deb ...\r\nUnpacking unattended-upgrades (2.8ubuntu1) ...\r\nSetting up systemd-sysv (249.11-0ubuntu3.16) ...\r\nSetting up libnss-systemd:arm64 (249.11-0ubuntu3.16) ...\r\nFirst installation detected...\r\nChecking NSS setup...\r\nSetting up libpam-systemd:arm64 (249.11-0ubuntu3.16) ...\r\nSetting up python3-distro-info (1.1ubuntu0.2) ...\r\nSetting up unattended-upgrades (2.8ubuntu1) ...\r\n\r\nCreating config file /etc/apt/apt.conf.d/20auto-upgrades with new version\r\n\r\nCreating config file /etc/apt/apt.conf.d/50unattended-upgrades with new version\r\nProcessing triggers for libc-bin (2.35-0ubuntu3.10) ...\r\n", "stdout_lines": ["Reading package lists...", "Building dependency tree...", "Reading state information...", "The following additional packages will be installed:", "  libnss-systemd libpam-systemd python3-distro-info systemd-sysv", "Suggested packages:", "  bsd-mailx default-mta | mail-transport-agent needrestart powermgmt-base", "The following NEW packages will be installed:", "  libnss-systemd libpam-systemd python3-distro-info systemd-sysv", "  unattended-upgrades", "0 upgraded, 5 newly installed, 0 to remove and 0 not upgraded.", "Need to get 405 kB of archives.", "After this operation, 1853 kB of additional disk space will be used.", "Get:1 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 systemd-sysv arm64 249.11-0ubuntu3.16 [10.5 kB]", "Get:2 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 libnss-systemd arm64 249.11-0ubuntu3.16 [133 kB]", "Get:3 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 libpam-systemd arm64 249.11-0ubuntu3.16 [205 kB]", "Get:4 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 python3-distro-info all 1.1ubuntu0.2 [6554 B]", "Get:5 http://ports.ubuntu.com/ubuntu-ports jammy/main arm64 unattended-upgrades all 2.8ubuntu1 [49.4 kB]", "Fetched 405 kB in 0s (3673 kB/s)", "Selecting previously unselected package systemd-sysv.", "(Reading database ... ", "(Reading database ... 5%", "(Reading database ... 10%", "(Reading database ... 15%", "(Reading database ... 20%", "(Reading database ... 25%", "(Reading database ... 30%", "(Reading database ... 35%", "(Reading database ... 40%", "(Reading database ... 45%", "(Reading database ... 50%", "(Reading database ... 55%", "(Reading database ... 60%", "(Reading database ... 65%", "(Reading database ... 70%", "(Reading database ... 75%", "(Reading database ... 80%", "(Reading database ... 85%", "(Reading database ... 90%", "(Reading database ... 95%", "(Reading database ... 100%", "(Reading database ... 73818 files and directories currently installed.)", "Preparing to unpack .../systemd-sysv_249.11-0ubuntu3.16_arm64.deb ...", "Unpacking systemd-sysv (249.11-0ubuntu3.16) ...", "Selecting previously unselected package libnss-systemd:arm64.", "Preparing to unpack .../libnss-systemd_249.11-0ubuntu3.16_arm64.deb ...", "Unpacking libnss-systemd:arm64 (249.11-0ubuntu3.16) ...", "Selecting previously unselected package libpam-systemd:arm64.", "Preparing to unpack .../libpam-systemd_249.11-0ubuntu3.16_arm64.deb ...", "Unpacking libpam-systemd:arm64 (249.11-0ubuntu3.16) ...", "Selecting previously unselected package python3-distro-info.", "Preparing to unpack .../python3-distro-info_1.1ubuntu0.2_all.deb ...", "Unpacking python3-distro-info (1.1ubuntu0.2) ...", "Selecting previously unselected package unattended-upgrades.", "Preparing to unpack .../unattended-upgrades_2.8ubuntu1_all.deb ...", "Unpacking unattended-upgrades (2.8ubuntu1) ...", "Setting up systemd-sysv (249.11-0ubuntu3.16) ...", "Setting up libnss-systemd:arm64 (249.11-0ubuntu3.16) ...", "First installation detected...", "Checking NSS setup...", "Setting up libpam-systemd:arm64 (249.11-0ubuntu3.16) ...", "Setting up python3-distro-info (1.1ubuntu0.2) ...", "Setting up unattended-upgrades (2.8ubuntu1) ...", "", "Creating config file /etc/apt/apt.conf.d/20auto-upgrades with new version", "", "Creating config file /etc/apt/apt.conf.d/50unattended-upgrades with new version", "Processing triggers for libc-bin (2.35-0ubuntu3.10) ..."]}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [common : Configure unattended-upgrades] **********************************
 algo-server  | changed: [localhost] => {"changed": true, "checksum": "ed74b36a000a932393d6d1f4c47186bcd895a515", "dest": "/etc/apt/apt.conf.d/50unattended-upgrades", "gid": 0, "group": "root", "md5sum": "ead855b06ced87c51e33071acab35bf3", "mode": "0644", "owner": "root", "size": 3797, "src": "/root/.ansible/tmp/ansible-tmp-1754231789.302889-995-157903953471024/source", "state": "file", "uid": 0}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [common : Periodic upgrades configured] ***********************************
 algo-server  | changed: [localhost] => {"changed": true, "checksum": "eac74547eec217a356899a6d8a377d3f1522851a", "dest": "/etc/apt/apt.conf.d/10periodic", "gid": 0, "group": "root", "md5sum": "4e7d1cf7c590a703ad853f2658fb8eeb", "mode": "0644", "owner": "root", "size": 168, "src": "/root/.ansible/tmp/ansible-tmp-1754231789.5252056-1025-265113230477430/source", "state": "file", "uid": 0}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [common : Disable MOTD on login and SSHD] *********************************
 algo-server  | changed: [localhost] => (item={'regexp': '^session.*optional.*pam_motd.so.*', 'line': '# MOTD DISABLED', 'file': '/etc/pam.d/login'}) => {"ansible_loop_var": "item", "changed": true, "item": {"file": "/etc/pam.d/login", "line": "# MOTD DISABLED", "regexp": "^session.*optional.*pam_motd.so.*"}, "msg": "2 replacements made", "rc": 0}
 algo-server  | ok: [localhost] => (item={'regexp': '^session.*optional.*pam_motd.so.*', 'line': '# MOTD DISABLED', 'file': '/etc/pam.d/sshd'}) => {"ansible_loop_var": "item", "changed": false, "item": {"file": "/etc/pam.d/sshd", "line": "# MOTD DISABLED", "regexp": "^session.*optional.*pam_motd.so.*"}, "msg": "", "rc": 0}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [common : Ensure fallback resolvers are set] ******************************
 algo-server  | changed: [localhost] => {"changed": true, "gid": 0, "group": "root", "mode": "0644", "msg": "option changed", "owner": "root", "path": "/etc/systemd/resolved.conf", "size": 1422, "state": "file", "uid": 0}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [common : Loopback for services configured] *******************************
 algo-server  | changed: [localhost] => {"changed": true, "checksum": "38bd687506a689a469b3dd4a25190324d6b8f146", "dest": "/etc/systemd/network/10-algo-lo100.network", "gid": 0, "group": "root", "md5sum": "274ffd4d7caf66f754ca3c5e5cad049e", "mode": "0644", "owner": "root", "size": 97, "src": "/root/.ansible/tmp/ansible-tmp-1754231789.9961534-1068-186978330039061/source", "state": "file", "uid": 0}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [common : systemd services enabled and started] ***************************
 algo-server  | changed: [localhost] => (item=systemd-networkd) => {"ansible_loop_var": "item", "changed": true, "enabled": true, "item": "systemd-networkd", "name": "systemd-networkd", "state": "started", "status": {"ActiveState": "active", "LoadState": "loaded", "SubState": "running"}}
 algo-server  | changed: [localhost] => (item=systemd-resolved) => {"ansible_loop_var": "item", "changed": true, "enabled": true, "item": "systemd-resolved", "name": "systemd-resolved", "state": "started", "status": {"ActiveState": "active", "LoadState": "loaded", "SubState": "running"}}
-algo-server  | 
+algo-server  |
 algo-server  | RUNNING HANDLER [common : restart systemd-networkd] ****************************
 algo-server  | changed: [localhost] => {"changed": true, "name": "systemd-networkd", "state": "restarted", "status": {"ActiveState": "active", "LoadState": "loaded", "SubState": "running"}}
-algo-server  | 
+algo-server  |
 algo-server  | RUNNING HANDLER [common : restart systemd-resolved] ****************************
 algo-server  | changed: [localhost] => {"changed": true, "name": "systemd-resolved", "state": "restarted", "status": {"ActiveState": "active", "LoadState": "loaded", "SubState": "running"}}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [common : Check apparmor support] *****************************************
 algo-server  | fatal: [localhost]: FAILED! => {"changed": false, "cmd": "apparmor_status", "msg": "[Errno 2] No such file or directory: b'apparmor_status'", "rc": 2, "stderr": "", "stderr_lines": [], "stdout": "", "stdout_lines": []}
 algo-server  | ...ignoring
-algo-server  | 
+algo-server  |
 algo-server  | TASK [common : Define facts] ***************************************************
 algo-server  | ok: [localhost] => {"ansible_facts": {"p12_export_password": "j6xqfQax2"}, "changed": false}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [common : Set facts] ******************************************************
 algo-server  | ok: [localhost] => {"ansible_facts": {"CA_password": "cGJkMmasHgeGjkg6", "IP_subject_alt_name": "10.99.0.10"}, "changed": false}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [common : Set IPv6 support as a fact] *************************************
 algo-server  | ok: [localhost] => {"ansible_facts": {"ipv6_support": false}, "changed": false}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [common : Check size of MTU] **********************************************
 algo-server  | ok: [localhost] => {"ansible_facts": {"reduce_mtu": "0"}, "changed": false}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [common : Set OS specific facts] ******************************************
 algo-server  | ok: [localhost] => {"ansible_facts": {"sysctl": [{"item": "net.ipv4.ip_forward", "value": 1}, {"item": "net.ipv4.conf.all.forwarding", "value": 1}, {"item": "", "value": 1}], "tools": ["git", "screen", "apparmor-utils", "uuid-runtime", "coreutils", "iptables-persistent", "cgroup-tools", "openssl", "gnupg2", "cron"]}, "changed": false}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [common : Install tools] **************************************************
 algo-server  | changed: [localhost] => {"cache_update_time": 1754231778, "cache_updated": false, "changed": true, "stderr": "debconf: delaying package configuration, since apt-utils is not installed\n", "stderr_lines": ["debconf: delaying package configuration, since apt-utils is not installed"], "stdout": "Reading package lists...\nBuilding dependency tree...\nReading state information...\nThe following additional packages will be installed:\n  apparmor git-man less libcgroup1 libcurl3-gnutls liberror-perl libutempter0\n  netfilter-persistent python3-apparmor python3-libapparmor\nSuggested packages:\n  apparmor-profiles-extra vim-addon-manager anacron logrotate checksecurity\n  default-mta | mail-transport-agent gettext-base git-daemon-run\n  | git-daemon-sysvinit git-doc git-email git-gui gitk gitweb git-cvs\n  git-mediawiki git-svn byobu | screenie | iselect ncurses-term\nThe following NEW packages will be installed:\n  apparmor apparmor-utils cgroup-tools cron git git-man gnupg2\n  iptables-persistent less libcgroup1 libcurl3-gnutls liberror-perl\n  libutempter0 netfilter-persistent python3-apparmor python3-libapparmor\n  screen uuid-runtime\n0 upgraded, 18 newly installed, 0 to remove and 0 not upgraded.\nNeed to get 6288 kB of archives.\nAfter this operation, 27.5 MB of additional disk space will be used.\nGet:1 http://ports.ubuntu.com/ubuntu-ports jammy/main arm64 cron arm64 3.0pl1-137ubuntu3 [73.1 kB]\nGet:2 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 uuid-runtime arm64 2.37.2-4ubuntu3.4 [31.8 kB]\nGet:3 http://ports.ubuntu.com/ubuntu-ports jammy/universe arm64 netfilter-persistent all 1.0.16 [7440 B]\nGet:4 http://ports.ubuntu.com/ubuntu-ports jammy/universe arm64 iptables-persistent all 1.0.16 [6488 B]\nGet:5 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 less arm64 590-1ubuntu0.22.04.3 [141 kB]\nGet:6 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 apparmor arm64 3.0.4-2ubuntu2.4 [576 kB]\nGet:7 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 python3-libapparmor arm64 3.0.4-2ubuntu2.4 [29.4 kB]\nGet:8 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 python3-apparmor all 3.0.4-2ubuntu2.4 [81.1 kB]\nGet:9 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 apparmor-utils all 3.0.4-2ubuntu2.4 [59.5 kB]\nGet:10 http://ports.ubuntu.com/ubuntu-ports jammy/universe arm64 libcgroup1 arm64 2.0-2 [50.3 kB]\nGet:11 http://ports.ubuntu.com/ubuntu-ports jammy/universe arm64 cgroup-tools arm64 2.0-2 [72.1 kB]\nGet:12 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 libcurl3-gnutls arm64 7.81.0-1ubuntu1.20 [279 kB]\nGet:13 http://ports.ubuntu.com/ubuntu-ports jammy/main arm64 liberror-perl all 0.17029-1 [26.5 kB]\nGet:14 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 git-man all 1:2.34.1-1ubuntu1.15 [955 kB]\nGet:15 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 git arm64 1:2.34.1-1ubuntu1.15 [3224 kB]\nGet:16 http://ports.ubuntu.com/ubuntu-ports jammy/main arm64 libutempter0 arm64 1.2.1-2build2 [8774 B]\nGet:17 http://ports.ubuntu.com/ubuntu-ports jammy/main arm64 screen arm64 4.9.0-1 [661 kB]\nGet:18 http://ports.ubuntu.com/ubuntu-ports jammy-updates/universe arm64 gnupg2 all 2.2.27-3ubuntu2.4 [5544 B]\nFetched 6288 kB in 1s (10.6 MB/s)\nSelecting previously unselected package cron.\r\n(Reading database ... \r(Reading database ... 5%\r(Reading database ... 10%\r(Reading database ... 15%\r(Reading database ... 20%\r(Reading database ... 25%\r(Reading database ... 30%\r(Reading database ... 35%\r(Reading database ... 40%\r(Reading database ... 45%\r(Reading database ... 50%\r(Reading database ... 55%\r(Reading database ... 60%\r(Reading database ... 65%\r(Reading database ... 70%\r(Reading database ... 75%\r(Reading database ... 80%\r(Reading database ... 85%\r(Reading database ... 90%\r(Reading database ... 95%\r(Reading database ... 100%\r(Reading database ... 73890 files and directories currently installed.)\r\nPreparing to unpack .../00-cron_3.0pl1-137ubuntu3_arm64.deb ...\r\nUnpacking cron (3.0pl1-137ubuntu3) ...\r\nSelecting previously unselected package uuid-runtime.\r\nPreparing to unpack .../01-uuid-runtime_2.37.2-4ubuntu3.4_arm64.deb ...\r\nUnpacking uuid-runtime (2.37.2-4ubuntu3.4) ...\r\nSelecting previously unselected package netfilter-persistent.\r\nPreparing to unpack .../02-netfilter-persistent_1.0.16_all.deb ...\r\nUnpacking netfilter-persistent (1.0.16) ...\r\nSelecting previously unselected package iptables-persistent.\r\nPreparing to unpack .../03-iptables-persistent_1.0.16_all.deb ...\r\nUnpacking iptables-persistent (1.0.16) ...\r\nSelecting previously unselected package less.\r\nPreparing to unpack .../04-less_590-1ubuntu0.22.04.3_arm64.deb ...\r\nUnpacking less (590-1ubuntu0.22.04.3) ...\r\nSelecting previously unselected package apparmor.\r\nPreparing to unpack .../05-apparmor_3.0.4-2ubuntu2.4_arm64.deb ...\r\nUnpacking apparmor (3.0.4-2ubuntu2.4) ...\r\nSelecting previously unselected package python3-libapparmor.\r\nPreparing to unpack .../06-python3-libapparmor_3.0.4-2ubuntu2.4_arm64.deb ...\r\nUnpacking python3-libapparmor (3.0.4-2ubuntu2.4) ...\r\nSelecting previously unselected package python3-apparmor.\r\nPreparing to unpack .../07-python3-apparmor_3.0.4-2ubuntu2.4_all.deb ...\r\nUnpacking python3-apparmor (3.0.4-2ubuntu2.4) ...\r\nSelecting previously unselected package apparmor-utils.\r\nPreparing to unpack .../08-apparmor-utils_3.0.4-2ubuntu2.4_all.deb ...\r\nUnpacking apparmor-utils (3.0.4-2ubuntu2.4) ...\r\nSelecting previously unselected package libcgroup1:arm64.\r\nPreparing to unpack .../09-libcgroup1_2.0-2_arm64.deb ...\r\nUnpacking libcgroup1:arm64 (2.0-2) ...\r\nSelecting previously unselected package cgroup-tools.\r\nPreparing to unpack .../10-cgroup-tools_2.0-2_arm64.deb ...\r\nUnpacking cgroup-tools (2.0-2) ...\r\nSelecting previously unselected package libcurl3-gnutls:arm64.\r\nPreparing to unpack .../11-libcurl3-gnutls_7.81.0-1ubuntu1.20_arm64.deb ...\r\nUnpacking libcurl3-gnutls:arm64 (7.81.0-1ubuntu1.20) ...\r\nSelecting previously unselected package liberror-perl.\r\nPreparing to unpack .../12-liberror-perl_0.17029-1_all.deb ...\r\nUnpacking liberror-perl (0.17029-1) ...\r\nSelecting previously unselected package git-man.\r\nPreparing to unpack .../13-git-man_1%3a2.34.1-1ubuntu1.15_all.deb ...\r\nUnpacking git-man (1:2.34.1-1ubuntu1.15) ...\r\nSelecting previously unselected package git.\r\nPreparing to unpack .../14-git_1%3a2.34.1-1ubuntu1.15_arm64.deb ...\r\nUnpacking git (1:2.34.1-1ubuntu1.15) ...\r\nSelecting previously unselected package libutempter0:arm64.\r\nPreparing to unpack .../15-libutempter0_1.2.1-2build2_arm64.deb ...\r\nUnpacking libutempter0:arm64 (1.2.1-2build2) ...\r\nSelecting previously unselected package screen.\r\nPreparing to unpack .../16-screen_4.9.0-1_arm64.deb ...\r\nUnpacking screen (4.9.0-1) ...\r\nSelecting previously unselected package gnupg2.\r\nPreparing to unpack .../17-gnupg2_2.2.27-3ubuntu2.4_all.deb ...\r\nUnpacking gnupg2 (2.2.27-3ubuntu2.4) ...\r\nSetting up python3-libapparmor (3.0.4-2ubuntu2.4) ...\r\nSetting up gnupg2 (2.2.27-3ubuntu2.4) ...\r\nSetting up cron (3.0pl1-137ubuntu3) ...\r\nAdding group `crontab' (GID 111) ...\r\nDone.\r\nMock systemctl: operation '' recorded but not implemented\r\ninvoke-rc.d: policy-rc.d denied execution of start.\r\nSetting up less (590-1ubuntu0.22.04.3) ...\r\nSetting up libcurl3-gnutls:arm64 (7.81.0-1ubuntu1.20) ...\r\nSetting up liberror-perl (0.17029-1) ...\r\nSetting up apparmor (3.0.4-2ubuntu2.4) ...\r\nSetting up libutempter0:arm64 (1.2.1-2build2) ...\r\nSetting up netfilter-persistent (1.0.16) ...\r\nMock systemctl: operation '' recorded but not implemented\r\ninvoke-rc.d: policy-rc.d denied execution of restart.\r\nSetting up uuid-runtime (2.37.2-4ubuntu3.4) ...\r\nAdding group `uuidd' (GID 112) ...\r\nDone.\r\nWarning: The home dir /run/uuidd you specified can't be accessed: No such file or directory\r\nAdding system user `uuidd' (UID 106) ...\r\nAdding new user `uuidd' (UID 106) with group `uuidd' ...\r\nNot creating home directory `/run/uuidd'.\r\nMock systemctl: operation '' recorded but not implemented\r\ninvoke-rc.d: policy-rc.d denied execution of start.\r\nSetting up python3-apparmor (3.0.4-2ubuntu2.4) ...\r\nSetting up git-man (1:2.34.1-1ubuntu1.15) ...\r\nSetting up libcgroup1:arm64 (2.0-2) ...\r\nSetting up cgroup-tools (2.0-2) ...\r\nSetting up screen (4.9.0-1) ...\r\nSetting up iptables-persistent (1.0.16) ...\r\nupdate-alternatives: using /lib/systemd/system/netfilter-persistent.service to provide /lib/systemd/system/iptables.service (iptables.service) in auto mode\r\nSetting up apparmor-utils (3.0.4-2ubuntu2.4) ...\r\nSetting up git (1:2.34.1-1ubuntu1.15) ...\r\nProcessing triggers for libc-bin (2.35-0ubuntu3.10) ...\r\n", "stdout_lines": ["Reading package lists...", "Building dependency tree...", "Reading state information...", "The following additional packages will be installed:", "  apparmor git-man less libcgroup1 libcurl3-gnutls liberror-perl libutempter0", "  netfilter-persistent python3-apparmor python3-libapparmor", "Suggested packages:", "  apparmor-profiles-extra vim-addon-manager anacron logrotate checksecurity", "  default-mta | mail-transport-agent gettext-base git-daemon-run", "  | git-daemon-sysvinit git-doc git-email git-gui gitk gitweb git-cvs", "  git-mediawiki git-svn byobu | screenie | iselect ncurses-term", "The following NEW packages will be installed:", "  apparmor apparmor-utils cgroup-tools cron git git-man gnupg2", "  iptables-persistent less libcgroup1 libcurl3-gnutls liberror-perl", "  libutempter0 netfilter-persistent python3-apparmor python3-libapparmor", "  screen uuid-runtime", "0 upgraded, 18 newly installed, 0 to remove and 0 not upgraded.", "Need to get 6288 kB of archives.", "After this operation, 27.5 MB of additional disk space will be used.", "Get:1 http://ports.ubuntu.com/ubuntu-ports jammy/main arm64 cron arm64 3.0pl1-137ubuntu3 [73.1 kB]", "Get:2 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 uuid-runtime arm64 2.37.2-4ubuntu3.4 [31.8 kB]", "Get:3 http://ports.ubuntu.com/ubuntu-ports jammy/universe arm64 netfilter-persistent all 1.0.16 [7440 B]", "Get:4 http://ports.ubuntu.com/ubuntu-ports jammy/universe arm64 iptables-persistent all 1.0.16 [6488 B]", "Get:5 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 less arm64 590-1ubuntu0.22.04.3 [141 kB]", "Get:6 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 apparmor arm64 3.0.4-2ubuntu2.4 [576 kB]", "Get:7 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 python3-libapparmor arm64 3.0.4-2ubuntu2.4 [29.4 kB]", "Get:8 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 python3-apparmor all 3.0.4-2ubuntu2.4 [81.1 kB]", "Get:9 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 apparmor-utils all 3.0.4-2ubuntu2.4 [59.5 kB]", "Get:10 http://ports.ubuntu.com/ubuntu-ports jammy/universe arm64 libcgroup1 arm64 2.0-2 [50.3 kB]", "Get:11 http://ports.ubuntu.com/ubuntu-ports jammy/universe arm64 cgroup-tools arm64 2.0-2 [72.1 kB]", "Get:12 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 libcurl3-gnutls arm64 7.81.0-1ubuntu1.20 [279 kB]", "Get:13 http://ports.ubuntu.com/ubuntu-ports jammy/main arm64 liberror-perl all 0.17029-1 [26.5 kB]", "Get:14 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 git-man all 1:2.34.1-1ubuntu1.15 [955 kB]", "Get:15 http://ports.ubuntu.com/ubuntu-ports jammy-updates/main arm64 git arm64 1:2.34.1-1ubuntu1.15 [3224 kB]", "Get:16 http://ports.ubuntu.com/ubuntu-ports jammy/main arm64 libutempter0 arm64 1.2.1-2build2 [8774 B]", "Get:17 http://ports.ubuntu.com/ubuntu-ports jammy/main arm64 screen arm64 4.9.0-1 [661 kB]", "Get:18 http://ports.ubuntu.com/ubuntu-ports jammy-updates/universe arm64 gnupg2 all 2.2.27-3ubuntu2.4 [5544 B]", "Fetched 6288 kB in 1s (10.6 MB/s)", "Selecting previously unselected package cron.", "(Reading database ... ", "(Reading database ... 5%", "(Reading database ... 10%", "(Reading database ... 15%", "(Reading database ... 20%", "(Reading database ... 25%", "(Reading database ... 30%", "(Reading database ... 35%", "(Reading database ... 40%", "(Reading database ... 45%", "(Reading database ... 50%", "(Reading database ... 55%", "(Reading database ... 60%", "(Reading database ... 65%", "(Reading database ... 70%", "(Reading database ... 75%", "(Reading database ... 80%", "(Reading database ... 85%", "(Reading database ... 90%", "(Reading database ... 95%", "(Reading database ... 100%", "(Reading database ... 73890 files and directories currently installed.)", "Preparing to unpack .../00-cron_3.0pl1-137ubuntu3_arm64.deb ...", "Unpacking cron (3.0pl1-137ubuntu3) ...", "Selecting previously unselected package uuid-runtime.", "Preparing to unpack .../01-uuid-runtime_2.37.2-4ubuntu3.4_arm64.deb ...", "Unpacking uuid-runtime (2.37.2-4ubuntu3.4) ...", "Selecting previously unselected package netfilter-persistent.", "Preparing to unpack .../02-netfilter-persistent_1.0.16_all.deb ...", "Unpacking netfilter-persistent (1.0.16) ...", "Selecting previously unselected package iptables-persistent.", "Preparing to unpack .../03-iptables-persistent_1.0.16_all.deb ...", "Unpacking iptables-persistent (1.0.16) ...", "Selecting previously unselected package less.", "Preparing to unpack .../04-less_590-1ubuntu0.22.04.3_arm64.deb ...", "Unpacking less (590-1ubuntu0.22.04.3) ...", "Selecting previously unselected package apparmor.", "Preparing to unpack .../05-apparmor_3.0.4-2ubuntu2.4_arm64.deb ...", "Unpacking apparmor (3.0.4-2ubuntu2.4) ...", "Selecting previously unselected package python3-libapparmor.", "Preparing to unpack .../06-python3-libapparmor_3.0.4-2ubuntu2.4_arm64.deb ...", "Unpacking python3-libapparmor (3.0.4-2ubuntu2.4) ...", "Selecting previously unselected package python3-apparmor.", "Preparing to unpack .../07-python3-apparmor_3.0.4-2ubuntu2.4_all.deb ...", "Unpacking python3-apparmor (3.0.4-2ubuntu2.4) ...", "Selecting previously unselected package apparmor-utils.", "Preparing to unpack .../08-apparmor-utils_3.0.4-2ubuntu2.4_all.deb ...", "Unpacking apparmor-utils (3.0.4-2ubuntu2.4) ...", "Selecting previously unselected package libcgroup1:arm64.", "Preparing to unpack .../09-libcgroup1_2.0-2_arm64.deb ...", "Unpacking libcgroup1:arm64 (2.0-2) ...", "Selecting previously unselected package cgroup-tools.", "Preparing to unpack .../10-cgroup-tools_2.0-2_arm64.deb ...", "Unpacking cgroup-tools (2.0-2) ...", "Selecting previously unselected package libcurl3-gnutls:arm64.", "Preparing to unpack .../11-libcurl3-gnutls_7.81.0-1ubuntu1.20_arm64.deb ...", "Unpacking libcurl3-gnutls:arm64 (7.81.0-1ubuntu1.20) ...", "Selecting previously unselected package liberror-perl.", "Preparing to unpack .../12-liberror-perl_0.17029-1_all.deb ...", "Unpacking liberror-perl (0.17029-1) ...", "Selecting previously unselected package git-man.", "Preparing to unpack .../13-git-man_1%3a2.34.1-1ubuntu1.15_all.deb ...", "Unpacking git-man (1:2.34.1-1ubuntu1.15) ...", "Selecting previously unselected package git.", "Preparing to unpack .../14-git_1%3a2.34.1-1ubuntu1.15_arm64.deb ...", "Unpacking git (1:2.34.1-1ubuntu1.15) ...", "Selecting previously unselected package libutempter0:arm64.", "Preparing to unpack .../15-libutempter0_1.2.1-2build2_arm64.deb ...", "Unpacking libutempter0:arm64 (1.2.1-2build2) ...", "Selecting previously unselected package screen.", "Preparing to unpack .../16-screen_4.9.0-1_arm64.deb ...", "Unpacking screen (4.9.0-1) ...", "Selecting previously unselected package gnupg2.", "Preparing to unpack .../17-gnupg2_2.2.27-3ubuntu2.4_all.deb ...", "Unpacking gnupg2 (2.2.27-3ubuntu2.4) ...", "Setting up python3-libapparmor (3.0.4-2ubuntu2.4) ...", "Setting up gnupg2 (2.2.27-3ubuntu2.4) ...", "Setting up cron (3.0pl1-137ubuntu3) ...", "Adding group `crontab' (GID 111) ...", "Done.", "Mock systemctl: operation '' recorded but not implemented", "invoke-rc.d: policy-rc.d denied execution of start.", "Setting up less (590-1ubuntu0.22.04.3) ...", "Setting up libcurl3-gnutls:arm64 (7.81.0-1ubuntu1.20) ...", "Setting up liberror-perl (0.17029-1) ...", "Setting up apparmor (3.0.4-2ubuntu2.4) ...", "Setting up libutempter0:arm64 (1.2.1-2build2) ...", "Setting up netfilter-persistent (1.0.16) ...", "Mock systemctl: operation '' recorded but not implemented", "invoke-rc.d: policy-rc.d denied execution of restart.", "Setting up uuid-runtime (2.37.2-4ubuntu3.4) ...", "Adding group `uuidd' (GID 112) ...", "Done.", "Warning: The home dir /run/uuidd you specified can't be accessed: No such file or directory", "Adding system user `uuidd' (UID 106) ...", "Adding new user `uuidd' (UID 106) with group `uuidd' ...", "Not creating home directory `/run/uuidd'.", "Mock systemctl: operation '' recorded but not implemented", "invoke-rc.d: policy-rc.d denied execution of start.", "Setting up python3-apparmor (3.0.4-2ubuntu2.4) ...", "Setting up git-man (1:2.34.1-1ubuntu1.15) ...", "Setting up libcgroup1:arm64 (2.0-2) ...", "Setting up cgroup-tools (2.0-2) ...", "Setting up screen (4.9.0-1) ...", "Setting up iptables-persistent (1.0.16) ...", "update-alternatives: using /lib/systemd/system/netfilter-persistent.service to provide /lib/systemd/system/iptables.service (iptables.service) in auto mode", "Setting up apparmor-utils (3.0.4-2ubuntu2.4) ...", "Setting up git (1:2.34.1-1ubuntu1.15) ...", "Processing triggers for libc-bin (2.35-0ubuntu3.10) ..."]}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [common : include_tasks] **************************************************
 algo-server  | included: /algo/roles/common/tasks/iptables.yml for localhost
-algo-server  | 
+algo-server  |
 algo-server  | TASK [common : Iptables configured] ********************************************
 algo-server  | changed: [localhost] => (item={'src': 'rules.v4.j2', 'dest': '/etc/iptables/rules.v4'}) => {"ansible_loop_var": "item", "changed": true, "checksum": "72b2166dab8060974a72ce2be670711869338f5c", "dest": "/etc/iptables/rules.v4", "gid": 0, "group": "root", "item": {"dest": "/etc/iptables/rules.v4", "src": "rules.v4.j2"}, "md5sum": "0ba6bbff320d49c1c5392c5b5ae324e9", "mode": "0640", "owner": "root", "size": 3211, "src": "/root/.ansible/tmp/ansible-tmp-1754231795.9110847-1824-197214830210453/source", "state": "file", "uid": 0}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [common : Sysctl tuning] **************************************************
 algo-server  | changed: [localhost] => (item={'item': 'net.ipv4.ip_forward', 'value': 1}) => {"ansible_loop_var": "item", "changed": true, "item": {"item": "net.ipv4.ip_forward", "value": 1}}
 algo-server  | changed: [localhost] => (item={'item': 'net.ipv4.conf.all.forwarding', 'value': 1}) => {"ansible_loop_var": "item", "changed": true, "item": {"item": "net.ipv4.conf.all.forwarding", "value": 1}}
-algo-server  | 
+algo-server  |
 algo-server  | RUNNING HANDLER [common : restart iptables] ************************************
 algo-server  | changed: [localhost] => {"changed": true, "name": "netfilter-persistent", "status": {"enabled": {"changed": false, "rc": null, "stderr": null, "stdout": null}, "restarted": {"changed": true, "rc": 0, "stderr": "run-parts: executing /usr/share/netfilter-persistent/plugins.d/15-ip4tables start\nrun-parts: executing /usr/share/netfilter-persistent/plugins.d/25-ip6tables start\n", "stdout": " * Loading netfilter rules...\n   ...done.\n"}}}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [wireguard : Ensure the required directories exist] ***********************
 algo-server  | changed: [localhost] => (item=configs/10.99.0.10/wireguard//.pki//preshared) => {"ansible_loop_var": "item", "changed": true, "gid": 0, "group": "root", "item": "configs/10.99.0.10/wireguard//.pki//preshared", "mode": "0755", "owner": "root", "path": "configs/10.99.0.10/wireguard//.pki//preshared", "size": 4096, "state": "directory", "uid": 0}
 algo-server  | changed: [localhost] => (item=configs/10.99.0.10/wireguard//.pki//private) => {"ansible_loop_var": "item", "changed": true, "gid": 0, "group": "root", "item": "configs/10.99.0.10/wireguard//.pki//private", "mode": "0755", "owner": "root", "path": "configs/10.99.0.10/wireguard//.pki//private", "size": 4096, "state": "directory", "uid": 0}
 algo-server  | changed: [localhost] => (item=configs/10.99.0.10/wireguard//.pki//public) => {"ansible_loop_var": "item", "changed": true, "gid": 0, "group": "root", "item": "configs/10.99.0.10/wireguard//.pki//public", "mode": "0755", "owner": "root", "path": "configs/10.99.0.10/wireguard//.pki//public", "size": 4096, "state": "directory", "uid": 0}
 algo-server  | changed: [localhost] => (item=configs/10.99.0.10/wireguard//apple/ios) => {"ansible_loop_var": "item", "changed": true, "gid": 0, "group": "root", "item": "configs/10.99.0.10/wireguard//apple/ios", "mode": "0755", "owner": "root", "path": "configs/10.99.0.10/wireguard//apple/ios", "size": 4096, "state": "directory", "uid": 0}
 algo-server  | changed: [localhost] => (item=configs/10.99.0.10/wireguard//apple/macos) => {"ansible_loop_var": "item", "changed": true, "gid": 0, "group": "root", "item": "configs/10.99.0.10/wireguard//apple/macos", "mode": "0755", "owner": "root", "path": "configs/10.99.0.10/wireguard//apple/macos", "size": 4096, "state": "directory", "uid": 0}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [wireguard : Include tasks for Ubuntu] ************************************
 algo-server  | included: /algo/roles/wireguard/tasks/ubuntu.yml for localhost
-algo-server  | 
+algo-server  |
 algo-server  | TASK [wireguard : WireGuard installed] *****************************************
 algo-server  | fatal: [localhost]: FAILED! => {"changed": false, "msg": "Failed to update apt cache: unknown reason"}
-algo-server  | 
+algo-server  |
 algo-server  | TASK [include_tasks] ***********************************************************
 algo-server  | included: /algo/playbooks/rescue.yml for localhost
-algo-server  | 
+algo-server  |
 algo-server  | TASK [debug] *******************************************************************
 algo-server  | ok: [localhost] => {
 algo-server  |     "fail_hint": "VARIABLE IS NOT DEFINED!: 'fail_hint' is undefined. 'fail_hint' is undefined"
 algo-server  | }
-algo-server  | 
+algo-server  |
 algo-server  | TASK [Fail the installation] ***************************************************
 algo-server  | fatal: [localhost]: FAILED! => {"changed": false, "msg": "Failed as requested from task"}
-algo-server  | 
+algo-server  |
 algo-server  | PLAY RECAP *********************************************************************
-algo-server  | localhost                  : ok=50   changed=17   unreachable=0    failed=1    skipped=41   rescued=1    ignored=1   
-algo-server  | 
+algo-server  | localhost                  : ok=50   changed=17   unreachable=0    failed=1    skipped=41   rescued=1    ignored=1
+algo-server  |
