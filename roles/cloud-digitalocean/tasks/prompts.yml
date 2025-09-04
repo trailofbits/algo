@@ -23,7 +23,60 @@
       Content-Type: application/json
       Authorization: Bearer {{ algo_do_token }}
   register: _do_regions
-  no_log: true
+  no_log: "{{ algo_no_log | default(true) }}"
+  failed_when: false
+
+- name: Check DigitalOcean API response
+  fail:
+    msg: |
+      {% if _do_regions.status == 401 %}
+      DigitalOcean API authentication failed (401 Unauthorized)
+
+      Your API token is invalid or expired. Please:
+      1. Go to https://cloud.digitalocean.com/settings/api/tokens
+      2. Create a new token with 'Read' and 'Write' scopes
+      3. Run the deployment again with the new token
+
+      {% elif _do_regions.status == 403 %}
+      DigitalOcean API access denied (403 Forbidden)
+
+      Your API token lacks required permissions. Please:
+      1. Go to https://cloud.digitalocean.com/settings/api/tokens
+      2. Ensure your token has both 'Read' and 'Write' scopes
+      3. Consider creating a new token with full access
+
+      {% elif _do_regions.status == 429 %}
+      DigitalOcean API rate limit exceeded (429 Too Many Requests)
+
+      You've hit the API rate limit. Please:
+      1. Wait 5-10 minutes before retrying
+      2. Check if other applications are using your token
+
+      {% elif _do_regions.status == 500 or _do_regions.status == 502 or _do_regions.status == 503 %}
+      DigitalOcean API server error ({{ _do_regions.status }})
+
+      DigitalOcean is experiencing issues. Please:
+      1. Check https://status.digitalocean.com for outages
+      2. Wait a few minutes and try again
+
+      {% elif _do_regions.status is undefined %}
+      Failed to connect to DigitalOcean API
+
+      Could not reach api.digitalocean.com. Please check:
+      1. Your internet connection
+      2. Firewall rules (port 443 must be open)
+      3. DNS resolution for api.digitalocean.com
+
+      {% else %}
+      DigitalOcean API error (HTTP {{ _do_regions.status }})
+
+      An unexpected error occurred. Please:
+      1. Verify your API token at https://cloud.digitalocean.com/settings/api/tokens
+      2. Check https://status.digitalocean.com for service issues
+      {% endif %}
+
+      For detailed error messages: Set 'algo_no_log: false' in config.cfg and run again
+  when: _do_regions.status != 200
 
 - name: Set facts about the regions
   set_fact:
