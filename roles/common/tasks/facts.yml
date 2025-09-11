@@ -13,7 +13,7 @@
 
 - name: Set IPv6 support as a fact
   set_fact:
-    ipv6_support: "{% if ansible_default_ipv6['gateway'] is defined %}true{% else %}false{% endif %}"
+    ipv6_support: "{{ ansible_default_ipv6['gateway'] is defined }}"
   tags: always
 
 - name: Check size of MTU
