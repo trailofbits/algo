@@ -238,8 +238,10 @@ class TestComprehensiveBooleanScan:
 
         for yaml_file in self.get_yaml_files():
             # Skip files that aren't Ansible playbooks/tasks/vars
-            if not any(part in str(yaml_file) for part in ['tasks', 'vars', 'defaults', 'handlers', 'meta', 'playbooks']) \
-               and yaml_file.name not in ['main.yml', 'users.yml', 'server.yml', 'input.yml']:
+            parts_to_check = ['tasks', 'vars', 'defaults', 'handlers', 'meta', 'playbooks']
+            main_files = ['main.yml', 'users.yml', 'server.yml', 'input.yml']
+            if not any(part in str(yaml_file) for part in parts_to_check) \
+               and yaml_file.name not in main_files:
                 continue
 
             with open(yaml_file) as f:
@@ -256,7 +258,8 @@ class TestComprehensiveBooleanScan:
                         # Check if it's a known safe pattern
                         if not any(safe in line for safe in safe_patterns):
                             # This is a real issue that would break Ansible 12
-                            issues.append(f"{yaml_file.relative_to(Path(__file__).parent.parent.parent)}:{i+1}: {description} - {stripped_line}")
+                            rel_path = yaml_file.relative_to(Path(__file__).parent.parent.parent)
+                            issues.append(f"{rel_path}:{i+1}: {description} - {stripped_line}")
 
         # All Algo code should be fixed
         assert not issues, "Found boolean type issues that would break Ansible 12:\n" + "\n".join(issues[:10])
@@ -270,8 +273,9 @@ class TestComprehensiveBooleanScan:
 
         # Should use 'is defined', not string literals
         assert 'is defined' in content, "facts.yml should use 'is defined'"
-        assert 'ipv6_support: "{% if ansible_default_ipv6[\'gateway\'] is defined %}true{% else %}false{% endif %}"' not in content, \
-            "facts.yml still has the old string boolean pattern"
+        old_pattern = 'ipv6_support: "{% if ansible_default_ipv6[\'gateway\'] is defined %}'
+        old_pattern += 'true{% else %}false{% endif %}"'
+        assert old_pattern not in content, "facts.yml still has the old string boolean pattern"
 
         # Check input.yml
         input_file = Path(__file__).parent.parent.parent / "input.yml"
