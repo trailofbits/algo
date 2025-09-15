@@ -26,6 +26,6 @@
     algo_scaleway_token: "{{ scaleway_token | default(_scaleway_token.user_input) | default(lookup('env', 'SCW_TOKEN'), true) }}"
     algo_region: >-
       {% if region is defined %}{{ region }}
-      {%- elif _algo_region.user_input %}{{ scaleway_regions[_algo_region.user_input | int -1 ]['alias'] }}
+      {%- elif _algo_region.user_input %}{{ scaleway_regions[_algo_region.user_input | int - 1]['alias'] }}
       {%- else %}{{ scaleway_regions.0.alias }}{% endif %}
   no_log: true

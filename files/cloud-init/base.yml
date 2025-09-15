@@ -30,7 +30,7 @@ users:
     shell: /bin/bash
     lock_passwd: true
     ssh_authorized_keys:
-      - "{{ lookup('file', '{{ SSH_keys.public }}') }}"
+      - "{{ lookup('file', SSH_keys.public) }}"
 
 write_files:
   - path: /etc/ssh/sshd_config

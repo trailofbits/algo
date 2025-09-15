@@ -13,11 +13,11 @@
     credentials_file_path: >-
       {{ gce_credentials_file | default(_gce_credentials_file.user_input|default(None)) |
          default(lookup('env', 'GCE_CREDENTIALS_FILE_PATH'), true) }}
-    ssh_public_key_lookup: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
+    ssh_public_key_lookup: "{{ lookup('file', SSH_keys.public) }}"
   no_log: true
 
 - set_fact:
-    credentials_file_lookup: "{{ lookup('file', '{{ credentials_file_path }}') }}"
+    credentials_file_lookup: "{{ lookup('file', credentials_file_path) }}"
   no_log: true
 
 - set_fact:
@@ -66,7 +66,7 @@
   set_fact:
     algo_region: >-
       {% if region is defined %}{{ region }}
-      {%- elif _gce_region.user_input %}{{ gce_regions[_gce_region.user_input | int -1 ] }}
+      {%- elif _gce_region.user_input %}{{ gce_regions[_gce_region.user_input | int - 1] }}
       {%- else %}{{ gce_regions[default_region | int - 1] }}{% endif %}
 
 - name: Get zones

@@ -82,8 +82,8 @@
     - name: Set the default region
       set_fact:
         default_region: >-
-          {% for r in aws_regions %}
-          {%- if r['region_name'] == "us-east-1" %}{{ loop.index }}{% endif %}
+          {%- for r in aws_regions -%}
+          {%- if r['region_name'] == "us-east-1" %}{{ loop.index }}{% endif -%}
           {%- endfor %}
 
     - pause:
@@ -102,9 +102,7 @@
 - name: Set algo_region and stack_name facts
   set_fact:
     algo_region: >-
-      {% if region is defined %}{{ region }}
-      {%- elif _algo_region.user_input %}{{ aws_regions[_algo_region.user_input | int -1 ]['region_name'] }}
-      {%- else %}{{ aws_regions[default_region | int - 1]['region_name'] }}{% endif %}
+      {%- if region is defined -%}{{ region }}{%- elif _algo_region.user_input -%}{{ aws_regions[_algo_region.user_input | int - 1]['region_name'] }}{%- else -%}{{ aws_regions[default_region | int - 1]['region_name'] }}{%- endif -%}
     stack_name: "{{ algo_server_name | replace('.', '-') }}"
 
 - block:
@@ -131,5 +129,5 @@
       register: _use_existing_eip
 
     - set_fact:
-        existing_eip: "{{ available_eip_addresses[_use_existing_eip.user_input | int -1 ]['allocation_id'] }}"
+        existing_eip: "{{ available_eip_addresses[_use_existing_eip.user_input | int - 1]['allocation_id'] }}"
   when: cloud_providers.ec2.use_existing_eip

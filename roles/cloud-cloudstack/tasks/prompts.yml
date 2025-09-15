@@ -54,8 +54,8 @@
     - name: Set the default zone
       set_fact:
         default_zone: >-
-          {% for z in cs_zones %}
-          {%- if z['name'] == "ch-gva-2" %}{{ loop.index }}{% endif %}
+          {%- for z in cs_zones -%}
+          {%- if z['name'] == "ch-gva-2" %}{{ loop.index }}{% endif -%}
           {%- endfor %}
 
     - pause:
