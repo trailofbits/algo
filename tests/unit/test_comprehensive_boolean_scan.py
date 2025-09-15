@@ -259,7 +259,7 @@ class TestComprehensiveBooleanScan:
                             issues.append(f"{yaml_file.relative_to(Path(__file__).parent.parent.parent)}:{i+1}: {description} - {stripped_line}")
 
         # All Algo code should be fixed
-        assert not issues, f"Found boolean type issues that would break Ansible 12:\n" + "\n".join(issues[:10])
+        assert not issues, "Found boolean type issues that would break Ansible 12:\n" + "\n".join(issues[:10])
 
     def test_verify_our_fixes_are_correct(self):
         """Verify our specific fixes are in place and correct."""
