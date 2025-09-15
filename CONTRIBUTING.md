@@ -17,6 +17,7 @@
 
 * Clone the repository: `git clone https://github.com/trailofbits/algo.git`
 * Run Algo: `./algo` (dependencies installed automatically via uv)
+* Install pre-commit hooks: `uv run pre-commit install` (optional, for contributors)
 * For local testing, consider using Docker or a cloud provider test instance
 
 Thanks!
