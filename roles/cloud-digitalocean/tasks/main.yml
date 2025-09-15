@@ -6,7 +6,7 @@
   digital_ocean_sshkey:
     oauth_token: "{{ algo_do_token }}"
     name: "{{ SSH_keys.comment }}"
-    ssh_pub_key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
+    ssh_pub_key: "{{ lookup('file', SSH_keys.public) }}"
   register: do_ssh_key
 
 - name: Creating a droplet...

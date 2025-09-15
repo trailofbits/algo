@@ -13,7 +13,7 @@
 
 - name: Set facts for mobileconfigs
   set_fact:
-    PayloadContentCA: "{{ lookup('file' , '{{ ipsec_pki_path }}/cacert.pem')|b64encode }}"
+    PayloadContentCA: "{{ lookup('file', ipsec_pki_path + '/cacert.pem') | b64encode }}"
 
 - name: Build the mobileconfigs
   template:

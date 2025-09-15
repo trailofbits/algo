@@ -7,9 +7,7 @@
 
 - set_fact:
     algo_region: >-
-      {% if region is defined %}{{ region }}
-      {%- elif _algo_region.user_input %}{{ azure_regions[_algo_region.user_input | int -1 ]['name'] }}
-      {%- else %}{{ azure_regions[default_region | int - 1]['name'] }}{% endif %}
+      {% if region is defined %}{{ region }}{%- elif _algo_region.user_input %}{{ azure_regions[_algo_region.user_input | int - 1]['name'] }}{%- else %}{{ azure_regions[default_region | int - 1]['name'] }}{% endif %}
 
 - name: Create AlgoVPN Server
   azure_rm_deployment:
@@ -24,7 +22,7 @@
     location: "{{ algo_region }}"
     parameters:
       sshKeyData:
-        value: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
+        value: "{{ lookup('file', SSH_keys.public) }}"
       WireGuardPort:
         value: "{{ wireguard_port }}"
       vmSize:

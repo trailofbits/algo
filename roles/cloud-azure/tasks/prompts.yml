@@ -10,9 +10,7 @@
     - name: Set the default region
       set_fact:
         default_region: >-
-          {% for r in azure_regions %}
-          {%- if r['name'] == "eastus" %}{{ loop.index }}{% endif %}
-          {%- endfor %}
+          {% for r in azure_regions %}{%- if r['name'] == "eastus" %}{{ loop.index }}{% endif %}{%- endfor %}
 
     - pause:
         prompt: |

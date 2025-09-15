@@ -44,9 +44,7 @@
         - name: Set facts based on the input
           set_fact:
             algo_server: >-
-              {% if server is defined %}{{ server }}
-              {%- elif _server.user_input %}{{ server_list[_server.user_input | int -1 ].server }}
-              {%- else %}omit{% endif %}
+              {% if server is defined %}{{ server }}{%- elif _server.user_input %}{{ server_list[_server.user_input | int - 1].server }}{%- else %}omit{% endif %}
 
         - name: Import host specific variables
           include_vars:
@@ -64,9 +62,7 @@
             - name: Set facts based on the input
               set_fact:
                 CA_password: >-
-                  {% if ca_password is defined %}{{ ca_password }}
-                  {%- elif _ca_password.user_input %}{{ _ca_password.user_input }}
-                  {%- else %}omit{% endif %}
+                  {%- if ca_password is defined -%}{{ ca_password }}{%- elif _ca_password.user_input -%}{{ _ca_password.user_input }}{%- else -%}omit{%- endif -%}
 
         - name: Local pre-tasks
           import_tasks: playbooks/cloud-pre.yml
@@ -114,7 +110,7 @@
               - "{{ congrats.common.split('\n') }}"
               - "    {{ congrats.p12_pass if algo_ssh_tunneling or ipsec_enabled else '' }}"
               - "    {{ congrats.ca_key_pass if algo_store_pki and ipsec_enabled else '' }}"
-              - "    {{ congrats.ssh_access if algo_provider != 'local' else ''}}"
+              - "    {{ congrats.ssh_access if algo_provider != 'local' else '' }}"
           tags: always
       rescue:
         - include_tasks: playbooks/rescue.yml

@@ -1,7 +1,38 @@
 #!/usr/bin/env python3
 """
-Comprehensive scan for any remaining string boolean issues in the codebase.
-This ensures we haven't missed any other instances that could break Ansible 12.
+Test suite to prevent Ansible 12+ boolean type errors in Algo VPN codebase.
+
+Background:
+-----------
+Ansible 12.0.0 introduced strict boolean type checking that breaks deployments
+when string values like "true" or "false" are used in conditionals. This causes
+errors like: "Conditional result (True) was derived from value of type 'str'"
+
+What This Test Protects Against:
+---------------------------------
+1. String literals "true"/"false" being used instead of actual booleans
+2. Bare true/false in Jinja2 else clauses (should be {{ true }}/{{ false }})
+3. String comparisons in when: conditions (e.g., var == "true")
+4. Variables being set to string booleans instead of actual booleans
+
+Test Scope:
+-----------
+- Only tests Algo's own code (roles/, playbooks/, etc.)
+- Excludes external dependencies (.env/, ansible_collections/)
+- Excludes CloudFormation templates which require string booleans
+- Excludes test files which may use different patterns
+
+Mutation Testing Verified:
+--------------------------
+All tests have been verified to catch their target issues through mutation testing:
+- Introducing bare 'false' in else clause → caught by test_no_bare_false_in_jinja_else
+- Using string boolean in facts.yml → caught by test_verify_our_fixes_are_correct
+- Adding string boolean assignments → caught by test_no_other_problematic_patterns
+
+Related Issues:
+---------------
+- PR #14834: Fixed initial boolean type issues for Ansible 12
+- Issue #14835: Fixed double-templating issues exposed by Ansible 12
 """
 
 import re
@@ -12,13 +43,57 @@ class TestComprehensiveBooleanScan:
     """Scan entire codebase for potential string boolean issues."""
 
     def get_yaml_files(self):
-        """Get all YAML files in the project."""
+        """Get all YAML files in the Algo project, excluding external dependencies."""
         root = Path(__file__).parent.parent.parent
         yaml_files = []
-        for pattern in ['**/*.yml', '**/*.yaml']:
-            yaml_files.extend(root.glob(pattern))
-        # Exclude test files and vendor directories
-        return [f for f in yaml_files if 'test' not in str(f) and '.venv' not in str(f)]
+
+        # Define directories to scan (Algo's actual code)
+        algo_dirs = [
+            'roles',
+            'playbooks',
+            'library',
+            'files/cloud-init',  # Include cloud-init templates but not CloudFormation
+        ]
+
+        # Add root-level YAML files
+        yaml_files.extend(root.glob('*.yml'))
+        yaml_files.extend(root.glob('*.yaml'))
+
+        # Add YAML files from Algo directories
+        for dir_name in algo_dirs:
+            dir_path = root / dir_name
+            if dir_path.exists():
+                yaml_files.extend(dir_path.glob('**/*.yml'))
+                yaml_files.extend(dir_path.glob('**/*.yaml'))
+
+        # Exclude patterns
+        excluded = [
+            '.venv',           # Virtual environment
+            '.env',            # Another virtual environment pattern
+            'venv',            # Yet another virtual environment
+            'test',            # Test files (but keep our own tests)
+            'molecule',        # Molecule test files
+            'site-packages',   # Python packages
+            'ansible_collections',  # External Ansible collections
+            'stack.yaml',      # CloudFormation templates (use string booleans by design)
+            'stack.yml',       # CloudFormation templates
+            '.git',            # Git directory
+            '__pycache__',     # Python cache
+        ]
+
+        # Filter out excluded paths and CloudFormation templates
+        filtered = []
+        for f in yaml_files:
+            path_str = str(f)
+            # Skip if path contains any excluded pattern
+            if any(exc in path_str for exc in excluded):
+                continue
+            # Skip CloudFormation templates in files/ directories
+            if '/files/' in path_str and f.name in ['stack.yaml', 'stack.yml']:
+                continue
+            filtered.append(f)
+
+        return filtered
 
     def test_no_string_true_false_in_set_fact(self):
         """Scan all YAML files for set_fact with string 'true'/'false'."""
@@ -140,8 +215,8 @@ class TestComprehensiveBooleanScan:
                     assert "'false'" not in when_line, f"String comparison in {test_file.name}: {when_line}"
 
     def test_no_other_problematic_patterns(self):
-        """Look for other patterns that might cause boolean type issues."""
-        # Patterns that could indicate boolean type issues
+        """Look for patterns that would cause Ansible 12 boolean type issues in Algo code."""
+        # These patterns would break Ansible 12's strict boolean checking
         problematic_patterns = [
             (r':\s*["\']true["\']$', "Assigning string 'true' to variable"),
             (r':\s*["\']false["\']$', "Assigning string 'false' to variable"),
@@ -149,23 +224,45 @@ class TestComprehensiveBooleanScan:
             (r'default\(["\']false["\']\)', "Using string 'false' as default"),
         ]
 
+        # Known safe exceptions in Algo
+        safe_patterns = [
+            'booleans_map',     # This maps string inputs to booleans
+            'test_',            # Test files may use different patterns
+            'molecule',         # Molecule tests
+            'ANSIBLE_',         # Environment variables are strings
+            'validate_certs',   # Some modules accept string booleans
+            'Default:',         # CloudFormation parameter defaults
+        ]
+
         issues = []
 
         for yaml_file in self.get_yaml_files():
+            # Skip files that aren't Ansible playbooks/tasks/vars
+            parts_to_check = ['tasks', 'vars', 'defaults', 'handlers', 'meta', 'playbooks']
+            main_files = ['main.yml', 'users.yml', 'server.yml', 'input.yml']
+            if not any(part in str(yaml_file) for part in parts_to_check) \
+               and yaml_file.name not in main_files:
+                continue
+
             with open(yaml_file) as f:
                 lines = f.readlines()
 
             for i, line in enumerate(lines):
+                # Skip comments and empty lines
+                stripped_line = line.strip()
+                if not stripped_line or stripped_line.startswith('#'):
+                    continue
+
                 for pattern, description in problematic_patterns:
                     if re.search(pattern, line):
-                        # Check if it's not in a comment
-                        if not line.strip().startswith('#'):
-                            # Also exclude some known safe patterns
-                            if 'booleans_map' not in line and 'test' not in yaml_file.name.lower():
-                                issues.append(f"{yaml_file.name}:{i+1}: {description} - {line.strip()}")
+                        # Check if it's a known safe pattern
+                        if not any(safe in line for safe in safe_patterns):
+                            # This is a real issue that would break Ansible 12
+                            rel_path = yaml_file.relative_to(Path(__file__).parent.parent.parent)
+                            issues.append(f"{rel_path}:{i+1}: {description} - {stripped_line}")
 
-        # We expect no issues with our fix
-        assert not issues, "Found potential boolean type issues:\n" + "\n".join(issues[:10])  # Limit output
+        # All Algo code should be fixed
+        assert not issues, "Found boolean type issues that would break Ansible 12:\n" + "\n".join(issues[:10])
 
     def test_verify_our_fixes_are_correct(self):
         """Verify our specific fixes are in place and correct."""
@@ -176,8 +273,9 @@ class TestComprehensiveBooleanScan:
 
         # Should use 'is defined', not string literals
         assert 'is defined' in content, "facts.yml should use 'is defined'"
-        assert 'ipv6_support: "{% if ansible_default_ipv6[\'gateway\'] is defined %}true{% else %}false{% endif %}"' not in content, \
-            "facts.yml still has the old string boolean pattern"
+        old_pattern = 'ipv6_support: "{% if ansible_default_ipv6[\'gateway\'] is defined %}'
+        old_pattern += 'true{% else %}false{% endif %}"'
+        assert old_pattern not in content, "facts.yml still has the old string boolean pattern"
 
         # Check input.yml
         input_file = Path(__file__).parent.parent.parent / "input.yml"
