@@ -24,7 +24,7 @@ installRequirements() {
   apt-get install \
     curl \
     jq -y
-  
+
   # Install uv
   curl -LsSf https://astral.sh/uv/install.sh | sh
   export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
@@ -51,7 +51,7 @@ tryGetMetadata() {
   url="$1"
   headers="$2"
   response=""
-  
+
   # Try up to 2 times
   for attempt in 1 2; do
     if [ -n "$headers" ]; then
@@ -59,17 +59,17 @@ tryGetMetadata() {
     else
       response="$(curl -s --connect-timeout 5 --max-time "${METADATA_TIMEOUT}" "$url" || true)"
     fi
-    
+
     # If we got a response, return it
     if [ -n "$response" ]; then
       echo "$response"
       return 0
     fi
-    
+
     # Wait before retry (only on first attempt)
     [ $attempt -eq 1 ] && sleep 2
   done
-  
+
   # Return empty string if all attempts failed
   echo ""
   return 1
@@ -78,7 +78,7 @@ tryGetMetadata() {
 publicIpFromMetadata() {
   # Set default timeout from environment or use 20 seconds
   METADATA_TIMEOUT="${METADATA_TIMEOUT:-20}"
-  
+
   if tryGetMetadata "http://169.254.169.254/metadata/v1/vendor-data" "" | grep DigitalOcean >/dev/null; then
     ENDPOINT="$(tryGetMetadata "http://169.254.169.254/metadata/v1/interfaces/public/0/ipv4/address" "")"
   elif test "$(tryGetMetadata "http://169.254.169.254/latest/meta-data/services/domain" "")" = "amazonaws.com"; then

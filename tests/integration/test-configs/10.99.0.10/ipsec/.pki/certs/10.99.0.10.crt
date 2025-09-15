@@ -22,19 +22,19 @@ Certificate:
                 ASN1 OID: secp384r1
                 NIST CURVE: P-384
         X509v3 extensions:
-            X509v3 Basic Constraints: 
+            X509v3 Basic Constraints:
                 CA:FALSE
-            X509v3 Subject Key Identifier: 
+            X509v3 Subject Key Identifier:
                 8A:CC:04:6D:D6:3F:3A:3B:BF:06:01:92:27:48:76:08:26:D2:CB:22
-            X509v3 Authority Key Identifier: 
+            X509v3 Authority Key Identifier:
                 keyid:BF:FE:69:38:63:80:19:E9:D6:5D:38:1D:23:E7:61:8C:AF:4A:E8:AD
                 DirName:/CN=10.99.0.10
                 serial:61:0F:7D:60:6B:04:EE:30:EB:0E:AF:77:59:34:D6:32:46:8C:EC:85
-            X509v3 Extended Key Usage: 
+            X509v3 Extended Key Usage:
                 TLS Web Server Authentication, TLS Web Client Authentication, ipsec Internet Key Exchange
-            X509v3 Key Usage: 
+            X509v3 Key Usage:
                 Digital Signature, Key Encipherment
-            X509v3 Subject Alternative Name: 
+            X509v3 Subject Alternative Name:
                 IP Address:10.99.0.10
     Signature Algorithm: ecdsa-with-SHA256
     Signature Value:

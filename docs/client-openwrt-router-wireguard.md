@@ -27,7 +27,7 @@ This configuration has been verified on TP-Link TL-WR1043ND and TP-Link Archer C
 4. Click "Update lists" to refresh the package database
 5. Search for and install these packages:
    - `wireguard-tools`
-   - `kmod-wireguard` 
+   - `kmod-wireguard`
    - `luci-app-wireguard`
    - `wireguard`
    - `kmod-crypto-sha256`

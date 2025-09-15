@@ -3,7 +3,7 @@
 .github/
 .gitignore
 
-# Development environment  
+# Development environment
 .env
 .venv/
 .ruff_cache/

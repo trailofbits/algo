@@ -8,7 +8,7 @@ UV_INSTALL_METHOD=""
 # Function to install uv via package managers (most secure)
 install_uv_via_package_manager() {
     echo "Attempting to install uv via system package manager..."
-    
+
     if command -v brew &> /dev/null; then
         echo "Using Homebrew..."
         brew install uv && UV_INSTALL_METHOD="Homebrew" && return 0
@@ -31,7 +31,7 @@ install_uv_via_package_manager() {
         echo "Using scoop..."
         scoop install uv && UV_INSTALL_METHOD="scoop" && return 0
     fi
-    
+
     return 1
 }
 
@@ -41,7 +41,7 @@ install_uv_ubuntu_alternatives() {
     if ! command -v lsb_release &> /dev/null || [[ "$(lsb_release -si)" != "Ubuntu" ]]; then
         return 1  # Not Ubuntu, skip these options
     fi
-    
+
     echo ""
     echo "Ubuntu detected. Additional trusted installation options available:"
     echo ""
@@ -54,7 +54,7 @@ install_uv_ubuntu_alternatives() {
     echo ""
     echo "3. Continue to official installer script download"
     echo ""
-    
+
     while true; do
         read -r -p "Choose installation method (1/2/3): " choice
         case $choice in
@@ -104,14 +104,14 @@ install_uv_via_download() {
     echo "  3. Verify checksums and install manually"
     echo "  4. Then run: ./algo"
     echo ""
-    
+
     read -p "Continue with script download? (y/N): " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         echo "Installation cancelled. Please install uv manually and retry."
         exit 1
     fi
-    
+
     echo "Downloading uv installation script..."
     if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "linux-gnu" && -n "${WSL_DISTRO_NAME:-}" ]] || uname -s | grep -q "MINGW\|MSYS"; then
         # Windows (Git Bash/WSL/MINGW) - use versioned installer
@@ -127,7 +127,7 @@ install_uv_via_download() {
 # Check if uv is installed, if not, install it securely
 if ! command -v uv &> /dev/null; then
     echo "uv (Python package manager) not found. Installing..."
-    
+
     # Try package managers first (most secure)
     if ! install_uv_via_package_manager; then
         # Try Ubuntu-specific alternatives if available
@@ -136,26 +136,26 @@ if ! command -v uv &> /dev/null; then
             install_uv_via_download
         fi
     fi
-    
+
     # Reload PATH to find uv (includes pipx, cargo, and snap paths)
     # Note: This PATH change only affects the current shell session.
     # Users may need to restart their terminal for subsequent runs.
     export PATH="$HOME/.local/bin:$HOME/.cargo/bin:/snap/bin:$PATH"
-    
+
     # Verify installation worked
     if ! command -v uv &> /dev/null; then
         echo "Error: uv installation failed. Please restart your terminal and try again."
         echo "Or install manually from: https://docs.astral.sh/uv/getting-started/installation/"
         exit 1
     fi
-    
+
     echo "✓ uv installed successfully via ${UV_INSTALL_METHOD}!"
 fi
 
 # Run the appropriate playbook
 case "$1" in
-  update-users) 
+  update-users)
     uv run ansible-playbook users.yml "${@:2}" -t update-users ;;
-  *) 
+  *)
     uv run ansible-playbook main.yml "${@}" ;;
 esac

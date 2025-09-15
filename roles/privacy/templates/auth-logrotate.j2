@@ -8,16 +8,16 @@
     rotate 2
     maxage {{ privacy_log_rotation.max_age | int // 2 }}
     size {{ privacy_log_rotation.max_size // 2 }}M
-    
+
     daily
     missingok
     notifempty
     compress
     delaycompress
-    
+
     create 0640 syslog adm
     copytruncate
-    
+
     postrotate
         if [ -f /var/run/rsyslogd.pid ]; then
             kill -HUP `cat /var/run/rsyslogd.pid`

@@ -10,7 +10,7 @@ If you want to try Algo but don't wish to install anything on your own system, y
     cd algo
     ./algo
     ```
-    
+
     The first time you run `./algo`, it will automatically install all required dependencies. Google Cloud Shell already has most tools available, making this even faster than on your local system.
 
 3. Once Algo has completed, retrieve a copy of the configuration files that were created to your local system. While still in the Algo directory, run:

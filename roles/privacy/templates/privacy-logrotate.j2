@@ -15,36 +15,36 @@
 {
     # Rotate {{ privacy_log_rotation.rotate_count }} times before deletion
     rotate {{ privacy_log_rotation.rotate_count }}
-    
+
     # Maximum age in days
     maxage {{ privacy_log_rotation.max_age }}
-    
+
     # Maximum size per file
     size {{ privacy_log_rotation.max_size }}M
-    
+
     {% if privacy_log_rotation.daily_rotation %}
     # Force daily rotation
     daily
     {% endif %}
-    
+
     {% if privacy_log_rotation.compress %}
     # Compress rotated files
     compress
     delaycompress
     {% endif %}
-    
+
     # Missing files are ok (not all systems have all logs)
     missingok
-    
+
     # Don't rotate if empty
     notifempty
-    
+
     # Create new files with specific permissions
     create 0640 syslog adm
-    
+
     # Truncate original file after rotation
     copytruncate
-    
+
     # Execute after rotation
     postrotate
         # Send SIGHUP to rsyslog

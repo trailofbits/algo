@@ -93,7 +93,7 @@ cd algo
 ./algo
 ```
 
-**Pros**: 
+**Pros**:
 - Uses the standard Unix `./algo` script
 - No WSL setup required
 - Familiar Unix-like environment

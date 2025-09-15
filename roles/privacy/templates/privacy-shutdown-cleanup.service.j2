@@ -15,15 +15,15 @@ ExecStart=/bin/true
 ExecStop=/bin/bash -c '
     # Clear all logs
     find /var/log -type f -name "*.log" -exec truncate -s 0 {} \; 2>/dev/null || true;
-    
+
     # Clear rotated logs
     find /var/log -type f \( -name "*.log.*" -o -name "*.gz" \) -delete 2>/dev/null || true;
-    
+
     # Clear systemd journal
     if [ -d /var/log/journal ]; then
         rm -rf /var/log/journal/* 2>/dev/null || true;
     fi;
-    
+
     # Clear bash history
     for user_home in /home/* /root; do
         if [ -d "$user_home" ]; then
@@ -31,10 +31,10 @@ ExecStop=/bin/bash -c '
             rm -f "$user_home"/.zsh_history 2>/dev/null || true;
         fi;
     done;
-    
+
     # Clear temporary files
     rm -rf /tmp/* /var/tmp/* 2>/dev/null || true;
-    
+
     # Sync to ensure changes are written
     sync;
 '

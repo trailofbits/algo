@@ -79,6 +79,10 @@ ignore = [
 dev-dependencies = [
     "pytest>=8.0.0",
     "pytest-xdist>=3.0.0",  # Parallel test execution
+    "pre-commit>=4.0.0",   # Git hooks for code quality
+    "ruff>=0.8.0",         # Python linter and formatter
+    "yamllint>=1.35.0",    # YAML linter
+    "ansible-lint>=24.0.0", # Ansible linter
 ]
 
 [tool.pytest.ini_options]

@@ -13,11 +13,11 @@ function Test-RunningInWSL {
 # Function to run Algo in WSL
 function Invoke-AlgoInWSL {
     param($Arguments)
-    
+
     Write-Host "NOTICE: Ansible requires a Unix-like environment and cannot run natively on Windows."
     Write-Host "Attempting to run Algo via Windows Subsystem for Linux (WSL)..."
     Write-Host ""
-    
+
     if (-not (Get-Command wsl -ErrorAction SilentlyContinue)) {
         Write-Host "ERROR: WSL (Windows Subsystem for Linux) is not installed." -ForegroundColor Red
         Write-Host ""
@@ -38,7 +38,7 @@ function Invoke-AlgoInWSL {
         Write-Host "https://github.com/trailofbits/algo/blob/master/docs/deploy-from-windows.md"
         exit 1
     }
-    
+
     # Check if any WSL distributions are installed and running
     Write-Host "Checking for WSL Linux distributions..."
     $wslList = wsl -l -v 2>$null
@@ -52,13 +52,13 @@ function Invoke-AlgoInWSL {
         Write-Host "Then restart your computer and try again."
         exit 1
     }
-    
+
     Write-Host "Successfully found WSL. Launching Algo..." -ForegroundColor Green
     Write-Host ""
-    
+
     # Get current directory name for WSL path mapping
     $currentDir = Split-Path -Leaf (Get-Location)
-    
+
     try {
         if ($Arguments.Count -gt 0 -and $Arguments[0] -eq "update-users") {
             $remainingArgs = $Arguments[1..($Arguments.Count-1)] -join " "
@@ -67,7 +67,7 @@ function Invoke-AlgoInWSL {
             $allArgs = $Arguments -join " "
             wsl bash -c "cd /mnt/c/$currentDir 2>/dev/null || (echo 'Error: Cannot access directory in WSL. Make sure you are running from a Windows drive (C:, D:, etc.)' && exit 1) && ./algo $allArgs"
         }
-        
+
         if ($LASTEXITCODE -ne 0) {
             Write-Host ""
             Write-Host "Algo finished with exit code: $LASTEXITCODE" -ForegroundColor Yellow
@@ -93,7 +93,7 @@ try {
     # Check if we're actually running inside WSL
     if (Test-RunningInWSL) {
         Write-Host "Detected WSL environment. Running Algo using standard Unix approach..."
-        
+
         # Verify bash is available (should be in WSL)
         if (-not (Get-Command bash -ErrorAction SilentlyContinue)) {
             Write-Host "ERROR: Running in WSL but bash is not available." -ForegroundColor Red
@@ -102,15 +102,15 @@ try {
             Write-Host "  wsl" -ForegroundColor Cyan
             exit 1
         }
-        
+
         # Run the standard Unix algo script
         & bash -c "./algo $($Arguments -join ' ')"
         exit $LASTEXITCODE
     }
-    
+
     # We're on native Windows - need to use WSL
     Invoke-AlgoInWSL $Arguments
-    
+
 } catch {
     Write-Host ""
     Write-Host "UNEXPECTED ERROR:" -ForegroundColor Red

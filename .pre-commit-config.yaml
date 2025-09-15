@@ -1,0 +1,78 @@
+# See https://pre-commit.com for more information
+---
+# Apply to all files without committing:
+#   pre-commit run --all-files
+# Update this file:
+#   pre-commit autoupdate
+
+repos:
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+        exclude: '(files/cloud-init/base\.yml|roles/cloud-.*/files/stack\.yaml)'
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  # Python linting with ruff (fast, replaces many tools)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.6
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # YAML linting
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: [-c=.yamllint]
+        exclude: '.git/.*'
+
+  # Shell script linting
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        exclude: '.git/.*'
+
+  # Local hooks that use the project's installed tools
+  - repo: local
+    hooks:
+      - id: ansible-lint
+        name: Ansible-lint
+        entry: bash -c 'uv run ansible-lint --force-color || echo "Ansible-lint had issues - check output"'
+        language: system
+        types: [yaml]
+        files: \.(yml|yaml)$
+        exclude: '^(.git/|.github/|requirements\.yml)'
+        pass_filenames: false
+
+      - id: ansible-syntax
+        name: Ansible syntax check
+        entry: bash -c 'uv run ansible-playbook main.yml --syntax-check'
+        language: system
+        files: 'main\.yml|server\.yml|users\.yml'
+        pass_filenames: false
+
+# Configuration for the pre-commit tool itself
+default_language_version:
+  python: python3.11
+
+# Files to exclude globally
+exclude: |
+  (?x)^(
+    .env/.*|
+    .venv/.*|
+    .git/.*|
+    __pycache__/.*|
+    .*\.egg-info/.*
+  )$

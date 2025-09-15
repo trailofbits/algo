@@ -26,7 +26,7 @@ Cloud-init's YAML parser expects the exact string `#cloud-config` as the first l
 
 ## Historical Context
 
-- **Working**: All versions before PR #14775 (August 2025)  
+- **Working**: All versions before PR #14775 (August 2025)
 - **Broken**: PR #14775 "Apply ansible-lint improvements" added space by mistake
 - **Fixed**: PR #14801 restored correct format + added protections
 
