@@ -90,7 +90,7 @@ $ ./algo
     7. Vultr
     8. Scaleway
     9. OpenStack (DreamCompute optimised)
-    10. CloudStack (Exoscale optimised)
+    10. CloudStack
     11. Linode
     12. Install to existing Ubuntu server (for more advanced users)
 

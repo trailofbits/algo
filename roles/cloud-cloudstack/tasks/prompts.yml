@@ -34,9 +34,25 @@
         algo_cs_token: "{{ cs_secret | default(_cs_secret.user_input | default(None)) | default(lookup('env', 'CLOUDSTACK_SECRET'), true) }}"
         algo_cs_url: >-
           {{ cs_url | default(_cs_url.user_input|default(None)) |
-             default(lookup('env', 'CLOUDSTACK_ENDPOINT'), true) |
-             default('https://api.exoscale.com/compute', true) }}
+             default(lookup('env', 'CLOUDSTACK_ENDPOINT'), true) }}
       no_log: true
+
+    - name: Check for Exoscale API endpoint
+      fail:
+        msg: |
+          ERROR: Exoscale CloudStack API has been deprecated as of May 1, 2024.
+
+          Exoscale has migrated from CloudStack to their proprietary API v2, which is not compatible
+          with CloudStack-based tools. Algo no longer supports Exoscale deployments.
+
+          Please consider these alternative providers:
+          - Hetzner (provider: hetzner) - German provider with European coverage
+          - DigitalOcean (provider: digitalocean) - Has Amsterdam and Frankfurt regions
+          - Vultr (provider: vultr) - Multiple European locations
+          - Scaleway (provider: scaleway) - French provider
+
+          If you're using a different CloudStack provider, please provide the correct API endpoint.
+      when: "'exoscale.com' in algo_cs_url or 'exoscale.ch' in algo_cs_url"
 
     - name: Get zones on cloud
       cs_zone_info:
@@ -53,10 +69,7 @@
 
     - name: Set the default zone
       set_fact:
-        default_zone: >-
-          {%- for z in cs_zones -%}
-          {%- if z['name'] == "ch-gva-2" %}{{ loop.index }}{% endif -%}
-          {%- endfor %}
+        default_zone: "1"  # Default to first zone in the list
 
     - pause:
         prompt: |

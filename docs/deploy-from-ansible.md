@@ -291,11 +291,13 @@ You need to source the rc file prior to run Algo. Download it from the OpenStack
 
 ### CloudStack
 
+> **Note:** Exoscale is no longer supported as they deprecated their CloudStack API on May 1, 2024.
+
 Required variables:
 
 - [cs_config](https://trailofbits.github.io/algo/cloud-cloudstack.html): /path/to/.cloudstack.ini
-- cs_region: e.g. `exoscale`
-- cs_zones: e.g. `ch-gva2`
+- cs_region: your CloudStack region
+- cs_zones: your CloudStack zone
 
 The first two can also be defined in your environment, using the variables `CLOUDSTACK_CONFIG` and `CLOUDSTACK_REGION`.
 
