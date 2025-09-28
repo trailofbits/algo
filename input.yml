@@ -20,7 +20,7 @@
       - { name: Vultr, alias: vultr }
       - { name: Scaleway, alias: scaleway }
       - { name: OpenStack (DreamCompute optimised), alias: openstack }
-      - { name: CloudStack (Exoscale optimised), alias: cloudstack }
+      - { name: CloudStack, alias: cloudstack }
       - { name: Linode, alias: linode }
       - { name: Install to existing Ubuntu latest LTS server (for more advanced users), alias: local }
   vars_files:

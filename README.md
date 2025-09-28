@@ -31,7 +31,7 @@ See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo
 
 The easiest way to get an Algo server running is to run it on your local system or from [Google Cloud Shell](docs/deploy-from-cloudshell.md) and let it set up a _new_ virtual machine in the cloud for you.
 
-1. **Setup an account on a cloud hosting provider.** Algo supports [DigitalOcean](https://m.do.co/c/4d7f4ff9cfe4) (most user friendly), [Amazon Lightsail](https://aws.amazon.com/lightsail/), [Amazon EC2](https://aws.amazon.com/), [Vultr](https://www.vultr.com/), [Microsoft Azure](https://azure.microsoft.com/), [Google Compute Engine](https://cloud.google.com/compute/), [Scaleway](https://www.scaleway.com/), [DreamCompute](https://www.dreamhost.com/cloud/computing/), [Linode](https://www.linode.com) other OpenStack-based cloud hosting, [Exoscale](https://www.exoscale.com) or other CloudStack-based cloud hosting, or [Hetzner Cloud](https://www.hetzner.com/).
+1. **Setup an account on a cloud hosting provider.** Algo supports [DigitalOcean](https://m.do.co/c/4d7f4ff9cfe4) (most user friendly), [Amazon Lightsail](https://aws.amazon.com/lightsail/), [Amazon EC2](https://aws.amazon.com/), [Vultr](https://www.vultr.com/), [Microsoft Azure](https://azure.microsoft.com/), [Google Compute Engine](https://cloud.google.com/compute/), [Scaleway](https://www.scaleway.com/), [DreamCompute](https://www.dreamhost.com/cloud/computing/), [Linode](https://www.linode.com), other OpenStack-based cloud hosting, CloudStack-based cloud hosting, or [Hetzner Cloud](https://www.hetzner.com/).
 
 2. **Get a copy of Algo.** The Algo scripts will be run from your local system. There are two ways to get a copy:
 

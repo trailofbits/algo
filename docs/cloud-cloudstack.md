@@ -1,11 +1,15 @@
 ### Configuration file
 
-Algo scripts will ask you for the API detail. You need to fetch the API credentials and the endpoint from the provider control panel.
+> **⚠️ Important Note:** Exoscale is no longer supported as they deprecated their CloudStack API on May 1, 2024. Please use alternative providers like Hetzner, DigitalOcean, Vultr, or Scaleway.
 
-Example for Exoscale (European cloud provider exposing CloudStack API), visit https://portal.exoscale.com/u/<your@account>/account/profile/api to gather the required information: CloudStack api key and secret.
+Algo scripts will ask you for the API details. You need to fetch the API credentials and the endpoint from your CloudStack provider's control panel.
+
+For CloudStack providers, you'll need to set:
 
 ```bash
 export CLOUDSTACK_KEY="<your api key>"
 export CLOUDSTACK_SECRET="<your secret>"
-export CLOUDSTACK_ENDPOINT="https://api.exoscale.com/compute"
+export CLOUDSTACK_ENDPOINT="<your provider's API endpoint>"
 ```
+
+Make sure your provider supports the CloudStack API. Contact your provider for the correct API endpoint URL.
