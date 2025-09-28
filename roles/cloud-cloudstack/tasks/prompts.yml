@@ -12,7 +12,7 @@
 
     - pause:
         prompt: |
-          Enter the API ssecret (https://trailofbits.github.io/algo/cloud-cloudstack.html):
+          Enter the API secret (https://trailofbits.github.io/algo/cloud-cloudstack.html):
         echo: false
       register: _cs_secret
       when:
