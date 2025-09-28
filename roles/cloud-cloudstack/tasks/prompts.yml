@@ -23,7 +23,6 @@
     - pause:
         prompt: |
           Enter the API endpoint (https://trailofbits.github.io/algo/cloud-cloudstack.html)
-          [https://api.exoscale.com/compute]
       register: _cs_url
       when:
         - cs_url is undefined
