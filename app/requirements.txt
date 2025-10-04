@@ -1,0 +1,3 @@
+aiohttp==3.8.1
+ansible-runner==2.2.1
+boto3
