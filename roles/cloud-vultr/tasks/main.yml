@@ -28,8 +28,7 @@
     - name: Upload the startup script
       vultr.cloud.startup_script:
         name: algo-startup
-        script: |
-          {{ lookup('template', 'files/cloud-init/base.yml') }}
+        script: "{{ lookup('template', 'files/cloud-init/base.yml') | string }}"
 
     - name: Creating a server
       vultr.cloud.instance:
