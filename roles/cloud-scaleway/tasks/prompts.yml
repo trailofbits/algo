@@ -21,6 +21,20 @@
   register: _algo_region
   when: region is undefined
 
+- pause:
+    prompt: |
+      Enter your Scaleway Organization ID (also serves as your default Project ID)
+      You can find this in your Scaleway console:
+      1. Go to https://console.scaleway.com/organization/settings
+      2. Copy the Organization ID from the Organization Settings page
+
+      Note: For the default project, the Project ID is the same as the Organization ID.
+      (https://trailofbits.github.io/algo/cloud-scaleway.html)
+  register: _scaleway_org_id
+  when:
+    - scaleway_org_id is undefined
+    - lookup('env', 'SCW_DEFAULT_ORGANIZATION_ID')|length <= 0
+
 - name: Set scaleway facts
   set_fact:
     algo_scaleway_token: "{{ scaleway_token | default(_scaleway_token.user_input) | default(lookup('env', 'SCW_TOKEN'), true) }}"
@@ -28,4 +42,5 @@
       {% if region is defined %}{{ region }}
       {%- elif _algo_region.user_input %}{{ scaleway_regions[_algo_region.user_input | int - 1]['alias'] }}
       {%- else %}{{ scaleway_regions.0.alias }}{% endif %}
+    algo_scaleway_org_id: "{{ scaleway_org_id | default(_scaleway_org_id.user_input) | default(lookup('env', 'SCW_DEFAULT_ORGANIZATION_ID'), true) }}"
   no_log: true
