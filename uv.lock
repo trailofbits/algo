@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -951,7 +951,7 @@ wheels = [
 
 [[package]]
 name = "openstacksdk"
-version = "4.6.0"
+version = "4.8.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
@@ -969,9 +969,9 @@ dependencies = [
     { name = "requestsexceptions" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/52/7a/07813f7501792e6bd7e79a75cd94a5bbce20c7fd2679822d44397201b00a/openstacksdk-4.6.0.tar.gz", hash = "sha256:e47e166c4732e9aea65228e618d490e4be5df06526a1b95e2d5995d7d0977d3d", size = 1287222, upload-time = "2025-06-03T14:08:01.177Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/46/24/1167097740136e302c74043c1c6feecf8d757b052d7b457960e0dc60fa03/openstacksdk-4.8.0.tar.gz", hash = "sha256:4dc038e1c17d893005f3a0a8951456afd9d148f3f65d448f94adcceb278d7f31", size = 1309981, upload-time = "2025-11-13T13:59:59.614Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/56/e2/a4813d785c621eb9a61ef95874ac22833f88e5307dfb15532119c10a09a8/openstacksdk-4.6.0-py3-none-any.whl", hash = "sha256:0ea54ce3005d48c5134f77dce8df7dd6b4c52d2a103472abc99db19cd4382638", size = 1812803, upload-time = "2025-06-03T14:07:59.474Z" },
+    { url = "https://files.pythonhosted.org/packages/bc/45/87fa873f35abdf191d66d4821fe965f781e2d3e37e58883c6e23e95fa794/openstacksdk-4.8.0-py3-none-any.whl", hash = "sha256:7f7c438d418a4ee0c8737b1ac0859b3c1e8e21401677782415d21bce3324b9dd", size = 1849694, upload-time = "2025-11-13T13:59:57.634Z" },
 ]
 
 [[package]]
