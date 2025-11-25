@@ -24,11 +24,12 @@
 
         - name: Build list of installed servers
           set_fact:
-            server_list: >-
-              [{% for i in _configs_list.files %}
-                {% set config = lookup('file', i.path) | from_yaml %}
-                {{ {'server': config.server, 'IP_subject_alt_name': config.IP_subject_alt_name} }}
-              {% endfor %}]
+            server_list: "{{ server_list | default([]) + [ {'server': config.server, 'IP_subject_alt_name': config.IP_subject_alt_name} ] }}"
+          loop: "{{ _configs_list.files }}"
+          loop_control:
+            label: "{{ item.path }}"
+          vars:
+            config: "{{ lookup('file', item.path) | from_yaml }}"
 
         - name: Server address prompt
           pause:
