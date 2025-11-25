@@ -44,9 +44,7 @@ def test_scaleway_main_uses_project_parameter():
     assert 'organization: "{{' not in content, "Still using deprecated 'organization' parameter"
 
     # Should use Marketplace API for image lookup
-    # fmt: off
-    assert "api-marketplace.scaleway.com" in content, "Not using Scaleway Marketplace API for image lookup"  # CodeQL [py/incomplete-url-substring-sanitization] False positive: this is a test assertion, not URL validation
-    # fmt: on
+    assert "api-marketplace.scaleway.com" in content, "Not using Scaleway Marketplace API for image lookup"
 
     print("✓ Scaleway main.yml uses modern 'project' parameter")
 
@@ -71,9 +69,7 @@ def test_scaleway_prompts_collect_org_id():
     ), "Missing support for SCW_DEFAULT_ORGANIZATION_ID environment variable"
 
     # Should mention console.scaleway.com for finding the ID
-    # fmt: off
-    assert "console.scaleway.com" in content, "Missing instructions on where to find Organization ID"  # CodeQL [py/incomplete-url-substring-sanitization] False positive: this is a test assertion, not URL validation
-    # fmt: on
+    assert "console.scaleway.com" in content, "Missing instructions on where to find Organization ID"
 
     print("✓ Scaleway prompts.yml collects organization/project ID")
 
