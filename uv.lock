@@ -797,16 +797,16 @@ wheels = [
 
 [[package]]
 name = "linode-api4"
-version = "5.33.1"
+version = "5.38.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "deprecated" },
     { name = "polling" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0d/29/2afd9f9d60e3b69477c22757951fc2b785af48a0700c792fbb3d61977b8e/linode_api4-5.33.1.tar.gz", hash = "sha256:973c6c7d4d00a140b60128547de95fc9905729e7704fbd821a9640fe63231c99", size = 213339, upload-time = "2025-07-23T17:20:51.576Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6c/14/7755f000aa0d651729044e7c9daeae8a97d992fe787c67af3208b53ee370/linode_api4-5.38.0.tar.gz", hash = "sha256:879642b3f27de1457eab266036f6542ab63c58e0cbc1cb98c530dab3b7fc804d", size = 237942, upload-time = "2025-10-29T15:37:39.033Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/73/ad/709de241afeba5c14604991ccae283d0254e2fbb98761a12a6d19ebcaf46/linode_api4-5.33.1-py3-none-any.whl", hash = "sha256:f797d06eb6c2be99581d97f51a519382137494ba6ddcdee6b4886846571bb84f", size = 131141, upload-time = "2025-07-23T17:20:49.697Z" },
+    { url = "https://files.pythonhosted.org/packages/08/ec/3d8283c8205845655f4772dcfee06a2220739cfa6ed99aee5729ca787257/linode_api4-5.38.0-py3-none-any.whl", hash = "sha256:825dbed90b66b6383f30fc037654a2954ee6ea4f96a000b7ae28a006eda6b406", size = 140988, upload-time = "2025-10-29T15:37:37.602Z" },
 ]
 
 [[package]]
