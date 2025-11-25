@@ -29,10 +29,7 @@
 
 - name: Format regions
   set_fact:
-    regions: >-
-      [ {% for v in _vultr_regions.json['regions'] %}
-      {{ v }}{% if not loop.last %},{% endif %}
-      {% endfor %} ]
+    regions: "{{ _vultr_regions.json['regions'] }}"
 
 - name: Set regions as a fact
   set_fact:
