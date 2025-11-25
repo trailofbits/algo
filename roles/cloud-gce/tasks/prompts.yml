@@ -17,7 +17,7 @@
   no_log: true
 
 - set_fact:
-    credentials_file_lookup: "{{ lookup('file', credentials_file_path) }}"
+    credentials_file_lookup: "{{ lookup('file', credentials_file_path) | from_json }}"
   no_log: true
 
 - set_fact:
