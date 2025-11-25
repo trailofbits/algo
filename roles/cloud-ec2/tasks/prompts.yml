@@ -47,21 +47,25 @@
     - _file_secret_key is undefined or _file_secret_key|length <= 0
 
 # Set final credentials with proper precedence
+# Note: The 'true' parameter in default() is required for Ansible 12+ compatibility.
+# Without it, empty strings from env lookups stop the default chain since they're
+# "defined" values, not "undefined". The 'true' makes default() also trigger on
+# falsy values (empty strings, None).
 - set_fact:
     access_key: >-
       {{ aws_access_key
-         | default(lookup('env', 'AWS_ACCESS_KEY_ID'))
-         | default(_file_access_key)
-         | default(_aws_access_key.user_input | default(None)) }}
+         | default(lookup('env', 'AWS_ACCESS_KEY_ID'), true)
+         | default(_file_access_key, true)
+         | default(_aws_access_key.user_input | default(None), true) }}
     secret_key: >-
       {{ aws_secret_key
-         | default(lookup('env', 'AWS_SECRET_ACCESS_KEY'))
-         | default(_file_secret_key)
-         | default(_aws_secret_key.user_input | default(None)) }}
+         | default(lookup('env', 'AWS_SECRET_ACCESS_KEY'), true)
+         | default(_file_secret_key, true)
+         | default(_aws_secret_key.user_input | default(None), true) }}
     session_token: >-
       {{ aws_session_token
-         | default(lookup('env', 'AWS_SESSION_TOKEN'))
-         | default(_file_session_token)
+         | default(lookup('env', 'AWS_SESSION_TOKEN'), true)
+         | default(_file_session_token, true)
          | default('') }}
   no_log: true
 
