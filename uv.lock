@@ -641,15 +641,15 @@ wheels = [
 
 [[package]]
 name = "hcloud"
-version = "2.5.4"
+version = "2.11.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "python-dateutil" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b3/68/89fe80bccc47c46943120c8cb232289645f5d0cdfb0a93d5e8ad09ec2ffe/hcloud-2.5.4.tar.gz", hash = "sha256:2532e0d8b6e20fb5a90af5f8d36eb0039a197c2094d1d56fc7fce789a300025e", size = 125742, upload-time = "2025-07-09T09:52:01.789Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3b/27/153d53d9e0bd99ad367d26641b2d2c4943f28f5c4a600184d7b07003829e/hcloud-2.11.1.tar.gz", hash = "sha256:f212fe1f53cbf89edddac0e7005ec2eb021ea789f82be7097bd74cd705b29f2b", size = 138586, upload-time = "2025-11-14T13:03:37.453Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1c/d8/cddd1e1e42742527fc8d7d47cd8d7827176e1157c609e0e77bccb8583593/hcloud-2.5.4-py3-none-any.whl", hash = "sha256:a6b23104bfaaa1507dd222604f1bcb6e89601c26d0447f0b84a4cf8a808a9c73", size = 88330, upload-time = "2025-07-09T09:52:00.309Z" },
+    { url = "https://files.pythonhosted.org/packages/c0/e2/55b72775bcd2b1d2d50babd2c6e4a0e96f82085ad96831d571d20239a71b/hcloud-2.11.1-py3-none-any.whl", hash = "sha256:20473704c4b3abf4a59324fbdf33cf52623745a704a748df67e56fa0d81a024c", size = 98507, upload-time = "2025-11-14T13:03:35.879Z" },
 ]
 
 [[package]]
