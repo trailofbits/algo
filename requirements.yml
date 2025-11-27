@@ -2,6 +2,8 @@
 collections:
   - name: ansible.posix
     version: "==2.1.0"
+  - name: ansible.utils
+    version: ">=4.0.0"
   - name: community.general
     version: "==11.1.0"
   - name: community.crypto
