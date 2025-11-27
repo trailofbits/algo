@@ -12,7 +12,6 @@ dependencies = [
     "jinja2>=3.1.6",
     "netaddr==1.3.0",
     "pyyaml>=6.0.2",
-    "pyopenssl>=0.15",
     "segno>=1.6.0",
 ]
 
@@ -24,7 +23,6 @@ py-modules = []
 # Cloud provider dependencies (installed automatically based on provider selection)
 aws = [
     "boto3>=1.34.0",
-    "boto>=2.49.0",
 ]
 azure = [
     "azure-identity>=1.15.0",
