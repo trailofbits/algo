@@ -51,6 +51,32 @@
           include_vars:
             file: configs/{{ algo_server }}/.config.yml
 
+        - name: Test SSH connectivity to server
+          wait_for:
+            host: "{{ algo_server }}"
+            port: "{{ ansible_ssh_port | default(ssh_port) | int }}"
+            timeout: 10
+          register: ssh_check
+          ignore_errors: true
+          when: algo_server != 'localhost'
+
+        - name: Fail with helpful message if server unreachable
+          fail:
+            msg: |
+              Cannot connect to {{ algo_server }} on port {{ ansible_ssh_port | default(ssh_port) }}.
+
+              Possible causes:
+              - Server is not running (check your cloud provider console)
+              - IP address changed (common after EC2 restart without Elastic IP)
+              - Firewall/security group blocking port {{ ansible_ssh_port | default(ssh_port) }}
+
+              To diagnose:
+                nc -zv {{ algo_server }} {{ ansible_ssh_port | default(ssh_port) }}
+                ssh -vvv -p {{ ansible_ssh_port | default(ssh_port) }} -i configs/algo.pem {{ server_user | default('algo') }}@{{ algo_server }}
+          when:
+            - algo_server != 'localhost'
+            - ssh_check is failed
+
         - when: ipsec_enabled
           block:
             - name: CA password prompt
