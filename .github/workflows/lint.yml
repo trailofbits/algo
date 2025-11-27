@@ -11,7 +11,7 @@ jobs:
     name: Ansible linting
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@c2d88d3ecc89a9ef08eebf45d9637801dcee7eb5  # v5.0.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v5.0.1
         with:
           persist-credentials: false
       - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # v6.1.0
@@ -42,7 +42,7 @@ jobs:
     name: YAML linting
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@c2d88d3ecc89a9ef08eebf45d9637801dcee7eb5  # v5.0.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v5.0.1
         with:
           persist-credentials: false
 
@@ -56,7 +56,7 @@ jobs:
     name: Python linting
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@c2d88d3ecc89a9ef08eebf45d9637801dcee7eb5  # v5.0.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v5.0.1
         with:
           persist-credentials: false
       - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # v6.1.0
@@ -75,7 +75,7 @@ jobs:
     name: Shell script linting
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@c2d88d3ecc89a9ef08eebf45d9637801dcee7eb5  # v5.0.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v5.0.1
         with:
           persist-credentials: false
 
@@ -89,7 +89,7 @@ jobs:
     name: PowerShell script linting
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@c2d88d3ecc89a9ef08eebf45d9637801dcee7eb5  # v5.0.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v5.0.1
         with:
           persist-credentials: false
 
