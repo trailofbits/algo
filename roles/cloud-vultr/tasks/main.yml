@@ -3,6 +3,10 @@
   import_tasks: prompts.yml
 
 - block:
+    - name: Set cloud-init script as fact
+      set_fact:
+        algo_cloud_init_script: "{{ lookup('template', 'files/cloud-init/base.yml') }}"
+
     - name: Creating a firewall group
       vultr.cloud.firewall_group:
         name: "{{ algo_server_name }}"
@@ -28,8 +32,7 @@
     - name: Upload the startup script
       vultr.cloud.startup_script:
         name: algo-startup
-        script: |
-          {{ lookup('template', 'files/cloud-init/base.yml') }}
+        script: "{{ algo_cloud_init_script }}"
 
     - name: Creating a server
       vultr.cloud.instance:
