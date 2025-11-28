@@ -1,14 +1,43 @@
 ---
-- pause:
+- name: Display local installation warning
+  pause:
     prompt: |
-      https://trailofbits.github.io/algo/deploy-to-ubuntu.html
 
-      Local installation might break your server. Use at your own risk.
+      ======================================================================
+                          *** DESTRUCTIVE OPERATION ***
+      ======================================================================
 
-      Proceed? Press ENTER to continue or CTRL+C and A to abort...
-  when: not tests|default(false)|bool
-  tags:
-    - skip_ansible_lint
+      Algo is designed for DEDICATED VPN servers only.
+
+      This installation will:
+        - Replace all firewall rules (blocks most incoming traffic)
+        - Modify system network and DNS settings
+        - Install and configure VPN services
+
+      THERE IS NO UNINSTALL OPTION.
+
+      If this server runs other services (web, database, mail, etc.),
+      they will likely become inaccessible.
+
+      Recommended: Take a snapshot/backup before proceeding.
+
+      Documentation: https://trailofbits.github.io/algo/deploy-to-ubuntu.html
+
+      ======================================================================
+
+      Type 'yes' to confirm you understand the risks and want to proceed:
+  register: _local_warning_confirm
+  when:
+    - not tests | default(false) | bool
+    - not local_install_confirmed | default(false) | bool
+
+- name: Abort if not confirmed
+  fail:
+    msg: "Installation aborted by user. Your server was not modified."
+  when:
+    - not tests | default(false) | bool
+    - not local_install_confirmed | default(false) | bool
+    - _local_warning_confirm.user_input | default('') | lower != 'yes'
 
 - pause:
     prompt: |
