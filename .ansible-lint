@@ -53,10 +53,7 @@ verbosity: 1
 mock_modules:
   - gcp_compute_location_info
   - lightsail_region_facts
-  - linode_stackscript_v4
   - x25519_pubkey
-  - linode_v4
   - scaleway_compute
-  - digital_ocean_floating_ip
 
 # vim: ft=yaml

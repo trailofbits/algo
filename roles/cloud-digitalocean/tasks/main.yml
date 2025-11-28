@@ -32,7 +32,7 @@
 
 - block:
     - name: Create a Floating IP
-      digital_ocean_floating_ip:
+      community.digitalocean.digital_ocean_floating_ip:
         state: present
         oauth_token: "{{ algo_do_token }}"
         droplet_id: "{{ droplet.id }}"
