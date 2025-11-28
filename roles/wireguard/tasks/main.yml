@@ -1,16 +1,13 @@
 ---
-- name: Ensure the required directories exist
+- name: Ensure the required config directories exist
   file:
-    dest: "{{ item.path }}"
+    dest: "{{ item }}"
     state: directory
     recurse: true
-    mode: "{{ item.mode }}"
+    mode: "0755"
   with_items:
-    - { path: "{{ wireguard_pki_path }}/preshared", mode: "0700" }
-    - { path: "{{ wireguard_pki_path }}/private", mode: "0700" }
-    - { path: "{{ wireguard_pki_path }}/public", mode: "0700" }
-    - { path: "{{ wireguard_config_path }}/apple/ios", mode: "0755" }
-    - { path: "{{ wireguard_config_path }}/apple/macos", mode: "0755" }
+    - "{{ wireguard_config_path }}/apple/ios"
+    - "{{ wireguard_config_path }}/apple/macos"
   delegate_to: localhost
   become: false
 

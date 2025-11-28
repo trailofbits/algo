@@ -58,26 +58,23 @@
                 path: configs/{{ algo_server }}
               register: config_dir_stat
 
-            - name: Warn about local deployment permissions
-              debug:
+            - name: Fail on local deployment permission mismatch
+              fail:
                 msg: |
-                  LOCAL DEPLOYMENT DETECTED
+                  PERMISSION MISMATCH DETECTED
 
-                  For local deployments, file permissions must be consistent.
-                  Config directory is owned by: {{ config_dir_stat.stat.pw_name }}
+                  Config directory owner: {{ config_dir_stat.stat.pw_name }}
                   Current user: {{ ansible_user_id }}
-                  Running as root: {{ ansible_user_id == 'root' }}
 
-                  To avoid permission issues:
-                  - Always run update-users the same way as initial deployment
-                  - If you used sudo initially, use sudo for updates
-                  - If you didn't use sudo initially, don't use it for updates
+                  Running update-users with mismatched permissions will create
+                  files with inconsistent ownership, breaking future operations.
 
-                  If permissions are already mixed, fix with:
-                    sudo chown -R {{ config_dir_stat.stat.pw_name }} configs/{{ algo_server }}/
-              when: >
-                (ansible_user_id == 'root' and config_dir_stat.stat.pw_name != 'root') or
-                (ansible_user_id != 'root' and config_dir_stat.stat.pw_name == 'root')
+                  TO FIX: Run this command, then retry update-users:
+                    sudo chown -R {{ ansible_user_id }} configs/{{ algo_server }}/
+
+                  PREVENT: Always run update-users the same way as initial deployment
+                  (both with sudo, or both without sudo).
+              when: config_dir_stat.stat.pw_name != ansible_user_id
           when: algo_server == 'localhost' or algo_provider | default('') == 'local'
 
         - name: Test SSH connectivity to server
