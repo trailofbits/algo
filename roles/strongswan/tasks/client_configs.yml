@@ -30,8 +30,7 @@
     src: client_ipsec.conf.j2
     dest: "{{ ipsec_config_path }}/manual/{{ item }}.conf"
     mode: '0600'
-  loop:
-    - "{{ users }}"
+  loop: "{{ users }}"
 
 
 - name: Build the client ipsec secret file
@@ -39,8 +38,7 @@
     src: client_ipsec.secrets.j2
     dest: "{{ ipsec_config_path }}/manual/{{ item }}.secrets"
     mode: '0600'
-  loop:
-    - "{{ users }}"
+  loop: "{{ users }}"
 
 - name: Restrict permissions for the local private directories
   file:

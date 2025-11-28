@@ -106,9 +106,7 @@
         type: ECC
         curve: secp384r1
         mode: "0600"
-      loop:
-        - "{{ users }}"
-        - "{{ IP_subject_alt_name }}"
+      loop: "{{ users + [IP_subject_alt_name] }}"
       register: client_key_jobs
 
     # Server certificate with SAN extension - required for modern Apple devices
@@ -215,8 +213,7 @@
         src: "{{ ipsec_pki_path }}/private/{{ item }}.p12"
         dest: "{{ ipsec_config_path }}/manual/{{ item }}.p12"
         mode: '0600'
-      loop:
-        - "{{ users }}"
+      loop: "{{ users }}"
 
     - name: Build openssh public keys
       community.crypto.openssl_publickey:

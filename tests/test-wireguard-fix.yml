@@ -18,9 +18,7 @@
     - name: Generate keys (parallel) - simulating wg genkey
       command: echo "mock_private_key_for_{{ item }}"
       register: wg_genkey
-      loop:
-        - "{{ test_users }}"
-        - "{{ IP_subject_alt_name }}"
+      loop: "{{ test_users + [IP_subject_alt_name] }}"
       async: 10
       poll: 0
 
