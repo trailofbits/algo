@@ -10,6 +10,7 @@
 * [Why does Algo support only a single cipher suite?](#why-does-algo-support-only-a-single-cipher-suite)
 * [Why doesn't Algo support censorship circumvention?](#why-doesnt-algo-support-censorship-circumvention)
 * [I deployed an Algo server. Can you update it with new features?](#i-deployed-an-algo-server-can-you-update-it-with-new-features)
+* [Can I migrate my existing clients to a new Algo server?](#can-i-migrate-my-existing-clients-to-a-new-algo-server)
 * [Where did the name "Algo" come from?](#where-did-the-name-algo-come-from)
 * [Can DNS filtering be disabled?](#can-dns-filtering-be-disabled)
 * [Does Algo support zero logging?](#does-algo-support-zero-logging)
@@ -78,6 +79,12 @@ No. By design, the Algo development team has no access to any Algo server that o
 As a result, once your Algo server has been deployed, it is yours to maintain. It will use unattended-upgrades by default to apply security and feature updates to Ubuntu, as well as to the core VPN software of strongSwan, dnscrypt-proxy and WireGuard. However, if you want to take advantage of new features available in the current release of Algo, then you have two options. You can use the [SSH administrative interface](/README.md#ssh-into-algo-server) to make the changes you want on your own or you can shut down the server and deploy a new one (recommended).
 
 As an extension of this rationale, most configuration options (other than users) available in `config.cfg` can only be set at the time of initial deployment.
+
+## Can I migrate my existing clients to a new Algo server?
+
+Technically yes, but it's rarely worth the effort. WireGuard clients would need their server endpoint and public key updated. IPsec clients additionally require securely copying the CA certificate and potentially regenerating client certificates. Since your existing server auto-updates its VPN software via unattended-upgrades, there's usually no benefit to migrating—you already have the latest security patches for strongSwan, WireGuard, and dnscrypt-proxy.
+
+If you need features from a newer Algo release, deploy a fresh server and redistribute new client configs. This is simpler and more secure than attempting key migration.
 
 ## Where did the name "Algo" come from?
 
