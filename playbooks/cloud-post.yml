@@ -56,3 +56,4 @@
     sleep: 10         # Check every 10 seconds (less aggressive polling)
   delegate_to: "{{ item }}"
   loop: "{{ groups['vpn-host'] }}"
+  when: cloud_instance_ip != "localhost"
