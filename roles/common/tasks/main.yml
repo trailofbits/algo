@@ -11,9 +11,11 @@
 
 - include_tasks: ubuntu.yml
   when: '"Ubuntu" in OS.stdout or "Linux" in OS.stdout'
+
+# Include facts separately for update-users (skips apt upgrade/reboot in ubuntu.yml)
+- include_tasks: facts.yml
   tags:
     - update-users
-
 
 - name: Sysctl tuning
   sysctl: name="{{ item.item }}" value="{{ item.value }}"
