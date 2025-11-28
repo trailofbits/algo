@@ -2,9 +2,6 @@
 - name: restart rsyslog
   service: name=rsyslog state=restarted
 
-- name: restart ipfw
-  service: name=ipfw state=restarted
-
 - name: flush routing cache
   shell: echo 1 > /proc/sys/net/ipv4/route/flush
 
@@ -18,13 +15,6 @@
   systemd:
     name: systemd-resolved
     state: restarted
-
-- name: restart loopback bsd
-  shell: >
-    ifconfig lo100 destroy || true &&
-    ifconfig lo100 create &&
-    ifconfig lo100 inet {{ local_service_ip }} netmask 255.255.255.255 &&
-    ifconfig lo100 inet6 {{ local_service_ipv6 }}/128; echo $?
 
 - name: restart iptables
   service: name=netfilter-persistent state=restarted
