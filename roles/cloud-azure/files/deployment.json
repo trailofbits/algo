@@ -219,7 +219,7 @@
   "outputs": {
     "publicIPAddresses": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses',resourceGroup().name),providers('Microsoft.Network', 'publicIPAddresses').apiVersions[0]).ipAddress]",
+      "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses',resourceGroup().name),providers('Microsoft.Network', 'publicIPAddresses').apiVersions[0]).ipAddress]"
     }
   }
 }

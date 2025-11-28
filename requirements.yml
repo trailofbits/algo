@@ -14,3 +14,5 @@ collections:
     version: ">=0.41.0"
   - name: community.digitalocean
     version: ">=1.26.0"
+  - name: azure.azcollection
+    version: ">=3.0.0"
