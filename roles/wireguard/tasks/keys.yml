@@ -1,4 +1,21 @@
 ---
+- name: Ensure the WireGuard pki directory does not exist
+  file:
+    dest: "{{ wireguard_pki_path }}"
+    state: absent
+  when: keys_clean_all | bool
+
+- name: Ensure the WireGuard pki directories exist
+  file:
+    dest: "{{ wireguard_pki_path }}/{{ item }}"
+    state: directory
+    recurse: true
+    mode: "0700"
+  with_items:
+    - preshared
+    - private
+    - public
+
 - name: Generate raw private keys
   community.crypto.openssl_privatekey:
     type: X25519
