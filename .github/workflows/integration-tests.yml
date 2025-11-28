@@ -167,14 +167,14 @@ jobs:
             echo "✓ All WireGuard configs generated"
           fi
 
-          # IPsec configs
+          # IPsec configs (p12 in manual/, mobileconfig in apple/)
           if [[ "${{ matrix.vpn_type }}" == "ipsec" || "${{ matrix.vpn_type }}" == "both" ]]; then
             for user in alice bob; do
-              if [ ! -f "configs/localhost/ipsec/${user}.p12" ]; then
+              if [ ! -f "configs/localhost/ipsec/manual/${user}.p12" ]; then
                 echo "✗ Missing IPsec certificate for ${user}"
                 exit 1
               fi
-              if [ ! -f "configs/localhost/ipsec/${user}.mobileconfig" ]; then
+              if [ ! -f "configs/localhost/ipsec/apple/${user}.mobileconfig" ]; then
                 echo "✗ Missing IPsec mobile config for ${user}"
                 exit 1
               fi
