@@ -1,3 +1,0 @@
----
-# OpenStack dependencies are now managed via pyproject.toml optional dependencies
-# They will be installed automatically when needed

@@ -131,8 +131,9 @@ def test_critical_templates():
             template = env.get_template(template_name)
 
             # Add item context for templates that use loops
+            # With modern loop syntax, item is the username string directly
             if "client" in template_name:
-                test_vars["item"] = ("test-user", "test-user")
+                test_vars["item"] = "test-user"
 
             # Try to render
             output = template.render(**test_vars)
@@ -211,7 +212,8 @@ def test_wireguard_ipv6_endpoints():
         try:
             # Set up test variables
             test_vars = {**base_vars, **test_case}
-            test_vars["item"] = ("test-user", "test-user")
+            # With modern loop syntax, item is the username string directly
+            test_vars["item"] = "test-user"
 
             # Render template
             env = Environment(loader=FileSystemLoader("roles/wireguard/templates"), undefined=StrictUndefined)

@@ -41,12 +41,12 @@
         - name: WireGuard users config generated
           template:
             src: client.conf.j2
-            dest: "{{ wireguard_config_path }}/{{ item.1 }}.conf"
+            dest: "{{ wireguard_config_path }}/{{ item }}.conf"
             mode: "0600"
-          with_indexed_items: "{{ wireguard_users }}"
-          when: item.1 in users
-          vars:
-            index: "{{ item.0 }}"
+          loop: "{{ wireguard_users }}"
+          loop_control:
+            index_var: index
+          when: item in users
 
         - include_tasks: mobileconfig.yml
           loop:
@@ -59,13 +59,14 @@
           shell: >
             umask 077;
             which segno &&
-            segno --scale=5 --output={{ item.1 }}.png \
+            segno --scale=5 --output={{ item }}.png \
               "{{ lookup('template', 'client.conf.j2') }}" || true
           changed_when: false
-          with_indexed_items: "{{ wireguard_users }}"
-          when: item.1 in users
+          loop: "{{ wireguard_users }}"
+          loop_control:
+            index_var: index
+          when: item in users
           vars:
-            index: "{{ item.0 }}"
             ansible_python_interpreter: "{{ ansible_playbook_python }}"
           args:
             chdir: "{{ wireguard_config_path }}"

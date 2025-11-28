@@ -84,73 +84,55 @@
               when: algo_ssh_tunneling
               tags: ssh_tunneling
 
-            # --- Wait for all services to complete ---
-            - async_status: {jid: "{{ dns_job.ansible_job_id }}"}
-              register: dns_result
-              until: dns_result.finished
-              retries: 60
-              delay: 5
-              when: dns_job.ansible_job_id is defined
-              tags: dns
+            # --- Build job list and wait for completion ---
+            - name: Build async job list
+              set_fact:
+                _vpn_jobs:
+                  - {name: dns, job: "{{ dns_job | default({}) }}"}
+                  - {name: wireguard, job: "{{ wireguard_job | default({}) }}"}
+                  - {name: strongswan, job: "{{ strongswan_job | default({}) }}"}
+                  - {name: ssh_tunneling, job: "{{ ssh_tunneling_job | default({}) }}"}
 
-            - async_status: {jid: "{{ wireguard_job.ansible_job_id }}"}
-              register: wireguard_result
-              until: wireguard_result.finished
+            - name: Wait for VPN services to complete
+              async_status:
+                jid: "{{ item.job.ansible_job_id }}"
+              register: _vpn_results
+              until: _vpn_results.finished
               retries: 60
               delay: 5
-              when: wireguard_job.ansible_job_id is defined
-              tags: wireguard
-
-            - async_status: {jid: "{{ strongswan_job.ansible_job_id }}"}
-              register: strongswan_result
-              until: strongswan_result.finished
-              retries: 60
-              delay: 5
-              when: strongswan_job.ansible_job_id is defined
-              tags: ipsec
-
-            - async_status: {jid: "{{ ssh_tunneling_job.ansible_job_id }}"}
-              register: ssh_tunneling_result
-              until: ssh_tunneling_result.finished
-              retries: 60
-              delay: 5
-              when: ssh_tunneling_job.ansible_job_id is defined
-              tags: ssh_tunneling
+              loop: "{{ _vpn_jobs | selectattr('job.ansible_job_id', 'defined') | list }}"
+              loop_control:
+                label: "{{ item.name }}"
 
             # --- Verify all services completed successfully ---
-            - name: Display service status summary
-              debug:
-                msg: >-
-                  DNS: {{ 'OK' if dns_result.rc | default(0) == 0 else 'FAIL' }} |
-                  WG: {{ 'OK' if wireguard_result.rc | default(0) == 0 else 'FAIL' }} |
-                  IPsec: {{ 'OK' if strongswan_result.rc | default(0) == 0 else 'FAIL' }} |
-                  SSH: {{ 'OK' if ssh_tunneling_result.rc | default(0) == 0 else 'FAIL' }}
-
-            - name: Fail if any service failed
+            - name: Check for service failures
               fail:
-                msg: "Service configuration failed. Check logs above."
-              when: >-
-                (dns_result.rc | default(0) != 0) or
-                (wireguard_result.rc | default(0) != 0) or
-                (strongswan_result.rc | default(0) != 0) or
-                (ssh_tunneling_result.rc | default(0) != 0)
+                msg: "{{ item.item.name }} service failed. Check logs above."
+              when: item.rc | default(0) != 0
+              loop: "{{ _vpn_results.results | default([]) }}"
+              loop_control:
+                label: "{{ item.item.name | default('service') }}"
 
         # --- Sequential mode (fallback when parallel disabled) ---
-        - import_role: {name: dns}
-          when: [not (performance_parallel_services | default(true)), algo_dns_adblocking or dns_encryption]
-          tags: dns
+        - name: Configure VPN services (sequential mode)
+          when: not (performance_parallel_services | default(true))
+          tags: [dns, wireguard, ipsec, ssh_tunneling]
+          block:
+            - import_role: {name: dns}
+              when: algo_dns_adblocking or dns_encryption
+              tags: dns
 
-        - import_role: {name: wireguard}
-          when: [not (performance_parallel_services | default(true)), wireguard_enabled]
-          tags: wireguard
+            - import_role: {name: wireguard}
+              when: wireguard_enabled
+              tags: wireguard
 
-        - import_role: {name: strongswan}
-          when: [not (performance_parallel_services | default(true)), ipsec_enabled]
-          tags: ipsec
+            - import_role: {name: strongswan}
+              when: ipsec_enabled
+              tags: ipsec
 
-        - import_role: {name: ssh_tunneling}
-          when: [not (performance_parallel_services | default(true)), algo_ssh_tunneling]
-          tags: ssh_tunneling
+            - import_role: {name: ssh_tunneling}
+              when: algo_ssh_tunneling
+              tags: ssh_tunneling
 
         - import_role:
             name: privacy
