@@ -12,7 +12,7 @@ Algo is an Ansible-based tool that sets up a personal VPN in the cloud. It's des
 
 ### Core Technologies
 - **VPN Protocols**: WireGuard (preferred) and IPsec/IKEv2
-- **Configuration Management**: Ansible (currently v9.x)
+- **Configuration Management**: Ansible (v12+)
 - **Languages**: Python, YAML, Shell, Jinja2 templates
 - **Supported Providers**: AWS, Azure, DigitalOcean, GCP, Vultr, Hetzner, local deployment
 
@@ -265,6 +265,8 @@ Servers with both public and private IPs on the same interface need explicit out
 Don't overengineer with SNAT - MASQUERADE with interface specification works fine.
 
 ### OpenSSL Version Compatibility
+
+OpenSSL 3.x dropped support for legacy algorithms. Add `-legacy` flag conditionally:
 
 ```yaml
 {{ (openssl_version is version('3', '>=')) | ternary('-legacy', '') }}
