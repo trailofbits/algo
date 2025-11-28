@@ -160,6 +160,56 @@ Handlers and check commands that don't modify state need `changed_when: false`:
   changed_when: false
 ```
 
+### Jinja2 Native Mode (Ansible 12+)
+
+Ansible 12 enables `jinja2_native` by default, changing how values are evaluated:
+
+**Boolean conditionals require actual booleans:**
+```yaml
+# WRONG - string "true" is not boolean
+ipv6_support: "{% if ipv6 %}true{% else %}false{% endif %}"
+
+# CORRECT - return actual boolean
+ipv6_support: "{{ ipv6 is defined }}"
+```
+
+**No nested templates in lookup():**
+```yaml
+# WRONG - deprecated double-templating
+key: "{{ lookup('file', '{{ SSH_keys.public }}') }}"
+
+# CORRECT - pass variable directly
+key: "{{ lookup('file', SSH_keys.public) }}"
+```
+
+**JSON files need explicit parsing:**
+```yaml
+# WRONG - returns string in native mode
+creds: "{{ lookup('file', 'credentials.json') }}"
+
+# CORRECT - parse JSON explicitly
+creds: "{{ lookup('file', 'credentials.json') | from_json }}"
+```
+
+**default() doesn't trigger on empty strings:**
+```yaml
+# WRONG - empty string '' is not undefined
+key: "{{ lookup('env', 'AWS_KEY') | default('fallback') }}"
+
+# CORRECT - add true to handle falsy values
+key: "{{ lookup('env', 'AWS_KEY') | default('fallback', true) }}"
+```
+
+**Complex Jinja loops break in set_fact:**
+```yaml
+# WRONG - list comprehension fails in native mode
+servers: "[{% for s in configs %}{{ s.name }},{% endfor %}]"
+
+# CORRECT - use Ansible loop
+servers: "{{ servers | default([]) + [item.name] }}"
+loop: "{{ configs }}"
+```
+
 ## DNS Architecture
 
 Algo uses a randomly generated IP in 172.16.0.0/12 on the loopback interface (`local_service_ip`) for DNS. This provides consistency across WireGuard and IPsec but requires understanding systemd socket activation.
@@ -251,6 +301,7 @@ Lessons learned - don't spend time on these unless absolutely necessary:
 - **Bundling unrelated fixes** - One PR, one purpose. Separate issues get separate PRs.
 - **Assuming behavior** - If converting `with_items` to `loop`, test that it still works. If adding a firewall rule, verify packets flow.
 - **Configuration options** - Don't add flags unless users actively need them. Each option doubles testing surface.
+- **Undocumented workarounds** - When working around broken upstream modules, file an issue and add a comment linking to it. Future maintainers need to know why workarounds exist.
 
 ## Writing Effective Tests
 
