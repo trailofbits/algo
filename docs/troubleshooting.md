@@ -11,14 +11,11 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
      * [AWS: SSH permission denied with an ECDSA key](#aws-ssh-permission-denied-with-an-ecdsa-key)
      * [AWS: "Deploy the template" fails with CREATE_FAILED](#aws-deploy-the-template-fails-with-create_failed)
      * [AWS: not authorized to perform: cloudformation:UpdateStack](#aws-not-authorized-to-perform-cloudformationupdatestack)
-     * [DigitalOcean: error tagging resource 'xxxxxxxx': param is missing or the value is empty: resources](#digitalocean-error-tagging-resource)
      * [Azure: The client xxx with object id xxx does not have authorization to perform action Microsoft.Resources/subscriptions/resourcegroups/write' over scope](#azure-deployment-permissions-error)
      * [Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid](#windows-the-value-of-parameter-linuxconfigurationsshpublickeyskeydata-is-invalid)
-     * [Docker: Failed to connect to the host via ssh](#docker-failed-to-connect-to-the-host-via-ssh)
      * [Windows: "The parameter is incorrect" error when connecting](#windows-the-parameter-is-incorrect-error-when-connecting)
      * [Error: Failed to create symlinks for deploying to localhost](#error-failed-to-create-symlinks-for-deploying-to-localhost)
      * [Wireguard: Unable to find 'configs/...' in expected paths](#wireguard-unable-to-find-configs-in-expected-paths)
-     * [Ubuntu Error: "unable to write 'random state'" when generating CA password](#ubuntu-error-unable-to-write-random-state-when-generating-ca-password)
      * [Timeout when waiting for search string OpenSSH in xxx.xxx.xxx.xxx:4160](#old-networking-firewall-in-place)
      * [Linode Error: "Unable to query the Linode API. Saw: 400: The requested distribution is not supported by this stackscript.; "](#linode-error-uable-to-query-the-linode-api-saw-400-the-requested-distribution-is-not-supported-by-this-stackscript)
   * [Connection Problems](#connection-problems)
@@ -121,25 +118,6 @@ fatal: [localhost]: FAILED! => {"changed": false, "failed": true, "msg": "User: 
 
 This error indicates you already have Algo deployed to Cloudformation. Need to [delete it](cloud-amazon-ec2.md#cleanup) first, then re-deploy.
 
-### DigitalOcean: error tagging resource
-
-You tried to deploy Algo to DigitalOcean and you received an error like this one:
-
-```
-TASK [cloud-digitalocean : Tag the droplet] ************************************
-failed: [localhost] (item=staging) => {"failed": true, "item": "staging", "msg": "error tagging resource '73204383': param is missing or the value is empty: resources"}
-failed: [localhost] (item=dbserver) => {"failed": true, "item": "dbserver", "msg": "error tagging resource '73204383': param is missing or the value is empty: resources"}
-```
-
-The error is caused because Digital Ocean changed its API to treat the tag argument as a string instead of a number.
-
-1. Download [doctl](https://github.com/digitalocean/doctl)
-2. Run `doctl auth init`; it will ask you for your token which you can get (or generate) on the API tab at DigitalOcean
-3. Once you are authorized on DO, you can run `doctl compute tag list` to see the list of tags
-4. Run `doctl compute tag delete environment:algo --force` to delete the environment:algo tag
-5. Finally run `doctl compute tag list` to make sure that the tag has been deleted
-6. Run algo as directed
-
 ### Azure: No such file or directory: '/home/username/.azure/azureProfile.json'
 
  ```
@@ -188,24 +166,6 @@ Target: linuxConfiguration.ssh.publicKeys.keyData"}
 ```
 
 This is related to [the chmod issue](https://github.com/Microsoft/WSL/issues/81) inside /mnt directory which is NTFS. The fix is to place Algo outside of /mnt directory.
-
-### Docker: Failed to connect to the host via ssh
-
-You tried to deploy Algo from Docker and you received an error like this one:
-
-```
-Failed to connect to the host via ssh:
-Warning: Permanently added 'xxx.xxx.xxx.xxx' (ECDSA) to the list of known hosts.\r\n
-Control socket connect(/root/.ansible/cp/6d9d22e981): Connection refused\r\n
-Failed to connect to new control master\r\n
-```
-
-You need to add the following to the ansible.cfg in repo root:
-
-```
-[ssh_connection]
-control_path_dir=/dev/shm/ansible_control_path
-```
 
 ### Windows: "The parameter is incorrect" error when connecting
 
@@ -296,23 +256,6 @@ sudo rm -rf /etc/wireguard/*
 rm -rf configs/*
 ```
 Then immediately re-run `./algo`.
-
-### Ubuntu Error: "unable to write 'random state'" when generating CA password
-
-When running Algo, you received an error like this:
-
-```
-TASK [common : Generate password for the CA key] ***********************************************************************************************************************************************************
-fatal: [xxx.xxx.xxx.xxx -> localhost]: FAILED! => {"changed": true, "cmd": "openssl rand -hex 16", "delta": "0:00:00.024776", "end": "2018-11-26 13:13:55.879921", "msg": "non-zero return code", "rc": 1, "start": "2018-11-26 13:13:55.855145", "stderr": "unable to write 'random state'", "stderr_lines": ["unable to write 'random state'"], "stdout": "xxxxxxxxxxxxxxxxxxx", "stdout_lines": ["xxxxxxxxxxxxxxxxxxx"]}
-```
-
-This happens when your user does not have ownership of the `$HOME/.rnd` file, which is a seed for randomization. To fix this issue, give your user ownership of the file with this command:
-
-```
-sudo chown $USER:$USER $HOME/.rnd
-```
-
-Now, run Algo again.
 
 ### Old Networking Firewall In Place
 
