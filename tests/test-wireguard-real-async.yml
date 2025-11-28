@@ -55,7 +55,7 @@
         mode: "0600"
       when: item.changed
       loop: "{{ wg_genkey_results.results }}"
-      ignore_errors: true
+      failed_when: false
 
     - name: Cleanup
       file:
