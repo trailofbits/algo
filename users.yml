@@ -51,14 +51,23 @@
           include_vars:
             file: configs/{{ algo_server }}/.config.yml
 
-        - name: Check local deployment permissions
+        - name: Validate users list is not empty
+          fail:
+            msg: |
+              NO USERS DEFINED
+
+              The 'users' list in config.cfg is empty. At least one user is required.
+              Add users to config.cfg before running update-users.
+          when: users | default([]) | length == 0
+
+        - name: Local deployment permission validation
           block:
             - name: Get config directory owner
               stat:
                 path: configs/{{ algo_server }}
               register: config_dir_stat
 
-            - name: Fail on local deployment permission mismatch
+            - name: Fail on permission mismatch
               fail:
                 msg: |
                   PERMISSION MISMATCH DETECTED
