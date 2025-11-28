@@ -31,6 +31,10 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
      * [Clients appear stuck in a reconnection loop](#clients-appear-stuck-in-a-reconnection-loop)
      * [Wireguard: clients can connect on Wifi but not LTE](#wireguard-clients-can-connect-on-wifi-but-not-lte)
      * [IPsec: Difficulty connecting through router](#ipsec-difficulty-connecting-through-router)
+  * [Diagnostic Commands](#diagnostic-commands)
+     * [Enable Verbose Logging](#enable-verbose-logging)
+     * [Server-Side Diagnostics](#server-side-diagnostics)
+     * [Client-Side Diagnostics](#client-side-diagnostics)
   * [I have a problem not covered here](#i-have-a-problem-not-covered-here)
 
 ## Installation Problems
@@ -469,6 +473,100 @@ If your router has a setting called something like "VPN Passthrough" or "IPsec P
 #### Change the default pfSense NAT rules
 
 If your router runs [pfSense](https://www.pfsense.org) and a single IPsec client can connect but you have issues when using multiple clients, you'll need to change the **Outbound NAT** mode to **Manual Outbound NAT** and disable the rule that specifies **Static Port** for IKE (UDP port 500). See [Outbound NAT](https://docs.netgate.com/pfsense/en/latest/book/nat/outbound-nat.html#outbound-nat) in the [pfSense Book](https://docs.netgate.com/pfsense/en/latest/book).
+
+## Diagnostic Commands
+
+If you want to investigate issues yourself, here are useful commands to run on your Algo server.
+
+### Enable Verbose Logging
+
+By default, Algo minimizes logging for privacy. To enable detailed logging for debugging:
+
+**During deployment** - Edit `config.cfg` before running `./algo`:
+```yaml
+algo_no_log: false              # Show detailed Ansible output (includes sensitive data!)
+strongswan_log_level: 2         # IPsec debug logging (default: -1 disabled)
+privacy_enhancements_enabled: false  # Disable log rotation/clearing
+```
+
+**Important:** Reset these to defaults before sharing logs or screenshots, as they may contain sensitive information.
+
+### Server-Side Diagnostics
+
+**Check service status:**
+```bash
+# WireGuard
+systemctl status wg-quick@wg0
+wg show                          # Show WireGuard interface and peers
+
+# IPsec/StrongSwan
+systemctl status strongswan
+ipsec statusall                  # Show all IKE_SA and CHILD_SA
+ipsec leases                     # Show assigned virtual IPs
+
+# DNS
+systemctl status dnscrypt-proxy.socket dnscrypt-proxy.service
+ss -lnup | grep :53              # Check what's listening on DNS port
+```
+
+**View logs:**
+```bash
+# WireGuard (kernel module, limited logging)
+dmesg | grep wireguard
+
+# IPsec/StrongSwan
+journalctl -u strongswan -f      # Follow strongswan logs
+journalctl -t charon -f          # Follow IKE daemon logs
+
+# DNS
+journalctl -u dnscrypt-proxy -f
+
+# General system
+journalctl -f                    # Follow all system logs
+```
+
+**Check network and firewall:**
+```bash
+# Verify VPN interfaces exist
+ip addr show wg0                 # WireGuard interface
+ip addr show                     # All interfaces
+
+# Check firewall rules
+iptables -L -v -n                # IPv4 filter rules with counters
+iptables -t nat -L -v -n         # IPv4 NAT rules
+ip6tables -L -v -n               # IPv6 filter rules
+
+# Test DNS resolution
+dig @172.x.x.x google.com        # Replace with your local_service_ip
+```
+
+**Find your local DNS IP:**
+```bash
+grep local_service_ip /etc/dnsmasq.d/algo.conf 2>/dev/null || \
+  grep listen_addresses /etc/dnscrypt-proxy/dnscrypt-proxy.toml
+```
+
+### Client-Side Diagnostics
+
+**macOS:**
+```bash
+# View VPN-related logs (last hour)
+log show --predicate 'subsystem == "com.apple.networkextension"' --info --last 1h
+
+# Or use Console.app and search for: nesessionmanager
+```
+
+**Linux (WireGuard):**
+```bash
+sudo wg show
+journalctl -t NetworkManager -f  # If using NetworkManager
+```
+
+**Windows:**
+```powershell
+# View VPN event logs
+Get-WinEvent -LogName "Microsoft-Windows-VPN-Client/Operational" -MaxEvents 50
+```
 
 ## I have a problem not covered here
 
