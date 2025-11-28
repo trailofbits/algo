@@ -88,10 +88,10 @@
             - name: Build async job list
               set_fact:
                 _vpn_jobs:
-                  - {name: dns, job: "{{ dns_job }}", tag: dns}
-                  - {name: wireguard, job: "{{ wireguard_job }}", tag: wireguard}
-                  - {name: strongswan, job: "{{ strongswan_job }}", tag: ipsec}
-                  - {name: ssh_tunneling, job: "{{ ssh_tunneling_job }}", tag: ssh_tunneling}
+                  - {name: dns, job: "{{ dns_job | default({}) }}"}
+                  - {name: wireguard, job: "{{ wireguard_job | default({}) }}"}
+                  - {name: strongswan, job: "{{ strongswan_job | default({}) }}"}
+                  - {name: ssh_tunneling, job: "{{ ssh_tunneling_job | default({}) }}"}
 
             - name: Wait for VPN services to complete
               async_status:

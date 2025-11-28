@@ -1,5 +1,5 @@
 [Interface]
-PrivateKey = {{ lookup('file', wireguard_pki_path + '/private/' + item.1) }}
+PrivateKey = {{ lookup('file', wireguard_pki_path + '/private/' + item) }}
 Address = {{ wireguard_client_ip }}
 DNS = {{ wireguard_dns_servers }}
 {% if reduce_mtu | int > 0 %}MTU = {{ 1420 - reduce_mtu | int }}
@@ -7,7 +7,7 @@ DNS = {{ wireguard_dns_servers }}
 
 [Peer]
 PublicKey = {{ lookup('file', wireguard_pki_path + '/public/' + IP_subject_alt_name) }}
-PresharedKey = {{ lookup('file', wireguard_pki_path + '/preshared/' + item.1) }}
+PresharedKey = {{ lookup('file', wireguard_pki_path + '/preshared/' + item) }}
 AllowedIPs = 0.0.0.0/0,::/0
 Endpoint = {% if ':' in IP_subject_alt_name %}[{{ IP_subject_alt_name }}]:{{ wireguard_port }}{% else %}{{ IP_subject_alt_name }}:{{ wireguard_port }}{% endif %}
 {{ 'PersistentKeepalive = ' + wireguard_PersistentKeepalive | string if wireguard_PersistentKeepalive > 0 else '' }}
