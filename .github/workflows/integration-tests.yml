@@ -115,11 +115,11 @@ jobs:
             echo "✓ WireGuard is running"
           fi
 
-          # Check StrongSwan
+          # Check StrongSwan (service name is strongswan-starter on Ubuntu 20.04+)
           if [[ "${{ matrix.vpn_type }}" == "ipsec" || "${{ matrix.vpn_type }}" == "both" ]]; then
             echo "Checking StrongSwan..."
             sudo ipsec statusall
-            if ! sudo systemctl is-active --quiet strongswan; then
+            if ! sudo systemctl is-active --quiet strongswan-starter; then
               echo "✗ StrongSwan service not running"
               exit 1
             fi
