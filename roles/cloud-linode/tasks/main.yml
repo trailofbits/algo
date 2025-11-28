@@ -10,8 +10,8 @@
       touch /var/lib/cloud/data/result.json
 
 - name: Create a stackscript
-  linode_stackscript_v4:
-    access_token: "{{ algo_linode_token }}"
+  linode.cloud.stackscript:
+    api_token: "{{ algo_linode_token }}"
     label: "{{ algo_server_name }}"
     state: present
     description: Environment:Algo
@@ -37,8 +37,8 @@
   no_log: true
 
 - name: Creating an instance...
-  linode_v4:
-    access_token: "{{ algo_linode_token }}"
+  linode.cloud.instance:
+    api_token: "{{ algo_linode_token }}"
     label: "{{ algo_server_name }}"
     state: present
     region: "{{ algo_linode_region }}"
