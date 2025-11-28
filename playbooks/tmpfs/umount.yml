@@ -8,7 +8,7 @@
 - block:
     - name: MacOS | check fs the ramdisk exists
       command: /usr/sbin/diskutil info "{{ facts.tmpfs_volume_name }}"
-      ignore_errors: true
+      failed_when: false
       changed_when: false
       register: diskutil_info
 

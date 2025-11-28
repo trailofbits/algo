@@ -92,7 +92,7 @@
             port: "{{ ansible_ssh_port | default(ssh_port) | int }}"
             timeout: 10
           register: ssh_check
-          ignore_errors: true
+          failed_when: false
           when: algo_server != 'localhost'
 
         - name: Fail with helpful message if server unreachable
