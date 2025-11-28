@@ -45,8 +45,8 @@
     - name: Set facts about the default region
       set_fact:
         default_region: >-
-          {% for region in gce_regions %}
-            {%- if region == "us-east1" %}{{ loop.index }}{% endif %}
+          {% for region in gce_regions -%}
+            {% if region == "us-east1" %}{{ loop.index }}{% endif %}
           {%- endfor %}
 
     - pause:
@@ -65,9 +65,9 @@
 - name: Set region as a fact
   set_fact:
     algo_region: >-
-      {% if region is defined %}{{ region }}
-      {%- elif _gce_region.user_input %}{{ gce_regions[_gce_region.user_input | int - 1] }}
-      {%- else %}{{ gce_regions[default_region | int - 1] }}{% endif %}
+      {% if region is defined %}{{ region -}}
+      {% elif _gce_region.user_input %}{{ gce_regions[_gce_region.user_input | int - 1] -}}
+      {% else %}{{ gce_regions[default_region | int - 1] }}{% endif %}
 
 - name: Get zones
   gcp_compute_location_info:
@@ -82,4 +82,4 @@
 
 - name: Set random available zone as a fact
   set_fact:
-    algo_zone: "{{ (gcp_compute_zone_info.resources | random(seed=algo_server_name + algo_region + project_id) ).name }}"
+    algo_zone: "{{ (gcp_compute_zone_info.resources | random(seed=algo_server_name + algo_region + project_id)).name }}"

@@ -1,6 +1,7 @@
+---
 name: Claude Code Review
 
-on:
+'on':
   pull_request:
     types: [opened, synchronize]
     # Optional: Only run on specific file changes

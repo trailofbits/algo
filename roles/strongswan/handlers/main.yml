@@ -34,3 +34,4 @@
     # If StrongSwan is running but we can't reload CRLs, that's a real problem
     echo "Failed to reload CRLs after 3 attempts"
     exit 1
+  changed_when: false

@@ -61,9 +61,8 @@
   when: privacy_auto_cleanup.enabled | bool
 
 - name: Clean package cache immediately
-  shell: |
-    apt-get clean
-    apt-get autoclean
+  apt:
+    autoclean: true
   changed_when: false
   when:
     - privacy_auto_cleanup.enabled | bool
