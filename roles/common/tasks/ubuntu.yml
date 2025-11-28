@@ -69,7 +69,7 @@
 - name: Disable MOTD on login and SSHD
   replace: dest="{{ item.file }}" regexp="{{ item.regexp }}" replace="{{ item.line }}"
   become: true
-  with_items:
+  loop:
     - { regexp: ^session.*optional.*pam_motd.so.*, line: "# MOTD DISABLED", file: /etc/pam.d/login }
     - { regexp: ^session.*optional.*pam_motd.so.*, line: "# MOTD DISABLED", file: /etc/pam.d/sshd }
 
@@ -97,7 +97,7 @@
     state: started
     enabled: true
     daemon_reload: true
-  with_items:
+  loop:
     - systemd-networkd
     - systemd-resolved
 
@@ -174,12 +174,10 @@
       alternatives:
         name: "{{ item }}"
         path: "/usr/sbin/{{ item }}-legacy"
-      with_items:
+      loop:
         - iptables
         - ip6tables
-  when:
-    - ansible_distribution == "Ubuntu"
-    - ansible_distribution_version is version('22.04', '>=')
+  when: is_ubuntu_22_plus
   tags: iptables
 
 - include_tasks: iptables.yml

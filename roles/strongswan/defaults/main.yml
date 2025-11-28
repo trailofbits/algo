@@ -1,6 +1,6 @@
 ---
-ipsec_config_path: configs/{{ IP_subject_alt_name }}/ipsec/
-ipsec_pki_path: "{{ ipsec_config_path }}/.pki/"
+ipsec_config_path: configs/{{ IP_subject_alt_name }}/ipsec
+ipsec_pki_path: "{{ ipsec_config_path }}/.pki"
 strongswan_shell: /usr/sbin/nologin
 strongswan_home: /var/lib/strongswan
 strongswan_service: "{{ 'strongswan-starter' if ansible_facts['distribution_version'] is version('20.04', '>=') else 'strongswan' }}"

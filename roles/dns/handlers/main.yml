@@ -8,11 +8,11 @@
     name: dnscrypt-proxy.socket
     state: restarted
     daemon_reload: true
-  when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
+  when: uses_systemd_socket
 
 - name: restart dnscrypt-proxy
   systemd:
     name: dnscrypt-proxy
     state: restarted
     daemon_reload: true
-  when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
+  when: uses_systemd_socket

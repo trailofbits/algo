@@ -23,7 +23,7 @@
         start_port: "{{ item.start_port }}"
         end_port: "{{ item.end_port }}"
         cidr: "{{ item.range }}"
-      with_items:
+      loop:
         - { proto: tcp, start_port: "{{ ssh_port }}", end_port: "{{ ssh_port }}", range: 0.0.0.0/0 }
         - { proto: udp, start_port: 4500, end_port: 4500, range: 0.0.0.0/0 }
         - { proto: udp, start_port: 500, end_port: 500, range: 0.0.0.0/0 }

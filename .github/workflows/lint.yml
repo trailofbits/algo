@@ -14,15 +14,11 @@ jobs:
       - uses: actions/checkout@c2d88d3ecc89a9ef08eebf45d9637801dcee7eb5  # v5.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # v6.1.0
+
+      - name: Setup Algo environment
+        uses: ./.github/actions/setup-algo
         with:
-          python-version: '3.11'
-
-      - name: Setup uv environment
-        uses: ./.github/actions/setup-uv
-
-      - name: Install Ansible collections
-        run: uv run --with ansible-lint --with ansible ansible-galaxy collection install -r requirements.yml
+          install-ansible-collections: 'true'
 
       - name: Run ansible-lint
         run: |
@@ -59,12 +55,9 @@ jobs:
       - uses: actions/checkout@c2d88d3ecc89a9ef08eebf45d9637801dcee7eb5  # v5.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # v6.1.0
-        with:
-          python-version: '3.11'
 
-      - name: Setup uv environment
-        uses: ./.github/actions/setup-uv
+      - name: Setup Algo environment
+        uses: ./.github/actions/setup-algo
 
       - name: Run ruff
         run: |
@@ -79,9 +72,13 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup Algo environment
+        uses: ./.github/actions/setup-algo
+        with:
+          install-shellcheck: 'true'
+
       - name: Run shellcheck
         run: |
-          sudo apt-get update && sudo apt-get install -y shellcheck
           # Check all shell scripts, not just algo and install.sh
           find . -type f -name "*.sh" -not -path "./.git/*" -exec shellcheck {} \;
 

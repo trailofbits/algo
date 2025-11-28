@@ -6,7 +6,7 @@
     owner: "{{ item.owner }}"
     group: "{{ item.group }}"
     mode: "{{ item.mode }}"
-  with_items:
+  loop:
     - src: cacert.pem
       dest: cacerts/ca.crt
       owner: strongswan

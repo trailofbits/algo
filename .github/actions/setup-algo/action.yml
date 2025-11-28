@@ -1,0 +1,36 @@
+---
+name: 'Setup Algo Environment'
+description: 'Setup Python, uv, and dependencies for Algo VPN CI'
+inputs:
+  python-version:
+    description: 'Python version to use'
+    required: false
+    default: '3.11'
+  install-shellcheck:
+    description: 'Install shellcheck for shell script linting'
+    required: false
+    default: 'false'
+  install-ansible-collections:
+    description: 'Install Ansible Galaxy collections'
+    required: false
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # v6.1.0
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Setup uv environment
+      uses: ./.github/actions/setup-uv
+
+    - name: Install shellcheck
+      if: inputs.install-shellcheck == 'true'
+      run: sudo apt-get update && sudo apt-get install -y shellcheck
+      shell: bash
+
+    - name: Install Ansible collections
+      if: inputs.install-ansible-collections == 'true'
+      run: uv run ansible-galaxy collection install -r requirements.yml
+      shell: bash

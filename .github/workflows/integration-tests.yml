@@ -21,8 +21,8 @@ jobs:
     name: Localhost VPN Deployment Test
     runs-on: ubuntu-22.04
     timeout-minutes: 30
-    if: false  # Disabled until we fix the ansible issues
     strategy:
+      fail-fast: false
       matrix:
         vpn_type: ['wireguard', 'ipsec', 'both']
     steps:
@@ -78,7 +78,6 @@ jobs:
           tests: true
           no_log: false
           ansible_connection: local
-          ansible_python_interpreter: /usr/bin/python3
           dns_encryption: true
           algo_dns_adblocking: true
           algo_ssh_tunneling: false
@@ -88,11 +87,15 @@ jobs:
           pki_in_tmpfs: true
           endpoint: 127.0.0.1
           ssh_port: 4160
+          local_service_ip: 172.16.0.1
+          local_service_ipv6: "fd00::1"
           EOF
 
       - name: Run Algo deployment
         run: |
-          sudo ansible-playbook main.yml \
+          # Run ansible-playbook via uv - become: true in playbook handles root
+          # GitHub runners have passwordless sudo for become escalation
+          uv run ansible-playbook main.yml \
             -i "localhost," \
             -c local \
             -e @integration-test.cfg \
@@ -112,11 +115,11 @@ jobs:
             echo "✓ WireGuard is running"
           fi
 
-          # Check StrongSwan
+          # Check StrongSwan (service name is strongswan-starter on Ubuntu 20.04+)
           if [[ "${{ matrix.vpn_type }}" == "ipsec" || "${{ matrix.vpn_type }}" == "both" ]]; then
             echo "Checking StrongSwan..."
             sudo ipsec statusall
-            if ! sudo systemctl is-active --quiet strongswan; then
+            if ! sudo systemctl is-active --quiet strongswan-starter; then
               echo "✗ StrongSwan service not running"
               exit 1
             fi
@@ -128,6 +131,21 @@ jobs:
             echo "⚠️  dnsmasq not running (may be expected)"
           else
             echo "✓ dnsmasq is running"
+          fi
+
+          # Check dnscrypt-proxy
+          if sudo systemctl is-active --quiet dnscrypt-proxy; then
+            echo "✓ dnscrypt-proxy is running"
+          else
+            echo "⚠️  dnscrypt-proxy not running"
+          fi
+
+          # DNS health check - verify DNS resolution works
+          echo "Testing DNS resolution via local_service_ip (172.16.0.1)..."
+          if dig @172.16.0.1 google.com +short +timeout=5 | grep -q .; then
+            echo "✓ DNS resolution working"
+          else
+            echo "⚠️  DNS resolution failed (service may still be starting)"
           fi
 
       - name: Verify generated configs
@@ -149,14 +167,14 @@ jobs:
             echo "✓ All WireGuard configs generated"
           fi
 
-          # IPsec configs
+          # IPsec configs (p12 in manual/, mobileconfig in apple/)
           if [[ "${{ matrix.vpn_type }}" == "ipsec" || "${{ matrix.vpn_type }}" == "both" ]]; then
             for user in alice bob; do
-              if [ ! -f "configs/localhost/ipsec/${user}.p12" ]; then
+              if [ ! -f "configs/localhost/ipsec/manual/${user}.p12" ]; then
                 echo "✗ Missing IPsec certificate for ${user}"
                 exit 1
               fi
-              if [ ! -f "configs/localhost/ipsec/${user}.mobileconfig" ]; then
+              if [ ! -f "configs/localhost/ipsec/apple/${user}.mobileconfig" ]; then
                 echo "✗ Missing IPsec mobile config for ${user}"
                 exit 1
               fi
@@ -196,12 +214,22 @@ jobs:
       - name: Upload logs on failure
         if: failure()
         run: |
-          echo "=== Ansible Log ==="
-          sudo journalctl -u ansible --no-pager || true
+          echo "=== Network Interfaces ==="
+          ip addr || true
+          echo "=== Listening Ports ==="
+          sudo ss -tulnp || true
+          echo "=== WireGuard Status ==="
+          sudo wg show || true
+          echo "=== IPsec Status ==="
+          sudo ipsec statusall || true
+          echo "=== DNS Services ==="
+          sudo systemctl status dnscrypt-proxy dnscrypt-proxy.socket dnsmasq --no-pager || true
           echo "=== WireGuard Log ==="
-          sudo journalctl -u wg-quick@wg0 --no-pager || true
+          sudo journalctl -u wg-quick@wg0 -n 50 --no-pager || true
           echo "=== StrongSwan Log ==="
-          sudo journalctl -u strongswan --no-pager || true
+          sudo journalctl -u strongswan -n 50 --no-pager || true
+          echo "=== dnscrypt-proxy Log ==="
+          sudo journalctl -u dnscrypt-proxy -n 50 --no-pager || true
           echo "=== System Log (last 100 lines) ==="
           sudo journalctl -n 100 --no-pager || true
 

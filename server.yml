@@ -45,47 +45,47 @@
             name: common
           tags: common
 
-        # Configure VPN services (parallel when performance_parallel_services enabled)
-        - block:
-            - name: Start DNS service configuration
-              import_role:
-                name: dns
+        # ============================================================
+        # VPN Service Configuration
+        # Parallel mode (default): Services run concurrently for speed
+        # Sequential mode: Services run one at a time (fallback)
+        # ============================================================
+
+        - name: Configure VPN services (parallel mode)
+          when: performance_parallel_services | default(true)
+          tags: [dns, wireguard, ipsec, ssh_tunneling]
+          block:
+            # --- Launch all services asynchronously ---
+            - import_role: {name: dns}
               async: 300
               poll: 0
               register: dns_job
               when: algo_dns_adblocking or dns_encryption
               tags: dns
 
-            - name: Start WireGuard service configuration
-              import_role:
-                name: wireguard
+            - import_role: {name: wireguard}
               async: 300
               poll: 0
               register: wireguard_job
               when: wireguard_enabled
               tags: wireguard
 
-            - name: Start StrongSwan service configuration
-              import_role:
-                name: strongswan
+            - import_role: {name: strongswan}
               async: 300
               poll: 0
               register: strongswan_job
               when: ipsec_enabled
               tags: ipsec
 
-            - name: Start SSH tunneling service configuration
-              import_role:
-                name: ssh_tunneling
+            - import_role: {name: ssh_tunneling}
               async: 300
               poll: 0
               register: ssh_tunneling_job
               when: algo_ssh_tunneling
               tags: ssh_tunneling
 
-            - name: Wait for DNS service configuration to complete
-              async_status:
-                jid: "{{ dns_job.ansible_job_id }}"
+            # --- Wait for all services to complete ---
+            - async_status: {jid: "{{ dns_job.ansible_job_id }}"}
               register: dns_result
               until: dns_result.finished
               retries: 60
@@ -93,9 +93,7 @@
               when: dns_job.ansible_job_id is defined
               tags: dns
 
-            - name: Wait for WireGuard service configuration to complete
-              async_status:
-                jid: "{{ wireguard_job.ansible_job_id }}"
+            - async_status: {jid: "{{ wireguard_job.ansible_job_id }}"}
               register: wireguard_result
               until: wireguard_result.finished
               retries: 60
@@ -103,9 +101,7 @@
               when: wireguard_job.ansible_job_id is defined
               tags: wireguard
 
-            - name: Wait for StrongSwan service configuration to complete
-              async_status:
-                jid: "{{ strongswan_job.ansible_job_id }}"
+            - async_status: {jid: "{{ strongswan_job.ansible_job_id }}"}
               register: strongswan_result
               until: strongswan_result.finished
               retries: 60
@@ -113,9 +109,7 @@
               when: strongswan_job.ansible_job_id is defined
               tags: ipsec
 
-            - name: Wait for SSH tunneling service configuration to complete
-              async_status:
-                jid: "{{ ssh_tunneling_job.ansible_job_id }}"
+            - async_status: {jid: "{{ ssh_tunneling_job.ansible_job_id }}"}
               register: ssh_tunneling_result
               until: ssh_tunneling_result.finished
               retries: 60
@@ -123,58 +117,39 @@
               when: ssh_tunneling_job.ansible_job_id is defined
               tags: ssh_tunneling
 
-            - name: Display VPN service completion status
+            # --- Verify all services completed successfully ---
+            - name: Display service status summary
               debug:
-                msg: |
-                  VPN Service Status Summary (Parallel Mode):
-                  DNS: {{ 'COMPLETED' if (dns_result.rc | default(-1)) == 0 else 'FAILED' if dns_result.rc is defined else 'SKIPPED' }}
-                  WireGuard: {{ 'COMPLETED' if (wireguard_result.rc | default(-1)) == 0 else 'FAILED' if wireguard_result.rc is defined else 'SKIPPED' }}
-                  StrongSwan: {{ 'COMPLETED' if (strongswan_result.rc | default(-1)) == 0 else 'FAILED' if strongswan_result.rc is defined else 'SKIPPED' }}
-                  SSH Tunneling: >-
-                    {{ 'COMPLETED' if (ssh_tunneling_result.rc | default(-1)) == 0
-                       else 'FAILED' if ssh_tunneling_result.rc is defined else 'SKIPPED' }}
-              tags: vpn_services
+                msg: >-
+                  DNS: {{ 'OK' if dns_result.rc | default(0) == 0 else 'FAIL' }} |
+                  WG: {{ 'OK' if wireguard_result.rc | default(0) == 0 else 'FAIL' }} |
+                  IPsec: {{ 'OK' if strongswan_result.rc | default(0) == 0 else 'FAIL' }} |
+                  SSH: {{ 'OK' if ssh_tunneling_result.rc | default(0) == 0 else 'FAIL' }}
 
-            - name: Check for any VPN service failures
+            - name: Fail if any service failed
               fail:
-                msg: |
-                  One or more VPN services failed to configure properly.
-                  Please check the detailed error messages above.
-              when: >
-                (dns_result.rc is defined and dns_result.rc != 0) or
-                (wireguard_result.rc is defined and wireguard_result.rc != 0) or
-                (strongswan_result.rc is defined and strongswan_result.rc != 0) or
-                (ssh_tunneling_result.rc is defined and ssh_tunneling_result.rc != 0)
-              tags: vpn_services
-          when: performance_parallel_services | default(true)
+                msg: "Service configuration failed. Check logs above."
+              when: >-
+                (dns_result.rc | default(0) != 0) or
+                (wireguard_result.rc | default(0) != 0) or
+                (strongswan_result.rc | default(0) != 0) or
+                (ssh_tunneling_result.rc | default(0) != 0)
 
-        # Sequential service configuration (fallback)
-        - import_role:
-            name: dns
-          when:
-            - not (performance_parallel_services | default(true))
-            - algo_dns_adblocking or dns_encryption
+        # --- Sequential mode (fallback when parallel disabled) ---
+        - import_role: {name: dns}
+          when: [not (performance_parallel_services | default(true)), algo_dns_adblocking or dns_encryption]
           tags: dns
 
-        - import_role:
-            name: wireguard
-          when:
-            - not (performance_parallel_services | default(true))
-            - wireguard_enabled
+        - import_role: {name: wireguard}
+          when: [not (performance_parallel_services | default(true)), wireguard_enabled]
           tags: wireguard
 
-        - import_role:
-            name: strongswan
-          when:
-            - not (performance_parallel_services | default(true))
-            - ipsec_enabled
+        - import_role: {name: strongswan}
+          when: [not (performance_parallel_services | default(true)), ipsec_enabled]
           tags: ipsec
 
-        - import_role:
-            name: ssh_tunneling
-          when:
-            - not (performance_parallel_services | default(true))
-            - algo_ssh_tunneling
+        - import_role: {name: ssh_tunneling}
+          when: [not (performance_parallel_services | default(true)), algo_ssh_tunneling]
           tags: ssh_tunneling
 
         - import_role:

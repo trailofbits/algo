@@ -11,7 +11,7 @@
     state: directory
     recurse: true
     mode: "0700"
-  with_items:
+  loop:
     - preshared
     - private
     - public
@@ -22,18 +22,14 @@
     path: "{{ wireguard_pki_path }}/private/{{ item }}.raw"
     format: raw
     mode: "0600"
-  with_items:
-    - "{{ users }}"
-    - "{{ IP_subject_alt_name }}"
+  loop: "{{ users + [IP_subject_alt_name] }}"
 
 - name: Save base64 encoded private key
   copy:
     dest: "{{ wireguard_pki_path }}/private/{{ item }}"
     content: "{{ lookup('file', wireguard_pki_path + '/private/' + item + '.raw') | b64encode }}"
     mode: "0600"
-  with_items:
-    - "{{ users }}"
-    - "{{ IP_subject_alt_name }}"
+  loop: "{{ users + [IP_subject_alt_name] }}"
   no_log: true
 
 - name: Generate raw preshared keys
@@ -42,34 +38,26 @@
     path: "{{ wireguard_pki_path }}/preshared/{{ item }}.raw"
     format: raw
     mode: "0600"
-  with_items:
-    - "{{ users }}"
-    - "{{ IP_subject_alt_name }}"
+  loop: "{{ users + [IP_subject_alt_name] }}"
 
 - name: Save base64 encoded preshared keys
   copy:
     dest: "{{ wireguard_pki_path }}/preshared/{{ item }}"
     content: "{{ lookup('file', wireguard_pki_path + '/preshared/' + item + '.raw') | b64encode }}"
     mode: "0600"
-  with_items:
-    - "{{ users }}"
-    - "{{ IP_subject_alt_name }}"
+  loop: "{{ users + [IP_subject_alt_name] }}"
   no_log: true
 
 - name: Generate public keys
   x25519_pubkey:
     private_key_path: "{{ wireguard_pki_path }}/private/{{ item }}.raw"
     public_key_path: "{{ wireguard_pki_path }}/public/{{ item }}"
-  with_items:
-    - "{{ users }}"
-    - "{{ IP_subject_alt_name }}"
+  loop: "{{ users + [IP_subject_alt_name] }}"
   no_log: true
 
 - name: Set permissions for public keys
   file:
     path: "{{ wireguard_pki_path }}/public/{{ item }}"
     mode: '0644'
-  with_items:
-    - "{{ users }}"
-    - "{{ IP_subject_alt_name }}"
+  loop: "{{ users + [IP_subject_alt_name] }}"
   no_log: true

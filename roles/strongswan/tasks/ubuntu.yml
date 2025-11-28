@@ -31,7 +31,7 @@
     - name: Ubuntu | Enforcing ipsec with apparmor
       command: aa-enforce "{{ item }}"
       changed_when: false
-      with_items:
+      loop:
         - /usr/lib/ipsec/charon
         - /usr/lib/ipsec/lookip
         - /usr/lib/ipsec/stroke
@@ -40,7 +40,7 @@
 
 - name: Ubuntu | Enable services
   service: name={{ item }} enabled=yes
-  with_items:
+  loop:
     - apparmor
     - "{{ strongswan_service }}"
     - netfilter-persistent

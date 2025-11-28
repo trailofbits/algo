@@ -6,7 +6,7 @@
     owner: "{{ item.owner }}"
     group: "{{ item.group }}"
     mode: "{{ item.mode }}"
-  with_items:
+  loop:
     - src: strongswan.conf.j2
       dest: strongswan.conf
       owner: root
@@ -49,11 +49,11 @@
   notify:
     - restart strongswan
   when: item not in strongswan_enabled_plugins and item not in strongswan_additional_plugins
-  with_items: "{{ strongswan_plugins.stdout_lines }}"
+  loop: "{{ strongswan_plugins.stdout_lines }}"
 
 - name: Ensure that required plugins are enabled
   lineinfile: dest="{{ config_prefix | default('/') }}etc/strongswan.d/charon/{{ item }}.conf" regexp='.*load.*' line='load = yes' state=present
   notify:
     - restart strongswan
   when: item in strongswan_enabled_plugins or item in strongswan_additional_plugins
-  with_items: "{{ strongswan_plugins.stdout_lines }}"
+  loop: "{{ strongswan_plugins.stdout_lines }}"
