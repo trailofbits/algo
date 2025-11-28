@@ -3,21 +3,27 @@
 First of all, check [this](https://github.com/trailofbits/algo#features) and ensure that you are deploying to Ubuntu 22.04 LTS, the only supported server platform.
 
   * [Installation Problems](#installation-problems)
-     * [Python version is not supported](#python-version-is-not-supported)
-     * [Error: "ansible-playbook: command not found"](#error-ansible-playbook-command-not-found)
-     * [Fatal: "Failed to validate the SSL certificate for ..."](#fatal-failed-to-validate-the-SSL-certificate)
-     * [Bad owner or permissions on .ssh](#bad-owner-or-permissions-on-ssh)
-     * [The region you want is not available](#the-region-you-want-is-not-available)
-     * [AWS: SSH permission denied with an ECDSA key](#aws-ssh-permission-denied-with-an-ecdsa-key)
-     * [AWS: "Deploy the template" fails with CREATE_FAILED](#aws-deploy-the-template-fails-with-create_failed)
-     * [AWS: not authorized to perform: cloudformation:UpdateStack](#aws-not-authorized-to-perform-cloudformationupdatestack)
-     * [Azure: The client xxx with object id xxx does not have authorization to perform action Microsoft.Resources/subscriptions/resourcegroups/write' over scope](#azure-deployment-permissions-error)
-     * [Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid](#windows-the-value-of-parameter-linuxconfigurationsshpublickeyskeydata-is-invalid)
-     * [Windows: "The parameter is incorrect" error when connecting](#windows-the-parameter-is-incorrect-error-when-connecting)
-     * [Error: Failed to create symlinks for deploying to localhost](#error-failed-to-create-symlinks-for-deploying-to-localhost)
-     * [Wireguard: Unable to find 'configs/...' in expected paths](#wireguard-unable-to-find-configs-in-expected-paths)
-     * [Timeout when waiting for search string OpenSSH in xxx.xxx.xxx.xxx:4160](#old-networking-firewall-in-place)
-     * [Linode Error: "Unable to query the Linode API. Saw: 400: The requested distribution is not supported by this stackscript.; "](#linode-error-uable-to-query-the-linode-api-saw-400-the-requested-distribution-is-not-supported-by-this-stackscript)
+     * General Setup
+        * [Python version is not supported](#python-version-is-not-supported)
+        * [Error: "ansible-playbook: command not found"](#error-ansible-playbook-command-not-found)
+        * [Fatal: "Failed to validate the SSL certificate for ..."](#fatal-failed-to-validate-the-SSL-certificate)
+        * [Bad owner or permissions on .ssh](#bad-owner-or-permissions-on-ssh)
+     * Cloud Providers
+        * [The region you want is not available](#the-region-you-want-is-not-available)
+        * [AWS: SSH permission denied with an ECDSA key](#aws-ssh-permission-denied-with-an-ecdsa-key)
+        * [AWS: "Deploy the template" fails with CREATE_FAILED](#aws-deploy-the-template-fails-with-create_failed)
+        * [AWS: not authorized to perform: cloudformation:UpdateStack](#aws-not-authorized-to-perform-cloudformationupdatestack)
+        * [Azure: No such file or directory .azure/azureProfile.json](#azure-no-such-file-or-directory-homeusernameazureazureprofilejson)
+        * [Azure: Deployment Permissions Error](#azure-deployment-permissions-error)
+        * [Linode: Stackscript error](#linode-error-unable-to-query-the-linode-api-saw-400-the-requested-distribution-is-not-supported-by-this-stackscript-)
+     * Windows
+        * [Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid](#windows-the-value-of-parameter-linuxconfigurationsshpublickeyskeydata-is-invalid)
+        * [Windows: "The parameter is incorrect" error when connecting](#windows-the-parameter-is-incorrect-error-when-connecting)
+     * Local Deployment
+        * [Error: Failed to create symlinks for deploying to localhost](#error-failed-to-create-symlinks-for-deploying-to-localhost)
+        * [Wireguard: Unable to find 'configs/...' in expected paths](#wireguard-unable-to-find-configs-in-expected-paths)
+     * Network
+        * [Timeout when waiting for search string OpenSSH](#old-networking-firewall-in-place)
   * [Connection Problems](#connection-problems)
      * [I'm blocked or get CAPTCHAs when I access certain websites](#im-blocked-or-get-captchas-when-i-access-certain-websites)
      * [I want to change the list of trusted Wifi networks on my Apple device](#i-want-to-change-the-list-of-trusted-wifi-networks-on-my-apple-device)
@@ -151,6 +157,9 @@ az role assignment create --assignee-object-id THE_OBJECT_ID --scope subscriptio
 
 After this is applied, the Service Principal has permissions to create the resources and you can re-run `ansible-playbook main.yml` to complete the deployment.
 
+### Linode Error: "Unable to query the Linode API. Saw: 400: The requested distribution is not supported by this stackscript.; "
+
+StackScript is a custom deployment script that defines a set of configurations for a Linode instance (e.g. which distribution, specs, etc.). if you used algo with default values in the past deployments, a stackscript that would've been created is 're-used' in the deployment process (in fact, go see 'create Linodes' and under 'StackScripts' tab). Thus, there's a little chance that your deployment process will generate this 'unsupported stackscript' error due to a pre-existing StackScript that doesn't support a particular configuration setting or value due to an 'old' stackscript. The quickest solution is just to change the name of your deployment from the default value of 'algo' (or any other name that you've used before, again see the dashboard) and re-run the deployment.
 
 ### Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid
 
@@ -277,11 +286,6 @@ ok: [localhost] => {
 ```
 
 If you see this error then one possible explanation is that you have a previous firewall configured in your cloud hosting provider which needs to be either updated or ideally removed. Removing this can often fix this issue.
-
-### Linode Error: "Unable to query the Linode API. Saw: 400: The requested distribution is not supported by this stackscript.; "
-
-StackScript is a custom deployment script that defines a set of configurations for a Linode instance (e.g. which distribution, specs, etc.). if you used algo with default values in the past deployments, a stackscript that would've been created is 're-used' in the deployment process (in fact, go see 'create Linodes' and under 'StackScripts' tab). Thus, there's a little chance that your deployment process will generate this 'unsupported stackscript' error due to a pre-existing StackScript that doesn't support a particular configuration setting or value due to an 'old' stackscript. The quickest solution is just to change the name of your deployment from the default value of 'algo' (or any other name that you've used before, again see the dashboard) and re-run the deployment.
-
 
 ## Connection Problems
 
