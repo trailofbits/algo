@@ -22,7 +22,7 @@ Algo is an Ansible-based tool that sets up a personal VPN in the cloud. It's des
 - Clarity over cleverness
 - Test everything
 - Stay in scope - solve exactly what the issue asks, nothing more
-- Verify before encoding - confirm assumptions by running the code
+- Test assumptions - run the code before committing
 - Resist new dependencies - each one is attack surface and maintenance
 
 ## Architecture and Structure
