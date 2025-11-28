@@ -21,6 +21,17 @@ For local installation on the same machine, you must run:
 sudo ./algo
 ```
 
+## Confirmation Prompt
+
+Local installation displays a warning and requires you to type `yes` to proceed. This ensures you understand that Algo will modify firewall rules and system settings, and that there is no uninstall option.
+
+For automated deployments or CI/CD pipelines, skip the confirmation with:
+```bash
+ansible-playbook main.yml -e "provider=local local_install_confirmed=true server=localhost endpoint=YOUR_IP"
+```
+
+Only use `local_install_confirmed=true` when you have already taken a backup and understand the risks.
+
 ## Road Warrior Setup
 
 A "road warrior" setup lets you securely access your home network and its resources when traveling. This involves installing Algo on a server within your home LAN.
