@@ -183,7 +183,6 @@ Alternatively, disable specific features:
 ## Compatibility
 
 - **Ubuntu 22.04**: Fully supported
-- **FreeBSD**: Limited support (log rotation and history clearing only)
 - **Other distributions**: May require adaptation
 
 ## Best Practices

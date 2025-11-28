@@ -40,10 +40,6 @@ def main():
         # Routing cache flush - just pretend it worked
         result["stdout"] = ""
         result["changed"] = True
-    elif "ifconfig lo100" in cmd:
-        # BSD loopback commands - simulate success
-        result["stdout"] = "0"
-        result["changed"] = True
     else:
         # For other commands, try to run them
         try:
