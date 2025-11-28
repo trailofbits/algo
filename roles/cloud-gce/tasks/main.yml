@@ -21,16 +21,12 @@
     name: algovpn
     network: "{{ gcp_compute_network }}"
     direction: INGRESS
-    allowed:
-      - ip_protocol: udp
-        ports:
-          - "500"
-          - "4500"
-          - "{{ wireguard_port | string }}"
-      - ip_protocol: tcp
-        ports:
-          - "{{ ssh_port }}"
-      - ip_protocol: icmp
+    allowed: >-
+      {{
+        [{ 'ip_protocol': 'tcp', 'ports': [ssh_port | string] }, { 'ip_protocol': 'icmp' }]
+        + ([{ 'ip_protocol': 'udp', 'ports': ['500', '4500'] }] if ipsec_enabled | default(true) | bool else [])
+        + ([{ 'ip_protocol': 'udp', 'ports': [wireguard_port | string] }] if wireguard_enabled | default(true) | bool else [])
+      }}
 
 - block:
     - name: External IP allocated

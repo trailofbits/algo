@@ -25,10 +25,26 @@ Parameters:
     AllowedValues:
       - spot
       - on-demand
+  IpsecEnabled:
+    Description: Whether to open IPsec ports (500, 4500) in security group
+    Type: String
+    Default: 'true'
+    AllowedValues:
+      - 'true'
+      - 'false'
+  WireguardEnabled:
+    Description: Whether to open WireGuard port in security group
+    Type: String
+    Default: 'true'
+    AllowedValues:
+      - 'true'
+      - 'false'
 Conditions:
   AllocateNewEIP: !Equals [!Ref UseThisElasticIP, '']
   AssociateExistingEIP: !Not [!Equals [!Ref UseThisElasticIP, '']]
   InstanceIsSpot: !Equals [spot, !Ref InstanceMarketTypeParameter]
+  OpenIpsecPorts: !Equals ['true', !Ref IpsecEnabled]
+  OpenWireguardPorts: !Equals ['true', !Ref WireguardEnabled]
 Resources:
   VPC:
     Type: AWS::EC2::VPC
@@ -120,27 +136,49 @@ Resources:
       - Subnet
     Properties:
       VpcId: !Ref VPC
-      GroupDescription: Enable SSH and IPsec
+      GroupDescription: Algo VPN security group
       SecurityGroupIngress:
         - IpProtocol: tcp
+          Description: SSH
           FromPort: !Ref SshPort
           ToPort: !Ref SshPort
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: udp
-          FromPort: '500'
-          ToPort: '500'
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: udp
-          FromPort: '4500'
-          ToPort: '4500'
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: udp
-          FromPort: !Ref WireGuardPort
-          ToPort: !Ref WireGuardPort
           CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
           Value: !Ref AWS::StackName
+
+  SecurityGroupIngressIpsec500:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: OpenIpsecPorts
+    Properties:
+      GroupId: !Ref InstanceSecurityGroup
+      Description: IPsec IKE
+      IpProtocol: udp
+      FromPort: 500
+      ToPort: 500
+      CidrIp: 0.0.0.0/0
+
+  SecurityGroupIngressIpsec4500:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: OpenIpsecPorts
+    Properties:
+      GroupId: !Ref InstanceSecurityGroup
+      Description: IPsec NAT-T
+      IpProtocol: udp
+      FromPort: 4500
+      ToPort: 4500
+      CidrIp: 0.0.0.0/0
+
+  SecurityGroupIngressWireguard:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: OpenWireguardPorts
+    Properties:
+      GroupId: !Ref InstanceSecurityGroup
+      Description: WireGuard
+      IpProtocol: udp
+      FromPort: !Ref WireGuardPort
+      ToPort: !Ref WireGuardPort
+      CidrIp: 0.0.0.0/0
 
   EC2LaunchTemplate:
     Type: AWS::EC2::LaunchTemplate

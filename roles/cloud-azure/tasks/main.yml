@@ -10,7 +10,7 @@
   azure_rm_deployment:
     state: present
     deployment_name: "{{ algo_server_name }}"
-    template: "{{ lookup('file', role_path + '/files/deployment.json') }}"
+    template: "{{ lookup('template', 'files/deployment.json.j2') }}"
     secret: "{{ secret }}"
     tenant: "{{ tenant }}"
     client_id: "{{ client_id }}"

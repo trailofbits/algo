@@ -8,7 +8,7 @@
     stack_name: "{{ stack_name }}"
     state: present
     region: "{{ algo_region }}"
-    template_body: "{{ lookup('file', 'roles/cloud-lightsail/files/stack.yaml') }}"
+    template_body: "{{ lookup('template', 'files/stack.yaml.j2') }}"
     template_parameters:
       InstanceTypeParameter: "{{ cloud_providers.lightsail.size }}"
       ImageIdParameter: "{{ cloud_providers.lightsail.image }}"

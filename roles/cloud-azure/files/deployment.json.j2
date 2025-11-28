@@ -58,8 +58,9 @@
               "priority": 100,
               "direction": "Inbound"
             }
-          },
-          {
+          }
+{% if ipsec_enabled | default(true) | bool %}
+          ,{
             "name": "AllowIPSEC500",
             "properties": {
               "description": "Allow UDP to port 500",
@@ -86,11 +87,13 @@
               "priority": 120,
               "direction": "Inbound"
             }
-          },
-          {
+          }
+{% endif %}
+{% if wireguard_enabled | default(true) | bool %}
+          ,{
             "name": "AllowWireGuard",
             "properties": {
-              "description": "Locks inbound down to ssh default port 22.",
+              "description": "Allow WireGuard VPN",
               "protocol": "Udp",
               "sourcePortRange": "*",
               "destinationPortRange": "[parameters('WireGuardPort')]",
@@ -101,6 +104,7 @@
               "direction": "Inbound"
             }
           }
+{% endif %}
         ]
       }
     },

@@ -35,6 +35,7 @@ Resources:
             FromPort: !Ref SshPort
             ToPort: !Ref SshPort
             Protocol: tcp
+{% if wireguard_enabled | default(true) | bool %}
           - AccessDirection: inbound
             Cidrs: ['0.0.0.0/0']
             Ipv6Cidrs: ['::/0']
@@ -42,6 +43,8 @@ Resources:
             FromPort: !Ref WireGuardPort
             ToPort: !Ref WireGuardPort
             Protocol: udp
+{% endif %}
+{% if ipsec_enabled | default(true) | bool %}
           - AccessDirection: inbound
             Cidrs: ['0.0.0.0/0']
             Ipv6Cidrs: ['::/0']
@@ -56,6 +59,7 @@ Resources:
             FromPort: 500
             ToPort: 500
             Protocol: udp
+{% endif %}
       Tags:
         - Key: Name
           Value: !Ref AWS::StackName
