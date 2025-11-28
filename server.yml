@@ -205,6 +205,8 @@
                   IP_subject_alt_name: {{ IP_subject_alt_name }}
                   ipsec_enabled: {{ ipsec_enabled }}
                   wireguard_enabled: {{ wireguard_enabled }}
+                  local_service_ip: {{ local_service_ip }}
+                  local_service_ipv6: {{ local_service_ipv6 }}
                   {% if tests | default(false) | bool %}
                   ca_password: '{{ CA_password }}'
                   p12_password: '{{ p12_export_password }}'
