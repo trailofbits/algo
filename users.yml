@@ -24,7 +24,7 @@
 
         - name: Build list of installed servers
           set_fact:
-            server_list: "{{ server_list | default([]) + [ {'server': config.server, 'IP_subject_alt_name': config.IP_subject_alt_name} ] }}"
+            server_list: "{{ server_list | default([]) + [{'server': config.server, 'IP_subject_alt_name': config.IP_subject_alt_name}] }}"
           loop: "{{ _configs_list.files }}"
           loop_control:
             label: "{{ item.path }}"
@@ -50,6 +50,41 @@
         - name: Import host specific variables
           include_vars:
             file: configs/{{ algo_server }}/.config.yml
+
+        - name: Validate users list is not empty
+          fail:
+            msg: |
+              NO USERS DEFINED
+
+              The 'users' list in config.cfg is empty. At least one user is required.
+              Add users to config.cfg before running update-users.
+          when: users | default([]) | length == 0
+
+        - name: Local deployment permission validation
+          block:
+            - name: Get config directory owner
+              stat:
+                path: configs/{{ algo_server }}
+              register: config_dir_stat
+
+            - name: Fail on permission mismatch
+              fail:
+                msg: |
+                  PERMISSION MISMATCH DETECTED
+
+                  Config directory owner: {{ config_dir_stat.stat.pw_name }}
+                  Current user: {{ ansible_user_id }}
+
+                  Running update-users with mismatched permissions will create
+                  files with inconsistent ownership, breaking future operations.
+
+                  TO FIX: Run this command, then retry update-users:
+                    sudo chown -R {{ ansible_user_id }} configs/{{ algo_server }}/
+
+                  PREVENT: Always run update-users the same way as initial deployment
+                  (both with sudo, or both without sudo).
+              when: config_dir_stat.stat.pw_name != ansible_user_id
+          when: algo_server == 'localhost' or algo_provider | default('') == 'local'
 
         - name: Test SSH connectivity to server
           wait_for:
