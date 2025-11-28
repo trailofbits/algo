@@ -41,8 +41,8 @@
     - name: Set the default region
       set_fact:
         default_region: >-
-          {% for r in lightsail_regions %}
-          {%- if r['name'] == "us-east-1" %}{{ loop.index }}{% endif %}
+          {% for r in lightsail_regions -%}
+            {% if r['name'] == "us-east-1" %}{{ loop.index }}{% endif %}
           {%- endfor %}
 
     - pause:
@@ -61,6 +61,6 @@
 - set_fact:
     stack_name: "{{ algo_server_name | replace('.', '-') }}"
     algo_region: >-
-      {% if region is defined %}{{ region }}
-      {%- elif _algo_region.user_input %}{{ lightsail_regions[_algo_region.user_input | int - 1]['name'] }}
-      {%- else %}{{ lightsail_regions[default_region | int - 1]['name'] }}{% endif %}
+      {% if region is defined %}{{ region -}}
+      {% elif _algo_region.user_input %}{{ lightsail_regions[_algo_region.user_input | int - 1]['name'] -}}
+      {% else %}{{ lightsail_regions[default_region | int - 1]['name'] }}{% endif %}

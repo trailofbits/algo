@@ -4,6 +4,7 @@
 
 - name: flush routing cache
   shell: echo 1 > /proc/sys/net/ipv4/route/flush
+  changed_when: false
 
 - name: restart systemd-networkd
   systemd:
@@ -21,3 +22,4 @@
 
 - name: netplan apply
   command: netplan apply
+  changed_when: false

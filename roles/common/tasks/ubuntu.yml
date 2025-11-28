@@ -29,6 +29,7 @@
       args:
         executable: /bin/bash
       register: reboot_required
+      changed_when: false
 
     - name: Reboot (kernel updated or performance optimization disabled)
       shell: sleep 2 && shutdown -r now "Ansible updates triggered"
@@ -39,6 +40,7 @@
           reboot_required.stdout == 'kernel-updated' or
           (reboot_required.stdout == 'optional' and not performance_skip_optional_reboots|default(false))
         )
+      changed_when: true
       failed_when: false
 
     - name: Skip reboot (performance optimization enabled)

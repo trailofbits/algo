@@ -25,7 +25,7 @@
     - /tmp/.font-unix
     - /tmp/.ICE-unix
   when: privacy_history_clearing.clear_system_history | bool
-  ignore_errors: true
+  failed_when: false
 
 - name: Configure bash to not save history for service users
   lineinfile:
@@ -44,7 +44,7 @@
       export HISTFILESIZE=0
       unset HISTFILE
   when: privacy_history_clearing.disable_service_history | bool
-  ignore_errors: true
+  failed_when: false
 
 - name: Create history clearing script for logout
   template:
