@@ -106,7 +106,7 @@ Before creating a PR, review your own diff:
 
 ## Ansible Pitfalls
 
-### with_items vs loop (CRITICAL)
+### with_items vs loop
 
 `with_items` auto-flattens lists; `loop` does not. **Never mechanically convert:**
 
@@ -221,7 +221,7 @@ Algo uses a randomly generated IP in 172.16.0.0/12 on the loopback interface (`l
 - Works identically across all cloud providers
 - Trade-off: Requires `route_localnet=1` sysctl
 
-### The Critical Gotcha: systemd Socket Activation
+### systemd Socket Activation
 
 Ubuntu's dnscrypt-proxy uses socket activation which **completely ignores** the `listen_addresses` config setting. You must configure the socket, not the service:
 
@@ -239,7 +239,9 @@ Common mistakes:
 - Only setting ListenStream (need ListenDatagram for UDP)
 - Forgetting to restart socket after config changes
 
-### Debugging DNS (90% of "routing" issues are DNS)
+### Debugging DNS
+
+Many "routing" issues are actually DNS issues. Start here:
 
 ```bash
 ss -lnup | grep :53                      # Should show local_service_ip:53
@@ -247,6 +249,8 @@ systemctl status dnscrypt-proxy.socket   # Check for config warnings
 sysctl net.ipv4.conf.all.route_localnet  # Must be 1
 dig @172.x.x.x google.com                # Test resolution
 ```
+
+For comprehensive diagnostics, see [docs/troubleshooting.md](docs/troubleshooting.md#diagnostic-commands).
 
 ## Common Issues
 
