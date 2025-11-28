@@ -18,7 +18,7 @@
     - name: Generate keys (parallel) - simulating wg genkey
       command: echo "mock_private_key_for_{{ item }}"
       register: wg_genkey
-      with_items:
+      loop:
         - "{{ test_users }}"
         - "{{ IP_subject_alt_name }}"
       async: 10
@@ -27,7 +27,7 @@
     - name: Wait for completion - simulating async_status
       async_status:
         jid: "{{ item.ansible_job_id }}"
-      with_items: "{{ wg_genkey.results }}"
+      loop: "{{ wg_genkey.results }}"
       register: wg_genkey_results
       until: wg_genkey_results.finished
       retries: 15
@@ -39,7 +39,7 @@
         content: "{{ item.stdout }}"
         mode: "0600"
       when: item.changed
-      with_items: "{{ wg_genkey_results.results }}"
+      loop: "{{ wg_genkey_results.results }}"
 
     - name: Verify files were created with correct names
       stat:

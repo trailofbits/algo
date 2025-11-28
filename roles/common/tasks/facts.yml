@@ -1,4 +1,11 @@
 ---
+- name: Set OS platform facts
+  set_fact:
+    is_debian_based: "{{ ansible_distribution in ['Debian', 'Ubuntu'] }}"
+    uses_systemd_socket: "{{ ansible_distribution in ['Debian', 'Ubuntu'] }}"
+    is_ubuntu_22_plus: "{{ ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('22.04', '>=') }}"
+  tags: always
+
 - name: Define facts
   set_fact:
     p12_export_password: "{{ p12_password | default(lookup('password', '/dev/null length=9 chars=ascii_letters,digits,_,@')) }}"

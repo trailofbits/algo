@@ -9,7 +9,7 @@
   args:
     executable: bash
     chdir: "{{ ipsec_pki_path }}"
-  with_items: "{{ users }}"
+  loop: "{{ users }}"
 
 - name: Set facts for mobileconfigs
   set_fact:
@@ -30,7 +30,7 @@
     src: client_ipsec.conf.j2
     dest: "{{ ipsec_config_path }}/manual/{{ item }}.conf"
     mode: '0600'
-  with_items:
+  loop:
     - "{{ users }}"
 
 
@@ -39,7 +39,7 @@
     src: client_ipsec.secrets.j2
     dest: "{{ ipsec_config_path }}/manual/{{ item }}.secrets"
     mode: '0600'
-  with_items:
+  loop:
     - "{{ users }}"
 
 - name: Restrict permissions for the local private directories

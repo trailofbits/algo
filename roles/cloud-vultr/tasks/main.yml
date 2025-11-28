@@ -19,7 +19,7 @@
         ip_type: "{{ item.ip }}"
         subnet: "{{ item.cidr.split('/')[0] }}"
         subnet_size: "{{ item.cidr.split('/')[1] }}"
-      with_items:
+      loop:
         - { protocol: tcp, port: "{{ ssh_port }}", ip: v4, cidr: 0.0.0.0/0 }
         - { protocol: tcp, port: "{{ ssh_port }}", ip: v6, cidr: "::/0" }
         - { protocol: udp, port: 500, ip: v4, cidr: 0.0.0.0/0 }

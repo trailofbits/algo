@@ -61,7 +61,6 @@ jobs:
               - '**/*.sh'
               - '.ansible-lint'
               - '.yamllint'
-              - 'ruff.toml'
               - 'pyproject.toml'
             integration:
               - 'main.yml'
@@ -239,17 +238,25 @@ jobs:
       - name: Run relevant linters
         env:
           RUN_LINT: ${{ needs.changed-files.outputs.run_lint }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.sha }}
         run: |
-          # Always run if lint files changed
+          # Run linters if lint-related files changed
           if [[ "${RUN_LINT}" == "true" ]]; then
-            # Run all linters
-            uv run --with ruff ruff check . || true
-            uv run --with yamllint yamllint . || true
-            uv run --with ansible-lint ansible-lint || true
+            echo "Running linters..."
+
+            # Run Python linter
+            uv run --with ruff ruff check .
+
+            # Run YAML linter
+            uv run --with yamllint yamllint -c .yamllint .
+
+            # Run Ansible linter
+            uv run --with ansible-lint ansible-lint
 
             # Check shell scripts if any changed
-            if git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep -q '\.sh$'; then
-              find . -name "*.sh" -type f -exec shellcheck {} + || true
+            if git diff --name-only "${BASE_SHA}" "${HEAD_SHA}" | grep -q '\.sh$'; then
+              find . -name "*.sh" -type f -not -path "./.git/*" -exec shellcheck {} +
             fi
           fi
 

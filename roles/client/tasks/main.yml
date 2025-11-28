@@ -6,8 +6,7 @@
 
 - name: Install prerequisites
   package: name="{{ item }}" state=present
-  with_items:
-    - "{{ prerequisites }}"
+  loop: "{{ prerequisites }}"
   register: result
   until: result is succeeded
   retries: 10
@@ -25,8 +24,6 @@
     src: roles/strongswan/templates/client_ipsec.conf.j2
     dest: "{{ configs_prefix }}/ipsec.{{ IP_subject_alt_name }}.conf"
     mode: "0644"
-  with_items:
-    - "{{ vpn_user }}"
   notify:
     - restart strongswan
 
@@ -35,8 +32,6 @@
     src: roles/strongswan/templates/client_ipsec.secrets.j2
     dest: "{{ configs_prefix }}/ipsec.{{ IP_subject_alt_name }}.secrets"
     mode: "0600"
-  with_items:
-    - "{{ vpn_user }}"
   notify:
     - restart strongswan
 
@@ -46,7 +41,7 @@
     line: "{{ item.line }}"
     create: true
     mode: "{{ item.mode }}"
-  with_items:
+  loop:
     - dest: "{{ configs_prefix }}/ipsec.conf"
       line: include ipsec.{{ IP_subject_alt_name }}.conf
       mode: '0644'
@@ -69,7 +64,7 @@
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     mode: "{{ item.mode }}"
-  with_items:
+  loop:
     - src: configs/{{ IP_subject_alt_name }}/ipsec/.pki/certs/{{ vpn_user }}.crt
       dest: "{{ configs_prefix }}/ipsec.d/certs/{{ vpn_user }}.crt"
       mode: '0644'

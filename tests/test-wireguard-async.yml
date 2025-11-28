@@ -39,7 +39,7 @@
         content: "{{ item.stdout }}"
         mode: "0600"
       when: item.changed
-      with_items: "{{ mock_wg_genkey_results.results }}"
+      loop: "{{ mock_wg_genkey_results.results }}"
 
     - name: Verify files were created correctly
       stat:

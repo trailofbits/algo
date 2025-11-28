@@ -5,15 +5,15 @@
     state: directory
     recurse: true
     mode: "0755"
-  with_items:
+  loop:
     - "{{ wireguard_config_path }}/apple/ios"
     - "{{ wireguard_config_path }}/apple/macos"
   delegate_to: localhost
   become: false
 
-- name: Include tasks for Ubuntu
+- name: Include tasks for Debian/Ubuntu
   include_tasks: ubuntu.yml
-  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  when: is_debian_based
   tags: always
 
 
@@ -33,7 +33,7 @@
             insertafter: EOF
             line: "{{ item }}"
           register: lineinfile
-          with_items: "{{ users }}"
+          loop: "{{ users }}"
 
         - set_fact:
             wireguard_users: "{{ (lookup('file', wireguard_pki_path + '/index.txt')).split('\n') }}"
