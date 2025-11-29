@@ -68,7 +68,6 @@ multipass delete algo-test && multipass purge
 - Root access (for network namespace operations)
 - Linux (network namespaces are a kernel feature)
 - Deployed Algo VPN on localhost (configs in `configs/localhost/`)
-- A user named `alice` in the config (default in CI; override with `TEST_USER=username`)
 - Required tools:
   - `iproute2` (ip netns)
   - `wireguard-tools` (wg, wg-quick)
@@ -76,6 +75,20 @@ multipass delete algo-test && multipass purge
   - `libxml2-utils` (xmllint)
   - `openssl`
   - `dnsutils` (host)
+
+## Configuration Assumptions
+
+The tests assume Algo's default network configuration:
+
+| Setting | Default Value | Environment Variable |
+|---------|---------------|---------------------|
+| Test user | `alice` | `TEST_USER=username` |
+| WireGuard server IP | `10.49.0.1` | (hardcoded) |
+| DNS service IP | `172.16.0.1` | (hardcoded) |
+
+If you've customized `wireguard_network_ipv4` or `local_service_ip` in your
+deployment, the tests will fail. The CI workflow creates users `alice` and `bob`
+specifically for testing.
 
 ## What Gets Tested
 
