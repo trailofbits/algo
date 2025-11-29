@@ -288,21 +288,11 @@ test_wireguard() {
     log_info "Server WireGuard listening:"
     ss -ulnp | grep 51820 || log_warn "WireGuard port not found in ss output"
 
-    # Debug: Show routing before WireGuard starts
-    log_info "Host routing table:"
-    ip route | grep -E "(10.99|10.49|default)" || true
-    log_info "Namespace routing table:"
-    ip netns exec "${NAMESPACE}" ip route || true
-
-    # Debug: Check reverse path filtering (can drop packets)
-    log_info "Reverse path filter settings:"
-    sysctl net.ipv4.conf.all.rp_filter net.ipv4.conf."${VETH_SERVER}".rp_filter 2>/dev/null || true
-
-    # Disable reverse path filtering on veth (can cause packet drops)
+    # Disable reverse path filtering on veth (can cause packet drops in some environments)
     sysctl -w net.ipv4.conf.all.rp_filter=0 > /dev/null 2>&1 || true
     sysctl -w net.ipv4.conf."${VETH_SERVER}".rp_filter=0 > /dev/null 2>&1 || true
 
-    # Start packet capture in background for debugging
+    # Start packet capture in background for failure diagnosis
     local tcpdump_log="/tmp/algo-tcpdump.log"
     timeout 20 tcpdump -i any -n port 51820 -c 20 > "${tcpdump_log}" 2>&1 &
     local tcpdump_pid=$!
