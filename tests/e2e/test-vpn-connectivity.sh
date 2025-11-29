@@ -252,9 +252,15 @@ test_wireguard() {
     sed -i "s/Endpoint = localhost:/Endpoint = ${SERVER_BRIDGE_IP}:/" "${ns_config}"
     sed -i '/^DNS = /d' "${ns_config}"
 
-    # Add Table=off if not present
+    # Add Table=off if not present (prevent routing table changes in namespace)
     if ! grep -q "^Table" "${ns_config}"; then
         sed -i '/^\[Interface\]/a Table = off' "${ns_config}"
+    fi
+
+    # Add PersistentKeepalive to trigger handshake initiation
+    # Without this, WireGuard waits for outgoing traffic before initiating
+    if ! grep -q "^PersistentKeepalive" "${ns_config}"; then
+        sed -i '/^\[Peer\]/a PersistentKeepalive = 1' "${ns_config}"
     fi
 
     log_info "Modified WireGuard config for namespace testing"
