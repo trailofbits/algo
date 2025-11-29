@@ -261,7 +261,23 @@ test_wireguard() {
 
     # Debug: Show server WireGuard state before client connects
     log_info "Server WireGuard peers:"
-    wg show wg0 peers 2>/dev/null || log_warn "Could not query server wg0"
+    local server_peers
+    server_peers=$(wg show wg0 peers 2>/dev/null || echo "")
+    if [[ -z "${server_peers}" ]]; then
+        # Workaround: Deployment bug causes handlers not to fire with async roles
+        # Restart WireGuard to load the peer configuration
+        log_warn "No peers found - restarting WireGuard to load config (deployment handler bug workaround)"
+        systemctl restart wg-quick@wg0 || log_error "Failed to restart WireGuard"
+        sleep 2
+        server_peers=$(wg show wg0 peers 2>/dev/null || echo "")
+    fi
+    if [[ -n "${server_peers}" ]]; then
+        log_info "Found peers: ${server_peers}"
+    else
+        log_error "Server WireGuard has no peers configured!"
+        log_error "Check that deployment created /etc/wireguard/wg0.conf with [Peer] sections"
+        return 1
+    fi
     log_info "Server WireGuard listening:"
     ss -ulnp | grep 51820 || log_warn "WireGuard port not found in ss output"
 
