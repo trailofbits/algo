@@ -59,8 +59,11 @@ cleanup() {
     ip netns exec "${NAMESPACE}" ipsec stroke down-nb "algovpn" 2>/dev/null || true
     ip netns exec "${NAMESPACE}" ipsec stop 2>/dev/null || true
 
-    # Remove NAT rule we added
-    iptables -t nat -D POSTROUTING -s "${CLIENT_BRIDGE_IP}/32" -j MASQUERADE 2>/dev/null || true
+    # Remove firewall rules we added
+    iptables -t nat -D POSTROUTING -s "${CLIENT_BRIDGE_IP}/32" ! -d 10.99.0.0/24 -j MASQUERADE 2>/dev/null || true
+    iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 51820 -j ACCEPT 2>/dev/null || true
+    iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 500 -j ACCEPT 2>/dev/null || true
+    iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 4500 -j ACCEPT 2>/dev/null || true
 
     # Delete namespace (also removes veth pair)
     ip netns del "${NAMESPACE}" 2>/dev/null || true
@@ -116,8 +119,13 @@ setup_namespace() {
     # Enable forwarding on the server for NAT
     sysctl -w net.ipv4.ip_forward=1 > /dev/null
 
-    # Add MASQUERADE for the client namespace traffic
-    iptables -t nat -A POSTROUTING -s "${CLIENT_BRIDGE_IP}/32" -j MASQUERADE
+    # Add MASQUERADE for the client namespace traffic going to external networks
+    iptables -t nat -A POSTROUTING -s "${CLIENT_BRIDGE_IP}/32" ! -d 10.99.0.0/24 -j MASQUERADE
+
+    # Allow WireGuard and IPsec traffic on the veth interface
+    iptables -A INPUT -i "${VETH_SERVER}" -p udp --dport 51820 -j ACCEPT
+    iptables -A INPUT -i "${VETH_SERVER}" -p udp --dport 500 -j ACCEPT
+    iptables -A INPUT -i "${VETH_SERVER}" -p udp --dport 4500 -j ACCEPT
 
     log_info "Namespace ${NAMESPACE} created with IP ${CLIENT_BRIDGE_IP}"
 
