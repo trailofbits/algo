@@ -72,8 +72,9 @@ cleanup() {
     ip link del "${VETH_SERVER}" 2>/dev/null || true
 
     # Clean up temp files
-    rm -f /tmp/algo-test-wg.conf /tmp/algo-ipsec-test-* 2>/dev/null || true
+    rm -f /tmp/algo-test-wg.conf /tmp/algo-ipsec-test-* /tmp/algo-tcpdump.log 2>/dev/null || true
     rm -rf /tmp/algo-ipsec-test 2>/dev/null || true
+    pkill -f "tcpdump.*port 51820" 2>/dev/null || true
 
     log_info "Cleanup complete"
     exit "${exit_code}"
@@ -281,10 +282,30 @@ test_wireguard() {
     log_info "Server WireGuard listening:"
     ss -ulnp | grep 51820 || log_warn "WireGuard port not found in ss output"
 
+    # Debug: Show routing before WireGuard starts
+    log_info "Host routing table:"
+    ip route | grep -E "(10.99|10.49|default)" || true
+    log_info "Namespace routing table:"
+    ip netns exec "${NAMESPACE}" ip route || true
+
+    # Debug: Check reverse path filtering (can drop packets)
+    log_info "Reverse path filter settings:"
+    sysctl net.ipv4.conf.all.rp_filter net.ipv4.conf."${VETH_SERVER}".rp_filter 2>/dev/null || true
+
+    # Disable reverse path filtering on veth (can cause packet drops)
+    sysctl -w net.ipv4.conf.all.rp_filter=0 > /dev/null 2>&1 || true
+    sysctl -w net.ipv4.conf."${VETH_SERVER}".rp_filter=0 > /dev/null 2>&1 || true
+
+    # Start packet capture in background for debugging
+    local tcpdump_log="/tmp/algo-tcpdump.log"
+    timeout 20 tcpdump -i any -n port 51820 -c 20 > "${tcpdump_log}" 2>&1 &
+    local tcpdump_pid=$!
+
     # Start WireGuard in the namespace
     log_info "Starting WireGuard in namespace..."
     if ! ip netns exec "${NAMESPACE}" wg-quick up "${ns_config}" 2>&1; then
         log_error "Failed to start WireGuard in namespace"
+        kill "${tcpdump_pid}" 2>/dev/null || true
         return 1
     fi
 
@@ -323,8 +344,19 @@ test_wireguard() {
         wg show wg0 2>&1 || true
         log_error "Debug - iptables INPUT chain (first 15 rules):"
         iptables -L INPUT -n -v --line-numbers 2>&1 | head -20 || true
+        log_error "Debug - packet capture (tcpdump):"
+        kill "${tcpdump_pid}" 2>/dev/null || true
+        sleep 1
+        cat "${tcpdump_log}" 2>/dev/null || echo "No capture available"
+        log_error "Debug - host route to 10.99.0.0/24:"
+        ip route get 10.99.0.2 2>&1 || true
+        log_error "Debug - namespace route to server:"
+        ip netns exec "${NAMESPACE}" ip route get 10.99.0.1 2>&1 || true
         return 1
     fi
+
+    # Stop packet capture
+    kill "${tcpdump_pid}" 2>/dev/null || true
 
     # Show WireGuard status
     ip netns exec "${NAMESPACE}" wg show
