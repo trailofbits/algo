@@ -517,4 +517,4 @@ Get-WinEvent -LogName "Microsoft-Windows-VPN-Client/Operational" -MaxEvents 50
 
 ## I have a problem not covered here
 
-If you have an issue that you cannot solve with the guidance here, [create a new discussion](https://github.com/trailofbits/algo/discussions) and ask for help. If you think you found a new issue in Algo, [file an issue](https://github.com/trailofbits/algo/issues/new).
+If you have an issue that you cannot solve with the guidance here, please [file an issue](https://github.com/trailofbits/algo/issues/new). We welcome bug reports and want to hear about problems you encounter.
