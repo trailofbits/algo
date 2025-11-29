@@ -1,150 +1,87 @@
-# Algo VPN Test Suite
+# Tests
 
-## Current Test Coverage
+## Running Tests
 
-### What We Test Now
-1. **Basic Sanity** (`test_basic_sanity.py`)
-   - Python version >= 3.11
-   - pyproject.toml exists and has dependencies
-   - config.cfg is valid YAML
-   - Ansible playbook syntax
-   - Shell scripts pass shellcheck
-   - Dockerfile exists and is valid
+```bash
+# Run all linters (same as CI)
+ansible-lint . && yamllint . && ruff check . && shellcheck scripts/*.sh
 
-2. **Docker Build** (`test_docker_build.py`)
-   - Docker image builds successfully
-   - Container can start
-   - Ansible is available in container
+# Run Python unit tests
+pytest tests/unit/ -q
 
-3. **Configuration Generation** (`test-local-config.sh`)
-   - Ansible templates render without errors
-   - Basic configuration can be generated
+# Run E2E connectivity tests (requires deployed Algo on localhost)
+sudo tests/e2e/test-vpn-connectivity.sh both
+```
 
-4. **Config Validation** (`test_config_validation.py`)
-   - WireGuard config format validation
-   - Base64 key format checking
-   - IP address and CIDR notation
-   - Mobile config XML validation
-   - Port range validation
+## Directory Structure
 
-5. **Certificate Validation** (`test_certificate_validation.py`)
-   - OpenSSL availability
-   - Certificate subject formats
-   - Key file permissions (600)
-   - Password complexity
-   - IPsec cipher suite security
+```
+tests/
+├── unit/                    # Python unit tests (pytest)
+│   ├── test_basic_sanity.py
+│   ├── test_config_validation.py
+│   ├── test_template_rendering.py
+│   └── ...
+├── e2e/                     # End-to-end connectivity tests
+│   └── test-vpn-connectivity.sh
+├── integration/             # Integration test helpers
+│   └── mock_modules/
+├── fixtures/                # Shared test data
+│   └── test_variables.yml
+└── conftest.py              # Pytest configuration
+```
 
-6. **User Management** (`test_user_management.py`) - Addresses #14745, #14746, #14738, #14726
-   - User list parsing from config
-   - Server selection string parsing
-   - SSH key preservation
-   - CA password handling
-   - User config path generation
-   - Duplicate user detection
+## Test Coverage
 
-7. **OpenSSL Compatibility** (`test_openssl_compatibility.py`) - Addresses #14755, #14718
-   - OpenSSL version detection
-   - Legacy flag support detection
-   - Apple device key format compatibility
-   - Certificate generation compatibility
-   - PKCS#12 export for mobile devices
+| Category | Tests | What's Verified |
+|----------|-------|-----------------|
+| Sanity | `test_basic_sanity.py` | Python version, config syntax, playbook validity |
+| Config | `test_config_validation.py` | WireGuard/IPsec config formats, key validation |
+| Templates | `test_template_rendering.py` | Jinja2 template syntax, filter compatibility |
+| Certificates | `test_certificate_validation.py` | OpenSSL compatibility, PKCS#12 export |
+| Cloud Providers | `test_cloud_provider_configs.py` | Region formats, instance types, OS images |
+| E2E | `test-vpn-connectivity.sh` | WireGuard handshake, IPsec connection, DNS through VPN |
 
-8. **Cloud Provider Configs** (`test_cloud_provider_configs.py`) - Addresses #14752, #14730, #14762
-   - Cloud provider configuration validation
-   - Hetzner server type updates (cx11 → cx22)
-   - Azure dependency compatibility
-   - Region format validation
-   - Server size naming conventions
-   - OS image naming validation
+## CI Workflows
 
-### What We DON'T Test Yet
+| Workflow | Trigger | What It Does |
+|----------|---------|--------------|
+| `lint.yml` | All PRs | ansible-lint, yamllint, ruff, shellcheck |
+| `main.yml` | Push to master | Syntax check, unit tests, Docker build |
+| `integration-tests.yml` | PRs to roles/ | Full localhost deployment + E2E tests |
+| `smart-tests.yml` | All PRs | Runs subset based on changed files |
 
-#### 1. VPN Functionality
-- **WireGuard configuration validation**
-  - Private/public key generation
-  - Client config file format
-  - QR code generation
-  - Mobile config profiles
-- **IPsec configuration validation**
-  - Certificate generation and validation
-  - StrongSwan config format
-  - Apple profile generation
-- **SSH tunnel configuration**
-  - Key generation
-  - SSH config file format
+## Writing Tests
 
-#### 2. Cloud Provider Integrations
-- DigitalOcean API interactions
-- AWS EC2/Lightsail deployments
-- Azure deployments
-- Google Cloud deployments
-- Other providers (Vultr, Hetzner, etc.)
+### Python Unit Tests
 
-#### 3. User Management
-- Adding new users
-- Removing users
-- Updating user configurations
+Place in `tests/unit/`. Use fixtures from `conftest.py`:
 
-#### 4. Advanced Features
-- DNS ad-blocking configuration
-- On-demand VPN settings
-- MTU calculations
-- IPv6 configuration
+```python
+def test_something(mock_ansible_module, jinja_env):
+    # mock_ansible_module - mocked AnsibleModule
+    # jinja_env - Jinja2 environment with Ansible filters
+    pass
+```
 
-#### 5. Security Validations
-- Certificate constraints
-- Key permissions
-- Password generation
-- Firewall rules
+### Shell Scripts
 
-## Potential Improvements
+Use bash strict mode and pass shellcheck:
 
-### Short Term (Easy Wins)
-1. **Add job names** to fix zizmor warnings
-2. **Test configuration file generation** without deployment:
-   ```python
-   def test_wireguard_config_format():
-       # Generate a test config
-       # Validate it has required sections
-       # Check key format with regex
-   ```
+```bash
+#!/bin/bash
+set -euo pipefail
+```
 
-3. **Test user management scripts** in isolation:
-   ```bash
-   # Test that update-users generates valid YAML
-   ./algo update-users --dry-run
-   ```
+## Troubleshooting
 
-4. **Add XML validation** for mobile configs:
-   ```bash
-   xmllint --noout generated_configs/*.mobileconfig
-   ```
+**E2E tests fail with "namespace already exists"**
+```bash
+sudo ip netns del algo-client
+```
 
-### Medium Term
-1. **Mock cloud provider APIs** to test deployment logic
-2. **Container-based integration tests** using Docker Compose
-3. **Test certificate generation** without full deployment
-4. **Validate generated configs** against schemas
+**Template tests fail with "filter not found"**
+Add the filter to the mock in `conftest.py`.
 
-### Long Term
-1. **End-to-end tests** with actual VPN connections (using network namespaces)
-2. **Performance testing** for large user counts
-3. **Upgrade path testing** (old configs → new configs)
-4. **Multi-platform client testing**
-
-## Security Improvements (from zizmor)
-
-Current status: ✅ No security issues found
-
-Recommendations:
-1. Add explicit job names for better workflow clarity
-2. Consider pinning Ubuntu runner versions to specific releases
-3. Add GITHUB_TOKEN with minimal permissions when needed for API checks
-
-## Test Philosophy
-
-Our approach focuses on:
-1. **Fast feedback** - Tests run in < 3 minutes
-2. **No flaky tests** - Avoid complex networking setups
-3. **Test what matters** - Config generation, not VPN protocols
-4. **Progressive enhancement** - Start simple, add coverage gradually
+**CI fails but local passes**
+Check Python/Ansible versions match CI (Python 3.11, Ansible 12+).

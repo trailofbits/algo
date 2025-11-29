@@ -2,7 +2,6 @@
 exclude_paths:
   - .cache/
   - .github/
-  - tests/legacy-lxd/
   - tests/
   - files/cloud-init/  # Cloud-init files have special format requirements
   - playbooks/  # These are task files included by other playbooks, not standalone playbooks

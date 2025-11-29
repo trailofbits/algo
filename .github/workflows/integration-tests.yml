@@ -33,7 +33,7 @@ jobs:
       - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # v6.1.0
         with:
           python-version: '3.11'
-          cache: 'pip'
+          # Note: No pip cache - we use uv for dependency management
 
       - name: Install system dependencies
         run: |
@@ -46,7 +46,9 @@ jobs:
             dnsmasq \
             qrencode \
             openssl \
-            linux-headers-$(uname -r)
+            linux-headers-$(uname -r) \
+            libxml2-utils \
+            dnsutils
 
       - name: Install uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -202,6 +204,26 @@ jobs:
             # Check IPsec policies
             sudo ipsec statusall | grep -E "INSTALLED|ESTABLISHED" || echo "No active IPsec connections (expected)"
           fi
+
+      - name: Run E2E VPN connectivity tests
+        env:
+          VPN_TYPE: ${{ matrix.vpn_type }}
+        run: |
+          chmod +x tests/e2e/test-vpn-connectivity.sh
+          sudo tests/e2e/test-vpn-connectivity.sh "${VPN_TYPE}"
+
+      - name: Collect E2E debug info on failure
+        if: failure()
+        run: |
+          echo "=== E2E Test Debug Information ==="
+          echo "=== Network Namespaces ==="
+          ip netns list || true
+          echo "=== WireGuard Config (alice) ==="
+          cat configs/localhost/wireguard/alice.conf 2>/dev/null || echo "Not found"
+          echo "=== IPsec Certificates ==="
+          ls -la configs/localhost/ipsec/.pki/certs/ 2>/dev/null || echo "Not found"
+          echo "=== iptables NAT ==="
+          sudo iptables -t nat -L -n -v || true
 
       - name: Upload configs as artifacts
         if: always()
