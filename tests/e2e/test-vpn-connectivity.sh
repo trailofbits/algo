@@ -123,9 +123,10 @@ setup_namespace() {
     iptables -t nat -A POSTROUTING -s "${CLIENT_BRIDGE_IP}/32" ! -d 10.99.0.0/24 -j MASQUERADE
 
     # Allow WireGuard and IPsec traffic on the veth interface
-    iptables -A INPUT -i "${VETH_SERVER}" -p udp --dport 51820 -j ACCEPT
-    iptables -A INPUT -i "${VETH_SERVER}" -p udp --dport 500 -j ACCEPT
-    iptables -A INPUT -i "${VETH_SERVER}" -p udp --dport 4500 -j ACCEPT
+    # Use -I to insert at beginning of chain (before any DROP rules)
+    iptables -I INPUT -i "${VETH_SERVER}" -p udp --dport 51820 -j ACCEPT
+    iptables -I INPUT -i "${VETH_SERVER}" -p udp --dport 500 -j ACCEPT
+    iptables -I INPUT -i "${VETH_SERVER}" -p udp --dport 4500 -j ACCEPT
 
     log_info "Namespace ${NAMESPACE} created with IP ${CLIENT_BRIDGE_IP}"
 
@@ -258,6 +259,12 @@ test_wireguard() {
     log_info "Modified WireGuard config for namespace testing"
     log_info "Endpoint changed to ${SERVER_BRIDGE_IP}"
 
+    # Debug: Show server WireGuard state before client connects
+    log_info "Server WireGuard peers:"
+    wg show wg0 peers 2>/dev/null || log_warn "Could not query server wg0"
+    log_info "Server WireGuard listening:"
+    ss -ulnp | grep 51820 || log_warn "WireGuard port not found in ss output"
+
     # Start WireGuard in the namespace
     log_info "Starting WireGuard in namespace..."
     if ! ip netns exec "${NAMESPACE}" wg-quick up "${ns_config}" 2>&1; then
@@ -294,8 +301,12 @@ test_wireguard() {
 
     if [[ ${attempts} -ge ${max_attempts} ]]; then
         log_error "WireGuard handshake timeout after ${max_attempts} seconds"
-        log_error "Debug output:"
+        log_error "Debug - client wg show:"
         ip netns exec "${NAMESPACE}" wg show 2>&1 || true
+        log_error "Debug - server wg0 state:"
+        wg show wg0 2>&1 || true
+        log_error "Debug - iptables INPUT chain (first 15 rules):"
+        iptables -L INPUT -n -v --line-numbers 2>&1 | head -20 || true
         return 1
     fi
 
