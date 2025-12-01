@@ -1,0 +1,52 @@
+<h3 class="form-section-title">{{ provider.name }} Credentials</h3>
+
+{% for field in provider.fields %}
+<div class="form-group">
+    <label class="form-label" for="{{ field.name }}">
+        {{ field.label }} <span class="required">*</span>
+    </label>
+    {% if field.field_type == 'password' %}
+    <input type="password"
+           id="{{ field.name }}"
+           name="{{ field.name }}"
+           class="form-input"
+           placeholder="{{ field.placeholder }}"
+           required
+           autocomplete="off">
+    {% elif field.field_type == 'file' %}
+    <input type="file"
+           id="{{ field.name }}"
+           name="{{ field.name }}"
+           class="form-input"
+           required>
+    {% else %}
+    <input type="text"
+           id="{{ field.name }}"
+           name="{{ field.name }}"
+           class="form-input"
+           placeholder="{{ field.placeholder }}"
+           required>
+    {% endif %}
+    {% if field.help_url %}
+    <p class="form-help">
+        <a href="{{ field.help_url }}" target="_blank" rel="noopener">Get your {{ field.label }} &rarr;</a>
+    </p>
+    {% endif %}
+</div>
+{% endfor %}
+
+<div class="form-group">
+    <button type="button"
+            class="btn btn-secondary"
+            hx-post="/providers/{{ provider.id }}/validate"
+            hx-target="#region-section"
+            hx-swap="innerHTML"
+            hx-include="[name^='{{ provider.fields[0].name[:3] }}']"
+            hx-indicator=".validate-indicator">
+        <span class="btn-text">Validate &amp; Load Regions</span>
+        <span class="htmx-indicator validate-indicator">
+            <span class="spinner"></span>
+            Validating...
+        </span>
+    </button>
+</div>

@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Deploying - Algo VPN{% endblock %}
+
+{% block header_right %}
+<span class="status-badge running" id="status-badge">
+    <span class="spinner"></span>
+    Deploying
+</span>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto;">
+    <!-- Progress Steps -->
+    <div class="progress-steps">
+        <div class="progress-step active" id="step-provision">
+            <span class="progress-step-dot"></span>
+            <span>Provisioning</span>
+        </div>
+        <div class="progress-step" id="step-configure">
+            <span class="progress-step-dot"></span>
+            <span>Configuring</span>
+        </div>
+        <div class="progress-step" id="step-complete">
+            <span class="progress-step-dot"></span>
+            <span>Complete</span>
+        </div>
+    </div>
+
+    <!-- Deployment Info -->
+    <div class="main-panel" style="margin-bottom: var(--space-lg);">
+        <div class="panel-header">
+            <h1 class="panel-title">Deploying: {{ session.config.server_name }}</h1>
+            <p class="panel-subtitle">
+                Provider: {{ provider.name }} &bull;
+                Region: {{ session.config.region }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Terminal Output -->
+    <div class="terminal">
+        <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span class="terminal-title">ansible-playbook main.yml</span>
+        </div>
+        <div class="terminal-body" id="terminal-output"
+             hx-ext="sse"
+             sse-connect="/deploy/{{ session.id }}/stream"
+             sse-swap="output"
+             hx-swap="beforeend">
+            <div class="terminal-line">Starting deployment...</div>
+        </div>
+    </div>
+
+    <!-- Cancel Button -->
+    <div style="margin-top: var(--space-lg); text-align: center;">
+        <button class="btn btn-danger" id="cancel-btn"
+                hx-post="/deploy/{{ session.id }}/cancel"
+                hx-swap="none">
+            Cancel Deployment
+        </button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const terminal = document.getElementById('terminal-output');
+    const statusBadge = document.getElementById('status-badge');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const stepProvision = document.getElementById('step-provision');
+    const stepConfigure = document.getElementById('step-configure');
+    const stepComplete = document.getElementById('step-complete');
+
+    // Auto-scroll terminal
+    const observer = new MutationObserver(function() {
+        terminal.scrollTop = terminal.scrollHeight;
+    });
+    observer.observe(terminal, { childList: true, subtree: true });
+
+    // Handle SSE events
+    document.body.addEventListener('htmx:sseMessage', function(event) {
+        const line = event.detail.data;
+
+        // Create terminal line element
+        const lineEl = document.createElement('div');
+        lineEl.className = 'terminal-line';
+
+        // Color-code based on content
+        if (line.includes('TASK [')) {
+            lineEl.classList.add('task');
+            // Update progress steps
+            if (line.includes('cloud-')) {
+                stepProvision.classList.add('active');
+            } else if (line.includes('wireguard') || line.includes('strongswan') || line.includes('dns')) {
+                stepProvision.classList.remove('active');
+                stepProvision.classList.add('completed');
+                stepConfigure.classList.add('active');
+            }
+        } else if (line.includes('ok:')) {
+            lineEl.classList.add('ok');
+        } else if (line.includes('changed:')) {
+            lineEl.classList.add('changed');
+        } else if (line.includes('fatal:') || line.includes('ERROR') || line.includes('[ERROR]')) {
+            lineEl.classList.add('error');
+        } else if (line.includes('[SUCCESS]')) {
+            lineEl.classList.add('success-msg');
+        }
+
+        lineEl.textContent = line;
+        terminal.appendChild(lineEl);
+    });
+
+    // Helper to update status badge safely
+    function updateStatusBadge(className, text) {
+        statusBadge.className = 'status-badge ' + className;
+        // Clear existing content
+        while (statusBadge.firstChild) {
+            statusBadge.removeChild(statusBadge.firstChild);
+        }
+        statusBadge.appendChild(document.createTextNode(text));
+    }
+
+    // Handle SSE completion
+    document.body.addEventListener('htmx:sseClose', function() {
+        // Check final status
+        fetch('/deploy/{{ session.id }}/status')
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    updateStatusBadge('success', '\u2713 Success');
+                    stepConfigure.classList.remove('active');
+                    stepConfigure.classList.add('completed');
+                    stepComplete.classList.add('completed');
+                    cancelBtn.style.display = 'none';
+
+                    // Redirect to success page after brief delay
+                    setTimeout(function() {
+                        window.location.href = '/configs/{{ session.id }}';
+                    }, 1500);
+                } else if (data.status === 'failed') {
+                    updateStatusBadge('failed', '\u2717 Failed');
+                    cancelBtn.style.display = 'none';
+                } else if (data.status === 'cancelled') {
+                    updateStatusBadge('failed', 'Cancelled');
+                    cancelBtn.style.display = 'none';
+                }
+            });
+    });
+
+    // Handle cancel response
+    document.body.addEventListener('htmx:afterRequest', function(event) {
+        if (event.detail.pathInfo.requestPath.includes('/cancel')) {
+            cancelBtn.disabled = true;
+            cancelBtn.textContent = 'Cancelling...';
+        }
+    });
+});
+</script>
+{% endblock %}
