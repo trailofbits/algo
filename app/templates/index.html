@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Deploy VPN Server - Algo VPN{% endblock %}
+
+{% block content %}
+<form id="deploy-form" hx-post="/deploy" hx-swap="none">
+    <div class="layout-two-col">
+        <!-- Sidebar: Provider Selection -->
+        <aside class="sidebar">
+            <h2 class="sidebar-title">Cloud Provider</h2>
+            <div class="provider-list stagger-fade-in">
+                {% for provider_id, provider in providers.items() %}
+                <label class="provider-card" data-provider="{{ provider_id }}">
+                    <input type="radio"
+                           name="provider"
+                           value="{{ provider_id }}"
+                           hx-get="/providers/{{ provider_id }}/form"
+                           hx-target="#credentials-section"
+                           hx-swap="innerHTML"
+                           {% if loop.first %}checked{% endif %}
+                           required>
+                    <span class="provider-icon">{{ provider.name[:2].upper() }}</span>
+                    <span class="provider-name">{{ provider.name }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </aside>
+
+        <!-- Main Panel: Configuration -->
+        <div class="main-panel">
+            <div class="panel-header">
+                <h1 class="panel-title">Deploy VPN Server</h1>
+                <p class="panel-subtitle">Configure your personal VPN and deploy to the cloud</p>
+            </div>
+
+            <div class="panel-body">
+                <!-- Credentials Section (loaded dynamically) -->
+                <div class="form-section" id="credentials-section">
+                    <!-- Initial load for first provider -->
+                    <div hx-get="/providers/{{ providers.keys()|list|first }}/form"
+                         hx-trigger="load"
+                         hx-swap="outerHTML">
+                        <div class="skeleton" style="height: 100px;"></div>
+                    </div>
+                </div>
+
+                <!-- Server Configuration -->
+                <div class="form-section">
+                    <h3 class="form-section-title">Server Configuration</h3>
+
+                    <div class="form-group">
+                        <label class="form-label" for="server_name">Server Name</label>
+                        <input type="text"
+                               id="server_name"
+                               name="server_name"
+                               class="form-input"
+                               value="algo"
+                               placeholder="algo"
+                               pattern="[a-zA-Z0-9\-]+"
+                               title="Only letters, numbers, and hyphens allowed">
+                        <p class="form-help">A name for your VPN server (letters, numbers, hyphens only)</p>
+                    </div>
+
+                    <!-- Region selector (populated after credential validation) -->
+                    <div id="region-section">
+                        <div class="form-group">
+                            <label class="form-label" for="region">Region</label>
+                            <select id="region" name="region" class="form-select" disabled>
+                                <option value="">Validate credentials to load regions</option>
+                            </select>
+                            <p class="form-help">Enter your API credentials above and click "Validate" to load available regions</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VPN Options -->
+                <div class="form-section">
+                    <h3 class="form-section-title">VPN Protocols</h3>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="wireguard_enabled" checked>
+                            <span>WireGuard</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="ipsec_enabled" checked>
+                            <span>IPsec/IKEv2</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="form-section-title">Features</h3>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="dns_adblocking">
+                            <span>DNS Ad Blocking</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="ssh_tunneling">
+                            <span>SSH Tunneling</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="form-section-title">macOS/iOS On-Demand</h3>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="ondemand_cellular">
+                            <span>Connect on Cellular</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="ondemand_wifi">
+                            <span>Connect on WiFi</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="form-section-title">Security</h3>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="store_pki">
+                            <span>Retain PKI keys (required to add users later)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Users -->
+                <div class="form-section">
+                    <h3 class="form-section-title">VPN Users</h3>
+                    <div class="form-group">
+                        <label class="form-label" for="users">Device Names</label>
+                        <input type="text"
+                               id="users"
+                               name="users"
+                               class="form-input"
+                               value="phone,laptop,desktop"
+                               placeholder="phone,laptop,desktop">
+                        <p class="form-help">Comma-separated list of device names. Each gets unique credentials.</p>
+                    </div>
+                </div>
+
+                <!-- Deploy Button -->
+                <div class="form-section" style="margin-top: var(--space-xl);">
+                    <button type="submit" class="btn btn-primary btn-lg btn-block" id="deploy-btn">
+                        <span class="btn-text">Deploy VPN Server</span>
+                        <span class="htmx-indicator">
+                            <span class="spinner"></span>
+                            Deploying...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle provider card selection styling
+    document.querySelectorAll('.provider-card').forEach(card => {
+        card.addEventListener('click', function() {
+            document.querySelectorAll('.provider-card').forEach(c => c.classList.remove('selected'));
+            this.classList.add('selected');
+        });
+    });
+
+    // Select first provider by default
+    const firstCard = document.querySelector('.provider-card');
+    if (firstCard) {
+        firstCard.classList.add('selected');
+    }
+});
+</script>
+{% endblock %}
