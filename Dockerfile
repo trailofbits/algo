@@ -30,6 +30,9 @@ RUN uv sync --locked --no-dev
 # Copy application code
 COPY . .
 
+# Install Ansible Galaxy collections for cloud provider modules
+RUN uv run ansible-galaxy collection install -r requirements.yml
+
 # Set executable permissions and prepare runtime
 # Note: /algo must remain root-owned for --cap-drop=all compatibility
 # (root without CAP_DAC_OVERRIDE cannot write to files owned by others)
