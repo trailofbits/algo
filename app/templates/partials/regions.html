@@ -1,0 +1,20 @@
+<div class="alert alert-success" style="margin-bottom: var(--space-md);">
+    Credentials validated successfully!
+</div>
+
+<div class="form-group">
+    <label class="form-label" for="region">Region <span class="required">*</span></label>
+    <select id="region" name="region" class="form-select" required>
+        {% for region in regions %}
+        <option value="{{ region.id }}" {% if region.id == provider.default_region %}selected{% endif %}>
+            {{ region.id }} &mdash; {{ region.name }}
+        </option>
+        {% endfor %}
+    </select>
+    <p class="form-help">Select the region where your VPN server will be deployed</p>
+</div>
+
+<!-- Hidden fields to preserve credentials in form submission -->
+{% for key, value in credentials.items() %}
+<input type="hidden" name="{{ key }}" value="{{ value }}">
+{% endfor %}
