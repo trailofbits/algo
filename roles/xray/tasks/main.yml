@@ -1,0 +1,39 @@
+---
+- name: Ensure xray config directories exist locally
+  file:
+    dest: "{{ item }}"
+    state: directory
+    recurse: true
+    mode: "0755"
+  loop:
+    - "{{ xray_pki_path }}"
+    - "{{ xray_client_config_path }}"
+  delegate_to: localhost
+  become: false
+
+- name: Install xray-core
+  import_tasks: install.yml
+
+- name: Generate Reality keys
+  import_tasks: keys.yml
+  delegate_to: localhost
+  become: false
+  tags: update-users
+
+- name: Configure xray server
+  import_tasks: configure.yml
+  tags: update-users
+
+- name: Generate client configurations
+  import_tasks: clients.yml
+  delegate_to: localhost
+  become: false
+  tags: update-users
+
+- name: Ensure xray is enabled and started
+  service:
+    name: "{{ xray_service_name }}"
+    state: started
+    enabled: true
+
+- meta: flush_handlers

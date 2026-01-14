@@ -1,0 +1,14 @@
+---
+- name: Read all user UUIDs
+  set_fact:
+    xray_user_uuids: "{{ xray_user_uuids | default({}) | combine({item: lookup('file', xray_pki_path + '/' + item + '.uuid')}) }}"
+  loop: "{{ xray_users }}"
+  delegate_to: localhost
+  become: false
+
+- name: Generate xray server configuration
+  template:
+    src: config.json.j2
+    dest: "{{ xray_config_file }}"
+    mode: "0600"
+  notify: restart xray

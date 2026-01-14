@@ -1,4 +1,4 @@
-{% set subnets = ([strongswan_network] if ipsec_enabled else []) + ([wireguard_network_ipv4] if wireguard_enabled else []) %}
+{% set subnets = ([strongswan_network] if ipsec_enabled else []) + ([wireguard_network_ipv4] if wireguard_enabled else []) + ([xray_network_ipv4] if xray_enabled | default(false) else []) %}
 {% set ports = (['500', '4500'] if ipsec_enabled else []) + ([wireguard_port] if wireguard_enabled else []) + ([wireguard_port_actual] if wireguard_enabled and wireguard_port | int == wireguard_port_avoid | int else []) %}
 
 #### The mangle table
@@ -72,6 +72,10 @@ COMMIT
 -A INPUT -p icmp --icmp-type echo-request -m hashlimit --hashlimit-upto 5/s --hashlimit-mode srcip --hashlimit-srcmask 32 --hashlimit-name icmp-echo-drop -j ACCEPT
 # Accept IPSEC/WireGuard traffic to ports {{ subnets | join(',') }}
 -A INPUT -p udp -m multiport --dports {{ ports | join(',') }} -j ACCEPT
+{% if xray_enabled | default(false) %}
+# Accept VLESS/Reality traffic (stealth VPN)
+-A INPUT -p tcp --dport {{ xray_port }} -m conntrack --ctstate NEW -j ACCEPT
+{% endif %}
 # Allow new traffic to port {{ ansible_ssh_port }} (SSH)
 -A INPUT -p tcp --dport {{ ansible_ssh_port }} -m conntrack --ctstate NEW -j ACCEPT
 

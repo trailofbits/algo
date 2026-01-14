@@ -1,0 +1,38 @@
+---
+- name: Generate client configuration files
+  template:
+    src: client-config.json.j2
+    dest: "{{ xray_client_config_path }}/{{ item }}.json"
+    mode: "0600"
+  loop: "{{ xray_users }}"
+  loop_control:
+    index_var: index
+  when: item in users
+  vars:
+    user_uuid: "{{ lookup('file', xray_pki_path + '/' + item + '.uuid') }}"
+
+- name: Generate VLESS share links
+  template:
+    src: vless-link.txt.j2
+    dest: "{{ xray_client_config_path }}/{{ item }}.txt"
+    mode: "0600"
+  loop: "{{ xray_users }}"
+  loop_control:
+    index_var: index
+  when: item in users
+  vars:
+    user_uuid: "{{ lookup('file', xray_pki_path + '/' + item + '.uuid') }}"
+
+- name: Generate QR codes for VLESS links
+  shell: |
+    umask 077
+    which segno && segno --scale=5 --output={{ item }}.png \
+      "$(cat {{ item }}.txt)" || true
+  args:
+    chdir: "{{ xray_client_config_path }}"
+    executable: /bin/bash
+  changed_when: false
+  loop: "{{ xray_users }}"
+  when: item in users
+  vars:
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"

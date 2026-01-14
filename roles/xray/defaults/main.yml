@@ -1,0 +1,27 @@
+---
+xray_version: "latest"
+xray_bin_path: "/usr/local/bin/xray"
+xray_config_path: "/etc/xray"
+xray_asset_path: "/usr/local/share/xray"
+xray_log_path: "/var/log/xray"
+
+xray_config_file: "{{ xray_config_path }}/config.json"
+xray_pki_path: "configs/{{ IP_subject_alt_name }}/xray"
+xray_client_config_path: "{{ xray_pki_path }}"
+
+# Network configuration
+xray_network_ipv4: 10.50.0.0/16
+xray_listen_addr: "0.0.0.0"
+
+# Reality settings (from config.cfg)
+xray_short_id_length: 8
+
+# Service name
+xray_service_name: "xray"
+
+# Architecture mapping
+xray_arch_map:
+  x86_64: "64"
+  amd64: "64"
+  aarch64: "arm64-v8a"
+  arm64: "arm64-v8a"

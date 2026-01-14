@@ -10,22 +10,38 @@ See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo
 
 * Supports only IKEv2 with strong crypto (AES-GCM, SHA2, and P-256) for iOS, MacOS, and Linux
 * Supports [WireGuard](https://www.wireguard.com/) for all of the above, in addition to Android and Windows 11
+* Supports **VLESS+Reality** (xray-core) for censorship-resistant VPN that is undetectable by DPI
 * Generates .conf files and QR codes for iOS, macOS, Android, and Windows WireGuard clients
+* Generates VLESS share links and QR codes for stealth VPN clients
 * Generates Apple profiles to auto-configure iOS and macOS devices for IPsec - no client software required
 * Includes helper scripts to add, remove, and manage users
 * Blocks ads with a local DNS resolver (optional)
 * Sets up limited SSH users for tunneling traffic (optional)
 * Privacy-focused with minimal logging, automatic log rotation, and configurable privacy enhancements
-* Based on Ubuntu 22.04 LTS with automatic security updates
+* Based on Ubuntu 24.04 LTS with automatic security updates
 * Installs to DigitalOcean, Amazon Lightsail, Amazon EC2, Vultr, Microsoft Azure, Google Compute Engine, Scaleway, OpenStack, CloudStack, Hetzner Cloud, Linode, or [your own Ubuntu server (for advanced users)](docs/deploy-to-ubuntu.md)
 
 ## Anti-features
 
 * Does not support legacy cipher suites or protocols like L2TP, IKEv1, or RSA
 * Does not install Tor, OpenVPN, or other risky servers
-* Does not depend on the security of [TLS](https://tools.ietf.org/html/rfc7457)
-* Does not claim to provide anonymity or censorship avoidance
+* Does not depend on the security of [TLS](https://tools.ietf.org/html/rfc7457) for WireGuard/IPsec (VLESS+Reality uses TLS for stealth)
+* Does not claim to provide anonymity
 * Does not claim to protect you from the [FSB](https://en.wikipedia.org/wiki/Federal_Security_Service), [MSS](https://en.wikipedia.org/wiki/Ministry_of_State_Security_(China)), [DGSE](https://en.wikipedia.org/wiki/Directorate-General_for_External_Security), or [FSM](https://en.wikipedia.org/wiki/Flying_Spaghetti_Monster)
+
+## Stealth VPN (VLESS+Reality)
+
+For networks where WireGuard is blocked, Algo now supports VLESS+Reality protocol:
+
+```yaml
+# In config.cfg, enable stealth VPN:
+xray_enabled: true
+xray_port: 443
+xray_reality_dest: "www.microsoft.com:443"
+xray_reality_sni: "www.microsoft.com"
+```
+
+Traffic appears as regular HTTPS to the configured destination. Works in China, Russia, Iran and other censored networks. Client apps: Shadowrocket (iOS), v2rayNG (Android), v2rayN (Windows), Nekoray (Linux/macOS).
 
 ## Deploy the Algo Server
 

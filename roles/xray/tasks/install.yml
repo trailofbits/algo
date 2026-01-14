@@ -1,0 +1,108 @@
+---
+- name: Get system architecture
+  set_fact:
+    xray_arch: "{{ xray_arch_map[ansible_architecture] | default('64') }}"
+
+- name: Get latest xray release version
+  uri:
+    url: "https://api.github.com/repos/XTLS/Xray-core/releases/latest"
+    return_content: true
+  register: xray_latest_release
+  delegate_to: localhost
+  become: false
+  when: xray_version == "latest"
+
+- name: Set xray version
+  set_fact:
+    xray_download_version: "{{ xray_latest_release.json.tag_name if xray_version == 'latest' else xray_version }}"
+
+- name: Check if xray is already installed
+  stat:
+    path: "{{ xray_bin_path }}"
+  register: xray_binary
+
+- name: Get installed xray version
+  command: "{{ xray_bin_path }} version"
+  register: xray_installed_version
+  changed_when: false
+  failed_when: false
+  when: xray_binary.stat.exists
+
+- name: Download and install xray
+  when: not xray_binary.stat.exists or (xray_installed_version.stdout is defined and xray_download_version not in xray_installed_version.stdout)
+  block:
+    - name: Create temporary directory for xray download
+      tempfile:
+        state: directory
+        suffix: xray
+      register: xray_temp_dir
+
+    - name: Download xray release
+      get_url:
+        url: "https://github.com/XTLS/Xray-core/releases/download/{{ xray_download_version }}/Xray-linux-{{ xray_arch }}.zip"
+        dest: "{{ xray_temp_dir.path }}/xray.zip"
+        mode: "0644"
+
+    - name: Install unzip package
+      apt:
+        name: unzip
+        state: present
+        update_cache: true
+
+    - name: Extract xray archive
+      unarchive:
+        src: "{{ xray_temp_dir.path }}/xray.zip"
+        dest: "{{ xray_temp_dir.path }}"
+        remote_src: true
+
+    - name: Install xray binary
+      copy:
+        src: "{{ xray_temp_dir.path }}/xray"
+        dest: "{{ xray_bin_path }}"
+        mode: "0755"
+        remote_src: true
+
+    - name: Create xray asset directory
+      file:
+        path: "{{ xray_asset_path }}"
+        state: directory
+        mode: "0755"
+
+    - name: Install geoip and geosite databases
+      copy:
+        src: "{{ xray_temp_dir.path }}/{{ item }}"
+        dest: "{{ xray_asset_path }}/{{ item }}"
+        mode: "0644"
+        remote_src: true
+      loop:
+        - geoip.dat
+        - geosite.dat
+      failed_when: false
+
+    - name: Cleanup temporary directory
+      file:
+        path: "{{ xray_temp_dir.path }}"
+        state: absent
+
+- name: Create xray config directory
+  file:
+    path: "{{ xray_config_path }}"
+    state: directory
+    mode: "0755"
+
+- name: Create xray log directory
+  file:
+    path: "{{ xray_log_path }}"
+    state: directory
+    mode: "0755"
+
+- name: Install xray systemd service
+  template:
+    src: xray.service.j2
+    dest: /etc/systemd/system/xray.service
+    mode: "0644"
+  notify: restart xray
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: true
