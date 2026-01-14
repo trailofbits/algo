@@ -1,0 +1,139 @@
+# For use with Easy-RSA 3.0 and OpenSSL 1.0.*
+
+RANDFILE		= .rnd
+
+####################################################################
+[ ca ]
+default_ca	= CA_default		# The default ca section
+
+####################################################################
+[ CA_default ]
+
+dir		= .	# Where everything is kept
+certs		= $dir			# Where the issued certs are kept
+crl_dir		= $dir			# Where the issued crl are kept
+database	= $dir/index.txt	# database index file.
+new_certs_dir	= $dir/certs	# default place for new certs.
+
+certificate	= $dir/cacert.pem	 	# The CA certificate
+serial		= $dir/serial 		# The current serial number
+crl		= $dir/crl.pem 		# The current CRL
+private_key	= $dir/private/cakey.pem	# The private key
+RANDFILE	= $dir/private/.rand		# private random number file
+
+x509_extensions	= basic_exts		# The extensions to add to the cert
+
+# This allows a V2 CRL. Ancient browsers don't like it, but anything Easy-RSA
+# is designed for will. In return, we get the Issuer attached to CRLs.
+crl_extensions	= crl_ext
+
+default_days	= 3650	# how long to certify for
+default_crl_days= 3650	# how long before next CRL
+default_md	= sha256		# use public key default MD
+preserve	= no			# keep passed DN ordering
+
+# A few difference way of specifying how similar the request should look
+# For type CA, the listed attributes must be the same, and the optional
+# and supplied fields are just that :-)
+policy		= policy_anything
+
+# For the 'anything' policy, which defines allowed DN fields
+[ policy_anything ]
+countryName		= optional
+stateOrProvinceName	= optional
+localityName		= optional
+organizationName	= optional
+organizationalUnitName	= optional
+commonName		= supplied
+name			= optional
+emailAddress		= optional
+
+####################################################################
+# Easy-RSA request handling
+# We key off $DN_MODE to determine how to format the DN
+[ req ]
+default_bits		= 2048
+default_keyfile 	= privkey.pem
+default_md		= sha256
+distinguished_name	= cn_only
+x509_extensions		= easyrsa_ca	# The extensions to add to the self signed cert
+
+# A placeholder to handle the $EXTRA_EXTS feature:
+#%EXTRA_EXTS%	# Do NOT remove or change this line as $EXTRA_EXTS support requires it
+
+####################################################################
+# Easy-RSA DN (Subject) handling
+
+# Easy-RSA DN for cn_only support:
+[ cn_only ]
+commonName		= Common Name (eg: your user, host, or server name)
+commonName_max		= 64
+commonName_default	= 10.99.0.10
+
+# Easy-RSA DN for org support:
+[ org ]
+countryName			= Country Name (2 letter code)
+countryName_default		= US
+countryName_min			= 2
+countryName_max			= 2
+
+stateOrProvinceName		= State or Province Name (full name)
+stateOrProvinceName_default	= California
+
+localityName			= Locality Name (eg, city)
+localityName_default		= San Francisco
+
+0.organizationName		= Organization Name (eg, company)
+0.organizationName_default	= Copyleft Certificate Co
+
+organizationalUnitName		= Organizational Unit Name (eg, section)
+organizationalUnitName_default	= My Organizational Unit
+
+commonName			= Common Name (eg: your user, host, or server name)
+commonName_max			= 64
+commonName_default		= 10.99.0.10
+
+emailAddress			= Email Address
+emailAddress_default		= me@example.net
+emailAddress_max		= 64
+
+####################################################################
+# Easy-RSA cert extension handling
+
+# This section is effectively unused as the main script sets extensions
+# dynamically. This core section is left to support the odd usecase where
+# a user calls openssl directly.
+[ basic_exts ]
+basicConstraints	= CA:FALSE
+subjectKeyIdentifier	= hash
+authorityKeyIdentifier	= keyid,issuer:always
+
+extendedKeyUsage = serverAuth,clientAuth,1.3.6.1.5.5.7.3.17
+keyUsage = digitalSignature, keyEncipherment
+
+# The Easy-RSA CA extensions
+[ easyrsa_ca ]
+
+# PKIX recommendations:
+
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer:always
+
+basicConstraints = critical,CA:true,pathlen:0
+nameConstraints = critical,permitted;IP:10.99.0.10/255.255.255.255,permitted;DNS:9546d574-3fd6-58f4-9ac6-2c69cb755db7.algo,permitted;email:9546d574-3fd6-58f4-9ac6-2c69cb755db7.algo,excluded;IP:0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0
+
+
+# Limit key usage to CA tasks. If you really want to use the generated pair as
+# a self-signed cert, comment this out.
+keyUsage = cRLSign, keyCertSign
+
+# nsCertType omitted by default. Let's try to let the deprecated stuff die.
+# nsCertType = sslCA
+
+# CRL extensions.
+[ crl_ext ]
+
+# Only issuerAltName and authorityKeyIdentifier make any sense in a CRL.
+
+# issuerAltName=issuer:copy
+authorityKeyIdentifier=keyid:always,issuer:always

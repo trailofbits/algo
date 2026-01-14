@@ -18,6 +18,18 @@ You will be returned to the **Tokens/Keys** tab, and your new key will be shown 
 
 Copy or note down the hash that shows below the name you entered, as this will be necessary for the steps below. This value will disappear if you leave this page, and you'll need to regenerate it if you forget it.
 
+## Select a Droplet (optional)
+
+The default option is the `s-1vcpu-1gb` because it is available in all regions. However, you may want to switch to a cheaper droplet such as `s-1vcpu-512mb-10gb` even though it is not available in all regions. This can be edited in the [Configuration File](config.cfg) under `cloud_providers > digitalocean > size`. See this brief comparison between the two droplets below:
+
+| Droplet Type | Monthly Cost | Bandwidth | Availability |
+|:--|:-:|:-:|:--|
+| `s-1vcpu-512mb-10gb` | $4/month | 0.5 TB | Limited |
+| `s-1vcpu-1gb`        | $6/month | 1.0 TB | All regions |
+| ... | ... | ... | ... |
+
+*Note: Exceeding bandwidth limits costs $0.01/GiB at time of writing ([docs](https://docs.digitalocean.com/products/billing/bandwidth/#droplets)). See the live list of droplets [here](https://slugs.do-api.dev/).*
+
 ## Using DigitalOcean with Algo (interactive)
 
 These steps are for those who run Algo using Docker or using the `./algo` command.
@@ -55,7 +67,7 @@ Enter your API token. The token must have read and write permissions (https://cl
  (output is hidden):
 ```
 
-Finally you will be asked the region in which you wish to setup your new Algo server. This list is dynamic and can change based on availability of resources. Enter the number next to name of the region:
+Finally, you will be asked the region in which you wish to setup your new Algo server. This list is dynamic and can change based on availability of resources. Enter the number next to name of the region:
 
 ```
 What region should the server be located in?

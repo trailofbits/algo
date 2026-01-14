@@ -11,19 +11,17 @@
 
 - include_tasks: ubuntu.yml
   when: '"Ubuntu" in OS.stdout or "Linux" in OS.stdout'
-  tags:
-    - update-users
 
-- include_tasks: freebsd.yml
-  when: '"FreeBSD" in OS.stdout'
+# Include facts separately - always runs to ensure OS detection facts are available
+- include_tasks: facts.yml
   tags:
+    - always
     - update-users
 
 - name: Sysctl tuning
   sysctl: name="{{ item.item }}" value="{{ item.value }}"
-  when: item.item
-  with_items:
-    - "{{ sysctl|default([]) }}"
+  when: item.item is defined and item.item != none
+  loop: "{{ sysctl | default([]) }}"
   tags:
     - always
 

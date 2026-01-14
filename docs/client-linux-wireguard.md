@@ -12,7 +12,8 @@ sudo apt update && sudo apt upgrade
 [ -e /var/run/reboot-required ] && sudo reboot
 
 # Install WireGuard:
-sudo apt install wireguard openresolv
+sudo apt install wireguard
+# Note: openresolv is no longer needed on Ubuntu 22.04 LTS+
 ```
 
 For installation on other Linux distributions, see the [Installation](https://www.wireguard.com/install/) page on the WireGuard site.
@@ -50,7 +51,7 @@ If your Linux distribution does not use `systemd` you can bring up WireGuard wit
 
 ## Using a DNS Search Domain
 
-As of the `v1.0.20200510` release of `wireguard-tools` WireGuard supports setting a DNS search domain. In your `wg0.conf` file a non-numeric entry on the `DNS` line will be used as a search domain. For example this:
+As of the `v1.0.20200510` release of `wireguard-tools` WireGuard supports setting a DNS search domain. In your `wg0.conf` file a non-numeric entry on the `DNS` line will be used as a search domain. For example, this:
 ```
 DNS =  172.27.153.31, fd00::b:991f, mydomain.com
 ```

@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+"""
+Basic sanity tests for Algo VPN that don't require deployment
+"""
+
+import os
+import subprocess
+import sys
+
+import yaml
+
+
+def test_python_version():
+    """Ensure we're running on Python 3.11+"""
+    assert sys.version_info >= (3, 11), f"Python 3.11+ required, got {sys.version}"
+    print("✓ Python version check passed")
+
+
+def test_pyproject_file_exists():
+    """Check that pyproject.toml exists and has dependencies"""
+    assert os.path.exists("pyproject.toml"), "pyproject.toml not found"
+
+    with open("pyproject.toml") as f:
+        content = f.read()
+        assert "dependencies" in content, "No dependencies section in pyproject.toml"
+        assert "ansible" in content, "ansible dependency not found"
+        assert "jinja2" in content, "jinja2 dependency not found"
+        assert "netaddr" in content, "netaddr dependency not found"
+
+    print("✓ pyproject.toml exists with required dependencies")
+
+
+def test_config_file_valid():
+    """Check that config.cfg is valid YAML"""
+    assert os.path.exists("config.cfg"), "config.cfg not found"
+
+    with open("config.cfg") as f:
+        try:
+            config = yaml.safe_load(f)
+            assert isinstance(config, dict), "config.cfg should parse as a dictionary"
+            print("✓ config.cfg is valid YAML")
+        except yaml.YAMLError as e:
+            raise AssertionError(f"config.cfg is not valid YAML: {e}") from e
+
+
+def test_ansible_syntax():
+    """Check that main playbook has valid syntax"""
+    result = subprocess.run(["ansible-playbook", "main.yml", "--syntax-check"], capture_output=True, text=True)
+
+    assert result.returncode == 0, f"Ansible syntax check failed:\n{result.stderr}"
+    print("✓ Ansible playbook syntax is valid")
+
+
+def test_shellcheck():
+    """Run shellcheck on shell scripts"""
+    shell_scripts = ["algo", "install.sh"]
+
+    for script in shell_scripts:
+        if os.path.exists(script):
+            result = subprocess.run(["shellcheck", script], capture_output=True, text=True)
+            assert result.returncode == 0, f"Shellcheck failed for {script}:\n{result.stdout}"
+            print(f"✓ {script} passed shellcheck")
+
+
+def test_dockerfile_exists():
+    """Check that Dockerfile exists and is not empty"""
+    assert os.path.exists("Dockerfile"), "Dockerfile not found"
+
+    with open("Dockerfile") as f:
+        content = f.read()
+        assert len(content) > 100, "Dockerfile seems too small"
+        assert "FROM" in content, "Dockerfile missing FROM statement"
+
+    print("✓ Dockerfile exists and looks valid")
+
+
+def test_cloud_init_header_format():
+    """Check that cloud-init header is exactly '#cloud-config' without space"""
+    cloud_init_file = "files/cloud-init/base.yml"
+    assert os.path.exists(cloud_init_file), f"{cloud_init_file} not found"
+
+    with open(cloud_init_file) as f:
+        first_line = f.readline().rstrip("\n\r")
+
+    # The first line MUST be exactly "#cloud-config" (no space after #)
+    # This regression was introduced in PR #14775 and broke DigitalOcean deployments
+    # See: https://github.com/trailofbits/algo/issues/14800
+    assert first_line == "#cloud-config", (
+        f"cloud-init header must be exactly '#cloud-config' (no space), "
+        f"got '{first_line}'. This breaks cloud-init YAML parsing and causes SSH timeouts."
+    )
+
+    print("✓ cloud-init header format is correct")
+
+
+if __name__ == "__main__":
+    # Change to repo root
+    os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+    tests = [
+        test_python_version,
+        test_pyproject_file_exists,
+        test_config_file_valid,
+        test_ansible_syntax,
+        test_shellcheck,
+        test_dockerfile_exists,
+        test_cloud_init_header_format,
+    ]
+
+    failed = 0
+    for test in tests:
+        try:
+            test()
+        except AssertionError as e:
+            print(f"✗ {test.__name__} failed: {e}")
+            failed += 1
+        except Exception as e:
+            print(f"✗ {test.__name__} error: {e}")
+            failed += 1
+
+    if failed > 0:
+        print(f"\n{failed} tests failed")
+        sys.exit(1)
+    else:
+        print(f"\nAll {len(tests)} tests passed!")

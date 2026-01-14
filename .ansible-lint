@@ -1,6 +1,58 @@
+# Ansible-lint configuration
+exclude_paths:
+  - .cache/
+  - .github/
+  - tests/
+  - files/cloud-init/  # Cloud-init files have special format requirements
+  - playbooks/  # These are task files included by other playbooks, not standalone playbooks
+  - roles/cloud-ec2/files/  # AWS CloudFormation templates use YAML tags ansible-lint can't parse
+  - roles/cloud-lightsail/files/  # AWS CloudFormation templates use YAML tags ansible-lint can't parse
+
 skip_list:
-  - '204'
-verbosity: 1
+  - 'package-latest'  # Package installs should not use latest - needed for updates
+  - 'experimental'  # Experimental rules
+  - 'fqcn[action]'  # Use FQCN for module actions - gradual migration
+  - 'fqcn[action-core]'  # Use FQCN for builtin actions - gradual migration
+  - 'var-naming[no-role-prefix]'  # Variable naming
+  - 'var-naming[pattern]'  # Variable naming patterns
+  - 'no-free-form'  # Avoid free-form syntax - some legacy usage
+  - 'key-order[task]'  # Task key order
+  - 'name[casing]'  # Name casing
+  - 'yaml[document-start]'  # YAML document start
+  - 'role-name'  # Role naming convention - too many cloud-* roles
+  - 'no-handler'  # Handler usage - some legitimate non-handler use cases
+  - 'name[missing]'  # All tasks should be named - 113 issues to fix (temporary)
 
 warn_list:
   - no-changed-when
+  - yaml[line-length]
+  - risky-file-permissions
+
+# Enable additional rules
+enable_list:
+  - no-log-password
+  - no-same-owner
+  - partial-become
+  - name[play]  # All plays should be named
+  - yaml[new-line-at-end-of-file]  # Files should end with newline
+  - jinja[invalid]  # Invalid Jinja2 syntax (catches template errors)
+  - jinja[spacing]  # Proper spacing in Jinja2 expressions
+
+# Rules we're actively working on fixing
+# Move these from skip_list to enable_list as we fix them
+# - 'name[missing]'  # All tasks should be named - 113 issues to fix
+# - 'no-changed-when'  # Commands should not change things
+# - 'yaml[line-length]'  # Line length limit
+# - 'risky-file-permissions'  # File permissions
+
+verbosity: 1
+
+# Mock custom modules in library/ that ansible-lint can't auto-discover
+# These modules exist and work at runtime, but need to be declared for static analysis
+mock_modules:
+  - gcp_compute_location_info
+  - lightsail_region_facts
+  - x25519_pubkey
+  - scaleway_compute
+
+# vim: ft=yaml

@@ -1,8 +1,0 @@
----
-- name: Install requirements
-  pip:
-    name:
-      - cs
-      - sshpubkeys
-    state: latest
-    virtualenv_python: python3

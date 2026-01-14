@@ -1,26 +1,25 @@
 ---
 - set_fact:
-    secret: "{{ azure_secret | default(lookup('env','AZURE_SECRET'), true) }}"
-    tenant: "{{ azure_tenant | default(lookup('env','AZURE_TENANT'), true) }}"
-    client_id: "{{ azure_client_id | default(lookup('env','AZURE_CLIENT_ID'), true) }}"
-    subscription_id: "{{ azure_subscription_id | default(lookup('env','AZURE_SUBSCRIPTION_ID'), true) }}"
+    secret: "{{ azure_secret | default(lookup('env', 'AZURE_SECRET'), true) }}"
+    tenant: "{{ azure_tenant | default(lookup('env', 'AZURE_TENANT'), true) }}"
+    client_id: "{{ azure_client_id | default(lookup('env', 'AZURE_CLIENT_ID'), true) }}"
+    subscription_id: "{{ azure_subscription_id | default(lookup('env', 'AZURE_SUBSCRIPTION_ID'), true) }}"
+  no_log: true
 
 - block:
-  - name: Set the default region
-    set_fact:
-      default_region: >-
-        {% for r in azure_regions %}
-        {%- if r['name'] == "eastus" %}{{ loop.index }}{% endif %}
-        {%- endfor %}
+    - name: Set the default region
+      set_fact:
+        default_region: >-
+          {% for r in azure_regions %}{%- if r['name'] == "eastus" %}{{ loop.index }}{% endif %}{%- endfor %}
 
-  - pause:
-      prompt: |
-        What region should the server be located in?
-          {% for r in azure_regions %}
-          {{ loop.index }}. {{ r['regionalDisplayName'] }}
-          {% endfor %}
+    - pause:
+        prompt: |
+          What region should the server be located in?
+            {% for r in azure_regions %}
+            {{ loop.index }}. {{ r['regionalDisplayName'] }}
+            {% endfor %}
 
-        Enter the number of your desired region
-        [{{ default_region }}]
-    register: _algo_region
+          Enter the number of your desired region
+          [{{ default_region }}]
+      register: _algo_region
   when: region is undefined

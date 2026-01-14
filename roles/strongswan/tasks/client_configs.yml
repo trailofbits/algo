@@ -4,45 +4,44 @@
     set -o pipefail
     cat private/{{ item }}.p12 |
     base64
-  register:  PayloadContent
+  register: PayloadContent
   changed_when: false
   args:
     executable: bash
     chdir: "{{ ipsec_pki_path }}"
-  with_items: "{{ users }}"
+  loop: "{{ users }}"
 
 - name: Set facts for mobileconfigs
   set_fact:
-    PayloadContentCA: "{{ lookup('file' , '{{ ipsec_pki_path }}/cacert.pem')|b64encode }}"
+    PayloadContentCA: "{{ lookup('file', ipsec_pki_path + '/cacert.pem') | b64encode }}"
 
 - name: Build the mobileconfigs
   template:
     src: mobileconfig.j2
     dest: "{{ ipsec_config_path }}/apple/{{ item.0 }}.mobileconfig"
-    mode: 0600
+    mode: '0600'
   with_together:
     - "{{ users }}"
     - "{{ PayloadContent.results }}"
-  no_log: "{{ no_log|bool }}"
+  no_log: "{{ algo_no_log | bool }}"
 
 - name: Build the client ipsec config file
   template:
     src: client_ipsec.conf.j2
     dest: "{{ ipsec_config_path }}/manual/{{ item }}.conf"
-    mode: 0600
-  with_items:
-    - "{{ users }}"
+    mode: '0600'
+  loop: "{{ users }}"
+
 
 - name: Build the client ipsec secret file
   template:
     src: client_ipsec.secrets.j2
     dest: "{{ ipsec_config_path }}/manual/{{ item }}.secrets"
-    mode: 0600
-  with_items:
-    - "{{ users }}"
+    mode: '0600'
+  loop: "{{ users }}"
 
 - name: Restrict permissions for the local private directories
   file:
     path: "{{ ipsec_config_path }}"
     state: directory
-    mode: 0700
+    mode: '0700'

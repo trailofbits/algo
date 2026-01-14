@@ -10,7 +10,7 @@
     dest: /etc/apt/apt.conf.d/50unattended-upgrades
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
 
 - name: Periodic upgrades configured
   template:
@@ -18,4 +18,4 @@
     dest: /etc/apt/apt.conf.d/10periodic
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'

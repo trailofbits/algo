@@ -1,0 +1,18 @@
+---
+collections:
+  - name: ansible.posix
+    version: "==2.1.0"
+  - name: ansible.utils
+    version: ">=4.0.0"
+  - name: community.general
+    version: "==11.1.0"
+  - name: community.crypto
+    version: "==3.0.3"
+  - name: openstack.cloud
+    version: "==2.4.1"
+  - name: linode.cloud
+    version: ">=0.41.0"
+  - name: community.digitalocean
+    version: ">=1.26.0"
+  - name: azure.azcollection
+    version: ">=3.0.0"

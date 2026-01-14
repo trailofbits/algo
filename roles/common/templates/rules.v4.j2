@@ -1,5 +1,5 @@
 {% set subnets = ([strongswan_network] if ipsec_enabled else []) + ([wireguard_network_ipv4] if wireguard_enabled else []) %}
-{% set ports = (['500', '4500'] if ipsec_enabled else []) + ([wireguard_port] if wireguard_enabled else []) + ([wireguard_port_actual] if wireguard_enabled and wireguard_port|int == wireguard_port_avoid|int else []) %}
+{% set ports = (['500', '4500'] if ipsec_enabled else []) + ([wireguard_port] if wireguard_enabled else []) + ([wireguard_port_actual] if wireguard_enabled and wireguard_port | int == wireguard_port_avoid | int else []) %}
 
 #### The mangle table
 # This table allows us to modify packet headers
@@ -13,8 +13,8 @@
 :OUTPUT ACCEPT [0:0]
 :POSTROUTING ACCEPT [0:0]
 
-{% if reduce_mtu|int > 0 and ipsec_enabled %}
--A FORWARD -s {{ strongswan_network }} -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss {{ 1360 - reduce_mtu|int }}
+{% if reduce_mtu | int > 0 and ipsec_enabled %}
+-A FORWARD -s {{ strongswan_network }} -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss {{ 1360 - reduce_mtu | int }}
 {% endif %}
 
 COMMIT
@@ -29,14 +29,21 @@ COMMIT
 :PREROUTING ACCEPT [0:0]
 :POSTROUTING ACCEPT [0:0]
 
-{% if wireguard_enabled and wireguard_port|int == wireguard_port_avoid|int %}
+{% if wireguard_enabled and wireguard_port | int == wireguard_port_avoid | int %}
 # Handle the special case of allowing access to WireGuard over an already used
 # port like 53
--A PREROUTING -s {{ subnets|join(',') }} -p udp --dport {{ wireguard_port_avoid }} -j RETURN
+-A PREROUTING -s {{ subnets | join(',') }} -p udp --dport {{ wireguard_port_avoid }} -j RETURN
 -A PREROUTING --in-interface {{ ansible_default_ipv4['interface'] }} -p udp --dport {{ wireguard_port_avoid }} -j REDIRECT --to-port {{ wireguard_port_actual }}
 {% endif %}
 # Allow traffic from the VPN network to the outside world, and replies
--A POSTROUTING -s {{ subnets|join(',') }} -m policy --pol none --dir out {{ '-j SNAT --to ' + snat_aipv4 if snat_aipv4 else '-j MASQUERADE' }}
+{% if ipsec_enabled %}
+# For IPsec traffic - NAT the decrypted packets from the VPN subnet
+-A POSTROUTING -s {{ strongswan_network }} -o {{ ansible_default_ipv4['interface'] }} {{ '-j SNAT --to ' + snat_aipv4 if snat_aipv4 else '-j MASQUERADE' }}
+{% endif %}
+{% if wireguard_enabled %}
+# For WireGuard traffic - NAT packets from the VPN subnet
+-A POSTROUTING -s {{ wireguard_network_ipv4 }} -o {{ ansible_default_ipv4['interface'] }} {{ '-j SNAT --to ' + snat_aipv4 if snat_aipv4 else '-j MASQUERADE' }}
+{% endif %}
 
 
 COMMIT
@@ -63,8 +70,8 @@ COMMIT
 -A INPUT -p ah -j ACCEPT
 # rate limit ICMP traffic per source
 -A INPUT -p icmp --icmp-type echo-request -m hashlimit --hashlimit-upto 5/s --hashlimit-mode srcip --hashlimit-srcmask 32 --hashlimit-name icmp-echo-drop -j ACCEPT
-# Accept IPSEC/WireGuard traffic to ports {{ subnets|join(',') }}
--A INPUT -p udp -m multiport --dports {{ ports|join(',') }} -j ACCEPT
+# Accept IPSEC/WireGuard traffic to ports {{ subnets | join(',') }}
+-A INPUT -p udp -m multiport --dports {{ ports | join(',') }} -j ACCEPT
 # Allow new traffic to port {{ ansible_ssh_port }} (SSH)
 -A INPUT -p tcp --dport {{ ansible_ssh_port }} -m conntrack --ctstate NEW -j ACCEPT
 
@@ -78,16 +85,16 @@ COMMIT
 # DUMMY interfaces are the proper way to install IPs without assigning them any
 # particular virtual (tun,tap,...) or physical (ethernet) interface.
 
-# Accept DNS traffic to the local DNS resolver
--A INPUT -d {{ local_service_ip }} -p udp --dport 53 -j ACCEPT
+# Accept DNS traffic to the local DNS resolver from VPN clients only
+-A INPUT -s {{ subnets | join(',') }} -d {{ local_service_ip }} -p udp --dport 53 -j ACCEPT
 
 # Drop traffic between VPN clients
--A FORWARD -s {{ subnets|join(',') }} -d {{ subnets|join(',') }} -j {{ "DROP" if BetweenClients_DROP else "ACCEPT" }}
+-A FORWARD -s {{ subnets | join(',') }} -d {{ subnets | join(',') }} -j {{ "DROP" if BetweenClients_DROP else "ACCEPT" }}
 # Drop traffic to VPN clients from SSH tunnels
--A OUTPUT -d {{ subnets|join(',') }} -m owner --gid-owner 15000 -j {{ "DROP" if BetweenClients_DROP else "ACCEPT" }}
+-A OUTPUT -d {{ subnets | join(',') }} -m owner --gid-owner 15000 -j {{ "DROP" if BetweenClients_DROP else "ACCEPT" }}
 
 # Drop traffic to the link-local network
--A FORWARD -s {{ subnets|join(',') }} -d 169.254.0.0/16 -j DROP
+-A FORWARD -s {{ subnets | join(',') }} -d 169.254.0.0/16 -j DROP
 # Drop traffic to the link-local network from SSH tunnels
 -A OUTPUT -d 169.254.0.0/16 -m owner --gid-owner 15000 -j DROP
 
@@ -106,7 +113,7 @@ COMMIT
 
 {% if wireguard_enabled %}
 # Forward any traffic from the WireGuard VPN network
--A FORWARD -m conntrack --ctstate NEW -s {{ wireguard_network_ipv4 }} -m policy --pol none --dir in -j ACCEPT
+-A FORWARD -m conntrack --ctstate NEW -s {{ wireguard_network_ipv4 }} -j ACCEPT
 {% endif %}
 
 COMMIT

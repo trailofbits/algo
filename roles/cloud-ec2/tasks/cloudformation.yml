@@ -1,15 +1,17 @@
 ---
+# Note: Using template_body instead of deprecated 'template' parameter.
+# The 'template' parameter is deprecated and will be removed after 2026-05-01.
 - name: Deploy the template
   cloudformation:
     aws_access_key: "{{ access_key }}"
     aws_secret_key: "{{ secret_key }}"
+    aws_session_token: "{{ session_token if session_token else omit }}"
     stack_name: "{{ stack_name }}"
-    state: "present"
+    state: present
     region: "{{ algo_region }}"
-    template: roles/cloud-ec2/files/stack.yaml
+    template_body: "{{ lookup('file', 'roles/cloud-ec2/files/stack.yaml') }}"
     template_parameters:
       InstanceTypeParameter: "{{ cloud_providers.ec2.size }}"
-      PublicSSHKeyParameter: "{{ lookup('file', SSH_keys.public) }}"
       ImageIdParameter: "{{ ami_image }}"
       WireGuardPort: "{{ wireguard_port }}"
       UseThisElasticIP: "{{ existing_eip }}"
@@ -20,3 +22,4 @@
     tags:
       Environment: Algo
   register: stack
+  no_log: true

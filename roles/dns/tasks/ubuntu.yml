@@ -1,43 +1,44 @@
 ---
 - block:
-  - name: Add the repository
-    apt_repository:
-      state: present
-      codename: "{{ ansible_distribution_release }}"
-      repo: ppa:shevchuk/dnscrypt-proxy
-    register: result
-    until: result is succeeded
-    retries: 10
-    delay: 3
+    - name: Add the repository
+      apt_repository:
+        state: present
+        codename: "{{ ansible_distribution_release }}"
+        repo: ppa:shevchuk/dnscrypt-proxy
+      register: result
+      until: result is succeeded
+      retries: 10
+      delay: 3
 
-  - name: Configure unattended-upgrades
-    copy:
-      src: 50-dnscrypt-proxy-unattended-upgrades
-      dest: /etc/apt/apt.conf.d/50-dnscrypt-proxy-unattended-upgrades
-      owner: root
-      group: root
-      mode: 0644
+    - name: Configure unattended-upgrades
+      copy:
+        src: 50-dnscrypt-proxy-unattended-upgrades
+        dest: /etc/apt/apt.conf.d/50-dnscrypt-proxy-unattended-upgrades
+        owner: root
+        group: root
+        mode: '0644'
   when: ansible_facts['distribution_version'] is version('20.04', '<')
 
-- name: Install dnscrypt-proxy
+- name: Install dnscrypt-proxy (individual)
   apt:
     name: dnscrypt-proxy
     state: present
     update_cache: true
+  when: not performance_parallel_packages | default(true)
 
 - block:
-  - name: Ubuntu | Configure AppArmor policy for dnscrypt-proxy
-    copy:
-      src: apparmor.profile.dnscrypt-proxy
-      dest: /etc/apparmor.d/usr.bin.dnscrypt-proxy
-      owner: root
-      group: root
-      mode: 0600
-    notify: restart dnscrypt-proxy
+    - name: Ubuntu | Configure AppArmor policy for dnscrypt-proxy
+      copy:
+        src: apparmor.profile.dnscrypt-proxy
+        dest: /etc/apparmor.d/usr.bin.dnscrypt-proxy
+        owner: root
+        group: root
+        mode: '0600'
+      notify: restart dnscrypt-proxy
 
-  - name: Ubuntu | Enforce the dnscrypt-proxy AppArmor policy
-    command: aa-enforce usr.bin.dnscrypt-proxy
-    changed_when: false
+    - name: Ubuntu | Enforce the dnscrypt-proxy AppArmor policy
+      command: aa-enforce usr.bin.dnscrypt-proxy
+      changed_when: false
   tags: apparmor
   when: apparmor_enabled|default(false)|bool
 
@@ -45,13 +46,57 @@
   file:
     path: /etc/systemd/system/dnscrypt-proxy.service.d/
     state: directory
-    mode: 0755
+    mode: '0755'
     owner: root
     group: root
+
+- name: Ubuntu | Ensure socket override directory exists
+  file:
+    path: /etc/systemd/system/dnscrypt-proxy.socket.d/
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Ubuntu | Configure dnscrypt-proxy socket to listen on VPN IPs
+  copy:
+    dest: /etc/systemd/system/dnscrypt-proxy.socket.d/10-algo-override.conf
+    content: |
+      [Socket]
+      # Clear default listeners
+      ListenStream=
+      ListenDatagram=
+      # Add VPN service IPs
+      ListenStream={{ local_service_ip }}:53
+      ListenDatagram={{ local_service_ip }}:53
+      {% if ipv6_support %}
+      ListenStream=[{{ local_service_ipv6 }}]:53
+      ListenDatagram=[{{ local_service_ipv6 }}]:53
+      {% endif %}
+      NoDelay=true
+      DeferAcceptSec=1
+    mode: '0644'
+  register: socket_override
+  notify:
+    - daemon-reload
+    - restart dnscrypt-proxy.socket
+    - restart dnscrypt-proxy
+
+- name: Ubuntu | Reload systemd daemon after socket configuration
+  systemd:
+    daemon_reload: true
+  when: socket_override.changed
+
+- name: Ubuntu | Restart dnscrypt-proxy socket to apply configuration
+  systemd:
+    name: dnscrypt-proxy.socket
+    state: restarted
+  when: socket_override.changed
 
 - name: Ubuntu | Add custom requirements to successfully start the unit
   copy:
     dest: /etc/systemd/system/dnscrypt-proxy.service.d/99-algo.conf
+    mode: '0644'
     content: |
       [Unit]
       After=systemd-resolved.service
@@ -59,5 +104,47 @@
 
       [Service]
       AmbientCapabilities=CAP_NET_BIND_SERVICE
-  notify:
-   - restart dnscrypt-proxy
+  register: dnscrypt_override
+
+- name: Ubuntu | Reload systemd daemon if override changed
+  systemd:
+    daemon_reload: true
+  when: dnscrypt_override.changed
+
+- name: Ubuntu | Apply systemd security hardening for dnscrypt-proxy
+  copy:
+    dest: /etc/systemd/system/dnscrypt-proxy.service.d/90-security-hardening.conf
+    content: |
+      # Algo VPN systemd security hardening for dnscrypt-proxy
+      # Additional hardening on top of comprehensive AppArmor
+      [Service]
+      # Privilege restrictions
+      NoNewPrivileges=yes
+
+      # Filesystem isolation (complements AppArmor)
+      ProtectSystem=strict
+      ProtectHome=yes
+      PrivateTmp=yes
+      PrivateDevices=yes
+      ProtectKernelTunables=yes
+      ProtectControlGroups=yes
+
+      # Network restrictions
+      RestrictAddressFamilies=AF_INET AF_INET6
+
+      # Allow access to dnscrypt-proxy cache (AppArmor also controls this)
+      ReadWritePaths=/var/cache/dnscrypt-proxy
+
+      # System call filtering (complements AppArmor restrictions)
+      SystemCallFilter=@system-service @network-io
+      SystemCallFilter=~@debug @mount @swap @reboot @raw-io
+      SystemCallErrorNumber=EPERM
+    owner: root
+    group: root
+    mode: '0644'
+  register: dnscrypt_hardening
+
+- name: Ubuntu | Reload systemd daemon if hardening changed
+  systemd:
+    daemon_reload: true
+  when: dnscrypt_hardening.changed

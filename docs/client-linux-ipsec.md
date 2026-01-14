@@ -4,9 +4,9 @@ Install strongSwan, then copy the included ipsec_user.conf, ipsec_user.secrets, 
 
 ## Ubuntu Server example
 
-1. `sudo apt-get install strongswan libstrongswan-standard-plugins`: install strongSwan
-2. `/etc/ipsec.d/certs`: copy `<name>.crt` from `algo-master/configs/<server_ip>/ipsec/manual/<name>.crt`
-3. `/etc/ipsec.d/private`: copy `<name>.key` from `algo-master/configs/<server_ip>/ipsec/manual/<name>.key`
+1. `sudo apt install strongswan libstrongswan-standard-plugins`: install strongSwan
+2. `/etc/ipsec.d/certs`: copy `<name>.crt` from `algo-master/configs/<server_ip>/ipsec/.pki/certs/<name>.crt`
+3. `/etc/ipsec.d/private`: copy `<name>.key` from `algo-master/configs/<server_ip>/ipsec/.pki/private/<name>.key`
 4. `/etc/ipsec.d/cacerts`: copy `cacert.pem` from `algo-master/configs/<server_ip>/ipsec/manual/cacert.pem`
 5. `/etc/ipsec.secrets`: add your `user.key` to the list, e.g. `<server_ip> : ECDSA <name>.key`
 6. `/etc/ipsec.conf`: add the connection from `ipsec_user.conf` and ensure `leftcert` matches the `<name>.crt` filename
@@ -27,7 +27,7 @@ To configure the connection to come up at boot time replace `auto=add` with `aut
 
 ## Notes on SELinux
 
-If you use a system with SELinux enabled you might need to set appropriate file contexts:
+If you use a system with SELinux enabled, you might need to set appropriate file contexts:
 
 ````
 semanage fcontext -a -t ipsec_key_file_t "$(pwd)(/.*)?"

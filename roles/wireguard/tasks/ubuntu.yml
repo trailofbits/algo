@@ -1,11 +1,54 @@
 ---
-- name: WireGuard installed
+- name: WireGuard installed (individual)
   apt:
     name: wireguard
     state: present
     update_cache: true
+  when: not performance_parallel_packages | default(true)
 
 - name: Set OS specific facts
   set_fact:
-    service_name: "wg-quick@{{ wireguard_interface }}"
+    service_name: wg-quick@{{ wireguard_interface }}
   tags: always
+
+- name: Ubuntu | Ensure that the WireGuard service directory exists
+  file:
+    path: /etc/systemd/system/wg-quick@{{ wireguard_interface }}.service.d/
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Ubuntu | Apply systemd security hardening for WireGuard
+  copy:
+    dest: /etc/systemd/system/wg-quick@{{ wireguard_interface }}.service.d/90-security-hardening.conf
+    content: |
+      # Algo VPN systemd security hardening for WireGuard
+      [Service]
+      # Privilege restrictions
+      NoNewPrivileges=yes
+
+      # Filesystem isolation
+      ProtectSystem=strict
+      ProtectHome=yes
+      PrivateTmp=yes
+      ProtectKernelTunables=yes
+      ProtectControlGroups=yes
+
+      # Network restrictions - WireGuard needs NETLINK for interface management
+      RestrictAddressFamilies=AF_INET AF_INET6 AF_NETLINK
+
+      # Allow access to WireGuard configuration
+      ReadWritePaths=/etc/wireguard
+      ReadOnlyPaths=/etc/resolv.conf
+
+      # System call filtering - allow network and system service calls
+      SystemCallFilter=@system-service @network-io
+      SystemCallFilter=~@debug @mount @swap @reboot @raw-io
+      SystemCallErrorNumber=EPERM
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - daemon-reload
+    - restart wireguard

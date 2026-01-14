@@ -5,10 +5,8 @@ Parameters:
   InstanceTypeParameter:
     Type: String
     Default: t2.micro
-  PublicSSHKeyParameter:
-    Type: String
   ImageIdParameter:
-    Type: String
+    Type: AWS::EC2::Image::Id
   WireGuardPort:
     Type: String
   UseThisElasticIP:
@@ -83,8 +81,6 @@ Resources:
   Route:
     Type: AWS::EC2::Route
     DependsOn:
-      - InternetGateway
-      - RouteTable
       - VPCGatewayAttachment
     Properties:
       RouteTableId: !Ref RouteTable
@@ -94,8 +90,6 @@ Resources:
   RouteIPv6:
     Type: AWS::EC2::Route
     DependsOn:
-      - InternetGateway
-      - RouteTable
       - VPCGatewayAttachment
     Properties:
       RouteTableId: !Ref RouteTable
@@ -105,23 +99,17 @@ Resources:
   SubnetIPv6:
     Type: AWS::EC2::SubnetCidrBlock
     DependsOn:
-      - RouteIPv6
-      - VPC
       - VPCIPv6
     Properties:
       Ipv6CidrBlock:
         "Fn::Join":
-            - ""
-            - - !Select [0, !Split [ "::", !Select [0, !GetAtt VPC.Ipv6CidrBlocks] ]]
-              - "::dead:beef/64"
+          - ""
+          - - !Select [0, !Split ["::", !Select [0, !GetAtt VPC.Ipv6CidrBlocks]]]
+            - "::dead:beef/64"
       SubnetId: !Ref Subnet
 
   RouteSubnet:
     Type: "AWS::EC2::SubnetRouteTableAssociation"
-    DependsOn:
-      - RouteTable
-      - Subnet
-      - Route
     Properties:
       RouteTableId: !Ref RouteTable
       SubnetId: !Ref Subnet
@@ -167,8 +155,6 @@ Resources:
     Type: AWS::EC2::Instance
     DependsOn:
       - SubnetIPv6
-      - Subnet
-      - InstanceSecurityGroup
     Properties:
       InstanceType:
         Ref: InstanceTypeParameter
@@ -188,12 +174,12 @@ Resources:
       UserData: !Ref UserData
       LaunchTemplate:
         !If               # Only if Conditions created "EC2LaunchTemplate"
-          - InstanceIsSpot
-          -
-            LaunchTemplateId:
-              !Ref EC2LaunchTemplate
-            Version: 1
-          - !Ref AWS::NoValue  # Else this LaunchTemplate not set
+        - InstanceIsSpot
+        -
+          LaunchTemplateId:
+            !Ref EC2LaunchTemplate
+          Version: 1
+        - !Ref AWS::NoValue  # Else this LaunchTemplate not set
       Tags:
         - Key: Name
           Value: !Ref AWS::StackName
@@ -205,7 +191,6 @@ Resources:
       Domain: vpc
       InstanceId: !Ref EC2Instance
     DependsOn:
-      - EC2Instance
       - VPCGatewayAttachment
 
   ElasticIPAssociation:

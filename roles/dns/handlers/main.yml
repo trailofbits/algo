@@ -1,17 +1,18 @@
 ---
-- name: daemon reload
+- name: daemon-reload
   systemd:
     daemon_reload: true
+
+- name: restart dnscrypt-proxy.socket
+  systemd:
+    name: dnscrypt-proxy.socket
+    state: restarted
+    daemon_reload: true
+  when: uses_systemd_socket
 
 - name: restart dnscrypt-proxy
   systemd:
     name: dnscrypt-proxy
     state: restarted
     daemon_reload: true
-  when: ansible_distribution == 'Ubuntu'
-
-- name: restart dnscrypt-proxy
-  service:
-    name: dnscrypt-proxy
-    state: restarted
-  when: ansible_distribution == 'FreeBSD'
+  when: uses_systemd_socket

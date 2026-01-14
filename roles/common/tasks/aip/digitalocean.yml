@@ -16,6 +16,7 @@
   template:
     src: 99-algo-ipv6-egress.yaml.j2
     dest: /etc/netplan/99-algo-ipv6-egress.yaml
+    mode: '0644'
   when:
     - ipv6_support
     - ipv6_subnet_size|int > 1

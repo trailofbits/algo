@@ -1,48 +1,107 @@
 # Deploy from Windows
 
-The Algo scripts can't be run directly on Windows, but you can use the Windows Subsystem for Linux (WSL) to run a copy of Ubuntu Linux right on your Windows system. You can then run Algo to deploy a VPN server to a supported cloud provider, though you can't turn the instance of Ubuntu running under WSL into a VPN server.
+You have three options to run Algo on Windows:
 
-To run WSL you will need:
+1. **PowerShell Script** (Recommended) - Automated WSL wrapper for easy use
+2. **Windows Subsystem for Linux (WSL)** - Direct Linux environment access
+3. **Git Bash/MSYS2** - Unix-like shell environment (limited compatibility)
 
-* A 64-bit system
-* 64-bit Windows 10 (Anniversary update or later version)
+## Option 1: PowerShell Script (Recommended)
 
-## Install WSL
+The PowerShell script provides the easiest Windows experience by automatically using WSL when needed:
 
-Enable the 'Windows Subsystem for Linux':
-
-1. Open 'Settings'
-2. Click 'Update & Security', then click the 'For developers' option on the left.
-3. Toggle the 'Developer mode' option, and accept any warnings Windows pops up.
-
-Wait a minute for Windows to install a few things in the background (it will eventually let you know a restart may be required for changes to take effect—ignore that for now). Next, to install the actual Linux Subsystem, you have to jump over to 'Control Panel', and do the following:
-
-1. Click on 'Programs'
-2. Click on 'Turn Windows features on or off'
-3. Scroll down and check 'Windows Subsystem for Linux', and then click OK.
-4. The subsystem will be installed, then Windows will require a restart.
-5. Restart Windows and then install [Ubuntu 20.04 LTS from the Windows Store](https://www.microsoft.com/p/ubuntu-2004-lts/9n6svws3rx71).
-6. Run Ubuntu from the Start menu. It will take a few minutes to install. It will have you create a separate user account for the Linux subsystem. Once that's done, you will finally have Ubuntu running somewhat integrated with Windows.
-
-## Install Algo
-
-Run these commands in the Ubuntu Terminal to install a prerequisite package and download the Algo scripts to your home directory. Note that when using WSL you should **not** install Algo in the `/mnt/c` directory due to problems with file permissions.
-
-You may need to follow [these directions](https://devblogs.microsoft.com/commandline/copy-and-paste-arrives-for-linuxwsl-consoles/) in order to paste commands into the Ubuntu Terminal.
-
-```shell
-cd
-umask 0002
-sudo apt update
-sudo apt install -y python3-virtualenv
+```powershell
 git clone https://github.com/trailofbits/algo
 cd algo
+.\algo.ps1
 ```
 
-Now you can continue by following the [README](https://github.com/trailofbits/algo#deploy-the-algo-server) from the 4th step to deploy your Algo server!
+**How it works:**
+- Detects if you're already in WSL and uses the standard Unix approach
+- On native Windows, automatically runs Algo via WSL (since Ansible requires Unix)
+- Provides clear guidance if WSL isn't installed
 
-You'll be instructed to edit the file `config.cfg` in order to specify the Algo user accounts to be created. If you're new to Linux the simplest editor to use is `nano`. To edit the file while in the `algo` directory, run:
-```shell
-nano config.cfg
+**Requirements:**
+- Windows Subsystem for Linux (WSL) with Ubuntu 22.04
+- If WSL isn't installed, the script will guide you through installation
+
+## Option 2: Windows Subsystem for Linux (WSL)
+
+For users who prefer a full Linux environment or need advanced features:
+
+### Prerequisites
+* 64-bit Windows 10/11 (Anniversary update or later)
+
+### Setup WSL
+1. Install WSL from PowerShell (as Administrator):
+```powershell
+wsl --install -d Ubuntu-22.04
 ```
-Once `./algo` has finished you can use the `cp` command to copy the configuration files from the `configs` directory into your Windows directory under `/mnt/c/Users` for easier access.
+
+2. After restart, open Ubuntu and create your user account
+
+### Install Algo in WSL
+```bash
+cd ~
+git clone https://github.com/trailofbits/algo
+cd algo
+./algo
+```
+
+**Important**: Don't install Algo in `/mnt/c` directory due to file permission issues.
+
+### WSL Configuration (if needed)
+
+You may encounter permission issues if you clone Algo to a Windows drive (like `/mnt/c/`). Symptoms include:
+
+- **Git errors**: "fatal: could not set 'core.filemode' to 'false'"
+- **Ansible errors**: "ERROR! Skipping, '/mnt/c/.../ansible.cfg' as it is not safe to use as a configuration file"
+- **SSH key errors**: "WARNING: UNPROTECTED PRIVATE KEY FILE!" or "Permissions 0777 for key are too open"
+
+If you see these errors, configure WSL:
+
+1. Edit `/etc/wsl.conf` to allow metadata:
+```ini
+[automount]
+options = "metadata"
+```
+
+2. Restart WSL completely:
+```powershell
+wsl --shutdown
+```
+
+3. Fix directory permissions for Ansible:
+```bash
+chmod 744 .
+```
+
+**Why this happens**: Windows filesystems mounted in WSL (`/mnt/c/`) don't support Unix file permissions by default. Git can't set executable bits, and Ansible refuses to load configs from "world-writable" directories for security.
+
+After deployment, copy configs to Windows:
+```bash
+cp -r configs /mnt/c/Users/$USER/
+```
+
+## Option 3: Git Bash/MSYS2
+
+If you have Git for Windows installed, you can use the included Git Bash terminal:
+
+```bash
+git clone https://github.com/trailofbits/algo
+cd algo
+./algo
+```
+
+**Pros**:
+- Uses the standard Unix `./algo` script
+- No WSL setup required
+- Familiar Unix-like environment
+
+**Cons**:
+- **Limited compatibility**: Ansible may not work properly due to Windows/Unix differences
+- **Not officially supported**: May encounter unpredictable issues
+- Less robust than WSL or PowerShell options
+- Requires Git for Windows installation
+
+**Note**: This approach is not recommended due to Ansible's Unix requirements. Use WSL-based options instead.

@@ -1,0 +1,69 @@
+---
+name: Test Effectiveness Tracking
+
+'on':
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sunday
+  workflow_dispatch:  # Allow manual runs
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: read
+  actions: read
+
+jobs:
+  track-effectiveness:
+    name: Analyze Test Effectiveness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v5.0.1
+        with:
+          persist-credentials: true
+
+      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # v6.1.0
+        with:
+          python-version: '3.11'
+
+      - name: Analyze test effectiveness
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python scripts/track-test-effectiveness.py
+
+      - name: Upload metrics
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # v6.0.0
+        with:
+          name: test-effectiveness-metrics
+          path: .metrics/
+
+      - name: Create issue if tests are ineffective
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Check if we need to create an issue
+          if grep -q "⚠️" .metrics/test-effectiveness-report.md; then
+            # Check if issue already exists
+            existing=$(gh issue list --label "test-effectiveness" --state open --json number --jq '.[0].number')
+
+            if [ -z "$existing" ]; then
+              gh issue create \
+                --title "Test Effectiveness Review Needed" \
+                --body-file .metrics/test-effectiveness-report.md \
+                --label "test-effectiveness,maintenance"
+            else
+              # Update existing issue
+              gh issue comment $existing --body-file .metrics/test-effectiveness-report.md
+            fi
+          fi
+
+      - name: Commit metrics if changed
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          if [[ -n $(git status -s .metrics/) ]]; then
+            git add .metrics/
+            git commit -m "chore: Update test effectiveness metrics [skip ci]"
+            git push
+          fi

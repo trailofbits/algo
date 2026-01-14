@@ -1,13 +1,23 @@
 ### Filing New Issues
 
-* Check that your issue is not already described in the [FAQ](docs/faq.md), [troubleshooting](docs/troubleshooting.md) docs, or an [existing issue](https://github.com/trailofbits/algo/issues)
-* Did you remember to install the dependencies for your operating system prior to installing Algo?
-* We only support modern clients, e.g. macOS 10.11+, iOS 9+, Windows 10+, Ubuntu 17.04+, etc.
-* Cloud provider support is limited to DO, AWS, GCE, and Azure. Any others are best effort only.
-* If you need to file a new issue, fill out any relevant fields in the Issue Template.
+* We welcome bug reports! Before filing, a quick check of the [FAQ](docs/faq.md) or [troubleshooting](docs/troubleshooting.md) docs might have your answer
+* Algo automatically installs dependencies with uv - no manual setup required
+* We support modern clients: macOS 12+, iOS 15+, Windows 11+, Ubuntu 22.04+, etc.
+* Supported cloud providers: DigitalOcean, AWS, Azure, GCP, Vultr, Hetzner, Linode, OpenStack, CloudStack
+* If you need to file a new issue, fill out any relevant fields in the Issue Template
 
 ### Pull Requests
 
-* Run [ansible-lint](https://github.com/willthames/ansible-lint) or [shellcheck](https://github.com/koalaman/shellcheck) on any new scripts
+* Run the full linter suite: `./scripts/lint.sh`
+* Test your changes on multiple platforms when possible
+* Use conventional commit messages that clearly describe your changes
+* Pin dependency versions rather than using ranges (e.g., `==1.2.3` not `>=1.2.0`)
+
+### Development Setup
+
+* Clone the repository: `git clone https://github.com/trailofbits/algo.git`
+* Run Algo: `./algo` (dependencies installed automatically via uv)
+* Install pre-commit hooks: `uv run pre-commit install` (optional, for contributors)
+* For local testing, consider using Docker or a cloud provider test instance
 
 Thanks!

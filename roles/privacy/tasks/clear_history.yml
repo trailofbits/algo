@@ -1,0 +1,59 @@
+---
+# Clear command history and disable persistent history for privacy
+
+- name: Clear bash history for all users
+  shell: |
+    for user_home in /home/* /root; do
+      if [ -d "$user_home" ]; then
+        rm -f "$user_home/.bash_history"
+        rm -f "$user_home/.zsh_history"
+        rm -f "$user_home/.sh_history"
+      fi
+    done
+  when: privacy_history_clearing.clear_bash_history | bool
+  changed_when: false
+
+- name: Clear system command history logs
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /var/log/lastlog
+    - /var/log/wtmp.1
+    - /var/log/btmp.1
+    - /tmp/.X*
+    - /tmp/.font-unix
+    - /tmp/.ICE-unix
+  when: privacy_history_clearing.clear_system_history | bool
+  failed_when: false
+
+- name: Configure bash to not save history for service users
+  lineinfile:
+    path: "{{ item }}/.bashrc"
+    line: "{{ history_disable_line }}"
+    create: true
+    mode: '0644'
+  loop:
+    - /root
+    - /home/ubuntu
+  vars:
+    history_disable_line: |
+      # Privacy enhancement: disable bash history
+      export HISTFILE=/dev/null
+      export HISTSIZE=0
+      export HISTFILESIZE=0
+      unset HISTFILE
+  when: privacy_history_clearing.disable_service_history | bool
+  failed_when: false
+
+- name: Create history clearing script for logout
+  template:
+    src: clear-history-on-logout.sh.j2
+    dest: /etc/bash.bash_logout
+    mode: '0644'
+    owner: root
+    group: root
+  when: privacy_history_clearing.clear_bash_history | bool
+
+# Note: We don't clear current session history as each Ansible task
+# runs in its own shell session, making this operation ineffective

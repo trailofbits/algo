@@ -3,37 +3,44 @@
   set_fact:
     strongswan_additional_plugins: []
 
-- name: Ubuntu | Install strongSwan
+- name: Ubuntu | Ensure af_key kernel module is loaded
+  modprobe:
+    name: af_key
+    state: present
+    persistent: present
+
+- name: Ubuntu | Install strongSwan (individual)
   apt:
     name: strongswan
     state: present
-    update_cache: yes
-    install_recommends: yes
+    update_cache: true
+    install_recommends: true
+  when: not performance_parallel_packages | default(true)
 
 - block:
-  # https://bugs.launchpad.net/ubuntu/+source/strongswan/+bug/1826238
-  - name: Ubuntu | Charon profile for apparmor configured
-    copy:
-      dest: /etc/apparmor.d/local/usr.lib.ipsec.charon
-      content: ' capability setpcap,'
-      owner: root
-      group: root
-      mode: 0644
-    notify: restart strongswan
+    # https://bugs.launchpad.net/ubuntu/+source/strongswan/+bug/1826238
+    - name: Ubuntu | Charon profile for apparmor configured
+      copy:
+        dest: /etc/apparmor.d/local/usr.lib.ipsec.charon
+        content: " capability setpcap,"
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart strongswan
 
-  - name: Ubuntu | Enforcing ipsec with apparmor
-    command: aa-enforce "{{ item }}"
-    changed_when: false
-    with_items:
-      - /usr/lib/ipsec/charon
-      - /usr/lib/ipsec/lookip
-      - /usr/lib/ipsec/stroke
+    - name: Ubuntu | Enforcing ipsec with apparmor
+      command: aa-enforce "{{ item }}"
+      changed_when: false
+      loop:
+        - /usr/lib/ipsec/charon
+        - /usr/lib/ipsec/lookip
+        - /usr/lib/ipsec/stroke
   tags: apparmor
   when: apparmor_enabled|default(false)|bool
 
 - name: Ubuntu | Enable services
   service: name={{ item }} enabled=yes
-  with_items:
+  loop:
     - apparmor
     - "{{ strongswan_service }}"
     - netfilter-persistent
@@ -42,7 +49,7 @@
   file:
     path: /etc/systemd/system/{{ strongswan_service }}.service.d/
     state: directory
-    mode: 0755
+    mode: '0755'
     owner: root
     group: root
 
@@ -50,6 +57,7 @@
   template:
     src: 100-CustomLimitations.conf.j2
     dest: /etc/systemd/system/{{ strongswan_service }}.service.d/100-CustomLimitations.conf
+    mode: '0644'
   notify:
     - daemon-reload
     - restart strongswan

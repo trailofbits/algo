@@ -1,0 +1,63 @@
+#########################
+#        Filters        #
+#########################
+
+## Immediately respond to IPv6-related queries with an empty response
+block_ipv6 = false
+
+
+
+###############################
+#        Query logging        #
+###############################
+
+## Log client queries to a file
+## Privacy warning: Only enable for debugging purposes
+[query_log]
+  format = 'tsv'
+
+
+
+############################################
+#        Suspicious queries logging        #
+############################################
+
+## Log queries for nonexistent zones
+[nx_log]
+  format = 'tsv'
+
+
+
+######################################################
+#        Pattern-based blocking (blacklists)        #
+######################################################
+
+[blacklist]
+  {{ "blacklist_file = 'blacklist.txt'" if algo_dns_adblocking else "" }}
+
+
+
+###########################################################
+#        Pattern-based IP blocking (IP blacklists)        #
+###########################################################
+
+[ip_blacklist]
+  blacklist_file = 'ip-blacklist.txt'
+
+
+
+######################################################
+#   Pattern-based whitelisting (blacklists bypass)   #
+######################################################
+
+[whitelist]
+  # whitelist_file = 'whitelist.txt'
+
+
+
+##########################################
+#        Time access restrictions        #
+##########################################
+
+[schedules]
+  # Time-based access rules can be defined here

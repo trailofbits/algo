@@ -1,35 +1,28 @@
 ---
-ipsec_config_path: "configs/{{ IP_subject_alt_name }}/ipsec/"
-ipsec_pki_path: "{{ ipsec_config_path }}/.pki/"
+ipsec_config_path: configs/{{ IP_subject_alt_name }}/ipsec
+ipsec_pki_path: "{{ ipsec_config_path }}/.pki"
 strongswan_shell: /usr/sbin/nologin
 strongswan_home: /var/lib/strongswan
 strongswan_service: "{{ 'strongswan-starter' if ansible_facts['distribution_version'] is version('20.04', '>=') else 'strongswan' }}"
 BetweenClients_DROP: true
 algo_ondemand_cellular: false
 algo_ondemand_wifi: false
-algo_ondemand_wifi_exclude: '_null'
+algo_ondemand_wifi_exclude: _null
 algo_dns_adblocking: false
 ipv6_support: false
 dns_encryption: true
+# Random UUID for CA name constraints - prevents certificate reuse across different Algo deployments
+# This unique identifier ensures each CA can only issue certificates for its specific server instance
 openssl_constraint_random_id: "{{ IP_subject_alt_name | to_uuid }}.algo"
-subjectAltName_type: "{{ 'DNS' if IP_subject_alt_name|regex_search('[a-z]') else 'IP' }}"
+# Subject Alternative Name (SAN) configuration - CRITICAL for client compatibility
+# Modern clients (especially macOS/iOS) REQUIRE SAN extension in server certificates
+# Without SAN, IKEv2 connections will fail with certificate validation errors
+subjectAltName_type: "{{ 'DNS' if IP_subject_alt_name | regex_search('[a-z]') else 'IP' }}"
 subjectAltName: >-
-  {{ subjectAltName_type }}:{{ IP_subject_alt_name }}
-  {%- if ipv6_support -%},IP:{{ ansible_default_ipv6['address'] }}{%- endif -%}
-subjectAltName_USER: "email:{{ item }}@{{ openssl_constraint_random_id }}"
+  {{ subjectAltName_type }}:{{ IP_subject_alt_name }}{%- if ipv6_support -%},IP:{{ ansible_default_ipv6['address'] }}{%- endif -%}
+subjectAltName_USER: email:{{ item }}@{{ openssl_constraint_random_id }}
 nameConstraints: >-
-  critical,permitted;{{ subjectAltName_type }}:{{ IP_subject_alt_name }}{{- '/255.255.255.255' if subjectAltName_type == 'IP' else '' -}}
-  {%- if subjectAltName_type == 'IP' -%}
-  ,permitted;DNS:{{ openssl_constraint_random_id }}
-  {%- else -%}
-  ,excluded;IP:0.0.0.0/0.0.0.0
-  {%- endif -%}
-  ,permitted;email:{{ openssl_constraint_random_id }}
-  {%- if ipv6_support -%}
-  ,permitted;IP:{{ ansible_default_ipv6['address'] }}/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff
-  {%- else -%}
-  ,excluded;IP:0:0:0:0:0:0:0:0/0:0:0:0:0:0:0:0
-  {%- endif -%}
+  critical,permitted;{{ subjectAltName_type }}:{{ IP_subject_alt_name }}{{- '/255.255.255.255' if subjectAltName_type == 'IP' else '' -}}{%- if subjectAltName_type == 'IP' -%},permitted;DNS:{{ openssl_constraint_random_id }},excluded;DNS:.com,excluded;DNS:.org,excluded;DNS:.net,excluded;DNS:.gov,excluded;DNS:.edu,excluded;DNS:.mil,excluded;DNS:.int,excluded;IP:10.0.0.0/255.0.0.0,excluded;IP:172.16.0.0/255.240.0.0,excluded;IP:192.168.0.0/255.255.0.0{%- else -%},excluded;IP:0.0.0.0/0.0.0.0{%- endif -%},permitted;email:{{ openssl_constraint_random_id }},excluded;email:.com,excluded;email:.org,excluded;email:.net,excluded;email:.gov,excluded;email:.edu,excluded;email:.mil,excluded;email:.int{%- if ipv6_support -%},permitted;IP:{{ ansible_default_ipv6['address'] }}/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff,excluded;IP:fc00:0:0:0:0:0:0:0/fe00:0:0:0:0:0:0:0,excluded;IP:fe80:0:0:0:0:0:0:0/ffc0:0:0:0:0:0:0:0,excluded;IP:2001:db8:0:0:0:0:0:0/ffff:fff8:0:0:0:0:0:0{%- else -%},excluded;IP:::/0{%- endif -%}
 openssl_bin: openssl
 strongswan_enabled_plugins:
   - aes

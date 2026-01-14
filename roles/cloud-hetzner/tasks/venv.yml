@@ -1,7 +1,0 @@
----
-- name: Install requirements
-  pip:
-    name:
-      - hcloud
-    state: latest
-    virtualenv_python: python3

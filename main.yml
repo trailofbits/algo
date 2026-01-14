@@ -1,5 +1,6 @@
 ---
-- hosts: localhost
+- name: Algo VPN Setup
+  hosts: localhost
   become: false
   tasks:
     - name: Playbook dir stat
@@ -16,36 +17,48 @@
 
     - name: Ensure the requirements installed
       debug:
-        msg: "{{ '' | ipaddr }}"
-      ignore_errors: true
+        msg: "{{ '192.168.1.1' | ansible.utils.ipaddr }}"
+      failed_when: false
       no_log: true
       register: ipaddr
 
-    - name: Set required ansible version as a fact
+    - name: Extract ansible version from pyproject.toml
+      set_fact:
+        ansible_requirement: "{{ lookup('file', 'pyproject.toml') | regex_search('ansible==[0-9]+\\.[0-9]+\\.[0-9]+') }}"
+
+    - name: Parse ansible version requirement
       set_fact:
         required_ansible_version:
-          "{{ item |  regex_replace('^ansible-core[\\s+]?(?P<op>[=,>,<]+)[\\s+]?(?P<ver>\\d.\\d+(.\\d+)?)$',
-                      '{\"op\": \"\\g<op>\",\"ver\": \"\\g<ver>\" }') }}"
-      when: '"ansible-core" in item'
-      with_items: "{{ lookup('file', 'requirements.txt').splitlines() }}"
+          op: "{{ ansible_requirement | regex_replace('^ansible\\s*([~>=<]+)\\s*.*$', '\\1') }}"
+          ver: "{{ ansible_requirement | regex_replace('^ansible\\s*[~>=<]+\\s*(\\d+\\.\\d+(?:\\.\\d+)?).*$', '\\1') }}"
+      when: ansible_requirement is defined
+
+    - name: Get current ansible package version
+      command: uv pip list
+      register: uv_package_list
+      changed_when: false
+
+    - name: Extract ansible version from uv package list
+      set_fact:
+        current_ansible_version: "{{ uv_package_list.stdout | regex_search('ansible\\s+([0-9]+\\.[0-9]+\\.[0-9]+)', '\\1') | first }}"
 
     - name: Verify Python meets Algo VPN requirements
       assert:
-        that: (ansible_python.version.major|string + '.' + ansible_python.version.minor|string) is version('3.8', '>=')
+        that: (ansible_python.version.major|string + '.' + ansible_python.version.minor|string) is version('3.11', '>=')
         msg: >
           Python version is not supported.
-          You must upgrade to at least Python 3.8 to use this version of Algo.
+          You must upgrade to at least Python 3.11 to use this version of Algo.
           See for more details - https://trailofbits.github.io/algo/troubleshooting.html#python-version-is-not-supported
 
     - name: Verify Ansible meets Algo VPN requirements
       assert:
         that:
-          - ansible_version.full is version(required_ansible_version.ver, required_ansible_version.op)
+          - current_ansible_version is version(required_ansible_version.ver, required_ansible_version.op)
           - not ipaddr.failed
         msg: >
-          Ansible version is {{ ansible_version.full }}.
+          Ansible version is {{ current_ansible_version }}.
           You must update the requirements to use this version of Algo.
-          Try to run python3 -m pip install -U -r requirements.txt
+          Try to run: uv sync
 
 - name: Include prompts playbook
   import_playbook: input.yml

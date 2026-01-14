@@ -1,0 +1,301 @@
+---
+name: Smart Test Selection
+
+'on':
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  changed-files:
+    name: Detect Changed Files
+    runs-on: ubuntu-latest
+    outputs:
+      # Define what tests to run based on changes
+      run_syntax_check: ${{ steps.filter.outputs.ansible }}
+      run_basic_tests: ${{ steps.filter.outputs.python }}
+      run_docker_tests: ${{ steps.filter.outputs.docker }}
+      run_config_tests: ${{ steps.filter.outputs.configs }}
+      run_template_tests: ${{ steps.filter.outputs.templates }}
+      run_lint: ${{ steps.filter.outputs.lint }}
+      run_integration: ${{ steps.filter.outputs.integration }}
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v5.0.1
+        with:
+          persist-credentials: false
+
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36  # v3.0.2
+        id: filter
+        with:
+          filters: |
+            ansible:
+              - '**/*.yml'
+              - '**/*.yaml'
+              - 'main.yml'
+              - 'playbooks/**'
+              - 'roles/**'
+              - 'library/**'
+            python:
+              - '**/*.py'
+              - 'pyproject.toml'
+              - 'uv.lock'
+              - 'tests/**'
+            docker:
+              - 'Dockerfile*'
+              - '.dockerignore'
+              - 'docker-compose*.yml'
+            configs:
+              - 'config.cfg*'
+              - 'roles/**/templates/**'
+              - 'roles/**/defaults/**'
+            templates:
+              - '**/*.j2'
+              - 'roles/**/templates/**'
+            lint:
+              - '**/*.py'
+              - '**/*.yml'
+              - '**/*.yaml'
+              - '**/*.sh'
+              - '.ansible-lint'
+              - '.yamllint'
+              - 'pyproject.toml'
+            integration:
+              - 'main.yml'
+              - 'roles/**'
+              - 'library/**'
+              - 'playbooks/**'
+
+  syntax-check:
+    name: Ansible Syntax Check
+    needs: changed-files
+    if: needs.changed-files.outputs.run_syntax_check == 'true'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v5.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # v6.1.0
+        with:
+          python-version: '3.11'
+
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
+
+      - name: Check Ansible playbook syntax
+        run: uv run ansible-playbook main.yml --syntax-check
+
+  basic-tests:
+    name: Basic Sanity Tests
+    needs: changed-files
+    if: needs.changed-files.outputs.run_basic_tests == 'true' || needs.changed-files.outputs.run_template_tests == 'true'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v5.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # v6.1.0
+        with:
+          python-version: '3.11'
+
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Run relevant tests
+        env:
+          RUN_BASIC_TESTS: ${{ needs.changed-files.outputs.run_basic_tests }}
+          RUN_TEMPLATE_TESTS: ${{ needs.changed-files.outputs.run_template_tests }}
+        run: |
+          # Always run basic sanity
+          uv run pytest tests/unit/test_basic_sanity.py -v
+
+          # Run other tests based on what changed
+          if [[ "${RUN_BASIC_TESTS}" == "true" ]]; then
+            uv run pytest \
+              tests/unit/test_config_validation.py \
+              tests/unit/test_user_management.py \
+              tests/unit/test_openssl_compatibility.py \
+              tests/unit/test_cloud_provider_configs.py \
+              tests/unit/test_generated_configs.py \
+              -v
+          fi
+
+          if [[ "${RUN_TEMPLATE_TESTS}" == "true" ]]; then
+            uv run pytest tests/unit/test_template_rendering.py -v
+          fi
+
+  docker-tests:
+    name: Docker Build Test
+    needs: changed-files
+    if: needs.changed-files.outputs.run_docker_tests == 'true'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v5.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # v6.1.0
+        with:
+          python-version: '3.11'
+
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
+
+      - name: Build Docker image
+        run: docker build -t local/algo:test .
+
+      - name: Test Docker image starts
+        run: |
+          docker run --rm local/algo:test /algo/algo --help
+
+      - name: Run Docker deployment tests
+        run: uv run pytest tests/unit/test_docker_localhost_deployment.py -v
+
+  config-tests:
+    name: Configuration Tests
+    needs: changed-files
+    if: needs.changed-files.outputs.run_config_tests == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v5.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # v6.1.0
+        with:
+          python-version: '3.11'
+
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
+
+      - name: Test configuration generation
+        run: |
+          chmod +x tests/test-local-config.sh
+          ./tests/test-local-config.sh
+
+      - name: Run ansible dry-run tests
+        run: |
+          # Quick dry-run for local provider only
+          cat > test-local.cfg << 'EOF'
+          users:
+            - testuser
+          cloud_providers:
+            local:
+              server: test-server
+          wireguard_enabled: true
+          ipsec_enabled: false
+          dns_adblocking: false
+          ssh_tunneling: false
+          algo_provider: local
+          algo_server_name: test-algo-vpn
+          server: test-server
+          endpoint: 10.0.0.1
+          EOF
+
+          uv run ansible-playbook main.yml \
+            -i "localhost," \
+            -c local \
+            -e @test-local.cfg \
+            -e "provider=local" \
+            --check \
+            --diff \
+            -vv \
+            --skip-tags "facts,tests,local,update-alternatives,cloud_api" || true
+
+  lint:
+    name: Linting
+    needs: changed-files
+    if: needs.changed-files.outputs.run_lint == 'true'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v5.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # v6.1.0
+        with:
+          python-version: '3.11'
+
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
+
+      - name: Install ansible dependencies
+        run: uv run ansible-galaxy collection install community.crypto
+
+      - name: Run relevant linters
+        env:
+          RUN_LINT: ${{ needs.changed-files.outputs.run_lint }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          # Run linters if lint-related files changed
+          if [[ "${RUN_LINT}" == "true" ]]; then
+            echo "Running linters..."
+
+            # Run Python linter
+            uv run --with ruff ruff check .
+
+            # Run YAML linter
+            uv run --with yamllint yamllint -c .yamllint .
+
+            # Run Ansible linter
+            uv run --with ansible-lint ansible-lint
+
+            # Check shell scripts if any changed
+            if git diff --name-only "${BASE_SHA}" "${HEAD_SHA}" | grep -q '\.sh$'; then
+              find . -name "*.sh" -type f -not -path "./.git/*" -exec shellcheck {} +
+            fi
+          fi
+
+  all-tests-required:
+    name: All Required Tests
+    needs: [syntax-check, basic-tests, docker-tests, config-tests, lint]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check test results
+        env:
+          SYNTAX_CHECK_RESULT: ${{ needs.syntax-check.result }}
+          BASIC_TESTS_RESULT: ${{ needs.basic-tests.result }}
+          DOCKER_TESTS_RESULT: ${{ needs.docker-tests.result }}
+          CONFIG_TESTS_RESULT: ${{ needs.config-tests.result }}
+          LINT_RESULT: ${{ needs.lint.result }}
+        run: |
+          # This job ensures all required tests pass
+          # It will fail if any dependent job failed
+          if [[ "${SYNTAX_CHECK_RESULT}" == "failure" ]] || \
+             [[ "${BASIC_TESTS_RESULT}" == "failure" ]] || \
+             [[ "${DOCKER_TESTS_RESULT}" == "failure" ]] || \
+             [[ "${CONFIG_TESTS_RESULT}" == "failure" ]] || \
+             [[ "${LINT_RESULT}" == "failure" ]]; then
+            echo "One or more required tests failed"
+            exit 1
+          fi
+          echo "All required tests passed!"
+
+  trigger-integration:
+    name: Trigger Integration Tests
+    needs: changed-files
+    if: |
+      needs.changed-files.outputs.run_integration == 'true' &&
+      github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger integration tests
+        run: |
+          echo "Integration tests should be triggered for this PR"
+          echo "Changed files indicate potential breaking changes"
+          echo "Run workflow manually: .github/workflows/integration-tests.yml"

@@ -13,8 +13,8 @@
               <key>OnDemandRules</key>
               <array>
 {% if algo_ondemand_wifi or algo_ondemand_cellular %}
-  {% if algo_ondemand_wifi_exclude|b64decode != '_null' %}
-    {% set WIFI_EXCLUDE_LIST = (algo_ondemand_wifi_exclude|b64decode|string).split(',') %}
+  {% if algo_ondemand_wifi_exclude | b64decode != '_null' %}
+    {% set WIFI_EXCLUDE_LIST = (algo_ondemand_wifi_exclude | b64decode | string).split(',') %}
                   <dict>
                       <key>Action</key>
                       <string>Disconnect</string>
@@ -23,7 +23,7 @@
                       <key>SSIDMatch</key>
                       <array>
     {% for network_name in WIFI_EXCLUDE_LIST %}
-                          <string>{{ network_name|e }}</string>
+                          <string>{{ network_name | e }}</string>
     {% endfor %}
                       </array>
                   </dict>
@@ -73,10 +73,13 @@
                 </dict>
                 <key>DeadPeerDetectionRate</key>
                 <string>Medium</string>
+                <!-- MOBIKE allows VPN to survive network changes (WiFi to cellular) -->
                 <key>DisableMOBIKE</key>
                 <integer>0</integer>
+                <!-- Disable IKEv2 redirects for security -->
                 <key>DisableRedirect</key>
                 <integer>1</integer>
+                <!-- Disable CRL checking for performance and reliability -->
                 <key>EnableCertificateRevocationCheck</key>
                 <integer>0</integer>
                 <key>EnablePFS</key>
@@ -96,19 +99,24 @@
                 <string>{{ item.0 }}@{{ openssl_constraint_random_id }}</string>
                 <key>PayloadCertificateUUID</key>
                 <string>{{ pkcs12_PayloadCertificateUUID }}</string>
+                <!-- Use ECDSA P-384 certificates for strong security -->
                 <key>CertificateType</key>
                 <string>ECDSA384</string>
                 <key>ServerCertificateIssuerCommonName</key>
+                <string>{{ IP_subject_alt_name }}</string>
+                <key>ServerCertificateCommonName</key>
                 <string>{{ IP_subject_alt_name }}</string>
                 <key>RemoteAddress</key>
                 <string>{{ IP_subject_alt_name }}</string>
                 <key>RemoteIdentifier</key>
                 <string>{{ IP_subject_alt_name }}</string>
+                <!-- Use server-provided internal IP assignment -->
                 <key>UseConfigurationAttributeInternalIPSubnet</key>
                 <integer>0</integer>
             </dict>
             <key>IPv4</key>
             <dict>
+                <!-- Override primary network interface for full VPN routing -->
                 <key>OverridePrimary</key>
                 <integer>1</integer>
             </dict>

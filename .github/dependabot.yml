@@ -1,13 +1,36 @@
+---
 version: 2
 updates:
   # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
-  # Maintain dependencies for Python
-  - package-ecosystem: "pip"
+  # Maintain dependencies for Python using uv
+  # Using "uv" ecosystem ensures both pyproject.toml AND uv.lock are updated together
+  # This prevents Docker build failures from lockfile mismatches
+  - package-ecosystem: "uv"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    groups:
+      python:
+        patterns:
+          - "*"
+
+  # Maintain Docker base image (python:3.12-alpine)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7

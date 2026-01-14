@@ -1,15 +1,43 @@
 ---
-- pause:
-    prompt: "{{ item }}"
-  when: not tests|default(false)|bool
-  tags:
-    - skip_ansible_lint
-  with_items: |
-    https://trailofbits.github.io/algo/deploy-to-ubuntu.html
+- name: Display local installation warning
+  pause:
+    prompt: |
 
-    Local installation might break your server. Use at your own risk.
+      ======================================================================
+                          *** DESTRUCTIVE OPERATION ***
+      ======================================================================
 
-    Proceed? Press ENTER to continue or CTRL+C and A to abort...
+      Algo is designed for DEDICATED VPN servers only.
+
+      This installation will:
+        - Replace all firewall rules (blocks most incoming traffic)
+        - Modify system network and DNS settings
+        - Install and configure VPN services
+
+      THERE IS NO UNINSTALL OPTION.
+
+      If this server runs other services (web, database, mail, etc.),
+      they will likely become inaccessible.
+
+      Recommended: Take a snapshot/backup before proceeding.
+
+      Documentation: https://trailofbits.github.io/algo/deploy-to-ubuntu.html
+
+      ======================================================================
+
+      Type 'yes' to confirm you understand the risks and want to proceed:
+  register: _local_warning_confirm
+  when:
+    - not tests | default(false) | bool
+    - not local_install_confirmed | default(false) | bool
+
+- name: Abort if not confirmed
+  fail:
+    msg: "Installation aborted by user. Your server was not modified."
+  when:
+    - not tests | default(false) | bool
+    - not local_install_confirmed | default(false) | bool
+    - _local_warning_confirm.user_input | default('') | lower != 'yes'
 
 - pause:
     prompt: |
@@ -20,25 +48,21 @@
 
 - name: Set the facts
   set_fact:
-    cloud_instance_ip:  >-
-      {% if server is defined %}{{ server }}
-      {%- elif _algo_server.user_input %}{{ _algo_server.user_input }}
-      {%- else %}localhost{% endif %}
+    cloud_instance_ip: >-
+      {%- if server is defined -%}{{ server }}{%- elif _algo_server.user_input -%}{{ _algo_server.user_input }}{%- else -%}localhost{%- endif -%}
 
 - block:
-  - pause:
-      prompt: |
-        What user should we use to login on the server? (note: passwordless login required, or ignore if you're deploying to localhost)
-        [root]
-    register: _algo_ssh_user
-    when: ssh_user is undefined
+    - pause:
+        prompt: |
+          What user should we use to login on the server? (note: passwordless login required, or ignore if you're deploying to localhost)
+          [root]
+      register: _algo_ssh_user
+      when: ssh_user is undefined
 
-  - name: Set the facts
-    set_fact:
-      ansible_ssh_user: >-
-        {% if ssh_user is defined %}{{ ssh_user }}
-        {%- elif _algo_ssh_user.user_input %}{{ _algo_ssh_user.user_input }}
-        {%- else %}root{% endif %}
+    - name: Set the facts
+      set_fact:
+        ansible_ssh_user: >-
+          {%- if ssh_user is defined -%}{{ ssh_user }}{%- elif _algo_ssh_user.user_input -%}{{ _algo_ssh_user.user_input }}{%- else -%}root{%- endif -%}
   when: cloud_instance_ip != "localhost"
 
 - pause:
@@ -51,6 +75,4 @@
 - name: Set the facts
   set_fact:
     IP_subject_alt_name: >-
-      {% if endpoint is defined %}{{ endpoint }}
-      {%- elif _endpoint.user_input %}{{ _endpoint.user_input }}
-      {%- else %}{{ cloud_instance_ip }}{% endif %}
+      {%- if endpoint is defined -%}{{ endpoint }}{%- elif _endpoint.user_input -%}{{ _endpoint.user_input }}{%- else -%}{{ cloud_instance_ip }}{%- endif -%}

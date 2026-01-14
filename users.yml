@@ -1,6 +1,7 @@
 ---
-- hosts: localhost
-  gather_facts: False
+- name: Manage VPN Users
+  hosts: localhost
+  gather_facts: false
   tags: always
   vars_files:
     - config.cfg
@@ -13,7 +14,7 @@
             depth: 2
             recurse: true
             hidden: true
-            patterns: ".config.yml"
+            patterns: .config.yml
           register: _configs_list
 
         - name: Verify servers
@@ -23,20 +24,20 @@
 
         - name: Build list of installed servers
           set_fact:
-            server_list: >-
-              [{% for i in _configs_list.files %}
-                {% set config  = lookup('file', i.path)|from_yaml %}
-                '{{ config.server }}'
-                {{ ',' if not loop.last else '' }}
-              {% endfor %}]
+            server_list: "{{ server_list | default([]) + [{'server': config.server, 'IP_subject_alt_name': config.IP_subject_alt_name}] }}"
+          loop: "{{ _configs_list.files }}"
+          loop_control:
+            label: "{{ item.path }}"
+          vars:
+            config: "{{ lookup('file', item.path) | from_yaml }}"
 
         - name: Server address prompt
           pause:
             prompt: |
               Select the server to update user list below:
                 {% for r in server_list %}
-                {{ loop.index }}. {{ r }}
-                {% endfor %}
+                  {{ loop.index }}. {{ r.server }} ({{ r.IP_subject_alt_name }})
+              {% endfor %}
           register: _server
       when: server is undefined
 
@@ -44,29 +45,86 @@
         - name: Set facts based on the input
           set_fact:
             algo_server: >-
-              {% if server is defined %}{{ server }}
-              {%- elif _server.user_input %}{{ server_list[_server.user_input | int -1 ] }}
-              {%- else %}omit{% endif %}
+              {% if server is defined %}{{ server }}{%- elif _server.user_input %}{{ server_list[_server.user_input | int - 1].server }}{%- else %}omit{% endif %}
 
         - name: Import host specific variables
           include_vars:
-            file: "configs/{{ algo_server }}/.config.yml"
+            file: configs/{{ algo_server }}/.config.yml
+
+        - name: Validate users list is not empty
+          fail:
+            msg: |
+              NO USERS DEFINED
+
+              The 'users' list in config.cfg is empty. At least one user is required.
+              Add users to config.cfg before running update-users.
+          when: users | default([]) | length == 0
+
+        - name: Local deployment permission validation
+          block:
+            - name: Get config directory owner
+              stat:
+                path: configs/{{ algo_server }}
+              register: config_dir_stat
+
+            - name: Fail on permission mismatch
+              fail:
+                msg: |
+                  PERMISSION MISMATCH DETECTED
+
+                  Config directory owner: {{ config_dir_stat.stat.pw_name }}
+                  Current user: {{ ansible_user_id }}
+
+                  Running update-users with mismatched permissions will create
+                  files with inconsistent ownership, breaking future operations.
+
+                  TO FIX: Run this command, then retry update-users:
+                    sudo chown -R {{ ansible_user_id }} configs/{{ algo_server }}/
+
+                  PREVENT: Always run update-users the same way as initial deployment
+                  (both with sudo, or both without sudo).
+              when: config_dir_stat.stat.pw_name != ansible_user_id
+          when: algo_server == 'localhost' or algo_provider | default('') == 'local'
+
+        - name: Test SSH connectivity to server
+          wait_for:
+            host: "{{ algo_server }}"
+            port: "{{ ansible_ssh_port | default(ssh_port) | int }}"
+            timeout: 10
+          register: ssh_check
+          failed_when: false
+          when: algo_server != 'localhost'
+
+        - name: Fail with helpful message if server unreachable
+          fail:
+            msg: |
+              Cannot connect to {{ algo_server }} on port {{ ansible_ssh_port | default(ssh_port) }}.
+
+              Possible causes:
+              - Server is not running (check your cloud provider console)
+              - IP address changed (common after EC2 restart without Elastic IP)
+              - Firewall/security group blocking port {{ ansible_ssh_port | default(ssh_port) }}
+
+              To diagnose:
+                nc -zv {{ algo_server }} {{ ansible_ssh_port | default(ssh_port) }}
+                ssh -vvv -p {{ ansible_ssh_port | default(ssh_port) }} -i configs/algo.pem {{ server_user | default('algo') }}@{{ algo_server }}
+          when:
+            - algo_server != 'localhost'
+            - ssh_check is failed
 
         - when: ipsec_enabled
           block:
-          - name: CA password prompt
-            pause:
-              prompt: Enter the password for the private CA key
-              echo: false
-            register: _ca_password
-            when: ca_password is undefined
+            - name: CA password prompt
+              pause:
+                prompt: Enter the password for the private CA key
+                echo: false
+              register: _ca_password
+              when: ca_password is undefined
 
-          - name: Set facts based on the input
-            set_fact:
-              CA_password: >-
-                {% if ca_password is defined %}{{ ca_password }}
-                {%- elif _ca_password.user_input %}{{ _ca_password.user_input }}
-                {%- else %}omit{% endif %}
+            - name: Set facts based on the input
+              set_fact:
+                CA_password: >-
+                  {%- if ca_password is defined -%}{{ ca_password }}{%- elif _ca_password.user_input -%}{{ _ca_password.user_input }}{%- else -%}omit{%- endif -%}
 
         - name: Local pre-tasks
           import_tasks: playbooks/cloud-pre.yml
@@ -76,10 +134,10 @@
           add_host:
             name: "{{ algo_server }}"
             groups: vpn-host
-            ansible_ssh_user: "{{ server_user|default('root') }}"
+            ansible_ssh_user: "{{ server_user | default('root') }}"
             ansible_connection: "{% if algo_server == 'localhost' %}local{% else %}ssh{% endif %}"
-            ansible_python_interpreter: "/usr/bin/python3"
-            CA_password: "{{ CA_password|default(omit) }}"
+            ansible_python_interpreter: /usr/bin/python3
+            CA_password: "{{ CA_password | default(omit) }}"
       rescue:
         - include_tasks: playbooks/rescue.yml
 
@@ -89,32 +147,32 @@
   become: true
   vars_files:
     - config.cfg
-    - "configs/{{ inventory_hostname }}/.config.yml"
+    - configs/{{ inventory_hostname }}/.config.yml
 
   tasks:
     - block:
-      - import_role:
-          name: common
+        - import_role:
+            name: common
 
-      - import_role:
-          name: wireguard
-        when: wireguard_enabled
+        - import_role:
+            name: wireguard
+          when: wireguard_enabled
 
-      - import_role:
-          name: strongswan
-        when: ipsec_enabled
-        tags: ipsec
+        - import_role:
+            name: strongswan
+          when: ipsec_enabled
+          tags: ipsec
 
-      - import_role:
-          name: ssh_tunneling
-        when: algo_ssh_tunneling
+        - import_role:
+            name: ssh_tunneling
+          when: algo_ssh_tunneling
 
-      - debug:
-          msg:
-            - "{{ congrats.common.split('\n') }}"
-            - "    {{ congrats.p12_pass if algo_ssh_tunneling or ipsec_enabled else '' }}"
-            - "    {{ congrats.ca_key_pass if algo_store_pki and ipsec_enabled else '' }}"
-            - "    {{ congrats.ssh_access if algo_provider != 'local' else ''}}"
-        tags: always
+        - debug:
+            msg:
+              - "{{ congrats.common.split('\n') }}"
+              - "    {{ congrats.p12_pass if algo_ssh_tunneling or ipsec_enabled else '' }}"
+              - "    {{ congrats.ca_key_pass if algo_store_pki and ipsec_enabled else '' }}"
+              - "    {{ congrats.ssh_access if algo_provider != 'local' else '' }}"
+          tags: always
       rescue:
         - include_tasks: playbooks/rescue.yml

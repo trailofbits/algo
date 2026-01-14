@@ -9,32 +9,40 @@ While it is not possible to run your Algo server from within a Docker container,
 
 ## Deploying an Algo Server with Docker
 
-1. Install [Docker](https://www.docker.com/community-edition#/download) --  setup and configuration is not covered here
+1. Install [Docker](https://www.docker.com/community-edition#/download) -- setup and configuration is not covered here
 2. Create a local directory to hold your VPN configs (e.g. `C:\Users\trailofbits\Documents\VPNs\`)
 3. Create a local copy of [config.cfg](https://github.com/trailofbits/algo/blob/master/config.cfg), with required modifications (e.g. `C:\Users\trailofbits\Documents\VPNs\config.cfg`)
 4. Run the Docker container, mounting your configurations appropriately (assuming the container is named `trailofbits/algo` with a tag `latest`):
-  - From Windows:
+
+- From Windows:
+
    ```powershell
    C:\Users\trailofbits> docker run --cap-drop=all -it \
      -v C:\Users\trailofbits\Documents\VPNs:/data \
-     trailofbits/algo:latest
+     ghcr.io/trailofbits/algo:latest
    ```
-  - From Linux:
+
+- From Linux:
+
   ```bash
   $ docker run --cap-drop=all -it \
     -v /home/trailofbits/Documents/VPNs:/data \
-    trailofbits/algo:latest
+    ghcr.io/trailofbits/algo:latest
   ```
+
 5. When it exits, you'll be left with a fully populated `configs` directory, containing all appropriate configuration data for your clients, and for future server management
 
 ### Providing Additional Files
+
 If you need to provide additional files -- like authorization files for Google Cloud Project -- you can simply specify an additional `-v` parameter, and provide the appropriate path when prompted by `algo`.
 
 For example, you can specify `-v C:\Users\trailofbits\Documents\VPNs\gce_auth.json:/algo/gce_auth.json`, making the local path to your credentials JSON file `/algo/gce_auth.json`.
 
 ### Scripted deployment
+
 Ansible variables (see [Deployment from Ansible](deploy-from-ansible.md)) can be passed via `ALGO_ARGS` environment variable.
 _The leading `-e` (or `--extra-vars`) is required_, e.g.
+
 ```bash
 $ ALGO_ARGS="-e
     provider=digitalocean
@@ -50,7 +58,7 @@ $ ALGO_ARGS="-e
 $ docker run --cap-drop=all -it \
     -e "ALGO_ARGS=$ALGO_ARGS" \
     -v /home/trailofbits/Documents/VPNs:/data \
-    trailofbits/algo:latest
+    ghcr.io/trailofbits/algo:latest
 ```
 
 ## Managing an Algo Server with Docker
@@ -58,11 +66,12 @@ $ docker run --cap-drop=all -it \
 Even though the container itself is transient, because you've persisted the configuration data, you can use the same Docker image to manage your Algo server. This is done by setting the environment variable `ALGO_ARGS`.
 
 If you want to use Algo to update the users on an existing server, specify `-e "ALGO_ARGS=update-users"` in your `docker run` command:
+
 ```powershell
 $ docker run --cap-drop=all -it \
   -e "ALGO_ARGS=update-users" \
   -v C:\Users\trailofbits\Documents\VPNs:/data \
-  trailofbits/algo:latest
+  ghcr.io/trailofbits/algo:latest
 ```
 
 ## GNU Makefile for Docker
@@ -88,7 +97,7 @@ Docker themselves provide a concept of [Content Trust](https://docs.docker.com/e
 
 1. Even though we're taking care to drop all capabilities to minimize the impact of running as root, we can probably include not only a `seccomp` profile, but also AppArmor and/or SELinux profiles as well.
 2. The Docker image doesn't natively support [advanced](deploy-from-ansible.md) Algo deployments, which is useful for scripting. This can be done by launching an interactive shell and running the commands yourself.
-3. The way configuration is passed into and out of the container is a bit kludgy. Hopefully future improvements in Docker volumes will make this a bit easier to handle.
+3. The way configuration is passed into and out of the container is a bit kludgy. Hopefully, future improvements in Docker volumes will make this a bit easier to handle.
 
 ## Advanced Usage
 

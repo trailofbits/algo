@@ -1,7 +1,6 @@
 ---
 - name: Gather facts
   setup:
-
 - name: Cloud only tasks
   block:
     - name: Install software updates
@@ -15,24 +14,52 @@
       delay: 10
 
     - name: Check if reboot is required
-      shell: >
-        if [[ -e /var/run/reboot-required ]]; then echo "required"; else echo "no"; fi
+      shell: |
+        set -o pipefail
+        if [[ -e /var/run/reboot-required ]]; then
+          # Check if kernel was updated (most critical reboot reason)
+          if grep -q "linux-image\|linux-generic\|linux-headers" /var/log/dpkg.log.1 /var/log/dpkg.log 2>/dev/null; then
+            echo "kernel-updated"
+          else
+            echo "optional"
+          fi
+        else
+          echo "no"
+        fi
       args:
         executable: /bin/bash
       register: reboot_required
+      changed_when: false
 
-    - name: Reboot
+    - name: Reboot (kernel updated or performance optimization disabled)
       shell: sleep 2 && shutdown -r now "Ansible updates triggered"
       async: 1
       poll: 0
-      when: reboot_required is defined and reboot_required.stdout == 'required'
-      ignore_errors: true
+      when: >
+        reboot_required is defined and (
+          reboot_required.stdout == 'kernel-updated' or
+          (reboot_required.stdout == 'optional' and not performance_skip_optional_reboots|default(false))
+        )
+      changed_when: true
+      failed_when: false
+
+    - name: Skip reboot (performance optimization enabled)
+      debug:
+        msg: "Skipping reboot - performance optimization enabled. No kernel updates detected."
+      when: >
+        reboot_required is defined and
+        reboot_required.stdout == 'optional' and
+        performance_skip_optional_reboots|default(false)
 
     - name: Wait until the server becomes ready...
       wait_for_connection:
         delay: 20
         timeout: 320
-      when: reboot_required is defined and reboot_required.stdout == 'required'
+      when: >
+        reboot_required is defined and (
+          reboot_required.stdout == 'kernel-updated' or
+          (reboot_required.stdout == 'optional' and not performance_skip_optional_reboots|default(false))
+        )
       become: false
   when: algo_provider != "local"
 
@@ -41,9 +68,10 @@
 
 - name: Disable MOTD on login and SSHD
   replace: dest="{{ item.file }}" regexp="{{ item.regexp }}" replace="{{ item.line }}"
-  with_items:
-    - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/login' }
-    - { regexp: '^session.*optional.*pam_motd.so.*', line: '# MOTD DISABLED', file: '/etc/pam.d/sshd' }
+  become: true
+  loop:
+    - { regexp: ^session.*optional.*pam_motd.so.*, line: "# MOTD DISABLED", file: /etc/pam.d/login }
+    - { regexp: ^session.*optional.*pam_motd.so.*, line: "# MOTD DISABLED", file: /etc/pam.d/sshd }
 
 - name: Ensure fallback resolvers are set
   ini_file:
@@ -51,6 +79,7 @@
     section: Resolve
     option: FallbackDNS
     value: "{{ dns_servers.ipv4 | join(' ') }}"
+    mode: '0644'
   notify:
     - restart systemd-resolved
 
@@ -58,6 +87,7 @@
   template:
     src: 10-algo-lo100.network.j2
     dest: /etc/systemd/network/10-algo-lo100.network
+    mode: '0644'
   notify:
     - restart systemd-networkd
 
@@ -67,7 +97,7 @@
     state: started
     enabled: true
     daemon_reload: true
-  with_items:
+  loop:
     - systemd-networkd
     - systemd-resolved
 
@@ -75,7 +105,7 @@
 
 - name: Check apparmor support
   command: apparmor_status
-  ignore_errors: yes
+  failed_when: false
   changed_when: false
   register: apparmor_status
 
@@ -95,35 +125,60 @@
       - apparmor-utils
       - uuid-runtime
       - coreutils
+      - iptables
       - iptables-persistent
       - cgroup-tools
       - openssl
       - gnupg2
-    sysctl:
-      - item: net.ipv4.ip_forward
-        value: 1
-      - item: net.ipv4.conf.all.forwarding
-        value: 1
-      - item: "{{ 'net.ipv6.conf.all.forwarding' if ipv6_support else none }}"
-        value: 1
+      - cron
+    sysctl: "{{ [{'item': 'net.ipv4.ip_forward', 'value': 1}, {'item': 'net.ipv4.conf.all.forwarding', 'value': 1}, {'item': 'net.ipv4.conf.all.route_localnet', 'value': 1}] + ([{'item': 'net.ipv6.conf.all.forwarding', 'value': 1}] if ipv6_support else []) }}"
 
-- name: Install tools
+- name: Install packages (batch optimization)
+  include_tasks: packages.yml
+  when: performance_parallel_packages | default(true)
+
+- name: Install tools (legacy method)
   apt:
-    name: "{{ tools|default([]) }}"
+    name: "{{ tools | default([]) }}"
     state: present
     update_cache: true
+  when:
+    - not performance_parallel_packages | default(true)
+    - not performance_preinstall_packages | default(false)
 
-- name: Install headers
+- name: Install headers (legacy method)
   apt:
     name:
       - linux-headers-generic
-      - "linux-headers-{{ ansible_kernel }}"
+      - linux-headers-{{ ansible_kernel }}
     state: present
-  when: install_headers | bool
+  when:
+    - not performance_parallel_packages | default(true)
+    - install_headers | bool
 
 - name: Configure the alternative ingress ip
   include_tasks: aip/main.yml
   when: alternative_ingress_ip
+
+- name: Ubuntu 22.04+ | Use iptables-legacy for compatibility
+  block:
+    - name: Install iptables packages
+      apt:
+        name:
+          - iptables
+          - iptables-persistent
+        state: present
+        update_cache: true
+
+    - name: Configure iptables-legacy as default
+      alternatives:
+        name: "{{ item }}"
+        path: "/usr/sbin/{{ item }}-legacy"
+      loop:
+        - iptables
+        - ip6tables
+  when: is_ubuntu_22_plus
+  tags: iptables
 
 - include_tasks: iptables.yml
   tags: iptables

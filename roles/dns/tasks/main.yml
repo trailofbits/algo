@@ -1,23 +1,21 @@
 ---
-- name: Include tasks for Ubuntu
+- name: Include tasks for Debian/Ubuntu
   include_tasks: ubuntu.yml
-  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
-
-- name: Include tasks for FreeBSD
-  include_tasks: freebsd.yml
-  when: ansible_distribution == 'FreeBSD'
+  when: is_debian_based
 
 - name: dnscrypt-proxy ip-blacklist configured
   template:
     src: ip-blacklist.txt.j2
-    dest: "{{ config_prefix|default('/') }}etc/dnscrypt-proxy/ip-blacklist.txt"
+    dest: "{{ config_prefix | default('/') }}etc/dnscrypt-proxy/ip-blacklist.txt"
+    mode: '0644'
   notify:
     - restart dnscrypt-proxy
 
 - name: dnscrypt-proxy configured
   template:
     src: dnscrypt-proxy.toml.j2
-    dest: "{{ config_prefix|default('/') }}etc/dnscrypt-proxy/dnscrypt-proxy.toml"
+    dest: "{{ config_prefix | default('/') }}etc/dnscrypt-proxy/dnscrypt-proxy.toml"
+    mode: '0644'
   notify:
     - restart dnscrypt-proxy
 
@@ -26,6 +24,14 @@
   when: algo_dns_adblocking
 
 - meta: flush_handlers
+
+- name: Ensure dnscrypt-proxy socket is enabled and started
+  systemd:
+    name: dnscrypt-proxy.socket
+    enabled: true
+    state: started
+    daemon_reload: true
+  when: uses_systemd_socket
 
 - name: dnscrypt-proxy enabled and started
   service:

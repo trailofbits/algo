@@ -1,0 +1,124 @@
+---
+# Shared test variables for unit tests
+# This ensures consistency across all tests and easier maintenance
+
+# Server/Network basics
+server_name: test-algo-vpn
+IP_subject_alt_name: 10.0.0.1
+ipv4_network_prefix: 10.19.49
+ipv4_network: 10.19.49.0
+ipv4_range: 10.19.49.2/24
+ipv6_network: fd9d:bc11:4020::/48
+ipv6_range: fd9d:bc11:4020::/64
+wireguard_enabled: true
+wireguard_port: 51820
+wireguard_PersistentKeepalive: 0
+wireguard_network: 10.19.49.0/24
+wireguard_network_ipv6: fd9d:bc11:4020::/48
+
+# Additional WireGuard variables
+wireguard_pki_path: /etc/wireguard/pki
+wireguard_port_avoid: 53
+wireguard_port_actual: 51820
+wireguard_network_ipv4: 10.19.49.0/24
+wireguard_client_ip: 10.19.49.2/32,fd9d:bc11:4020::2/128
+wireguard_dns_servers: 1.1.1.1,1.0.0.1
+
+# IPsec variables
+ipsec_enabled: true
+strongswan_enabled: true
+strongswan_af: ipv4
+strongswan_log_level: '2'
+strongswan_network: 10.19.48.0/24
+strongswan_network_ipv6: fd9d:bc11:4021::/64
+algo_ondemand_cellular: 'false'
+algo_ondemand_wifi: 'false'
+algo_ondemand_wifi_exclude: X251bGw=
+
+# DNS
+dns_adblocking: true
+algo_dns_adblocking: true
+adblock_lists:
+  - https://someblacklist.com
+dns_encryption: true
+dns_servers:
+  - 1.1.1.1
+  - 1.0.0.1
+local_dns: true
+alternative_ingress_ip: false
+local_service_ip: 10.19.49.1
+local_service_ipv6: fd9d:bc11:4020::1
+ipv6_support: true
+
+# Security/Firewall
+algo_ssh_tunneling: false
+ssh_tunneling: false
+snat_aipv4: false
+snat_aipv6: false
+block_smb: true
+block_netbios: true
+
+# Users and auth
+users:
+  - alice
+  - bob
+  - charlie
+existing_users:
+  - alice
+easyrsa_CA_password: test-ca-pass
+p12_export_password: test-export-pass
+CA_password: test-ca-pass
+
+# System
+ansible_ssh_port: 4160
+ansible_python_interpreter: /usr/bin/python3
+ansible_default_ipv4:
+  interface: eth0
+  address: 10.0.0.1
+ansible_default_ipv6:
+  interface: eth0
+  address: 'fd9d:bc11:4020::1'
+BetweenClients_DROP: 'Y'
+ssh_tunnels_config_path: /etc/ssh/ssh_tunnels
+config_prefix: /etc/algo
+server_user: algo
+IP: 10.0.0.1
+reduce_mtu: 0
+algo_ssh_port: 4160
+algo_store_pki: true
+
+# Ciphers
+ciphers:
+  defaults:
+    ike: aes128gcm16-prfsha512-ecp256,aes128-sha2_256-modp2048
+    esp: aes128gcm16-ecp256,aes128-sha2_256-modp2048
+  ike: aes128gcm16-prfsha512-ecp256,aes128-sha2_256-modp2048
+  esp: aes128gcm16-ecp256,aes128-sha2_256-modp2048
+
+# Cloud provider specific
+algo_provider: local
+cloud_providers:
+  - ec2
+  - gce
+  - azure
+  - do
+  - lightsail
+  - scaleway
+  - openstack
+  - cloudstack
+  - hetzner
+  - linode
+  - vultr
+provider_dns_servers:
+  - 1.1.1.1
+  - 1.0.0.1
+ansible_ssh_private_key_file: ~/.ssh/id_rsa
+
+# Defaults
+inventory_hostname: localhost
+hostvars:
+  localhost: {}
+groups:
+  vpn-host:
+    - localhost
+omit: OMIT_PLACEHOLDER

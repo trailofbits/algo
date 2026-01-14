@@ -1,28 +1,27 @@
 ---
 - fail:
-    msg: "OpenStack credentials are not set. Download it from the OpenStack dashboard->Compute->API Access and source it in the shell (eg: source /tmp/dhc-openrc.sh)"
+    msg: >-
+      OpenStack credentials are not set. Download it from the OpenStack dashboard->Compute->API Access
+      and source it in the shell (eg: source /tmp/dhc-openrc.sh)
   when: lookup('env', 'OS_AUTH_URL')|length <= 0
-
-- name: Build python virtual environment
-  import_tasks: venv.yml
 
 - name: Security group created
   openstack.cloud.security_group:
-    state: "{{ state|default('present') }}"
+    state: "{{ state | default('present') }}"
     name: "{{ algo_server_name }}-security_group"
     description: AlgoVPN security group
   register: os_security_group
 
 - name: Security rules created
   openstack.cloud.security_group_rule:
-    state: "{{ state|default('present') }}"
+    state: "{{ state | default('present') }}"
     security_group: "{{ os_security_group.id }}"
     protocol: "{{ item.proto }}"
     port_range_min: "{{ item.port_min }}"
     port_range_max: "{{ item.port_max }}"
     remote_ip_prefix: "{{ item.range }}"
-  with_items:
-    - { proto: tcp, port_min: '{{ ssh_port }}', port_max: '{{ ssh_port }}', range: 0.0.0.0/0 }
+  loop:
+    - { proto: tcp, port_min: "{{ ssh_port }}", port_max: "{{ ssh_port }}", range: 0.0.0.0/0 }
     - { proto: icmp, port_min: -1, port_max: -1, range: 0.0.0.0/0 }
     - { proto: udp, port_min: 4500, port_max: 4500, range: 0.0.0.0/0 }
     - { proto: udp, port_min: 500, port_max: 500, range: 0.0.0.0/0 }
@@ -56,7 +55,7 @@
     - item['router:external']|default(omit)
     - item['admin_state_up']|default(omit)
     - item['status'] == 'ACTIVE'
-  with_items: "{{ os_network.openstack_networks }}"
+  loop: "{{ os_network.openstack_networks }}"
 
 - name: Set facts
   set_fact:
@@ -65,7 +64,7 @@
 
 - name: Server created
   openstack.cloud.server:
-    state: "{{ state|default('present') }}"
+    state: "{{ state | default('present') }}"
     name: "{{ algo_server_name }}"
     image: "{{ image_id }}"
     flavor: "{{ flavor_id }}"

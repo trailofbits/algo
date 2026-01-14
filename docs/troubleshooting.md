@@ -1,39 +1,43 @@
 # Troubleshooting
 
-First of all, check [this](https://github.com/trailofbits/algo#features) and ensure that you are deploying to the supported ubuntu version.
+First of all, check [this](https://github.com/trailofbits/algo#features) and ensure that you are deploying to Ubuntu 22.04 LTS, the only supported server platform.
 
   * [Installation Problems](#installation-problems)
-     * [Error: "You have not agreed to the Xcode license agreements"](#error-you-have-not-agreed-to-the-xcode-license-agreements)
-     * [Error: checking whether the C compiler works... no](#error-checking-whether-the-c-compiler-works-no)
-     * [Error: "fatal error: 'openssl/opensslv.h' file not found"](#error-fatal-error-opensslopensslvh-file-not-found)
-     * [Error: "TypeError: must be str, not bytes"](#error-typeerror-must-be-str-not-bytes)
-     * [Error: "ansible-playbook: command not found"](#error-ansible-playbook-command-not-found)
-     * [Error: "Could not fetch URL ... TLSV1_ALERT_PROTOCOL_VERSION](#could-not-fetch-url--tlsv1_alert_protocol_version)
-     * [Fatal: "Failed to validate the SSL certificate for ..."](#fatal-failed-to-validate-the-SSL-certificate)
-     * [Bad owner or permissions on .ssh](#bad-owner-or-permissions-on-ssh)
-     * [The region you want is not available](#the-region-you-want-is-not-available)
-     * [AWS: SSH permission denied with an ECDSA key](#aws-ssh-permission-denied-with-an-ecdsa-key)
-     * [AWS: "Deploy the template" fails with CREATE_FAILED](#aws-deploy-the-template-fails-with-create_failed)
-     * [AWS: not authorized to perform: cloudformation:UpdateStack](#aws-not-authorized-to-perform-cloudformationupdatestack)
-     * [DigitalOcean: error tagging resource 'xxxxxxxx': param is missing or the value is empty: resources](#digitalocean-error-tagging-resource)
-     * [Azure: The client xxx with object id xxx does not have authorization to perform action Microsoft.Resources/subscriptions/resourcegroups/write' over scope](#azure-deployment-permissions-error)
-     * [Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid](#windows-the-value-of-parameter-linuxconfigurationsshpublickeyskeydata-is-invalid)
-     * [Docker: Failed to connect to the host via ssh](#docker-failed-to-connect-to-the-host-via-ssh)
-     * [Error: Failed to create symlinks for deploying to localhost](#error-failed-to-create-symlinks-for-deploying-to-localhost)
-     * [Wireguard: Unable to find 'configs/...' in expected paths](#wireguard-unable-to-find-configs-in-expected-paths)
-     * [Ubuntu Error: "unable to write 'random state'" when generating CA password](#ubuntu-error-unable-to-write-random-state-when-generating-ca-password)
-     * [Timeout when waiting for search string OpenSSH in xxx.xxx.xxx.xxx:4160](#old-networking-firewall-in-place)
+     * General Setup
+        * [Python version is not supported](#python-version-is-not-supported)
+        * [Error: "ansible-playbook: command not found"](#error-ansible-playbook-command-not-found)
+        * [Fatal: "Failed to validate the SSL certificate for ..."](#fatal-failed-to-validate-the-SSL-certificate)
+        * [Bad owner or permissions on .ssh](#bad-owner-or-permissions-on-ssh)
+     * Cloud Providers
+        * [The region you want is not available](#the-region-you-want-is-not-available)
+        * [AWS: SSH permission denied with an ECDSA key](#aws-ssh-permission-denied-with-an-ecdsa-key)
+        * [AWS: "Deploy the template" fails with CREATE_FAILED](#aws-deploy-the-template-fails-with-create_failed)
+        * [AWS: not authorized to perform: cloudformation:UpdateStack](#aws-not-authorized-to-perform-cloudformationupdatestack)
+        * [Azure: No such file or directory .azure/azureProfile.json](#azure-no-such-file-or-directory-homeusernameazureazureprofilejson)
+        * [Azure: Deployment Permissions Error](#azure-deployment-permissions-error)
+        * [Linode: Stackscript error](#linode-error-unable-to-query-the-linode-api-saw-400-the-requested-distribution-is-not-supported-by-this-stackscript-)
+     * Windows
+        * [Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid](#windows-the-value-of-parameter-linuxconfigurationsshpublickeyskeydata-is-invalid)
+        * [Windows: "The parameter is incorrect" error when connecting](#windows-the-parameter-is-incorrect-error-when-connecting)
+     * Local Deployment
+        * [Error: Failed to create symlinks for deploying to localhost](#error-failed-to-create-symlinks-for-deploying-to-localhost)
+        * [Wireguard: Unable to find 'configs/...' in expected paths](#wireguard-unable-to-find-configs-in-expected-paths)
+     * Network
+        * [Timeout when waiting for search string OpenSSH](#old-networking-firewall-in-place)
   * [Connection Problems](#connection-problems)
      * [I'm blocked or get CAPTCHAs when I access certain websites](#im-blocked-or-get-captchas-when-i-access-certain-websites)
      * [I want to change the list of trusted Wifi networks on my Apple device](#i-want-to-change-the-list-of-trusted-wifi-networks-on-my-apple-device)
      * [Error: "The VPN Service payload could not be installed."](#error-the-vpn-service-payload-could-not-be-installed)
      * [Little Snitch is broken when connected to the VPN](#little-snitch-is-broken-when-connected-to-the-vpn)
      * [I can't get my router to connect to the Algo server](#i-cant-get-my-router-to-connect-to-the-algo-server)
-     * [I can't get Network Manager to connect to the Algo server](#i-cant-get-network-manager-to-connect-to-the-algo-server)
      * [Various websites appear to be offline through the VPN](#various-websites-appear-to-be-offline-through-the-vpn)
      * [Clients appear stuck in a reconnection loop](#clients-appear-stuck-in-a-reconnection-loop)
      * [Wireguard: clients can connect on Wifi but not LTE](#wireguard-clients-can-connect-on-wifi-but-not-lte)
      * [IPsec: Difficulty connecting through router](#ipsec-difficulty-connecting-through-router)
+  * [Diagnostic Commands](#diagnostic-commands)
+     * [Enable Verbose Logging](#enable-verbose-logging)
+     * [Server-Side Diagnostics](#server-side-diagnostics)
+     * [Client-Side Diagnostics](#client-side-diagnostics)
   * [I have a problem not covered here](#i-have-a-problem-not-covered-here)
 
 ## Installation Problems
@@ -42,84 +46,13 @@ Look here if you have a problem running the installer to set up a new Algo serve
 
 ### Python version is not supported
 
-The minimum Python version required to run Algo is 3.8. Most modern operation systems should have it by default, but if the OS you are using doesn't meet the requirements, you have to upgrade. See the official documentation for your OS, or manual download it from https://www.python.org/downloads/. Otherwise, you may [deploy from docker](deploy-from-docker.md)
-
-### Error: "You have not agreed to the Xcode license agreements"
-
-On macOS, you tried to install the dependencies with pip and encountered the following error:
-
-```
-Downloading cffi-1.9.1.tar.gz (407kB): 407kB downloaded
-  Running setup.py (path:/private/tmp/pip_build_root/cffi/setup.py) egg_info for package cffi
-
-You have not agreed to the Xcode license agreements, please run 'xcodebuild -license' (for user-level acceptance) or 'sudo xcodebuild -license' (for system-wide acceptance) from within a Terminal window to review and agree to the Xcode license agreements.
-
-    No working compiler found, or bogus compiler options
-    passed to the compiler from Python's distutils module.
-    See the error messages above.
-
-----------------------------------------
-Cleaning up...
-Command python setup.py egg_info failed with error code 1 in /private/tmp/pip_build_root/cffi
-Storing debug log for failure in /Users/algore/Library/Logs/pip.log
-```
-
-The Xcode compiler is installed but requires you to accept its license agreement prior to using it. Run `xcodebuild -license` to agree and then retry installing the dependencies.
-
-### Error: checking whether the C compiler works... no
-
-On macOS, you tried to install the dependencies with pip and encountered the following error:
-
-```
-Failed building wheel for pycrypto
-Running setup.py clean for pycrypto
-Failed to build pycrypto
-...
-copying lib/Crypto/Signature/PKCS1_v1_5.py -> build/lib.macosx-10.6-intel-2.7/Crypto/Signature
-running build_ext
-running build_configure
-checking for gcc... gcc
-checking whether the C compiler works... no
-configure: error: in '/private/var/folders/3f/q33hl6_x6_nfyjg29fcl9qdr0000gp/T/pip-build-DB5VZp/pycrypto': configure: error: C compiler cannot create executables See config.log for more details
-Traceback (most recent call last):
-File "", line 1, in
-...
-cmd_obj.run()
-File "/private/var/folders/3f/q33hl6_x6_nfyjg29fcl9qdr0000gp/T/pip-build-DB5VZp/pycrypto/setup.py", line 278, in run
-raise RuntimeError("autoconf error")
-RuntimeError: autoconf error
-```
-
-You don't have a working compiler installed. You should install the XCode compiler by opening your terminal and running `xcode-select --install`.
-
-### Error: "fatal error: 'openssl/opensslv.h' file not found"
-
-On macOS, you tried to install `cryptography` and encountered the following error:
-
-```
-build/temp.macosx-10.12-intel-2.7/_openssl.c:434:10: fatal error: 'openssl/opensslv.h' file not found
-
-#include <openssl/opensslv.h>
-
-        ^
-
-1 error generated.
-
-error: command 'cc' failed with exit status 1
-
-----------------------------------------
-Cleaning up...
-Command /usr/bin/python -c "import setuptools, tokenize;__file__='/private/tmp/pip_build_root/cryptography/setup.py';exec(compile(getattr(tokenize, 'open', open)(__file__).read().replace('\r\n', '\n'), __file__, 'exec'))" install --record /tmp/pip-sREEE5-record/install-record.txt --single-version-externally-managed --compile failed with error code 1 in /private/tmp/pip_build_root/cryptography
-Storing debug log for failure in /Users/algore/Library/Logs/pip.log
-```
-
-You are running an old version of `pip` that cannot download the binary `cryptography` dependency. Upgrade to a new version of `pip` by running `sudo python3 -m pip install -U pip`.
+The minimum Python version required to run Algo is 3.11. Most modern operation systems should have it by default, but if the OS you are using doesn't meet the requirements, you have to upgrade. See the official documentation for your OS, or manual download it from https://www.python.org/downloads/. Otherwise, you may [deploy from docker](deploy-from-docker.md)
 
 ### Error: "ansible-playbook: command not found"
 
 You tried to install Algo and you see an error that reads "ansible-playbook: command not found."
 
-You did not finish step 4 in the installation instructions, "[Install Algo's remaining dependencies](https://github.com/trailofbits/algo#deploy-the-algo-server)." Algo depends on [Ansible](https://github.com/ansible/ansible), an automation framework, and this error indicates that you do not have Ansible installed. Ansible is installed by `pip` when you run `python3 -m pip install -r requirements.txt`. You must complete the installation instructions to run the Algo server deployment process.
+This indicates that Ansible is not installed or not available in your PATH. Algo automatically installs all dependencies (including Ansible) using uv when you run `./algo` for the first time. If you're seeing this error, try running `./algo` again - it should automatically install the required Python environment and dependencies. If the issue persists, ensure you're running `./algo` from the Algo project directory.
 
 ### Fatal: "Failed to validate the SSL certificate"
 
@@ -128,23 +61,7 @@ You received a message like this:
 fatal: [localhost]: FAILED! => {"changed": false, "msg": "Failed to validate the SSL certificate for api.digitalocean.com:443. Make sure your managed systems have a valid CA certificate installed. You can use validate_certs=False if you do not need to confirm the servers identity but this is unsafe and not recommended. Paths checked for this platform: /etc/ssl/certs, /etc/ansible, /usr/local/etc/openssl. The exception msg was: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1076).", "status": -1, "url": "https://api.digitalocean.com/v2/regions"}
 ```
 
-Your local system does not have a CA certificate that can validate the cloud provider's API. Are you using MacPorts instead of Homebrew? The MacPorts openssl installation does not include a CA certificate, but you can fix this by installing the [curl-ca-bundle](https://andatche.com/articles/2012/02/fixing-ssl-ca-certificates-with-openssl-from-macports/) port with `port install curl-ca-bundle`. That should do the trick.
-
-### Could not fetch URL ... TLSV1_ALERT_PROTOCOL_VERSION
-
-You tried to install Algo and you received an error like this one:
-
-```
-Could not fetch URL https://pypi.python.org/simple/secretstorage/: There was a problem confirming the ssl certificate: [SSL: TLSV1_ALERT_PROTOCOL_VERSION] tlsv1 alert protocol version (_ssl.c:590) - skipping
-  Could not find a version that satisfies the requirement SecretStorage<3 (from -r requirements.txt (line 2)) (from versions: )
-No matching distribution found for SecretStorage<3 (from -r requirements.txt (line 2))
-```
-
-It's time to upgrade your python.
-
-`brew upgrade python3`
-
-You can also download python 3.7.x from python.org.
+Your local system does not have a CA certificate that can validate the cloud provider's API. This typically occurs with custom Python installations. Try reinstalling Python using Homebrew (`brew install python3`) or ensure your system has proper CA certificates installed.
 
 ### Bad owner or permissions on .ssh
 
@@ -207,35 +124,16 @@ fatal: [localhost]: FAILED! => {"changed": false, "failed": true, "msg": "User: 
 
 This error indicates you already have Algo deployed to Cloudformation. Need to [delete it](cloud-amazon-ec2.md#cleanup) first, then re-deploy.
 
-### DigitalOcean: error tagging resource
-
-You tried to deploy Algo to DigitalOcean and you received an error like this one:
-
-```
-TASK [cloud-digitalocean : Tag the droplet] ************************************
-failed: [localhost] (item=staging) => {"failed": true, "item": "staging", "msg": "error tagging resource '73204383': param is missing or the value is empty: resources"}
-failed: [localhost] (item=dbserver) => {"failed": true, "item": "dbserver", "msg": "error tagging resource '73204383': param is missing or the value is empty: resources"}
-```
-
-The error is caused because Digital Ocean changed its API to treat the tag argument as a string instead of a number.
-
-1. Download [doctl](https://github.com/digitalocean/doctl)
-2. Run `doctl auth init`; it will ask you for your token which you can get (or generate) on the API tab at DigitalOcean
-3. Once you are authorized on DO, you can run `doctl compute tag list` to see the list of tags
-4. Run `doctl compute tag delete environment:algo --force` to delete the environment:algo tag
-5. Finally run `doctl compute tag list` to make sure that the tag has been deleted
-6. Run algo as directed
-
 ### Azure: No such file or directory: '/home/username/.azure/azureProfile.json'
- 
+
  ```
  TASK [cloud-azure : Create AlgoVPN Server] *****************************************************************************************************************************************************************
-An exception occurred during task execution. To see the full traceback, use -vvv. 
+An exception occurred during task execution. To see the full traceback, use -vvv.
 The error was: FileNotFoundError: [Errno 2] No such file or directory: '/home/ubuntu/.azure/azureProfile.json'
 fatal: [localhost]: FAILED! => {"changed": false, "module_stderr": "Traceback (most recent call last):
-File \"/usr/local/lib/python3.6/dist-packages/azure/cli/core/_session.py\", line 39, in load
+File \"/usr/local/lib/python3.11/dist-packages/azure/cli/core/_session.py\", line 39, in load
 with codecs_open(self.filename, 'r', encoding=self._encoding) as f:
-File \"/usr/lib/python3.6/codecs.py\", line 897, in open\n    file = builtins.open(filename, mode, buffering)
+File \"/usr/lib/python3.11/codecs.py\", line 897, in open\n    file = builtins.open(filename, mode, buffering)
 FileNotFoundError: [Errno 2] No such file or directory: '/home/ubuntu/.azure/azureProfile.json'
 ", "module_stdout": "", "msg": "MODULE FAILURE
 See stdout/stderr for the exact error", "rc": 1}
@@ -259,6 +157,9 @@ az role assignment create --assignee-object-id THE_OBJECT_ID --scope subscriptio
 
 After this is applied, the Service Principal has permissions to create the resources and you can re-run `ansible-playbook main.yml` to complete the deployment.
 
+### Linode Error: "Unable to query the Linode API. Saw: 400: The requested distribution is not supported by this stackscript.; "
+
+StackScript is a custom deployment script that defines a set of configurations for a Linode instance (e.g. which distribution, specs, etc.). if you used algo with default values in the past deployments, a stackscript that would've been created is 're-used' in the deployment process (in fact, go see 'create Linodes' and under 'StackScripts' tab). Thus, there's a little chance that your deployment process will generate this 'unsupported stackscript' error due to a pre-existing StackScript that doesn't support a particular configuration setting or value due to an 'old' stackscript. The quickest solution is just to change the name of your deployment from the default value of 'algo' (or any other name that you've used before, again see the dashboard) and re-run the deployment.
 
 ### Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid
 
@@ -275,23 +176,42 @@ Target: linuxConfiguration.ssh.publicKeys.keyData"}
 
 This is related to [the chmod issue](https://github.com/Microsoft/WSL/issues/81) inside /mnt directory which is NTFS. The fix is to place Algo outside of /mnt directory.
 
-### Docker: Failed to connect to the host via ssh
+### Windows: "The parameter is incorrect" error when connecting
 
-You tried to deploy Algo from Docker and you received an error like this one:
+When trying to connect to your Algo VPN on Windows 10/11, you may receive an error stating "The parameter is incorrect". This is a common issue that can usually be resolved by resetting your Windows networking stack.
 
-```
-Failed to connect to the host via ssh:
-Warning: Permanently added 'xxx.xxx.xxx.xxx' (ECDSA) to the list of known hosts.\r\n
-Control socket connect(/root/.ansible/cp/6d9d22e981): Connection refused\r\n
-Failed to connect to new control master\r\n
-```
+#### Solution
 
-You need to add the following to the ansible.cfg in repo root:
+1. **Clear the networking caches**
 
-```
-[ssh_connection]
-control_path_dir=/dev/shm/ansible_control_path
-```
+   Open Command Prompt as Administrator (right-click on Command Prompt and select "Run as Administrator") and run these commands:
+   ```cmd
+   netsh int ip reset
+   netsh int ipv6 reset
+   netsh winsock reset
+   ```
+
+   Then restart your computer.
+
+2. **Reset Device Manager network adapters** (if step 1 doesn't work)
+
+   - Open Device Manager
+   - Find "Network Adapters"
+   - Uninstall all WAN Miniport drivers (IKEv2, IP, IPv6, etc.)
+   - Click Action → Scan for hardware changes
+   - The adapters you just uninstalled should reinstall automatically
+
+   Try connecting to the VPN again.
+
+#### What causes this issue?
+
+This error typically occurs when:
+- Windows networking stack becomes corrupted
+- After Windows updates that affect network drivers
+- When switching between different VPN configurations
+- After network-related software installations/uninstallations
+
+Note: This issue has been reported by many users and the above solution has proven effective in most cases.
 
 ### Error: Failed to create symlinks for deploying to localhost
 
@@ -324,9 +244,9 @@ You should remove the files in /etc/wireguard/ and configs/ as follows:
 ```ssh
 sudo rm -rf /etc/wireguard/*
 rm -rf configs/*
-``` 
+```
 
-And then immediately re-run `./algo` and provide a domain name or IP address in response to the question referenced above. 
+And then immediately re-run `./algo` and provide a domain name or IP address in response to the question referenced above.
 
 ### Wireguard: Unable to find 'configs/...' in expected paths
 
@@ -338,30 +258,13 @@ TASK [wireguard : Generate public keys] ****************************************
 
 fatal: [localhost]: FAILED! => {"msg": "An unhandled exception occurred while running the lookup plugin 'file'. Error was a <class 'ansible.errors.AnsibleError'>, original message: could not locate file in lookup: configs/xxx.xxx.xxx.xxx/wireguard//private/dan"}
 ```
-This error is usually hit when using the local install option on a server that isn't Ubuntu 18.04 or later. You should upgrade your server to Ubuntu 18.04 or later. If this doesn't work, try removing files in /etc/wireguard/ and the configs directories as follows:
+This error is usually hit when using the local install option on an unsupported server. Algo requires Ubuntu 22.04 LTS. You should upgrade your server to Ubuntu 22.04 LTS. If this doesn't work, try removing files in /etc/wireguard/ and the configs directories as follows:
 
 ```ssh
 sudo rm -rf /etc/wireguard/*
 rm -rf configs/*
 ```
 Then immediately re-run `./algo`.
-
-### Ubuntu Error: "unable to write 'random state'" when generating CA password
-
-When running Algo, you received an error like this:
-
-```
-TASK [common : Generate password for the CA key] ***********************************************************************************************************************************************************
-fatal: [xxx.xxx.xxx.xxx -> localhost]: FAILED! => {"changed": true, "cmd": "openssl rand -hex 16", "delta": "0:00:00.024776", "end": "2018-11-26 13:13:55.879921", "msg": "non-zero return code", "rc": 1, "start": "2018-11-26 13:13:55.855145", "stderr": "unable to write 'random state'", "stderr_lines": ["unable to write 'random state'"], "stdout": "xxxxxxxxxxxxxxxxxxx", "stdout_lines": ["xxxxxxxxxxxxxxxxxxx"]}
-```
-
-This happens when your user does not have ownership of the `$HOME/.rnd` file, which is a seed for randomization. To fix this issue, give your user ownership of the file with this command:
-
-```
-sudo chown $USER:$USER $HOME/.rnd
-```
-
-Now, run Algo again.
 
 ### Old Networking Firewall In Place
 
@@ -411,10 +314,6 @@ Little Snitch is not compatible with IPSEC VPNs due to a known bug in macOS and 
 ### I can't get my router to connect to the Algo server
 
 In order to connect to the Algo VPN server, your router must support IKEv2, ECC certificate-based authentication, and the cipher suite we use. See the ipsec.conf files we generate in the `config` folder for more information. Note that we do not officially support routers as clients for Algo VPN at this time, though patches and documentation for them are welcome (for example, see open issues for [Ubiquiti](https://github.com/trailofbits/algo/issues/307) and [pfSense](https://github.com/trailofbits/algo/issues/292)).
-
-### I can't get Network Manager to connect to the Algo server
-
-You're trying to connect Ubuntu or Debian to the Algo server through the Network Manager GUI but it's not working. Many versions of Ubuntu and some older versions of Debian bundle a [broken version of Network Manager](https://github.com/trailofbits/algo/issues/263) without support for modern standards or the strongSwan server. You must upgrade to Ubuntu 17.04 or Debian 9 Stretch, each of which contain the required minimum version of Network Manager.
 
 ### Various websites appear to be offline through the VPN
 
@@ -487,7 +386,7 @@ For IPsec on Linux you can change the MTU of your network interface to match the
 ```
 sudo ifconfig eth0 mtu 1440
 ```
-To make the change take affect after a reboot, on Ubuntu 18.04 and later edit the relevant file in the `/etc/netplan` directory (see `man netplan`).
+To make the change take effect after a reboot, on Ubuntu 22.04 LTS edit the relevant file in the `/etc/netplan` directory (see `man netplan`).
 
 #### Note for WireGuard iOS users
 
@@ -522,6 +421,100 @@ If your router has a setting called something like "VPN Passthrough" or "IPsec P
 
 If your router runs [pfSense](https://www.pfsense.org) and a single IPsec client can connect but you have issues when using multiple clients, you'll need to change the **Outbound NAT** mode to **Manual Outbound NAT** and disable the rule that specifies **Static Port** for IKE (UDP port 500). See [Outbound NAT](https://docs.netgate.com/pfsense/en/latest/book/nat/outbound-nat.html#outbound-nat) in the [pfSense Book](https://docs.netgate.com/pfsense/en/latest/book).
 
+## Diagnostic Commands
+
+If you want to investigate issues yourself, here are useful commands to run on your Algo server.
+
+### Enable Verbose Logging
+
+By default, Algo minimizes logging for privacy. To enable detailed logging for debugging:
+
+**During deployment** - Edit `config.cfg` before running `./algo`:
+```yaml
+algo_no_log: false              # Show detailed Ansible output (includes sensitive data!)
+strongswan_log_level: 2         # IPsec debug logging (default: -1 disabled)
+privacy_enhancements_enabled: false  # Disable log rotation/clearing
+```
+
+**Important:** Reset these to defaults before sharing logs or screenshots, as they may contain sensitive information.
+
+### Server-Side Diagnostics
+
+**Check service status:**
+```bash
+# WireGuard
+systemctl status wg-quick@wg0
+wg show                          # Show WireGuard interface and peers
+
+# IPsec/StrongSwan
+systemctl status strongswan
+ipsec statusall                  # Show all IKE_SA and CHILD_SA
+ipsec leases                     # Show assigned virtual IPs
+
+# DNS
+systemctl status dnscrypt-proxy.socket dnscrypt-proxy.service
+ss -lnup | grep :53              # Check what's listening on DNS port
+```
+
+**View logs:**
+```bash
+# WireGuard (kernel module, limited logging)
+dmesg | grep wireguard
+
+# IPsec/StrongSwan
+journalctl -u strongswan -f      # Follow strongswan logs
+journalctl -t charon -f          # Follow IKE daemon logs
+
+# DNS
+journalctl -u dnscrypt-proxy -f
+
+# General system
+journalctl -f                    # Follow all system logs
+```
+
+**Check network and firewall:**
+```bash
+# Verify VPN interfaces exist
+ip addr show wg0                 # WireGuard interface
+ip addr show                     # All interfaces
+
+# Check firewall rules
+iptables -L -v -n                # IPv4 filter rules with counters
+iptables -t nat -L -v -n         # IPv4 NAT rules
+ip6tables -L -v -n               # IPv6 filter rules
+
+# Test DNS resolution
+dig @172.x.x.x google.com        # Replace with your local_service_ip
+```
+
+**Find your local DNS IP:**
+```bash
+grep local_service_ip /etc/dnsmasq.d/algo.conf 2>/dev/null || \
+  grep listen_addresses /etc/dnscrypt-proxy/dnscrypt-proxy.toml
+```
+
+### Client-Side Diagnostics
+
+**macOS:**
+```bash
+# View VPN-related logs (last hour)
+log show --predicate 'subsystem == "com.apple.networkextension"' --info --last 1h
+
+# Or use Console.app and search for: nesessionmanager
+```
+
+**Linux (WireGuard):**
+```bash
+sudo wg show
+journalctl -t NetworkManager -f  # If using NetworkManager
+```
+
+**Windows:**
+```powershell
+# View VPN event logs
+Get-WinEvent -LogName "Microsoft-Windows-VPN-Client/Operational" -MaxEvents 50
+```
+
 ## I have a problem not covered here
 
-If you have an issue that you cannot solve with the guidance here, [create a new discussion](https://github.com/trailofbits/algo/discussions) and ask for help. If you think you found a new issue in Algo, [file an issue](https://github.com/trailofbits/algo/issues/new).
+If you have an issue that you cannot solve with the guidance here, please [file an issue](https://github.com/trailofbits/algo/issues/new). We welcome bug reports and want to hear about problems you encounter.

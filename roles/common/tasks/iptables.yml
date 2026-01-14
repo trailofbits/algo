@@ -1,13 +1,12 @@
 ---
-
 - name: Iptables configured
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     owner: root
     group: root
-    mode: 0640
-  with_items:
+    mode: '0640'
+  loop:
     - { src: rules.v4.j2, dest: /etc/iptables/rules.v4 }
   notify:
     - restart iptables
@@ -18,9 +17,9 @@
     dest: "{{ item.dest }}"
     owner: root
     group: root
-    mode: 0640
+    mode: '0640'
   when: ipv6_support
-  with_items:
+  loop:
     - { src: rules.v6.j2, dest: /etc/iptables/rules.v6 }
   notify:
     - restart iptables

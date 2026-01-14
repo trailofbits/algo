@@ -4,8 +4,8 @@
     src: adblock.sh.j2
     dest: /usr/local/sbin/adblock.sh
     owner: root
-    group: "{{ root_group|default('root') }}"
-    mode: 0755
+    group: "{{ root_group | default('root') }}"
+    mode: '0755'
 
 - name: Adblock script added to cron
   cron:

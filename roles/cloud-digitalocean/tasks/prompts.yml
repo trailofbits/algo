@@ -6,11 +6,13 @@
   register: _do_token
   when:
     - do_token is undefined
-    - lookup('env','DO_API_TOKEN')|length <= 0
+    - lookup('env', 'DO_API_TOKEN')|length <= 0
+  no_log: true
 
 - name: Set the token as a fact
   set_fact:
-    algo_do_token: "{{ do_token | default(_do_token.user_input|default(None)) | default(lookup('env','DO_API_TOKEN'), true) }}"
+    algo_do_token: "{{ do_token | default(_do_token.user_input | default(None)) | default(lookup('env', 'DO_API_TOKEN'), true) }}"
+  no_log: true
 
 - name: Get regions
   uri:
@@ -18,20 +20,72 @@
     method: GET
     status_code: 200
     headers:
-      Content-Type: "application/json"
-      Authorization: "Bearer {{ algo_do_token }}"
+      Content-Type: application/json
+      Authorization: Bearer {{ algo_do_token }}
   register: _do_regions
+  no_log: "{{ algo_no_log | default(true) }}"
+  failed_when: false
+
+- name: Check DigitalOcean API response
+  fail:
+    msg: |
+      {% if _do_regions.status == 401 %}
+      DigitalOcean API authentication failed (401 Unauthorized)
+
+      Your API token is invalid or expired. Please:
+      1. Go to https://cloud.digitalocean.com/settings/api/tokens
+      2. Create a new token with 'Read' and 'Write' scopes
+      3. Run the deployment again with the new token
+
+      {% elif _do_regions.status == 403 %}
+      DigitalOcean API access denied (403 Forbidden)
+
+      Your API token lacks required permissions. Please:
+      1. Go to https://cloud.digitalocean.com/settings/api/tokens
+      2. Ensure your token has both 'Read' and 'Write' scopes
+      3. Consider creating a new token with full access
+
+      {% elif _do_regions.status == 429 %}
+      DigitalOcean API rate limit exceeded (429 Too Many Requests)
+
+      You've hit the API rate limit. Please:
+      1. Wait 5-10 minutes before retrying
+      2. Check if other applications are using your token
+
+      {% elif _do_regions.status == 500 or _do_regions.status == 502 or _do_regions.status == 503 %}
+      DigitalOcean API server error ({{ _do_regions.status }})
+
+      DigitalOcean is experiencing issues. Please:
+      1. Check https://status.digitalocean.com for outages
+      2. Wait a few minutes and try again
+
+      {% elif _do_regions.status is undefined %}
+      Failed to connect to DigitalOcean API
+
+      Could not reach api.digitalocean.com. Please check:
+      1. Your internet connection
+      2. Firewall rules (port 443 must be open)
+      3. DNS resolution for api.digitalocean.com
+
+      {% else %}
+      DigitalOcean API error (HTTP {{ _do_regions.status }})
+
+      An unexpected error occurred. Please:
+      1. Verify your API token at https://cloud.digitalocean.com/settings/api/tokens
+      2. Check https://status.digitalocean.com for service issues
+      {% endif %}
+
+      For detailed error messages: Set 'algo_no_log: false' in config.cfg and run again
+  when: _do_regions.status != 200
 
 - name: Set facts about the regions
   set_fact:
-    do_regions: "{{ _do_regions.json.regions | sort(attribute='slug') }}"
+    do_regions: "{{ _do_regions.json.regions | selectattr('available', 'true') | sort(attribute='slug') }}"
 
 - name: Set default region
   set_fact:
     default_region: >-
-      {% for r in do_regions %}
-      {%- if r['slug'] == "nyc3" %}{{ loop.index }}{% endif %}
-      {%- endfor %}
+      {% for r in do_regions %}{%- if r['slug'] == "nyc3" %}{{ loop.index }}{% endif %}{%- endfor %}
 
 - pause:
     prompt: |
@@ -48,6 +102,4 @@
 - name: Set additional facts
   set_fact:
     algo_do_region: >-
-      {% if region is defined %}{{ region }}
-      {%- elif _algo_region.user_input %}{{ do_regions[_algo_region.user_input | int -1 ]['slug'] }}
-      {%- else %}{{ do_regions[default_region | int - 1]['slug'] }}{% endif %}
+      {% if region is defined %}{{ region }}{%- elif _algo_region.user_input %}{{ do_regions[_algo_region.user_input | int - 1]['slug'] }}{%- else %}{{ do_regions[default_region | int - 1]['slug'] }}{% endif %}

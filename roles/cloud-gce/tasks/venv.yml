@@ -1,8 +1,0 @@
----
-- name: Install requirements
-  pip:
-    name:
-      - requests>=2.18.4
-      - google-auth>=1.3.0
-    state: latest
-    virtualenv_python: python3

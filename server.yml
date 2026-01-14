@@ -7,117 +7,194 @@
     - config.cfg
   tasks:
     - block:
-      - name: Wait until the cloud-init completed
-        wait_for:
-          path: /var/lib/cloud/data/result.json
-          delay: 10
-          timeout: 600
-          state: present
-        become: false
-        when: cloudinit
+        - name: Wait until the cloud-init completed
+          wait_for:
+            path: /var/lib/cloud/data/result.json
+            delay: 10         # Conservative 10 second initial delay
+            timeout: 480      # Reduce from 600 to 480 seconds (8 minutes)
+            sleep: 10         # Check every 10 seconds (less aggressive)
+            state: present
+          become: false
+          when: cloudinit
 
-      - block:
-        - name: Ensure the config directory exists
-          file:
-            dest: "configs/{{ IP_subject_alt_name }}"
-            state: directory
-            mode: "0700"
+        - block:
+            - name: Ensure the config directory exists
+              file:
+                dest: configs/{{ IP_subject_alt_name }}
+                state: directory
+                mode: "0700"
 
-        - name: Dump the ssh config
-          copy:
-            dest: "configs/{{ IP_subject_alt_name }}/ssh_config"
-            mode: "0600"
-            content: |
-              Host {{ IP_subject_alt_name }} {{ algo_server_name }}
-                HostName {{ IP_subject_alt_name }}
-                User {{ ansible_ssh_user }}
-                Port {{ ansible_ssh_port }}
-                IdentityFile {{ SSH_keys.private | realpath }}
-                KeepAlive yes
-                ServerAliveInterval 30
-        when: inventory_hostname != 'localhost'
-        become: false
-        delegate_to: localhost
-
-      - import_role:
-          name: common
-        tags: common
-
-      - import_role:
-          name: dns
-        when:
-          - algo_dns_adblocking or
-            dns_encryption
-        tags: dns
-
-      - import_role:
-          name: wireguard
-        when: wireguard_enabled
-        tags: wireguard
-
-      - import_role:
-          name: strongswan
-        when: ipsec_enabled
-        tags: ipsec
-
-      - import_role:
-          name: ssh_tunneling
-        when: algo_ssh_tunneling
-        tags: ssh_tunneling
-
-      - block:
-        - name: Dump the configuration
-          copy:
-            dest: "configs/{{ IP_subject_alt_name }}/.config.yml"
-            content: |
-              server: {{ 'localhost' if inventory_hostname == 'localhost' else inventory_hostname }}
-              server_user: {{ ansible_ssh_user }}
-              ansible_ssh_port: "{{ ansible_ssh_port|default(22) }}"
-              {% if algo_provider != "local" %}
-              ansible_ssh_private_key_file: {{ SSH_keys.private }}
-              {% endif %}
-              algo_provider: {{ algo_provider }}
-              algo_server_name: {{ algo_server_name }}
-              algo_ondemand_cellular: {{ algo_ondemand_cellular }}
-              algo_ondemand_wifi: {{ algo_ondemand_wifi }}
-              algo_ondemand_wifi_exclude: {{ algo_ondemand_wifi_exclude }}
-              algo_dns_adblocking: {{ algo_dns_adblocking }}
-              algo_ssh_tunneling: {{ algo_ssh_tunneling }}
-              algo_store_pki: {{ algo_store_pki }}
-              IP_subject_alt_name: {{ IP_subject_alt_name }}
-              ipsec_enabled: {{ ipsec_enabled }}
-              wireguard_enabled: {{ wireguard_enabled }}
-              {% if tests|default(false)|bool %}
-              ca_password: '{{ CA_password }}'
-              p12_password: '{{ p12_export_password }}'
-              {% endif %}
+            - name: Dump the ssh config
+              copy:
+                dest: configs/{{ IP_subject_alt_name }}/ssh_config
+                mode: "0600"
+                content: |
+                  Host {{ IP_subject_alt_name }} {{ algo_server_name }}
+                    HostName {{ IP_subject_alt_name }}
+                    User {{ ansible_ssh_user }}
+                    Port {{ ansible_ssh_port }}
+                    IdentitiesOnly yes
+                    IdentityFile {{ SSH_keys.private | realpath }}
+                    KeepAlive yes
+                    ServerAliveInterval 30
+          when: inventory_hostname != 'localhost'
           become: false
           delegate_to: localhost
 
-        - name: Create a symlink if deploying to localhost
-          file:
-            src: "{{ IP_subject_alt_name }}"
-            dest: configs/localhost
-            state: link
-            force: true
-          when: inventory_hostname == 'localhost'
+        - import_role:
+            name: common
+          tags: common
 
-        - name: Import tmpfs tasks
-          import_tasks: playbooks/tmpfs/umount.yml
-          become: false
-          delegate_to: localhost
-          vars:
-            facts: "{{ hostvars['localhost'] }}"
-          when:
-            - pki_in_tmpfs
-            - not algo_store_pki
+        # ============================================================
+        # VPN Service Configuration
+        # Parallel mode (default): Services run concurrently for speed
+        # Sequential mode: Services run one at a time (fallback)
+        # ============================================================
 
-        - debug:
-            msg:
-              - "{{ congrats.common.split('\n') }}"
-              - "    {{ congrats.p12_pass if algo_ssh_tunneling or ipsec_enabled else '' }}"
-              - "    {{ congrats.ca_key_pass if algo_store_pki and ipsec_enabled else '' }}"
-              - "    {{ congrats.ssh_access if algo_provider != 'local' else ''}}"
-        tags: always
+        - name: Configure VPN services (parallel mode)
+          when: performance_parallel_services | default(true)
+          tags: [dns, wireguard, ipsec, ssh_tunneling]
+          block:
+            # --- Launch all services asynchronously ---
+            - import_role: {name: dns}
+              async: 300
+              poll: 0
+              register: dns_job
+              when: algo_dns_adblocking or dns_encryption
+              tags: dns
+
+            - import_role: {name: wireguard}
+              async: 300
+              poll: 0
+              register: wireguard_job
+              when: wireguard_enabled
+              tags: wireguard
+
+            - import_role: {name: strongswan}
+              async: 300
+              poll: 0
+              register: strongswan_job
+              when: ipsec_enabled
+              tags: ipsec
+
+            - import_role: {name: ssh_tunneling}
+              async: 300
+              poll: 0
+              register: ssh_tunneling_job
+              when: algo_ssh_tunneling
+              tags: ssh_tunneling
+
+            # --- Build job list and wait for completion ---
+            - name: Build async job list
+              set_fact:
+                _vpn_jobs:
+                  - {name: dns, job: "{{ dns_job | default({}) }}"}
+                  - {name: wireguard, job: "{{ wireguard_job | default({}) }}"}
+                  - {name: strongswan, job: "{{ strongswan_job | default({}) }}"}
+                  - {name: ssh_tunneling, job: "{{ ssh_tunneling_job | default({}) }}"}
+
+            - name: Wait for VPN services to complete
+              async_status:
+                jid: "{{ item.job.ansible_job_id }}"
+              register: _vpn_results
+              until: _vpn_results.finished
+              retries: 60
+              delay: 5
+              loop: "{{ _vpn_jobs | selectattr('job.ansible_job_id', 'defined') | list }}"
+              loop_control:
+                label: "{{ item.name }}"
+
+            # --- Verify all services completed successfully ---
+            - name: Check for service failures
+              fail:
+                msg: "{{ item.item.name }} service failed. Check logs above."
+              when: item.rc | default(0) != 0
+              loop: "{{ _vpn_results.results | default([]) }}"
+              loop_control:
+                label: "{{ item.item.name | default('service') }}"
+
+        # --- Sequential mode (fallback when parallel disabled) ---
+        - name: Configure VPN services (sequential mode)
+          when: not (performance_parallel_services | default(true))
+          tags: [dns, wireguard, ipsec, ssh_tunneling]
+          block:
+            - import_role: {name: dns}
+              when: algo_dns_adblocking or dns_encryption
+              tags: dns
+
+            - import_role: {name: wireguard}
+              when: wireguard_enabled
+              tags: wireguard
+
+            - import_role: {name: strongswan}
+              when: ipsec_enabled
+              tags: ipsec
+
+            - import_role: {name: ssh_tunneling}
+              when: algo_ssh_tunneling
+              tags: ssh_tunneling
+
+        - import_role:
+            name: privacy
+          when: privacy_enhancements_enabled | default(true)
+          tags: privacy
+
+        - block:
+            - name: Dump the configuration
+              copy:
+                dest: configs/{{ IP_subject_alt_name }}/.config.yml
+                mode: '0644'
+                content: |
+                  server: {{ 'localhost' if inventory_hostname == 'localhost' else inventory_hostname }}
+                  server_user: {{ ansible_ssh_user }}
+                  ansible_ssh_port: "{{ ansible_ssh_port | default(22) }}"
+                  {% if algo_provider != "local" %}
+                  ansible_ssh_private_key_file: {{ SSH_keys.private }}
+                  {% endif %}
+                  algo_provider: {{ algo_provider }}
+                  algo_server_name: {{ algo_server_name }}
+                  algo_ondemand_cellular: {{ algo_ondemand_cellular }}
+                  algo_ondemand_wifi: {{ algo_ondemand_wifi }}
+                  algo_ondemand_wifi_exclude: {{ algo_ondemand_wifi_exclude }}
+                  algo_dns_adblocking: {{ algo_dns_adblocking }}
+                  algo_ssh_tunneling: {{ algo_ssh_tunneling }}
+                  algo_store_pki: {{ algo_store_pki }}
+                  IP_subject_alt_name: {{ IP_subject_alt_name }}
+                  ipsec_enabled: {{ ipsec_enabled }}
+                  wireguard_enabled: {{ wireguard_enabled }}
+                  local_service_ip: {{ local_service_ip }}
+                  local_service_ipv6: {{ local_service_ipv6 }}
+                  {% if tests | default(false) | bool %}
+                  ca_password: '{{ CA_password }}'
+                  p12_password: '{{ p12_export_password }}'
+                  {% endif %}
+              become: false
+              delegate_to: localhost
+
+            - name: Create a symlink if deploying to localhost
+              file:
+                src: "{{ IP_subject_alt_name }}"
+                dest: configs/localhost
+                state: link
+                force: true
+              when: inventory_hostname == 'localhost'
+
+            - name: Import tmpfs tasks
+              import_tasks: playbooks/tmpfs/umount.yml
+              become: false
+              delegate_to: localhost
+              vars:
+                facts: "{{ hostvars['localhost'] }}"
+              when:
+                - pki_in_tmpfs
+                - not algo_store_pki
+
+            - debug:
+                msg:
+                  - "{{ congrats.common.split('\n') }}"
+                  - "    {{ congrats.p12_pass if algo_ssh_tunneling or ipsec_enabled else '' }}"
+                  - "    {{ congrats.ca_key_pass if algo_store_pki and ipsec_enabled else '' }}"
+                  - "    {{ congrats.ssh_access if algo_provider != 'local' else '' }}"
+          tags: always
       rescue:
         - include_tasks: playbooks/rescue.yml

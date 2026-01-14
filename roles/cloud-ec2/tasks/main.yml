@@ -1,7 +1,4 @@
 ---
-- name: Build python virtual environment
-  import_tasks: venv.yml
-
 - name: Include prompts
   import_tasks: prompts.yml
 
@@ -13,8 +10,9 @@
     region: "{{ algo_region }}"
     filters:
       architecture: "{{ cloud_providers.ec2.image.arch }}"
-      name: "ubuntu/images/hvm-ssd/{{ cloud_providers.ec2.image.name }}-*64-server-*"
+      name: ubuntu/images/hvm-ssd/{{ cloud_providers.ec2.image.name }}-*64-server-*
   register: ami_search
+  no_log: true
 
 - name: Set the ami id as a fact
   set_fact:

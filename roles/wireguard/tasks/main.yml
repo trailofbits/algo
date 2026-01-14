@@ -1,88 +1,86 @@
 ---
-- name: Ensure the required directories exist
+- name: Ensure the required config directories exist
   file:
     dest: "{{ item }}"
     state: directory
     recurse: true
-  with_items:
-    - "{{ wireguard_pki_path }}/preshared"
-    - "{{ wireguard_pki_path }}/private"
-    - "{{ wireguard_pki_path }}/public"
+    mode: "0755"
+  loop:
     - "{{ wireguard_config_path }}/apple/ios"
     - "{{ wireguard_config_path }}/apple/macos"
   delegate_to: localhost
   become: false
 
-- name: Include tasks for Ubuntu
+- name: Include tasks for Debian/Ubuntu
   include_tasks: ubuntu.yml
-  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+  when: is_debian_based
   tags: always
 
-- name: Include tasks for FreeBSD
-  include_tasks: freebsd.yml
-  when: ansible_distribution == 'FreeBSD'
-  tags: always
 
 - name: Generate keys
   import_tasks: keys.yml
+  delegate_to: localhost
+  become: false
   tags: update-users
 
 - block:
-  - block:
-    - name: WireGuard user list updated
-      lineinfile:
-        dest: "{{ wireguard_pki_path }}/index.txt"
-        create: true
-        mode: "0600"
-        insertafter: EOF
-        line: "{{ item }}"
-      register: lineinfile
-      with_items: "{{ users }}"
+    - block:
+        - name: WireGuard user list updated
+          lineinfile:
+            dest: "{{ wireguard_pki_path }}/index.txt"
+            create: true
+            mode: "0600"
+            insertafter: EOF
+            line: "{{ item }}"
+          register: lineinfile
+          loop: "{{ users }}"
 
-    - set_fact:
-        wireguard_users: "{{ (lookup('file', wireguard_pki_path + 'index.txt')).split('\n') }}"
+        - set_fact:
+            wireguard_users: "{{ (lookup('file', wireguard_pki_path + '/index.txt')).split('\n') }}"
 
-    - name: WireGuard users config generated
+        - name: WireGuard users config generated
+          template:
+            src: client.conf.j2
+            dest: "{{ wireguard_config_path }}/{{ item }}.conf"
+            mode: "0600"
+          loop: "{{ wireguard_users }}"
+          loop_control:
+            index_var: index
+          when: item in users
+
+        - include_tasks: mobileconfig.yml
+          loop:
+            - ios
+            - macos
+          loop_control:
+            loop_var: system
+
+        - name: Generate QR codes
+          shell: >
+            umask 077;
+            which segno &&
+            segno --scale=5 --output={{ item }}.png \
+              "{{ lookup('template', 'client.conf.j2') }}" || true
+          changed_when: false
+          loop: "{{ wireguard_users }}"
+          loop_control:
+            index_var: index
+          when: item in users
+          vars:
+            ansible_python_interpreter: "{{ ansible_playbook_python }}"
+          args:
+            chdir: "{{ wireguard_config_path }}"
+            executable: bash
+          no_log: true
+      become: false
+      delegate_to: localhost
+
+    - name: WireGuard configured
       template:
-        src: client.conf.j2
-        dest: "{{ wireguard_config_path }}/{{ item.1 }}.conf"
+        src: server.conf.j2
+        dest: "{{ config_prefix | default('/') }}etc/wireguard/{{ wireguard_interface }}.conf"
         mode: "0600"
-      with_indexed_items:  "{{ wireguard_users }}"
-      when: item.1 in users
-      vars:
-        index: "{{ item.0 }}"
-
-    - include_tasks: mobileconfig.yml
-      loop:
-        - ios
-        - macos
-      loop_control:
-        loop_var: system
-
-    - name: Generate QR codes
-      shell: >
-        umask 077;
-        which segno &&
-        segno --scale=5 --output={{ item.1 }}.png \
-          "{{ lookup('template', 'client.conf.j2') }}" || true
-      changed_when: false
-      with_indexed_items:  "{{ wireguard_users }}"
-      when: item.1 in users
-      vars:
-        index: "{{ item.0 }}"
-        ansible_python_interpreter: "{{ ansible_playbook_python }}"
-      args:
-        chdir: "{{ wireguard_config_path }}"
-        executable: bash
-    become: false
-    delegate_to: localhost
-
-  - name: WireGuard configured
-    template:
-      src: server.conf.j2
-      dest: "{{ config_prefix|default('/') }}etc/wireguard/{{ wireguard_interface }}.conf"
-      mode: "0600"
-    notify: restart wireguard
+      notify: restart wireguard
   tags: update-users
 
 - name: WireGuard enabled and started

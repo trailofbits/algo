@@ -5,10 +5,15 @@ configs/*
 config.cfg.*
 inventory_users
 *.kate-swp
-*env
 .DS_Store
-venvs/*
-!venvs/.gitinit
 .vagrant
+.ansible/
+algo.egg-info/
+
+# Python
+.env/
+.venv/
 bin/
 lib/
+__pycache__/
+*.pyc

@@ -1,6 +1,6 @@
 # Azure cloud setup
 
-The easiest way to get started with the Azure CLI is by running it in an Azure Cloud Shell environment through your browser.  
+The easiest way to get started with the Azure CLI is by running it in an Azure Cloud Shell environment through your browser.
 
 Here you can find some information from [the official doc](https://docs.microsoft.com/en-us/cli/azure/get-started-with-azure-cli?view=azure-cli-latest). We put the essential commands together for simplest usage.
 
@@ -35,10 +35,10 @@ Here you can find some information from [the official doc](https://docs.microsof
   $ sudo yum install azure-cli
   ```
 
-- Windows ([link](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-windows?view=azure-cli-latest)):  
+- Windows ([link](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-windows?view=azure-cli-latest)):
   For Windows the Azure CLI is installed via an MSI, which gives you access to the CLI through the Windows Command Prompt (CMD) or PowerShell. When installing for Windows Subsystem for Linux (WSL), packages are available for your Linux distribution. [Download the MSI installer](https://aka.ms/installazurecliwindows)
 
-If your OS is missing or to get more information see [the official doc](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
+If your OS is missing or to get more information, see [the official doc](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 
 
 ## Sign in
@@ -46,7 +46,7 @@ If your OS is missing or to get more information see [the official doc](https://
 1. Run the `login` command:
 ```bash
 az login
-```  
+```
 
   If the CLI can open your default browser, it will do so and load a sign-in page.
 

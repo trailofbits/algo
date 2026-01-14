@@ -1,16 +1,11 @@
 ---
-- name: Build python virtual environment
-  import_tasks: venv.yml
-
 - name: Include prompts
   import_tasks: prompts.yml
 
 - block:
     - set_fact:
         algo_region: >-
-          {% if region is defined %}{{ region }}
-          {%- elif _algo_region.user_input is defined and _algo_region.user_input | length > 0 %}{{ cs_zones[_algo_region.user_input | int -1 ]['name'] }}
-          {%- else %}{{ cs_zones[default_zone | int - 1]['name'] }}{% endif %}
+          {%- if region is defined -%}{{ region }}{%- elif _algo_region.user_input is defined and _algo_region.user_input | length > 0 -%}{{ cs_zones[_algo_region.user_input | int - 1]['name'] }}{%- else -%}{{ cs_zones[default_zone | int - 1]['name'] }}{%- endif -%}
 
     - name: Security group created
       cs_securitygroup:
@@ -25,8 +20,8 @@
         start_port: "{{ item.start_port }}"
         end_port: "{{ item.end_port }}"
         cidr: "{{ item.range }}"
-      with_items:
-        - { proto: tcp, start_port: '{{ ssh_port }}', end_port: '{{ ssh_port }}', range: 0.0.0.0/0 }
+      loop:
+        - { proto: tcp, start_port: "{{ ssh_port }}", end_port: "{{ ssh_port }}", range: 0.0.0.0/0 }
         - { proto: udp, start_port: 4500, end_port: 4500, range: 0.0.0.0/0 }
         - { proto: udp, start_port: 500, end_port: 500, range: 0.0.0.0/0 }
         - { proto: udp, start_port: "{{ wireguard_port }}", end_port: "{{ wireguard_port }}", range: 0.0.0.0/0 }
@@ -57,3 +52,4 @@
     CLOUDSTACK_KEY: "{{ algo_cs_key }}"
     CLOUDSTACK_SECRET: "{{ algo_cs_token }}"
     CLOUDSTACK_ENDPOINT: "{{ algo_cs_url }}"
+  no_log: true

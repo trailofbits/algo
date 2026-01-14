@@ -1,9 +1,0 @@
----
-- name: Install dnscrypt-proxy
-  package:
-    name: dnscrypt-proxy2
-
-- name: Enable mac_portacl
-  lineinfile:
-    path: /etc/rc.conf
-    line: 'dnscrypt_proxy_mac_portacl_enable="YES"'

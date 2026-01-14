@@ -1,0 +1,84 @@
+##################################
+#         Global settings        #
+##################################
+
+## List of servers to use
+{# Allow either list to be empty. Output nothing if both are empty. #}
+{% set servers = [] %}
+{% if dnscrypt_servers.ipv4 %}{% set servers = dnscrypt_servers.ipv4 %}{% endif %}
+{% if ipv6_support and dnscrypt_servers.ipv6 %}{% set servers = servers + dnscrypt_servers.ipv6 %}{% endif %}
+{% if servers %}server_names = ['{{ servers | join("', '") }}']{% endif %}
+
+
+## List of local addresses and ports to listen to. Can be IPv4 and/or IPv6.
+## Note: When using systemd socket activation, choose an empty set (i.e. [] ).
+
+{% if uses_systemd_socket %}
+# Using systemd socket activation on Debian/Ubuntu
+listen_addresses = []
+{% else %}
+# Direct binding on non-systemd systems
+listen_addresses  = [
+  '{{ local_service_ip }}:53'{% if ipv6_support %},
+  '[{{ local_service_ipv6 }}]:53'{% endif %}
+  ]
+{% endif %}
+
+
+## Maximum number of simultaneous client connections to accept
+max_clients = 250
+
+## Require servers (from static + remote sources) to satisfy specific properties
+ipv4_servers = true
+ipv6_servers = {{ ipv6_support | bool | lower }}
+dnscrypt_servers = true
+doh_servers = true
+
+## Require servers defined by remote sources to satisfy specific properties
+require_dnssec = true
+require_nolog = true
+require_nofilter = true
+disabled_server_names = []
+
+## Always use TCP to connect to upstream servers
+force_tcp = false
+
+## How long a DNS query will wait for a response, in milliseconds
+timeout = 2500
+
+## Keepalive for HTTP (HTTPS, HTTP/2) queries, in seconds
+keepalive = 30
+
+## Load-balancing strategy: 'p2' (default), 'ph', 'first' or 'random'
+lb_strategy = 'p2'
+
+## Log level (0-6, default: 2 - 0 is very verbose, 6 only contains fatal errors)
+## Level 4 provides essential error information while minimizing privacy-sensitive logging
+log_level = 4
+
+## Use the system logger (disabled for privacy)
+use_syslog = false
+
+## Delay, in minutes, after which certificates are reloaded
+cert_refresh_delay = 240
+
+## DNSCrypt: Create a new, unique key for every single DNS query
+dnscrypt_ephemeral_keys = true
+
+## DoH: Disable TLS session tickets - increases privacy but also latency
+tls_disable_session_tickets = true
+
+## Fallback resolver (used only for initial resolver list retrieval)
+fallback_resolver = '127.0.0.53:53'
+
+## Never let dnscrypt-proxy try to use the system DNS settings
+ignore_system_dns = true
+
+## Maximum time (in seconds) to wait for network connectivity
+netprobe_timeout = 60
+netprobe_address = "1.1.1.1:53"
+
+## Automatic log files rotation
+log_files_max_size = 10
+log_files_max_age = 7
+log_files_max_backups = 1

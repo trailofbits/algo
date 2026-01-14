@@ -1,0 +1,18 @@
+---
+name: 'Setup uv Environment'
+description: 'Install uv and sync dependencies for Algo VPN project'
+outputs:
+  uv-version:
+    description: 'The version of uv that was installed'
+    value: ${{ steps.setup.outputs.uv-version }}
+runs:
+  using: composite
+  steps:
+    - name: Install uv
+      id: setup
+      uses: astral-sh/setup-uv@1ddb97e5078301c0bec13b38151f8664ed04edc8  # v6
+      with:
+        enable-cache: true
+    - name: Sync dependencies
+      run: uv sync
+      shell: bash
