@@ -1,6 +1,8 @@
 *.retry
 .idea/
 configs/*
+~config.cfg
+config.cfg.*
 inventory_users
 *.kate-swp
 *env
@@ -8,3 +10,5 @@ inventory_users
 venvs/*
 !venvs/.gitinit
 .vagrant
+bin/
+lib/
