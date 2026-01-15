@@ -10,7 +10,6 @@ xray_pki_path: "configs/{{ IP_subject_alt_name }}/xray"
 xray_client_config_path: "{{ xray_pki_path }}"
 
 # Network configuration
-xray_network_ipv4: 10.50.0.0/16
 xray_listen_addr: "0.0.0.0"
 
 # Reality settings (from config.cfg)

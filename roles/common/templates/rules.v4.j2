@@ -1,4 +1,4 @@
-{% set subnets = ([strongswan_network] if ipsec_enabled else []) + ([wireguard_network_ipv4] if wireguard_enabled else []) + ([xray_network_ipv4] if xray_enabled | default(false) else []) %}
+{% set subnets = ([strongswan_network] if ipsec_enabled else []) + ([wireguard_network_ipv4] if wireguard_enabled else []) %}
 {% set ports = (['500', '4500'] if ipsec_enabled else []) + ([wireguard_port] if wireguard_enabled else []) + ([wireguard_port_actual] if wireguard_enabled and wireguard_port | int == wireguard_port_avoid | int else []) %}
 
 #### The mangle table
