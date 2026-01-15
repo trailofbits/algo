@@ -71,6 +71,16 @@
           register: _vpn_protocols
           when: vpn_protocols is undefined
 
+        - name: Set VPN protocol facts
+          set_fact:
+            _vpn_choice: "{{ vpn_protocols | default(_vpn_protocols.user_input | default('1')) | string }}"
+
+        - name: Set protocol flags based on choice
+          set_fact:
+            xray_enabled: "{{ _vpn_choice in ['1', '4', '5', '6'] }}"
+            wireguard_enabled: "{{ _vpn_choice in ['2', '4', '5', '7'] }}"
+            ipsec_enabled: "{{ _vpn_choice in ['3', '4', '6', '7'] }}"
+
         - name: Cellular On Demand prompt
           pause:
             prompt: |
@@ -122,16 +132,6 @@
               [y/N]
           register: _ssh_tunneling
           when: ssh_tunneling is undefined
-
-        - name: Set VPN protocol facts
-          set_fact:
-            _vpn_choice: "{{ vpn_protocols | default(_vpn_protocols.user_input | default('1')) | string }}"
-
-        - name: Set protocol flags based on choice
-          set_fact:
-            xray_enabled: "{{ _vpn_choice in ['1', '4', '5', '6'] }}"
-            wireguard_enabled: "{{ _vpn_choice in ['2', '4', '5', '7'] }}"
-            ipsec_enabled: "{{ _vpn_choice in ['3', '4', '6', '7'] }}"
 
         - name: Set facts based on the input
           set_fact:
