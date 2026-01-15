@@ -58,6 +58,27 @@
     owner: root
     group: root
 
+- name: Ubuntu | Stop dnscrypt-proxy socket before reconfiguration
+  systemd:
+    name: dnscrypt-proxy.socket
+    state: stopped
+  failed_when: false
+
+- name: Ubuntu | Stop dnscrypt-proxy service before reconfiguration
+  systemd:
+    name: dnscrypt-proxy.service
+    state: stopped
+  failed_when: false
+
+- name: Ubuntu | Check if IPv6 is configured on loopback
+  command: ip -6 addr show dev lo
+  register: lo_ipv6_check
+  changed_when: false
+
+- name: Ubuntu | Set IPv6 socket support fact
+  set_fact:
+    ipv6_socket_support: "{{ ipv6_support and (local_service_ipv6 in lo_ipv6_check.stdout) }}"
+
 - name: Ubuntu | Configure dnscrypt-proxy socket to listen on VPN IPs
   copy:
     dest: /etc/systemd/system/dnscrypt-proxy.socket.d/10-algo-override.conf
@@ -66,15 +87,14 @@
       # Clear default listeners
       ListenStream=
       ListenDatagram=
-      # Add VPN service IPs
+      # Add VPN service IPs (IPv4)
       ListenStream={{ local_service_ip }}:53
       ListenDatagram={{ local_service_ip }}:53
-      {% if ipv6_support %}
+      {% if ipv6_socket_support %}
+      # IPv6
       ListenStream=[{{ local_service_ipv6 }}]:53
       ListenDatagram=[{{ local_service_ipv6 }}]:53
       {% endif %}
-      NoDelay=true
-      DeferAcceptSec=1
     mode: '0644'
   register: socket_override
   notify:
@@ -85,13 +105,12 @@
 - name: Ubuntu | Reload systemd daemon after socket configuration
   systemd:
     daemon_reload: true
-  when: socket_override.changed
 
-- name: Ubuntu | Restart dnscrypt-proxy socket to apply configuration
+- name: Ubuntu | Start dnscrypt-proxy socket
   systemd:
     name: dnscrypt-proxy.socket
-    state: restarted
-  when: socket_override.changed
+    state: started
+    enabled: true
 
 - name: Ubuntu | Add custom requirements to successfully start the unit
   copy:
