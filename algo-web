@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
+# Algo VPN Web UI launcher
+# Starts a local web server and opens the browser for GUI-based VPN deployment
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+# Configuration via environment variables
+PORT="${ALGO_WEB_PORT:-8080}"
+HOST="${ALGO_WEB_HOST:-127.0.0.1}"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+echo -e "${CYAN}"
+echo "    _    _                __     ______  _   _ "
+echo "   / \  | | __ _  ___     \ \   / /  _ \| \ | |"
+echo "  / _ \ | |/ _\` |/ _ \     \ \ / /| |_) |  \| |"
+echo " / ___ \| | (_| | (_) |     \ V / |  __/| |\  |"
+echo "/_/   \_\_|\__, |\___/       \_/  |_|   |_| \_|"
+echo "           |___/                               "
+echo -e "${NC}"
+echo "Web UI for deploying personal VPN servers"
+echo ""
+
+# Check if uv is installed
+if ! command -v uv &> /dev/null; then
+    echo -e "${RED}Error: uv is not installed.${NC}"
+    echo "Please run ./algo first to install uv, or install it manually:"
+    echo "  curl -LsSf https://astral.sh/uv/install.sh | sh"
+    exit 1
+fi
+
+# Install web dependencies if needed
+echo "Checking dependencies..."
+if ! uv pip show starlette &> /dev/null 2>&1; then
+    echo "Installing web dependencies..."
+    uv pip install '.[web]' --quiet
+fi
+
+echo -e "${GREEN}Starting Algo VPN Web UI${NC}"
+echo -e "Server: ${CYAN}http://$HOST:$PORT${NC}"
+echo ""
+echo "Press Ctrl+C to stop the server"
+echo ""
+
+# Open browser after short delay (background)
+# Use platform-specific command
+open_browser() {
+    local url="http://$HOST:$PORT"
+    sleep 1.5
+
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        open "$url" 2>/dev/null || true
+    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        xdg-open "$url" 2>/dev/null || sensible-browser "$url" 2>/dev/null || true
+    elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+        start "$url" 2>/dev/null || true
+    else
+        # Fallback: try python webbrowser module
+        python3 -c "import webbrowser; webbrowser.open('$url')" 2>/dev/null || true
+    fi
+}
+
+open_browser &
+
+# Run web server (foreground)
+exec uv run uvicorn app.main:app --host "$HOST" --port "$PORT" --no-access-log

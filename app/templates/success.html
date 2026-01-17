@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Deployment Complete - Algo VPN{% endblock %}
+
+{% block header_right %}
+<span class="status-badge success">
+    &#10003; Complete
+</span>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <!-- Success Message -->
+    <div class="success-container">
+        <div class="success-icon">&#10003;</div>
+        <h1 class="success-title">Congratulations!</h1>
+        <p class="success-message">
+            Your Algo VPN server <strong>{{ session.config.server_name }}</strong> is now running
+            on {{ provider.name }} in the {{ session.config.region }} region.
+        </p>
+    </div>
+
+    <!-- Quick Start -->
+    <div class="main-panel" style="margin-bottom: var(--space-lg);">
+        <div class="panel-header">
+            <h2 class="panel-title">Quick Start</h2>
+        </div>
+        <div class="panel-body">
+            <ol style="margin: 0; padding-left: var(--space-lg); color: var(--text-secondary);">
+                <li style="margin-bottom: var(--space-sm);">
+                    Download your configuration files below
+                </li>
+                <li style="margin-bottom: var(--space-sm);">
+                    <strong>WireGuard:</strong> Import the <code>.conf</code> file into your WireGuard app, or scan the QR code
+                </li>
+                <li style="margin-bottom: var(--space-sm);">
+                    <strong>IPsec/IKEv2:</strong> Import the <code>.mobileconfig</code> (Apple) or <code>.p12</code> certificate
+                </li>
+                <li>
+                    Visit <a href="https://whoer.net/" target="_blank" rel="noopener" style="color: var(--accent);">whoer.net</a> to verify your VPN connection
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Config Files -->
+    <div class="main-panel" style="margin-bottom: var(--space-lg);">
+        <div class="panel-header">
+            <h2 class="panel-title">Configuration Files</h2>
+            <p class="panel-subtitle">
+                Download individual files or get everything as a ZIP
+            </p>
+        </div>
+        <div class="panel-body" style="padding: 0;">
+            {% if config_files %}
+            <div class="file-list">
+                {% for file in config_files %}
+                <div class="file-item">
+                    <div>
+                        <span class="file-name">
+                            {% if file.is_qr %}&#128274; {% endif %}
+                            {{ file.name }}
+                        </span>
+                        <span class="file-size">
+                            ({{ (file.size / 1024)|round(1) }}KB)
+                        </span>
+                    </div>
+                    <a href="/configs/{{ session.id }}/files/{{ file.name }}"
+                       class="file-download"
+                       download>
+                        Download
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="padding: var(--space-lg); text-align: center; color: var(--text-tertiary);">
+                No configuration files found. Check the deployment output for errors.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Download All -->
+    <div style="text-align: center; margin-bottom: var(--space-xl);">
+        <a href="/configs/{{ session.id }}/zip" class="btn btn-primary btn-lg" download>
+            Download All as ZIP
+        </a>
+    </div>
+
+    <!-- Next Steps -->
+    <div class="main-panel">
+        <div class="panel-header">
+            <h2 class="panel-title">What's Next?</h2>
+        </div>
+        <div class="panel-body">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg);">
+                <div>
+                    <h3 style="font-size: 0.875rem; color: var(--text-primary); margin-bottom: var(--space-xs);">
+                        Add More Users
+                    </h3>
+                    <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0;">
+                        Run <code>./algo update-users</code> to add or remove VPN users
+                    </p>
+                </div>
+                <div>
+                    <h3 style="font-size: 0.875rem; color: var(--text-primary); margin-bottom: var(--space-xs);">
+                        SSH Access
+                    </h3>
+                    <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0;">
+                        <code>ssh -F configs/*/ssh_config algo</code>
+                    </p>
+                </div>
+                <div>
+                    <h3 style="font-size: 0.875rem; color: var(--text-primary); margin-bottom: var(--space-xs);">
+                        Documentation
+                    </h3>
+                    <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0;">
+                        <a href="https://trailofbits.github.io/algo/" target="_blank" rel="noopener" style="color: var(--accent);">
+                            Full documentation &rarr;
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deploy Another -->
+    <div style="text-align: center; margin-top: var(--space-xl);">
+        <a href="/" class="btn btn-secondary">
+            Deploy Another Server
+        </a>
+    </div>
+</div>
+{% endblock %}
