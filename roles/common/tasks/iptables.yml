@@ -1,25 +1,27 @@
 ---
-- name: Iptables configured
+- name: Iptables IPv4 rules configured
   template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
+    src: rules.v4.j2
+    dest: /etc/iptables/rules.v4
     owner: root
     group: root
     mode: '0640'
-  loop:
-    - { src: rules.v4.j2, dest: /etc/iptables/rules.v4 }
-  notify:
-    - restart iptables
+  register: iptables_v4
 
-- name: Iptables configured
+- name: Iptables IPv6 rules configured
   template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
+    src: rules.v6.j2
+    dest: /etc/iptables/rules.v6
     owner: root
     group: root
     mode: '0640'
   when: ipv6_support
-  loop:
-    - { src: rules.v6.j2, dest: /etc/iptables/rules.v6 }
-  notify:
-    - restart iptables
+  register: iptables_v6
+
+- name: Apply iptables IPv4 rules
+  shell: iptables-restore < /etc/iptables/rules.v4
+  when: iptables_v4.changed
+
+- name: Apply iptables IPv6 rules
+  shell: ip6tables-restore < /etc/iptables/rules.v6
+  when: ipv6_support and iptables_v6.changed
