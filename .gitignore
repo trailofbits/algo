@@ -9,6 +9,7 @@ inventory_users
 .vagrant
 .ansible/
 algo.egg-info/
+.context/
 
 # Python
 .env/
