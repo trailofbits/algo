@@ -240,6 +240,7 @@ For the highest level of privacy, treat your Algo servers as disposable. Spin up
 * Deploy from a [Docker container](docs/deploy-from-docker.md)
 
 ### Setup VPN Clients to Connect to the Server
+* Setup [VLESS+Reality](docs/client-xray.md) stealth VPN clients (Shadowrocket, v2rayNG, etc.)
 * Setup [Windows](docs/client-windows.md) clients
 * Setup [Android](docs/client-android.md) clients
 * Setup [Linux](docs/client-linux.md) clients with Ansible

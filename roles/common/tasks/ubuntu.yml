@@ -203,3 +203,10 @@
 
 - include_tasks: iptables.yml
   tags: iptables
+
+- name: Enable and start netfilter-persistent
+  systemd:
+    name: netfilter-persistent
+    state: started
+    enabled: true
+  tags: iptables

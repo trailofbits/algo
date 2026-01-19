@@ -73,13 +73,17 @@
 
         - name: Set VPN protocol facts
           set_fact:
-            _vpn_choice: "{{ vpn_protocols | default(_vpn_protocols.user_input | default('1')) | string }}"
+            _vpn_choice: "{{ vpn_protocols | default(_vpn_protocols.user_input | default('1') | trim) | string | trim }}"
 
         - name: Set protocol flags based on choice
           set_fact:
             xray_enabled: "{{ _vpn_choice in ['1', '4', '5', '6'] }}"
             wireguard_enabled: "{{ _vpn_choice in ['2', '4', '5', '7'] }}"
             ipsec_enabled: "{{ _vpn_choice in ['3', '4', '6', '7'] }}"
+
+        - name: Debug protocol selection
+          debug:
+            msg: "Choice={{ _vpn_choice }} -> xray={{ xray_enabled }}, wg={{ wireguard_enabled }}, ipsec={{ ipsec_enabled }}"
 
         - name: Cellular On Demand prompt
           pause:

@@ -167,6 +167,11 @@
             name: ssh_tunneling
           when: algo_ssh_tunneling
 
+        - import_role:
+            name: xray
+          when: xray_enabled | default(false)
+          tags: xray
+
         - debug:
             msg:
               - "{{ congrats.common.split('\n') }}"
