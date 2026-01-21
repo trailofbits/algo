@@ -306,30 +306,30 @@ wheels = [
 
 [[package]]
 name = "boto3"
-version = "1.42.23"
+version = "1.42.27"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "botocore" },
     { name = "jmespath" },
     { name = "s3transfer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0d/df/17828670134e56ffca8cf8b017477f16d1a9df7ecfc3870d02aa6d4d2e20/boto3-1.42.23.tar.gz", hash = "sha256:f681a8d43b46b3d8acf0be4f3894eb85e40e75945431d0dfe0542edda7025512", size = 112845, upload-time = "2026-01-06T20:28:51.006Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8d/99/65569052c911160702ad371b0b08b751bb1df29deeef0c5c117528074c29/boto3-1.42.27.tar.gz", hash = "sha256:a8a53abb98ff1a24d9a88d9d8c0285bf02d23189666130456e8951ede2f7db98", size = 112765, upload-time = "2026-01-13T20:35:11.971Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/98/8b/8e028dbf6c4bf36defe899882a00c11a8d22fcb7348e88058900c13b72a0/boto3-1.42.23-py3-none-any.whl", hash = "sha256:2ed797bdb394b08550f6269babf0a31bbeb853684bb2cb67116620df0ed632dc", size = 140574, upload-time = "2026-01-06T20:28:48.992Z" },
+    { url = "https://files.pythonhosted.org/packages/44/9e/9554a8c1d7610ec8ea55bec0dac87ad894c83cada2ea2c05fc45f14d0cde/boto3-1.42.27-py3-none-any.whl", hash = "sha256:39dfec51aff3f9356e8c7331195f324cb498ec75b2601a902fc62aa127b8fd00", size = 140577, upload-time = "2026-01-13T20:35:09.35Z" },
 ]
 
 [[package]]
 name = "botocore"
-version = "1.42.23"
+version = "1.42.31"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jmespath" },
     { name = "python-dateutil" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2c/2c/db33716f86b67c514f895c60694a25cd7428d2137b574b59d09d626b0e2e/botocore-1.42.23.tar.gz", hash = "sha256:453ce449bd1021acd67e75c814aae1b132b1ab3ee0ecff248de863bf19e58be8", size = 14878387, upload-time = "2026-01-06T20:28:40.151Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ab/78/4fd91ed2f9d4b500680f33c714b7716fc37690083a8c8d3e94177cbc811e/botocore-1.42.31.tar.gz", hash = "sha256:62f2c31e229df625612dd4d7c72618948e4064436d71a647102f36fcddfa0f4d", size = 14895682, upload-time = "2026-01-20T21:04:32.999Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8d/e6/114d66f81fc4b77a8c1e45e6fcf0021018d1f4eefca0905b3da8023c9a47/botocore-1.42.23-py3-none-any.whl", hash = "sha256:d5042e0252b81f25ca1152fff9ed25463bab2438fbc4530ba53d5390d00ca1b1", size = 14551561, upload-time = "2026-01-06T20:28:36.418Z" },
+    { url = "https://files.pythonhosted.org/packages/9c/c3/6898ecbfc140754fc90702c43e63c2b13017cac345cd3015df404cfeb3e9/botocore-1.42.31-py3-none-any.whl", hash = "sha256:021346ad57cc3018acf4a46edc1f649b9818b33c07a08674ce1c36e9edbb5859", size = 14569714, upload-time = "2026-01-20T21:04:29.495Z" },
 ]
 
 [[package]]
@@ -661,15 +661,15 @@ wheels = [
 
 [[package]]
 name = "hcloud"
-version = "2.13.0"
+version = "2.14.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "python-dateutil" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/58/3e/50c84ae5054526548e355763e884469805b106ea597073c30f8d79b15bdd/hcloud-2.13.0.tar.gz", hash = "sha256:974b22a36c347e113ff8b25abd2cd3868011288485192b562729dba6b22375e1", size = 153639, upload-time = "2025-12-19T15:39:10.402Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/50/e8/62e274ae41e16042c51105f10666d794d4514a63a86988917675f4b81481/hcloud-2.14.0.tar.gz", hash = "sha256:04c6951d90647e1e0a615a839c1f890c90a14e04cfcbf965001d2ace5d21bd09", size = 153732, upload-time = "2026-01-08T13:53:53.25Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/67/0d/bc35a8f50d7b62d28c8ba1e0575f9d99b1af290476344b1199dabbe7a3b2/hcloud-2.13.0-py3-none-any.whl", hash = "sha256:8b97c3f98fd8198e92375b37dd9ec082d011079bcec2aa506b62699a6850f6a6", size = 111557, upload-time = "2025-12-19T15:39:09.03Z" },
+    { url = "https://files.pythonhosted.org/packages/50/3a/af6dba69ed270a46aa60500da3b86c4d4333edd02acf8d9afd48801facca/hcloud-2.14.0-py3-none-any.whl", hash = "sha256:ba1cfeef1ae09601ec64964737d28e3e92abc5df2a98eface1db38f79dacff15", size = 111567, upload-time = "2026-01-08T13:53:51.869Z" },
 ]
 
 [[package]]
