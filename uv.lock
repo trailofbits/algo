@@ -306,16 +306,16 @@ wheels = [
 
 [[package]]
 name = "boto3"
-version = "1.42.27"
+version = "1.42.31"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "botocore" },
     { name = "jmespath" },
     { name = "s3transfer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8d/99/65569052c911160702ad371b0b08b751bb1df29deeef0c5c117528074c29/boto3-1.42.27.tar.gz", hash = "sha256:a8a53abb98ff1a24d9a88d9d8c0285bf02d23189666130456e8951ede2f7db98", size = 112765, upload-time = "2026-01-13T20:35:11.971Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a4/da/d81abc51bd35c2d2154f1caa0040843ada7df1689ea17d51c116c793b8f0/boto3-1.42.31.tar.gz", hash = "sha256:b2038fc5dbcd6746a16ada8d55fe73659b8cf95c7b6aeb63fe782e831485edaa", size = 112803, upload-time = "2026-01-20T21:04:45.292Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/44/9e/9554a8c1d7610ec8ea55bec0dac87ad894c83cada2ea2c05fc45f14d0cde/boto3-1.42.27-py3-none-any.whl", hash = "sha256:39dfec51aff3f9356e8c7331195f324cb498ec75b2601a902fc62aa127b8fd00", size = 140577, upload-time = "2026-01-13T20:35:09.35Z" },
+    { url = "https://files.pythonhosted.org/packages/fd/4d/2a2830424f11d575f7ca2abdff889138f212c7dd3f1dde2b2994a779a5ab/boto3-1.42.31-py3-none-any.whl", hash = "sha256:7f04b4cd7c375e4d88cc2cba3022c40805012ce8f57468b82cedb1bcd6b3a58a", size = 140572, upload-time = "2026-01-20T21:04:43.112Z" },
 ]
 
 [[package]]
@@ -661,15 +661,15 @@ wheels = [
 
 [[package]]
 name = "hcloud"
-version = "2.14.0"
+version = "2.15.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "python-dateutil" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/50/e8/62e274ae41e16042c51105f10666d794d4514a63a86988917675f4b81481/hcloud-2.14.0.tar.gz", hash = "sha256:04c6951d90647e1e0a615a839c1f890c90a14e04cfcbf965001d2ace5d21bd09", size = 153732, upload-time = "2026-01-08T13:53:53.25Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6f/a9/ecd060729d3d4db2820bb226cd247e45ff0607b71ac4f9dfa247a5c5c43c/hcloud-2.15.0.tar.gz", hash = "sha256:fd8e668deaec997a3feade5edd37be059a53e4cbc14fb006097667502ef7ed4d", size = 153903, upload-time = "2026-01-16T10:20:32.878Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/50/3a/af6dba69ed270a46aa60500da3b86c4d4333edd02acf8d9afd48801facca/hcloud-2.14.0-py3-none-any.whl", hash = "sha256:ba1cfeef1ae09601ec64964737d28e3e92abc5df2a98eface1db38f79dacff15", size = 111567, upload-time = "2026-01-08T13:53:51.869Z" },
+    { url = "https://files.pythonhosted.org/packages/2a/8e/db77671852393bb0c13004734e9486fc303e09764d1bac2d463f878adf65/hcloud-2.15.0-py3-none-any.whl", hash = "sha256:170ad5ae4344b53bb5926187cfea6df3b76e447d8b8f52dd9e0d1579632d076b", size = 111725, upload-time = "2026-01-16T10:20:31.463Z" },
 ]
 
 [[package]]
@@ -817,16 +817,16 @@ wheels = [
 
 [[package]]
 name = "linode-api4"
-version = "5.38.0"
+version = "5.39.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "deprecated" },
     { name = "polling" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6c/14/7755f000aa0d651729044e7c9daeae8a97d992fe787c67af3208b53ee370/linode_api4-5.38.0.tar.gz", hash = "sha256:879642b3f27de1457eab266036f6542ab63c58e0cbc1cb98c530dab3b7fc804d", size = 237942, upload-time = "2025-10-29T15:37:39.033Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/76/ba/eb9e1150b8b87a9b7c2f6ce7cca7fda05840067ef3f2fe1d5b39e382d094/linode_api4-5.39.0.tar.gz", hash = "sha256:55444c4234fa57e85688a5ff6957396851d461ea2a254df8d8308e7c48902383", size = 256240, upload-time = "2026-01-16T18:44:38.395Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/08/ec/3d8283c8205845655f4772dcfee06a2220739cfa6ed99aee5729ca787257/linode_api4-5.38.0-py3-none-any.whl", hash = "sha256:825dbed90b66b6383f30fc037654a2954ee6ea4f96a000b7ae28a006eda6b406", size = 140988, upload-time = "2025-10-29T15:37:37.602Z" },
+    { url = "https://files.pythonhosted.org/packages/e2/84/c914f5eeeefdeccfc9b4d1acab9e68f27f86f97478a655c59ef02a4ddfa4/linode_api4-5.39.0-py3-none-any.whl", hash = "sha256:57c5f125959c25f981ddbcbf6796cd1eb8d868947f0685b8131b93566bfb96af", size = 150177, upload-time = "2026-01-16T18:44:36.321Z" },
 ]
 
 [[package]]
@@ -971,7 +971,7 @@ wheels = [
 
 [[package]]
 name = "openstacksdk"
-version = "4.8.0"
+version = "4.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
@@ -989,21 +989,22 @@ dependencies = [
     { name = "requestsexceptions" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/46/24/1167097740136e302c74043c1c6feecf8d757b052d7b457960e0dc60fa03/openstacksdk-4.8.0.tar.gz", hash = "sha256:4dc038e1c17d893005f3a0a8951456afd9d148f3f65d448f94adcceb278d7f31", size = 1309981, upload-time = "2025-11-13T13:59:59.614Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/08/1c/26086b38956626cd391ba801d1d06b616568837b91d4a7f9f1d9b3920bd1/openstacksdk-4.9.0.tar.gz", hash = "sha256:b28459c7cb6405f9d6fc573689ea5c5e357424828f6c76f7b2b0d763c80fb6ea", size = 1316550, upload-time = "2026-01-19T10:45:11.629Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bc/45/87fa873f35abdf191d66d4821fe965f781e2d3e37e58883c6e23e95fa794/openstacksdk-4.8.0-py3-none-any.whl", hash = "sha256:7f7c438d418a4ee0c8737b1ac0859b3c1e8e21401677782415d21bce3324b9dd", size = 1849694, upload-time = "2025-11-13T13:59:57.634Z" },
+    { url = "https://files.pythonhosted.org/packages/21/4a/56ed51e9a683ecce73e8119f041517a267130753efec0135665d47ce5a56/openstacksdk-4.9.0-py3-none-any.whl", hash = "sha256:dddc786237af443af53921ed6ce7ed8cb96a34447d3c2f39942a296a8e4711f7", size = 1857101, upload-time = "2026-01-19T10:45:10.061Z" },
 ]
 
 [[package]]
 name = "os-service-types"
-version = "1.8.0"
+version = "1.8.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pbr" },
+    { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9d/e9/1725288a94496d7780cd1624d16b86b7ed596960595d5742f051c4b90df5/os_service_types-1.8.0.tar.gz", hash = "sha256:890ce74f132ca334c2b23f0025112b47c6926da6d28c2f75bcfc0a83dea3603e", size = 27279, upload-time = "2025-07-08T09:03:43.252Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/51/62/31e39aa8f2ac5bff0b061ce053f0610c9fe659e12aeca20bfb26d1665024/os_service_types-1.8.2.tar.gz", hash = "sha256:ab7648d7232849943196e1bb00a30e2e25e600fa3b57bb241d15b7f521b5b575", size = 27476, upload-time = "2025-11-21T13:55:47.726Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/77/ef/d24a7c6772d9ec554d12b97275ee5c8461c90dd73ccd1b364cf586018bb1/os_service_types-1.8.0-py3-none-any.whl", hash = "sha256:bc0418bf826de1639c7f54b2c752827ea9aa91cbde560d0b0bf6339d97270b3b", size = 24717, upload-time = "2025-07-08T09:03:42.457Z" },
+    { url = "https://files.pythonhosted.org/packages/29/26/0937af7b4383f1eba5bca789b8d191c0e09e59bb64962b18f4a14534ce41/os_service_types-1.8.2-py3-none-any.whl", hash = "sha256:f78890d71814deffabf0ed4358288ec2ced579bc4d0bb87a79ae806cbb4deb6e", size = 24876, upload-time = "2025-11-21T13:55:46.093Z" },
 ]
 
 [[package]]
