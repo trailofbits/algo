@@ -46,7 +46,7 @@ jobs:
             dnsmasq \
             qrencode \
             openssl \
-            linux-headers-$(uname -r) \
+            "linux-headers-$(uname -r)" \
             libxml2-utils \
             dnsutils
 
@@ -296,6 +296,6 @@ jobs:
           EOF
 
           # Test that config is readable
-          docker run --rm --entrypoint cat -v $(pwd)/test-data:/data algo:ci-test /data/config.cfg
+          docker run --rm --entrypoint cat -v "$(pwd)/test-data:/data" algo:ci-test /data/config.cfg
 
           echo "✓ Docker image built and basic tests passed"
