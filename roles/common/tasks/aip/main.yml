@@ -11,5 +11,5 @@
 
 - name: Verify SNAT IPv4 found
   assert:
-    that: snat_aipv4 | ansible.utils.ipv4
+    that: snat_aipv4 | trim is ansible.utils.ipv4_address
     msg: The SNAT IPv4 address not found. Cannot proceed with the alternative ingress ip.
