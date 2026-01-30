@@ -136,7 +136,7 @@ class TestCloudInitTemplate:
 
         # Verify proper formatting - first line should be Port directive
         lines = content.strip().split("\n")
-        assert lines[0].strip() == "Port 4160", f"First line should be 'Port 4160', got: {repr(lines[0])}"
+        assert lines[0].strip() == "Port 4160", f"First line should be 'Port 4160', got: {lines[0]!r}"
 
         print("✅ SSH configuration correct")
 
@@ -220,7 +220,7 @@ class TestCloudInitTemplate:
         for line in non_empty_lines:
             # Each line should start with exactly 6 spaces
             assert line.startswith("      ") and not line.startswith("       "), (
-                f"Line should have exactly 6 spaces indentation: {repr(line)}"
+                f"Line should have exactly 6 spaces indentation: {line!r}"
             )
 
         print("✅ Indentation is consistent")

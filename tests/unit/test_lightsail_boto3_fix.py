@@ -47,6 +47,8 @@ class TestLightsailBoto3Fix(unittest.TestCase):
                 "lightsail_region_facts",
                 os.path.join(os.path.dirname(__file__), "../../library/lightsail_region_facts.py"),
             )
+            assert spec is not None, "Failed to create module spec"
+            assert spec.loader is not None, "Module spec has no loader"
             module = importlib.util.module_from_spec(spec)
 
             # This should not raise an error
@@ -70,6 +72,8 @@ class TestLightsailBoto3Fix(unittest.TestCase):
                 "lightsail_region_facts",
                 os.path.join(os.path.dirname(__file__), "../../library/lightsail_region_facts.py"),
             )
+            assert spec is not None, "Failed to create module spec"
+            assert spec.loader is not None, "Module spec has no loader"
             module = importlib.util.module_from_spec(spec)
 
             # Mock AnsibleModule

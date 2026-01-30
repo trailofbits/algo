@@ -21,12 +21,12 @@ class TestBooleanVariables:
         """Ensure ipv6_support produces boolean, not string 'true'/'false'."""
         # Test with gateway defined (should be boolean True)
         template = "{{ ansible_default_ipv6['gateway'] is defined }}"
-        vars_with_gateway = {'ansible_default_ipv6': {'gateway': 'fe80::1'}}
+        vars_with_gateway = {"ansible_default_ipv6": {"gateway": "fe80::1"}}
         result = render_template(template, vars_with_gateway)
         assert result == "True"  # Jinja2 renders boolean True as string "True"
 
         # Test without gateway (should be boolean False)
-        vars_no_gateway = {'ansible_default_ipv6': {}}
+        vars_no_gateway = {"ansible_default_ipv6": {}}
         result = render_template(template, vars_no_gateway)
         assert result == "False"  # Jinja2 renders boolean False as string "False"
 
@@ -83,7 +83,7 @@ class TestBooleanVariables:
 
         # Simulate the boolean value in a conditional context
         # In Ansible 12, this would fail if it's a string "true"/"false"
-        vars_with_gateway = {'ansible_default_ipv6': {'gateway': 'fe80::1'}}
+        vars_with_gateway = {"ansible_default_ipv6": {"gateway": "fe80::1"}}
         ipv6_result = render_template(fixed_ipv6, vars_with_gateway)
 
         # The result should be "True" (boolean rendered), not "true" (string literal)
@@ -118,4 +118,3 @@ class TestBooleanVariables:
         fixed_algo = "{% if var is defined %}{{ var | bool }}{%- else %}{{ false }}{% endif %}"
         assert "{}false{}" not in fixed_algo.replace(" ", "")
         assert "{{ false }}" in fixed_algo
-

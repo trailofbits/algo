@@ -49,36 +49,36 @@ class TestComprehensiveBooleanScan:
 
         # Define directories to scan (Algo's actual code)
         algo_dirs = [
-            'roles',
-            'playbooks',
-            'library',
-            'files/cloud-init',  # Include cloud-init templates but not CloudFormation
+            "roles",
+            "playbooks",
+            "library",
+            "files/cloud-init",  # Include cloud-init templates but not CloudFormation
         ]
 
         # Add root-level YAML files
-        yaml_files.extend(root.glob('*.yml'))
-        yaml_files.extend(root.glob('*.yaml'))
+        yaml_files.extend(root.glob("*.yml"))
+        yaml_files.extend(root.glob("*.yaml"))
 
         # Add YAML files from Algo directories
         for dir_name in algo_dirs:
             dir_path = root / dir_name
             if dir_path.exists():
-                yaml_files.extend(dir_path.glob('**/*.yml'))
-                yaml_files.extend(dir_path.glob('**/*.yaml'))
+                yaml_files.extend(dir_path.glob("**/*.yml"))
+                yaml_files.extend(dir_path.glob("**/*.yaml"))
 
         # Exclude patterns
         excluded = [
-            '.venv',           # Virtual environment
-            '.env',            # Another virtual environment pattern
-            'venv',            # Yet another virtual environment
-            'test',            # Test files (but keep our own tests)
-            'molecule',        # Molecule test files
-            'site-packages',   # Python packages
-            'ansible_collections',  # External Ansible collections
-            'stack.yaml',      # CloudFormation templates (use string booleans by design)
-            'stack.yml',       # CloudFormation templates
-            '.git',            # Git directory
-            '__pycache__',     # Python cache
+            ".venv",  # Virtual environment
+            ".env",  # Another virtual environment pattern
+            "venv",  # Yet another virtual environment
+            "test",  # Test files (but keep our own tests)
+            "molecule",  # Molecule test files
+            "site-packages",  # Python packages
+            "ansible_collections",  # External Ansible collections
+            "stack.yaml",  # CloudFormation templates (use string booleans by design)
+            "stack.yml",  # CloudFormation templates
+            ".git",  # Git directory
+            "__pycache__",  # Python cache
         ]
 
         # Filter out excluded paths and CloudFormation templates
@@ -89,7 +89,7 @@ class TestComprehensiveBooleanScan:
             if any(exc in path_str for exc in excluded):
                 continue
             # Skip CloudFormation templates in files/ directories
-            if '/files/' in path_str and f.name in ['stack.yaml', 'stack.yml']:
+            if "/files/" in path_str and f.name in ["stack.yaml", "stack.yml"]:
                 continue
             filtered.append(f)
 
@@ -114,7 +114,7 @@ class TestComprehensiveBooleanScan:
         """Check for bare 'false' after else in Jinja expressions."""
         issues = []
         # Pattern for {%- else %}false{% (should be {{ false }})
-        pattern = re.compile(r'\{%-?\s*else\s*%\}(true|false)\{%')
+        pattern = re.compile(r"\{%-?\s*else\s*%\}(true|false)\{%")
 
         for yaml_file in self.get_yaml_files():
             with open(yaml_file) as f:
@@ -129,12 +129,12 @@ class TestComprehensiveBooleanScan:
     def test_when_conditions_use_booleans(self):
         """Verify 'when:' conditions that use our variables."""
         boolean_vars = [
-            'ipv6_support',
-            'algo_dns_adblocking',
-            'algo_ssh_tunneling',
-            'algo_ondemand_cellular',
-            'algo_ondemand_wifi',
-            'algo_store_pki'
+            "ipv6_support",
+            "algo_dns_adblocking",
+            "algo_ssh_tunneling",
+            "algo_ondemand_cellular",
+            "algo_ondemand_wifi",
+            "algo_store_pki",
         ]
 
         potential_issues = []
@@ -144,17 +144,18 @@ class TestComprehensiveBooleanScan:
                 lines = f.readlines()
 
             for i, line in enumerate(lines):
-                if 'when:' in line:
+                if "when:" in line:
                     for var in boolean_vars:
                         if var in line:
                             # Check if it's a simple condition (good) or comparing to string (bad)
-                            if f'{var} == "true"' in line or f'{var} == "false"' in line:
+                            if (
+                                f'{var} == "true"' in line
+                                or f'{var} == "false"' in line
+                                or f'{var} != "true"' in line
+                                or f'{var} != "false"' in line
+                            ):
                                 potential_issues.append(
-                                    f"{yaml_file.name}:{i+1}: Comparing {var} to string in when condition"
-                                )
-                            elif f'{var} != "true"' in line or f'{var} != "false"' in line:
-                                potential_issues.append(
-                                    f"{yaml_file.name}:{i+1}: Comparing {var} to string in when condition"
+                                    f"{yaml_file.name}:{i + 1}: Comparing {var} to string in when condition"
                                 )
 
         assert not potential_issues, "Found string comparisons in when conditions:\n" + "\n".join(potential_issues)
@@ -162,19 +163,19 @@ class TestComprehensiveBooleanScan:
     def test_template_files_boolean_usage(self):
         """Check Jinja2 template files for boolean usage."""
         root = Path(__file__).parent.parent.parent
-        template_files = list(root.glob('**/*.j2'))
+        template_files = list(root.glob("**/*.j2"))
 
         issues = []
 
         for template_file in template_files:
-            if '.venv' in str(template_file):
+            if ".venv" in str(template_file):
                 continue
 
             with open(template_file) as f:
                 content = f.read()
 
             # Check for conditionals using our boolean variables
-            if 'ipv6_support' in content:
+            if "ipv6_support" in content:
                 # Look for string comparisons
                 if 'ipv6_support == "true"' in content or 'ipv6_support == "false"' in content:
                     issues.append(f"{template_file.name}: Comparing ipv6_support to string")
@@ -192,7 +193,7 @@ class TestComprehensiveBooleanScan:
             root / "roles/common/tasks/iptables.yml",
             root / "server.yml",
             root / "users.yml",
-            root / "roles/dns/tasks/main.yml"
+            root / "roles/dns/tasks/main.yml",
         ]
 
         for test_file in test_files:
@@ -203,11 +204,11 @@ class TestComprehensiveBooleanScan:
                 content = f.read()
 
             # Find all when: conditions
-            when_lines = re.findall(r'when:\s*([^\n]+)', content)
+            when_lines = re.findall(r"when:\s*([^\n]+)", content)
 
             for when_line in when_lines:
                 # Check if it's using one of our boolean variables
-                if any(var in when_line for var in ['ipv6_support', 'algo_dns_adblocking', 'algo_ssh_tunneling']):
+                if any(var in when_line for var in ["ipv6_support", "algo_dns_adblocking", "algo_ssh_tunneling"]):
                     # Ensure it's not comparing to strings
                     assert '"true"' not in when_line, f"String comparison in {test_file.name}: {when_line}"
                     assert '"false"' not in when_line, f"String comparison in {test_file.name}: {when_line}"
@@ -226,22 +227,21 @@ class TestComprehensiveBooleanScan:
 
         # Known safe exceptions in Algo
         safe_patterns = [
-            'booleans_map',     # This maps string inputs to booleans
-            'test_',            # Test files may use different patterns
-            'molecule',         # Molecule tests
-            'ANSIBLE_',         # Environment variables are strings
-            'validate_certs',   # Some modules accept string booleans
-            'Default:',         # CloudFormation parameter defaults
+            "booleans_map",  # This maps string inputs to booleans
+            "test_",  # Test files may use different patterns
+            "molecule",  # Molecule tests
+            "ANSIBLE_",  # Environment variables are strings
+            "validate_certs",  # Some modules accept string booleans
+            "Default:",  # CloudFormation parameter defaults
         ]
 
         issues = []
 
         for yaml_file in self.get_yaml_files():
             # Skip files that aren't Ansible playbooks/tasks/vars
-            parts_to_check = ['tasks', 'vars', 'defaults', 'handlers', 'meta', 'playbooks']
-            main_files = ['main.yml', 'users.yml', 'server.yml', 'input.yml']
-            if not any(part in str(yaml_file) for part in parts_to_check) \
-               and yaml_file.name not in main_files:
+            parts_to_check = ["tasks", "vars", "defaults", "handlers", "meta", "playbooks"]
+            main_files = ["main.yml", "users.yml", "server.yml", "input.yml"]
+            if not any(part in str(yaml_file) for part in parts_to_check) and yaml_file.name not in main_files:
                 continue
 
             with open(yaml_file) as f:
@@ -250,7 +250,7 @@ class TestComprehensiveBooleanScan:
             for i, line in enumerate(lines):
                 # Skip comments and empty lines
                 stripped_line = line.strip()
-                if not stripped_line or stripped_line.startswith('#'):
+                if not stripped_line or stripped_line.startswith("#"):
                     continue
 
                 for pattern, description in problematic_patterns:
@@ -259,7 +259,7 @@ class TestComprehensiveBooleanScan:
                         if not any(safe in line for safe in safe_patterns):
                             # This is a real issue that would break Ansible 12
                             rel_path = yaml_file.relative_to(Path(__file__).parent.parent.parent)
-                            issues.append(f"{rel_path}:{i+1}: {description} - {stripped_line}")
+                            issues.append(f"{rel_path}:{i + 1}: {description} - {stripped_line}")
 
         # All Algo code should be fixed
         assert not issues, "Found boolean type issues that would break Ansible 12:\n" + "\n".join(issues[:10])
@@ -272,8 +272,8 @@ class TestComprehensiveBooleanScan:
             content = f.read()
 
         # Should use 'is defined', not string literals
-        assert 'is defined' in content, "facts.yml should use 'is defined'"
-        old_pattern = 'ipv6_support: "{% if ansible_default_ipv6[\'gateway\'] is defined %}'
+        assert "is defined" in content, "facts.yml should use 'is defined'"
+        old_pattern = "ipv6_support: \"{% if ansible_default_ipv6['gateway'] is defined %}"
         old_pattern += 'true{% else %}false{% endif %}"'
         assert old_pattern not in content, "facts.yml still has the old string boolean pattern"
 
@@ -283,8 +283,8 @@ class TestComprehensiveBooleanScan:
             content = f.read()
 
         # Count occurrences of the fix
-        assert content.count('{{ false }}') >= 5, "input.yml should have at least 5 instances of {{ false }}"
-        assert '{%- else %}false{% endif %}' not in content, "input.yml still has bare 'false'"
+        assert content.count("{{ false }}") >= 5, "input.yml should have at least 5 instances of {{ false }}"
+        assert "{%- else %}false{% endif %}" not in content, "input.yml still has bare 'false'"
 
     def test_templates_handle_booleans_correctly(self):
         """Test that template files handle boolean variables correctly."""
@@ -304,12 +304,9 @@ class TestComprehensiveBooleanScan:
 
             if var_name in content:
                 # Verify it's used in conditionals, not compared to strings
-                assert f'{var_name} == "true"' not in content, \
-                    f"{template_path} compares {var_name} to string 'true'"
-                assert f'{var_name} == "false"' not in content, \
-                    f"{template_path} compares {var_name} to string 'false'"
+                assert f'{var_name} == "true"' not in content, f"{template_path} compares {var_name} to string 'true'"
+                assert f'{var_name} == "false"' not in content, f"{template_path} compares {var_name} to string 'false'"
 
                 # It should be used directly in if statements or with | bool filter
-                if f'if {var_name}' in content or f'{var_name} |' in content:
+                if f"if {var_name}" in content or f"{var_name} |" in content:
                     pass  # Good - using it as a boolean
-

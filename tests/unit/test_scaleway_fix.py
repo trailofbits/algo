@@ -29,9 +29,9 @@ def test_scaleway_main_uses_project_parameter():
         content = f.read()
 
     # Should NOT use the broken scaleway_organization_info module
-    assert (
-        "scaleway_organization_info" not in content
-    ), "Still using broken scaleway_organization_info module (issue #14846)"
+    assert "scaleway_organization_info" not in content, (
+        "Still using broken scaleway_organization_info module (issue #14846)"
+    )
 
     # Should NOT use the broken scaleway_image_info module
     assert "scaleway_image_info" not in content, "Still using broken scaleway_image_info module"
@@ -64,9 +64,9 @@ def test_scaleway_prompts_collect_org_id():
     assert "algo_scaleway_org_id:" in content, "Missing algo_scaleway_org_id fact definition"
 
     # Should support SCW_DEFAULT_ORGANIZATION_ID env var
-    assert (
-        "SCW_DEFAULT_ORGANIZATION_ID" in content
-    ), "Missing support for SCW_DEFAULT_ORGANIZATION_ID environment variable"
+    assert "SCW_DEFAULT_ORGANIZATION_ID" in content, (
+        "Missing support for SCW_DEFAULT_ORGANIZATION_ID environment variable"
+    )
 
     # Should mention console.scaleway.com for finding the ID
     assert "console.scaleway.com" in content, "Missing instructions on where to find Organization ID"

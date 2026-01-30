@@ -25,10 +25,7 @@ def find_yaml_files() -> list[Path]:
 
     # Exclude test files and vendor directories
     excluded_dirs = {"venv", ".venv", "env", ".git", "__pycache__", ".pytest_cache"}
-    yaml_files = [
-        f for f in yaml_files
-        if not any(excluded in f.parts for excluded in excluded_dirs)
-    ]
+    yaml_files = [f for f in yaml_files if not any(excluded in f.parts for excluded in excluded_dirs)]
 
     return sorted(yaml_files)
 
@@ -52,16 +49,14 @@ def detect_double_templating(content: str) -> list[tuple[int, str]]:
     # This catches cases like value: "{{ '{{ var }}' }}"
     pattern3 = r"{{\s*['\"][^'\"]*{{[^}]*}}[^'\"]*['\"]"
 
-    lines = content.split('\n')
+    lines = content.split("\n")
     for i, line in enumerate(lines, 1):
         # Skip comments
-        stripped = line.split('#')[0]
+        stripped = line.split("#")[0]
         if not stripped.strip():
             continue
 
-        if (re.search(pattern1, stripped) or
-            re.search(pattern2, stripped) or
-            re.search(pattern3, stripped)):
+        if re.search(pattern1, stripped) or re.search(pattern2, stripped) or re.search(pattern3, stripped):
             issues.append((i, line))
 
     return issues

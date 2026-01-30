@@ -59,10 +59,31 @@ jobs:
       - name: Setup Algo environment
         uses: ./.github/actions/setup-algo
 
-      - name: Run ruff
+      - name: Run ruff check
         run: |
           # Fast Python linter
           uv run --with ruff ruff check .
+
+      - name: Run ruff format check
+        run: |
+          # Verify consistent Python formatting
+          uv run --with ruff ruff format --check .
+
+  python-types:
+    name: Python type checking
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98  # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Algo environment
+        uses: ./.github/actions/setup-algo
+
+      - name: Run ty check
+        run: |
+          # Type checking with ty
+          uv run --with ty ty check
 
   shellcheck:
     name: Shell script linting
@@ -125,3 +146,36 @@ jobs:
               Write-Host '✓ PSScriptAnalyzer check passed'
             }
           "
+
+  actionlint:
+    name: GitHub Actions linting
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98  # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install actionlint
+        run: |
+          curl -sL "https://github.com/rhysd/actionlint/releases/latest/download/actionlint_linux_amd64.tar.gz" | tar xz
+          sudo mv actionlint /usr/local/bin/
+
+      - name: Run actionlint
+        run: |
+          actionlint .github/workflows/
+
+  zizmor:
+    name: GitHub Actions security audit
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98  # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install zizmor
+        run: |
+          pip install zizmor
+
+      - name: Run zizmor
+        run: |
+          zizmor .github/workflows/

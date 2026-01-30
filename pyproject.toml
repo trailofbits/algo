@@ -56,28 +56,67 @@ line-length = 120
 
 [tool.ruff.lint]
 select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    "I",  # isort
-    "B",  # flake8-bugbear
-    "C4", # flake8-comprehensions
-    "UP", # pyupgrade
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+    "S",    # flake8-bandit (security)
+    "SIM",  # flake8-simplify
+    "RUF",  # Ruff-specific rules
+    "ERA",  # commented-out code detection
+    "PTH",  # pathlib recommendations
 ]
 ignore = [
-    "E501", # line too long (handled by formatter)
-    "B011", # assert False is acceptable in test code
+    "E501",   # line too long (handled by formatter)
+    "B011",   # assert False is acceptable in test code
+    "S101",   # assert is acceptable in test code
+    "S110",   # try-except-pass - used intentionally for optional checks
+    "S112",   # try-except-continue - used intentionally for skipping files
+    "S603",   # subprocess calls - needed for Ansible modules
+    "S607",   # partial path - needed for Ansible modules
+    "S701",   # jinja2 autoescape - templates are for config files, not HTML
+    "S602",   # shell=True in subprocess - needed for test mocks
+    "SIM102", # nested if - sometimes clearer than combined conditions
+    "SIM108", # ternary - sometimes if/else is more readable
+    "ERA001", # commented code - some comments explain regex patterns
+    "RUF005", # iterable unpacking - concatenation is clearer in some cases
+    "PTH100", # pathlib - existing code uses os.path
+    "PTH108", # pathlib - existing code uses os.unlink
+    "PTH110", # pathlib - existing code uses os.path.exists
+    "PTH118", # pathlib - existing code uses os.path.join
+    "PTH119", # pathlib - existing code uses os.path.basename
+    "PTH120", # pathlib - existing code uses os.path.dirname
+    "PTH123", # pathlib - existing code uses open()
+    "PTH201", # pathlib - existing code uses Path(".")
+    "PTH207", # pathlib - existing code uses glob
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "library/*" = ["ALL"]  # Exclude Ansible library modules (external code)
+"tests/*" = ["S101"]   # Allow assert in tests
+
+[tool.ty.environment]
+# Type checking configuration
+python-version = "3.11"
+
+[tool.ty.src]
+# Exclude library modules (Ansible-specific code)
+exclude = ["library/**"]
+
+[tool.ty.rules]
+# Ignore import warnings - ty doesn't see the venv when run via uv --with
+# These are checked by Python's import system at runtime
+unresolved-import = "ignore"
+unknown-argument = "warn"
 
 [tool.uv]
 # Centralized uv version management
 dev-dependencies = [
     "pytest>=8.0.0",
     "pytest-xdist>=3.0.0",  # Parallel test execution
-    "pre-commit>=4.0.0",   # Git hooks for code quality
     "ruff>=0.8.0",         # Python linter and formatter
     "yamllint>=1.35.0",    # YAML linter
     "ansible-lint>=24.0.0", # Ansible linter

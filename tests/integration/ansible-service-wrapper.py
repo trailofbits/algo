@@ -39,7 +39,7 @@ for svc in known_services:
 if service_found:
     # Return success
     result = {
-        "changed": True if state in ["started", "stopped", "restarted", "reloaded"] else False,
+        "changed": state in ["started", "stopped", "restarted", "reloaded"],
         "name": service_name,
         "state": state,
         "status": {

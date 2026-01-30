@@ -162,8 +162,8 @@ def test_strongswan_templates():
                 print(f"  ✅ {template_name} ({scenario})")
 
             except Exception as e:
-                errors.append(f"{template_path} ({scenario}): {str(e)}")
-                print(f"  ❌ {template_name} ({scenario}): {str(e)}")
+                errors.append(f"{template_path} ({scenario}): {e!s}")
+                print(f"  ❌ {template_name} ({scenario}): {e!s}")
 
     if errors:
         print(f"\n❌ StrongSwan template tests failed with {len(errors)} errors")
@@ -296,8 +296,8 @@ def test_mobileconfig_template():
             print(f"  ✅ Mobileconfig: {test_case['name']}")
 
         except Exception as e:
-            errors.append(f"Mobileconfig ({test_case['name']}): {str(e)}")
-            print(f"  ❌ Mobileconfig ({test_case['name']}): {str(e)}")
+            errors.append(f"Mobileconfig ({test_case['name']}): {e!s}")
+            print(f"  ❌ Mobileconfig ({test_case['name']}): {e!s}")
 
     if errors:
         return False
