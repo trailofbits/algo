@@ -37,16 +37,13 @@
 
     - name: Set facts about the regions
       set_fact:
-        gce_regions: >-
-          [{%- for region in gcp_compute_regions_info.resources | sort(attribute='name') -%}
-              '{{ region.name }}'{% if not loop.last %},{% endif %}
-          {%- endfor -%}]
+        gce_regions: "{{ gcp_compute_regions_info.resources | sort(attribute='name') }}"
 
     - name: Set facts about the default region
       set_fact:
         default_region: >-
-          {% for region in gce_regions -%}
-            {% if region == "us-east1" %}{{ loop.index }}{% endif %}
+          {% for r in gce_regions -%}
+            {% if r.name == "us-east1" %}{{ loop.index }}{% endif %}
           {%- endfor %}
 
     - pause:
@@ -54,7 +51,7 @@
           What region should the server be located in?
           (https://cloud.google.com/compute/docs/regions-zones/#locations)
             {% for r in gce_regions %}
-            {{ loop.index }}. {{ r }}
+            {{ loop.index }}. {{ r.name }}
             {% endfor %}
 
           Enter the number of your desired region
@@ -66,8 +63,8 @@
   set_fact:
     algo_region: >-
       {% if region is defined %}{{ region -}}
-      {% elif _gce_region.user_input %}{{ gce_regions[_gce_region.user_input | int - 1] -}}
-      {% else %}{{ gce_regions[default_region | int - 1] }}{% endif %}
+      {% elif _gce_region.user_input %}{{ gce_regions[_gce_region.user_input | int - 1].name -}}
+      {% else %}{{ gce_regions[default_region | int - 1].name }}{% endif %}
 
 - name: Get zones
   gcp_compute_location_info:
