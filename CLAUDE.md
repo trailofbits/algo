@@ -210,6 +210,15 @@ servers: "{{ servers | default([]) + [item.name] }}"
 loop: "{{ configs }}"
 ```
 
+**Use tests (not filters) for boolean checks:**
+```yaml
+# WRONG - filters return transformed data, not booleans
+that: my_ip | ansible.utils.ipv4
+
+# CORRECT - tests return native booleans
+that: my_ip is ansible.utils.ipv4_address
+```
+
 ## DNS Architecture
 
 Algo uses a randomly generated IP in 172.16.0.0/12 on the loopback interface (`local_service_ip`) for DNS. This provides consistency across WireGuard and IPsec but requires understanding systemd socket activation.
