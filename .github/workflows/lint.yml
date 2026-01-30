@@ -165,7 +165,7 @@ jobs:
 
       - name: Run actionlint
         run: |
-          actionlint .github/workflows/
+          actionlint .github/workflows/*.yml
 
   zizmor:
     name: GitHub Actions security audit

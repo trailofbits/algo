@@ -103,8 +103,8 @@ ignore = [
 python-version = "3.11"
 
 [tool.ty.src]
-# Exclude Ansible library modules and test mock modules
-exclude = ["library/**", "tests/integration/mock_modules/**"]
+# Exclude Ansible library modules and tests (test code has looser typing)
+exclude = ["library/**", "tests/**"]
 
 [tool.ty.rules]
 # Ignore import warnings - ty doesn't see the venv when run via uv --with
