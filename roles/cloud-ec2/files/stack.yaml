@@ -4,7 +4,7 @@ Description: 'Algo VPN stack'
 Parameters:
   InstanceTypeParameter:
     Type: String
-    Default: t2.micro
+    Default: t3.micro
   ImageIdParameter:
     Type: AWS::EC2::Image::Id
   WireGuardPort:

@@ -111,7 +111,7 @@ Possible options can be gathered via cli `aws ec2 describe-regions`
 Additional variables:
 
 - [encrypted](https://aws.amazon.com/blogs/aws/new-encrypted-ebs-boot-volumes/) - Encrypted EBS boot volume. Boolean (Default: true)
-- [size](https://aws.amazon.com/ec2/instance-types/) - EC2 instance type. String (Default: t2.micro)
+- [size](https://aws.amazon.com/ec2/instance-types/) - EC2 instance type. String (Default: t3.micro)
 - [image](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/describe-images.html) - AMI `describe-images` search parameters to find the OS for the hosted image. Each OS and architecture has a unique AMI-ID. The OS owner, for example, [Ubuntu](https://cloud-images.ubuntu.com/locator/ec2/), updates these images often. If parameters below result in multiple results, the most recent AMI-ID is chosen
 
    ```
