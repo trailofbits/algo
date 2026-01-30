@@ -155,7 +155,7 @@ def validate_jinja2_expression(expression, context_vars=None):
         error_str = str(e).lower()
         if any(ignore in error_str for ignore in ["undefined", "has no attribute", "no filter"]):
             return True, None  # These are runtime issues, not syntax issues
-        return False, f"Error: {str(e)}"
+        return False, f"Error: {e!s}"
 
 
 def get_test_variables():

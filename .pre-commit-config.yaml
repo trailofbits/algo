@@ -1,14 +1,13 @@
-# See https://pre-commit.com for more information
+# See https://prek.j178.dev for more information
 ---
 # Apply to all files without committing:
-#   pre-commit run --all-files
+#   prek run --all-files
 # Update this file:
-#   pre-commit autoupdate
+#   prek auto-update
 
 repos:
-  # General file checks
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+  # Use prek built-in hooks (faster, Rust-native)
+  - repo: builtin
     hooks:
       - id: check-yaml
         args: [--allow-multiple-documents]
@@ -23,7 +22,7 @@ repos:
 
   # Python linting with ruff (fast, replaces many tools)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.6
+    rev: v0.14.14
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -31,7 +30,7 @@ repos:
 
   # YAML linting
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.35.1
+    rev: v1.38.0
     hooks:
       - id: yamllint
         args: [-c=.yamllint]
@@ -39,7 +38,7 @@ repos:
 
   # Shell script linting
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.10.0.1
+    rev: v0.11.0.1
     hooks:
       - id: shellcheck
         exclude: '.git/.*'
@@ -47,6 +46,13 @@ repos:
   # Local hooks that use the project's installed tools
   - repo: local
     hooks:
+      - id: ty-check
+        name: Python type check
+        entry: bash -c 'uv run --with ty ty check'
+        language: system
+        types: [python]
+        pass_filenames: false
+
       - id: ansible-lint
         name: Ansible-lint
         entry: bash -c 'uv run ansible-lint --force-color || echo "Ansible-lint had issues - check output"'
@@ -63,9 +69,14 @@ repos:
         files: 'main\.yml|server\.yml|users\.yml'
         pass_filenames: false
 
-# Configuration for the pre-commit tool itself
-default_language_version:
-  python: python3.11
+      - id: actionlint
+        name: GitHub Actions lint
+        entry: bash -c 'command -v actionlint >/dev/null && actionlint .github/workflows/ || echo "actionlint not installed - skipping"'
+        language: system
+        files: '^\.github/workflows/.*\.yml$'
+        pass_filenames: false
+
+# Configuration for prek
 
 # Files to exclude globally
 exclude: |

@@ -53,7 +53,7 @@ jobs:
                 --label "test-effectiveness,maintenance"
             else
               # Update existing issue
-              gh issue comment $existing --body-file .metrics/test-effectiveness-report.md
+              gh issue comment "$existing" --body-file .metrics/test-effectiveness-report.md
             fi
           fi
 

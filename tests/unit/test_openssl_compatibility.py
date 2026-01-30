@@ -288,7 +288,7 @@ def validate_client_certificates_real(cert_files):
         # Check if this looks like a client cert vs server cert
         cn = certificate.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
         # Server certs typically have IP addresses or domain names as CN
-        if not (cn.replace(".", "").isdigit() or "." in cn and len(cn.split(".")) == 4):
+        if not (cn.replace(".", "").isdigit() or ("." in cn and len(cn.split(".")) == 4)):
             client_certs.append((cert_path, certificate))
 
     if not client_certs:
@@ -386,7 +386,7 @@ def validate_pkcs12_files_real(cert_files):
         print("⚠ No PKCS#12 files found")
         return
 
-    major, minor = test_openssl_version_detection()
+    major, _minor = test_openssl_version_detection()
 
     for p12_file in cert_files["p12_files"]:
         assert os.path.exists(p12_file), f"PKCS#12 file should exist: {p12_file}"

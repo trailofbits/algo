@@ -1,0 +1,25 @@
+---
+name: Security
+
+'on':
+  push:
+    branches: [main, master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pip-audit:
+    name: Python dependency audit
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98  # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Algo environment
+        uses: ./.github/actions/setup-algo
+
+      - name: Run pip-audit
+        run: uv run --with pip-audit pip-audit

@@ -268,7 +268,7 @@ If you've read all the documentation and have further questions, [create a new d
 
 See our [Development Guide](docs/DEVELOPMENT.md) for information on:
 * Setting up your development environment
-* Using pre-commit hooks for code quality
+* Using prek hooks for code quality
 * Running tests and linters
 * Contributing code via pull requests
 

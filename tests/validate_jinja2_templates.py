@@ -172,7 +172,7 @@ def validate_template_syntax(template_path: Path) -> tuple[bool, list[str]]:
     except UnicodeDecodeError:
         errors.append(f"{template_path}: Unable to decode file (not UTF-8)")
     except Exception as e:
-        errors.append(f"{template_path}: Error: {str(e)}")
+        errors.append(f"{template_path}: Error: {e!s}")
 
     return len(errors) == 0, errors
 
