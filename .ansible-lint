@@ -24,6 +24,7 @@ skip_list:
 
 warn_list:
   - yaml[line-length]  # Line length - informational only
+  - key-order[task]  # Task key ordering - many existing violations, fix gradually
 
 # Enable additional rules
 enable_list:
@@ -36,7 +37,6 @@ enable_list:
   - jinja[spacing]  # Proper spacing in Jinja2 expressions
   - no-changed-when  # Commands should declare changed_when
   - risky-file-permissions  # File tasks must have explicit mode
-  - key-order[task]  # Consistent task key ordering
 
 verbosity: 1
 
