@@ -16,7 +16,7 @@ The most cost-effective option for new AWS customers is the [AWS Free Tier](http
 - 100 GB of outbound data transfer per month
 - 30 GB of cloud storage
 
-The Free Tier is available for 12 months from account creation. Some regions like Middle East (Bahrain) and EU (Stockholm) don't offer t2.micro instances, but t3.micro is available as an alternative.
+The Free Tier is available for 12 months from account creation. Some regions like Middle East (Bahrain), EU (Stockholm), and Israel (il-central-1) don't offer t2.micro instances, but t3.micro is available as an alternative.
 
 Note that your Algo instance will continue working if you exceed bandwidth limits - you'll just start accruing standard charges on your AWS account.
 
