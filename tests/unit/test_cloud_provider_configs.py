@@ -1,95 +1,86 @@
 #!/usr/bin/env python3
 """
-Test cloud provider instance type configurations
-Focused on validating that configured instance types are current/valid
-Based on issues #14730 - Hetzner changed from cx11 to cx22
+Test cloud provider instance type configurations.
+
+Validates config.cfg against known-deprecated instance types that will fail
+at deployment time. Based on issue #14730 (Hetzner cx->cpx migration).
+
+Why not regex format validation? Providers constantly add new instance families
+(AWS m7.*, g5.*, etc.). Regex patterns would break on legitimate new values.
+Instead, we only check for KNOWN-BAD values that are definitively deprecated.
 """
 
-import sys
+from pathlib import Path
+
+import yaml
+
+# Only values that are KNOWN to fail - update when providers deprecate more
+DEPRECATED_VALUES = {
+    # Intel CX series removed Sept 2024 - AMD CPX series still available
+    # https://docs.hetzner.com/cloud/servers/deprecated-plans/
+    "hetzner": {"server_type": ["cx11", "cx21", "cx31", "cx41", "cx51"]},
+    # Old naming scheme deprecated ~2018, use s-*vcpu-* format
+    "digitalocean": {"size": ["512mb", "1gb", "2gb", "4gb", "8gb", "16gb"]},
+    # Previous gen, unavailable in VPC after EC2-Classic retirement
+    # https://aws.amazon.com/ec2/previous-generation/
+    "ec2": {"size": ["t1.micro", "m1.small", "m1.medium", "m1.large"]},
+}
+
+REQUIRED_FIELDS = {
+    "ec2": ["size"],
+    "digitalocean": ["size", "image"],
+    "hetzner": ["server_type", "image"],
+    "vultr": ["size", "os"],
+    "linode": ["type", "image"],
+    "gce": ["size", "image"],
+    "azure": ["size"],
+    "lightsail": ["size", "image"],
+    "scaleway": ["size", "image"],
+}
 
 
-def test_hetzner_server_types():
-    """Test Hetzner server type configurations (issue #14730)"""
-    # Hetzner deprecated cx11 and cpx11 - smallest is now cx22
-    deprecated_types = ["cx11", "cpx11"]
-    current_types = ["cx22", "cpx22", "cx32", "cpx32", "cx42", "cpx42"]
-
-    # Test that we're not using deprecated types in any configs
-    test_config = {
-        "cloud_providers": {
-            "hetzner": {
-                "size": "cx22",  # Should be cx22, not cx11
-                "image": "ubuntu-22.04",
-                "location": "hel1",
-            }
-        }
-    }
-
-    hetzner = test_config["cloud_providers"]["hetzner"]
-    assert hetzner["size"] not in deprecated_types, f"Using deprecated Hetzner type: {hetzner['size']}"
-    assert hetzner["size"] in current_types, f"Unknown Hetzner type: {hetzner['size']}"
-
-    print("✓ Hetzner server types test passed")
+def load_config():
+    """Load config.cfg from the repository root."""
+    config_path = Path(__file__).parents[2] / "config.cfg"
+    return yaml.safe_load(config_path.read_text())
 
 
-def test_digitalocean_instance_types():
-    """Test DigitalOcean droplet size naming"""
-    # DigitalOcean uses format like s-1vcpu-1gb
-    valid_sizes = ["s-1vcpu-1gb", "s-2vcpu-2gb", "s-2vcpu-4gb", "s-4vcpu-8gb"]
-    deprecated_sizes = ["512mb", "1gb", "2gb"]  # Old naming scheme
+def test_no_deprecated_instance_types():
+    """Catch deprecated instance types before deployment fails."""
+    providers = load_config().get("cloud_providers", {})
 
-    test_size = "s-2vcpu-2gb"
-    assert test_size in valid_sizes, f"Invalid DO size: {test_size}"
-    assert test_size not in deprecated_sizes, f"Using deprecated DO size: {test_size}"
-
-    print("✓ DigitalOcean instance types test passed")
-
-
-def test_aws_instance_types():
-    """Test AWS EC2 instance type naming"""
-    # Common valid instance types
-    valid_types = ["t2.micro", "t3.micro", "t3.small", "t3.medium", "m5.large"]
-    deprecated_types = ["t1.micro", "m1.small"]  # Very old types
-
-    test_type = "t3.micro"
-    assert test_type in valid_types, f"Unknown EC2 type: {test_type}"
-    assert test_type not in deprecated_types, f"Using deprecated EC2 type: {test_type}"
-
-    print("✓ AWS instance types test passed")
+    for provider, fields in DEPRECATED_VALUES.items():
+        if provider not in providers:
+            continue
+        for field, deprecated in fields.items():
+            value = providers[provider].get(field)
+            assert value not in deprecated, f"{provider}.{field}='{value}' is deprecated and will fail"
 
 
-def test_vultr_instance_types():
-    """Test Vultr instance type naming"""
-    # Vultr uses format like vc2-1c-1gb
-    test_type = "vc2-1c-1gb"
-    assert any(test_type.startswith(prefix) for prefix in ["vc2-", "vhf-", "vhp-"]), (
-        f"Invalid Vultr type format: {test_type}"
-    )
+def test_required_fields_present():
+    """Ensure critical fields aren't empty."""
+    providers = load_config().get("cloud_providers", {})
 
-    print("✓ Vultr instance types test passed")
+    for provider, fields in REQUIRED_FIELDS.items():
+        if provider not in providers:
+            continue
+        for field in fields:
+            value = providers[provider].get(field)
+            # Skip nested dicts (like ec2.image which has subfields)
+            if isinstance(value, dict):
+                continue
+            assert value, f"{provider}.{field} is empty or missing"
 
 
-if __name__ == "__main__":
-    tests = [
-        test_hetzner_server_types,
-        test_digitalocean_instance_types,
-        test_aws_instance_types,
-        test_vultr_instance_types,
-    ]
+def test_no_malformed_values():
+    """Basic sanity - no control chars, reasonable length."""
+    providers = load_config().get("cloud_providers", {})
 
-    failed = 0
-    for test in tests:
-        try:
-            test()
-        except AssertionError as e:
-            print(f"✗ {test.__name__} failed: {e}")
-            failed += 1
-        except Exception as e:
-            print(f"✗ {test.__name__} error: {e}")
-            failed += 1
-
-    if failed > 0:
-        print(f"\n{failed} tests failed")
-        sys.exit(1)
-    else:
-        print(f"\nAll {len(tests)} tests passed!")
+    for provider, settings in providers.items():
+        if not isinstance(settings, dict):
+            continue
+        for field, value in settings.items():
+            if not isinstance(value, str):
+                continue
+            assert "\n" not in value, f"{provider}.{field} contains newline"
+            assert len(value) <= 128, f"{provider}.{field} too long ({len(value)} chars)"
