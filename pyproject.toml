@@ -46,7 +46,6 @@ openstack = [
 ]
 cloudstack = [
     "cs>=3.0.0",
-    "sshpubkeys>=3.3.1",
 ]
 
 [tool.ruff]
