@@ -108,6 +108,9 @@ def test_critical_templates():
         "roles/dns/templates/dnsmasq.conf.j2",
         "roles/common/templates/rules.v4.j2",
         "roles/common/templates/rules.v6.j2",
+        "roles/xray/templates/config.json.j2",
+        "roles/xray/templates/client-config.json.j2",
+        "roles/xray/templates/vless-link.txt.j2",
     ]
 
     test_vars = get_test_variables()
@@ -134,6 +137,11 @@ def test_critical_templates():
             # With modern loop syntax, item is the username string directly
             if "client" in template_name:
                 test_vars["item"] = "test-user"
+
+            # Add xray-specific context
+            if "xray" in template_path or "vless" in template_name:
+                test_vars["item"] = "alice"
+                test_vars["user_uuid"] = test_vars.get("xray_user_uuids", {}).get("alice", "test-uuid")
 
             # Try to render
             output = template.render(**test_vars)
