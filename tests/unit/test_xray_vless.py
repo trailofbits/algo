@@ -273,6 +273,38 @@ class TestXrayIptables:
         # Should NOT have VLESS-specific rules
         assert "VLESS" not in result
 
+    def test_iptables_xray_only_mode(self):
+        """Test that iptables work when only xray is enabled (no WireGuard/IPsec).
+
+        This is a regression test for the bug where empty ports/subnets lists
+        would generate invalid iptables rules like '--dports -j ACCEPT'.
+        """
+        template_dir = Path(__file__).parent.parent.parent / "roles" / "common" / "templates"
+        env = Environment(loader=FileSystemLoader(str(template_dir)))
+        template = env.get_template("rules.v4.j2")
+
+        test_vars = load_test_variables()
+        # Only xray enabled
+        test_vars["xray_enabled"] = True
+        test_vars["wireguard_enabled"] = False
+        test_vars["ipsec_enabled"] = False
+
+        result = template.render(**test_vars)
+
+        # Should NOT have empty --dports (would cause 'invalid port/service' error)
+        assert "--dports  -j" not in result
+        assert "--dports -j" not in result
+
+        # Should NOT have rules with empty source (-s)
+        assert "-s  -d" not in result
+        assert "-s -d" not in result
+
+        # Should still have xray rule
+        assert f"--dport {test_vars['xray_port']}" in result
+
+        # Should still have SSH rule
+        assert f"--dport {test_vars['ansible_ssh_port']}" in result
+
 
 class TestXrayConfigValidation:
     """Tests for xray configuration validation."""
