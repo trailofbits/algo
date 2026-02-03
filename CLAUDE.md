@@ -11,7 +11,7 @@ Algo is an Ansible-based tool that sets up a personal VPN in the cloud. It's des
 - **Privacy-preserving**: No logging, minimal data retention
 
 ### Core Technologies
-- **VPN Protocols**: WireGuard (preferred) and IPsec/IKEv2
+- **VPN Protocols**: WireGuard (preferred), IPsec/IKEv2, VLESS+Reality (stealth/anti-censorship)
 - **Configuration Management**: Ansible (v12+)
 - **Languages**: Python, YAML, Shell, Jinja2 templates
 - **Supported Providers**: AWS, Azure, DigitalOcean, GCP, Vultr, Hetzner, local deployment
@@ -40,6 +40,7 @@ algo/
 │   ├── common/            # Base system configuration, firewall, hardening
 │   ├── wireguard/         # WireGuard VPN setup
 │   ├── strongswan/        # IPsec/IKEv2 setup
+│   ├── xray/              # VLESS+Reality stealth VPN (xray-core)
 │   ├── dns/               # DNS configuration (dnscrypt-proxy)
 │   └── cloud-*/           # Cloud provider specific roles
 ├── library/               # Custom Ansible modules
@@ -378,7 +379,38 @@ ansible-playbook main.yml -vvv
 
 ## Platform Support
 
-- **Primary OS**: Ubuntu 22.04/24.04 LTS
-- **Secondary**: Debian 11/12
+- **Primary OS**: Ubuntu 24.04 LTS
+- **Secondary**: Ubuntu 22.04, Debian 11/12
 - **Architectures**: x86_64 and ARM64
 - **Testing tip**: DigitalOcean droplets have both public and private IPs on eth0, making them good test cases for multi-IP NAT scenarios
+
+## VLESS+Reality (Stealth VPN)
+
+The `xray` role provides censorship-resistant VPN using VLESS protocol with XTLS-Reality transport:
+
+### Why Reality?
+- Traffic is indistinguishable from regular HTTPS to a legitimate website
+- No TLS certificate needed (uses target site's real certificate)
+- Cannot be detected by active probing
+- Proven effective in China, Russia, Iran
+
+### Configuration
+```yaml
+# config.cfg
+xray_enabled: true
+xray_port: 443
+xray_reality_dest: "www.microsoft.com:443"  # Site to mimic
+xray_reality_sni: "www.microsoft.com"
+```
+
+### Client Configuration
+Generated files in `configs/<server_ip>/xray/`:
+- `<user>.json` - Full xray client config
+- `<user>.txt` - VLESS share link
+- `<user>.png` - QR code for mobile apps
+
+### Recommended Clients
+- **iOS/macOS**: Shadowrocket, Streisand
+- **Android**: v2rayNG, NekoBox
+- **Windows**: v2rayN, Nekoray
+- **Linux**: v2rayA, Nekoray

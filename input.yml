@@ -54,6 +54,37 @@
             - server_name is undefined
             - algo_provider != "local"
 
+        - name: VPN protocols prompt
+          pause:
+            prompt: |
+              Which VPN protocols do you want to enable?
+                1. XRAY (VLESS+Reality) - stealth, undetectable by DPI [recommended]
+                2. WireGuard - fast, but easily blocked
+                3. IPsec/IKEv2 - native on Apple devices
+                4. All protocols
+                5. XRAY + WireGuard
+                6. XRAY + IPsec
+                7. WireGuard + IPsec
+
+              Enter the number of your choice
+              [1]
+          register: _vpn_protocols
+          when: vpn_protocols is undefined
+
+        - name: Set VPN protocol facts
+          set_fact:
+            _vpn_choice: "{{ vpn_protocols | default(_vpn_protocols.user_input | default('1') | trim) | string | trim }}"
+
+        - name: Set protocol flags based on choice
+          set_fact:
+            xray_enabled: "{{ _vpn_choice in ['1', '4', '5', '6'] }}"
+            wireguard_enabled: "{{ _vpn_choice in ['2', '4', '5', '7'] }}"
+            ipsec_enabled: "{{ _vpn_choice in ['3', '4', '6', '7'] }}"
+
+        - name: Debug protocol selection
+          debug:
+            msg: "Choice={{ _vpn_choice }} -> xray={{ xray_enabled }}, wg={{ wireguard_enabled }}, ipsec={{ ipsec_enabled }}"
+
         - name: Cellular On Demand prompt
           pause:
             prompt: |
@@ -88,7 +119,7 @@
           register: _store_pki
           when:
             - store_pki is undefined
-            - ipsec_enabled
+            - ipsec_enabled | bool
 
         - name: DNS adblocking prompt
           pause:
@@ -125,6 +156,6 @@
             algo_ssh_tunneling: >-
               {% if ssh_tunneling is defined %}{{ ssh_tunneling | bool }}{%- elif _ssh_tunneling.user_input is defined %}{{ booleans_map[_ssh_tunneling.user_input] | default(defaults['ssh_tunneling']) }}{%- else %}{{ false }}{% endif %}
             algo_store_pki: >-
-              {% if ipsec_enabled %}{%- if store_pki is defined %}{{ store_pki | bool }}{%- elif _store_pki.user_input is defined %}{{ booleans_map[_store_pki.user_input] | default(defaults['store_pki']) }}{%- else %}{{ false }}{% endif %}{% endif %}
+              {% if ipsec_enabled %}{%- if store_pki is defined %}{{ store_pki | bool }}{%- elif _store_pki.user_input is defined %}{{ booleans_map[_store_pki.user_input] | default(defaults['store_pki']) }}{%- else %}{{ false }}{% endif %}{% else %}{{ false }}{% endif %}
       rescue:
         - include_tasks: playbooks/rescue.yml

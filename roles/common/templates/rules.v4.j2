@@ -70,8 +70,14 @@ COMMIT
 -A INPUT -p ah -j ACCEPT
 # rate limit ICMP traffic per source
 -A INPUT -p icmp --icmp-type echo-request -m hashlimit --hashlimit-upto 5/s --hashlimit-mode srcip --hashlimit-srcmask 32 --hashlimit-name icmp-echo-drop -j ACCEPT
-# Accept IPSEC/WireGuard traffic to ports {{ subnets | join(',') }}
+{% if ports %}
+# Accept IPSEC/WireGuard traffic to ports {{ ports | join(',') }}
 -A INPUT -p udp -m multiport --dports {{ ports | join(',') }} -j ACCEPT
+{% endif %}
+{% if xray_enabled | default(false) %}
+# Accept VLESS/Reality traffic (stealth VPN)
+-A INPUT -p tcp --dport {{ xray_port }} -m conntrack --ctstate NEW -j ACCEPT
+{% endif %}
 # Allow new traffic to port {{ ansible_ssh_port }} (SSH)
 -A INPUT -p tcp --dport {{ ansible_ssh_port }} -m conntrack --ctstate NEW -j ACCEPT
 
@@ -85,6 +91,7 @@ COMMIT
 # DUMMY interfaces are the proper way to install IPs without assigning them any
 # particular virtual (tun,tap,...) or physical (ethernet) interface.
 
+{% if subnets %}
 # Accept DNS traffic to the local DNS resolver from VPN clients only
 -A INPUT -s {{ subnets | join(',') }} -d {{ local_service_ip }} -p udp --dport 53 -j ACCEPT
 
@@ -97,6 +104,7 @@ COMMIT
 -A FORWARD -s {{ subnets | join(',') }} -d 169.254.0.0/16 -j DROP
 # Drop traffic to the link-local network from SSH tunnels
 -A OUTPUT -d 169.254.0.0/16 -m owner --gid-owner 15000 -j DROP
+{% endif %}
 
 # Forward any packet that's part of an established connection
 -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT

@@ -1,0 +1,93 @@
+{
+  "log": {
+    "loglevel": "warning",
+    "access": "{{ xray_log_path }}/access.log",
+    "error": "{{ xray_log_path }}/error.log"
+  },
+  "inbounds": [
+    {
+      "tag": "vless-reality",
+      "listen": "{{ xray_listen_addr }}",
+      "port": {{ xray_port }},
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+{% for user in xray_users %}
+{% if user in users %}
+          {
+            "id": "{{ xray_user_uuids[user] }}",
+            "flow": "{{ xray_flow }}",
+            "email": "{{ user }}@{{ algo_server_name }}"
+          }{% if not loop.last %},{% endif %}
+
+{% endif %}
+{% endfor %}
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "realitySettings": {
+          "show": false,
+          "dest": "{{ xray_reality_dest }}",
+          "xver": 0,
+          "serverNames": [
+            "{{ xray_reality_sni }}"
+          ],
+          "privateKey": "{{ xray_reality_private_key }}",
+          "shortIds": [
+            "{{ xray_reality_short_id }}"
+          ]
+        }
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ]
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "direct",
+      "protocol": "freedom",
+      "settings": {}
+    },
+    {
+      "tag": "block",
+      "protocol": "blackhole",
+      "settings": {}
+    }
+  ],
+  "routing": {
+    "domainStrategy": "AsIs",
+    "rules": [
+      {
+        "type": "field",
+        "ip": [
+          "geoip:private"
+        ],
+        "outboundTag": "block"
+      }
+    ]
+  },
+  "policy": {
+    "levels": {
+      "0": {
+        "handshake": 4,
+        "connIdle": 300,
+        "uplinkOnly": 2,
+        "downlinkOnly": 5,
+        "bufferSize": 4
+      }
+    },
+    "system": {
+      "statsInboundUplink": false,
+      "statsInboundDownlink": false
+    }
+  }
+}

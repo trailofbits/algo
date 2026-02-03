@@ -1,0 +1,1 @@
+cd ~ && git clone https://github.com/trailofbits/algo.git && apt update && cd ./algo && apt install -y --no-install-recommends python3-virtualenv && python3 -m virtualenv --python="$(command -v python3)" .env && source .env/bin/activate && python3 -m pip install -U pip virtualenv && python3 -m pip install -r requirements.txt && ./algo

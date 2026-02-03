@@ -1,0 +1,12 @@
+---
+- name: restart xray
+  service:
+    name: "{{ xray_service_name }}"
+    state: restarted
+  when: ansible_connection != 'local' or xray_service_name in ansible_facts.services
+
+- name: reload xray
+  service:
+    name: "{{ xray_service_name }}"
+    state: reloaded
+  when: ansible_connection != 'local' or xray_service_name in ansible_facts.services

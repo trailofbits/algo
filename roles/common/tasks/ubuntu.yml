@@ -103,6 +103,27 @@
 
 - meta: flush_handlers
 
+- name: Ensure local service IP is configured on loopback
+  command: ip addr add {{ local_service_ip }}/32 dev lo
+  register: lo_ipv4_result
+  changed_when: lo_ipv4_result.rc == 0
+  failed_when: false
+
+- name: Ensure local service IPv6 is configured on loopback
+  command: ip addr add {{ local_service_ipv6 }}/128 dev lo
+  register: lo_ipv6_result
+  changed_when: lo_ipv6_result.rc == 0
+  failed_when: false
+  when: ipv6_support
+
+- name: Wait for local service IP to be active
+  command: ip addr show dev lo
+  register: lo_addr_check
+  until: local_service_ip in lo_addr_check.stdout
+  retries: 10
+  delay: 1
+  changed_when: false
+
 - name: Check apparmor support
   command: apparmor_status
   failed_when: false
@@ -181,4 +202,11 @@
   tags: iptables
 
 - include_tasks: iptables.yml
+  tags: iptables
+
+- name: Enable and start netfilter-persistent
+  systemd:
+    name: netfilter-persistent
+    state: started
+    enabled: true
   tags: iptables

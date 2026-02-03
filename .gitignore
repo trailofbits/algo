@@ -1,13 +1,20 @@
 *.retry
 .idea/
 configs/*
+~config.cfg
+config.cfg.*
 inventory_users
 *.kate-swp
-.env/
-.venv/
 .DS_Store
 .vagrant
 .ansible/
+algo.egg-info/
+.context/
+
+# Python
+.env/
+.venv/
+bin/
+lib/
 __pycache__/
 *.pyc
-algo.egg-info/

@@ -22,6 +22,9 @@
     IP_subject_alt_name: "{{ IP_subject_alt_name }}"
     alternative_ingress_ip: "{{ alternative_ingress_ip | default(omit) }}"
     cloudinit: "{{ cloudinit | default(false) }}"
+    xray_enabled: "{{ xray_enabled }}"
+    wireguard_enabled: "{{ wireguard_enabled }}"
+    ipsec_enabled: "{{ ipsec_enabled }}"
 
 - name: Additional variables for the server
   add_host:

@@ -1,0 +1,99 @@
+---
+- name: Check if Reality keypair exists
+  stat:
+    path: "{{ xray_pki_path }}/reality_private.key"
+  register: reality_keypair
+
+- name: Generate Reality x25519 keypair
+  when: not reality_keypair.stat.exists
+  block:
+    - name: Generate keypair using xray on remote host
+      command: "{{ xray_bin_path }} x25519"
+      register: xray_x25519_output
+      delegate_to: "{{ inventory_hostname }}"
+      become: true
+      changed_when: true
+
+    - name: Parse private key
+      set_fact:
+        xray_reality_private_key: "{{ xray_x25519_output.stdout_lines[0] | regex_replace('^PrivateKey: ', '') }}"
+
+    - name: Parse public key
+      set_fact:
+        xray_reality_public_key: "{{ xray_x25519_output.stdout_lines[1] | regex_replace('^Password: ', '') }}"
+
+    - name: Generate short ID
+      set_fact:
+        xray_reality_short_id: "{{ lookup('password', '/dev/null chars=hexdigits length=' ~ xray_short_id_length) | lower }}"
+
+    - name: Save Reality private key
+      copy:
+        content: "{{ xray_reality_private_key }}"
+        dest: "{{ xray_pki_path }}/reality_private.key"
+        mode: "0600"
+
+    - name: Save Reality public key
+      copy:
+        content: "{{ xray_reality_public_key }}"
+        dest: "{{ xray_pki_path }}/reality_public.key"
+        mode: "0644"
+
+    - name: Save Reality short ID
+      copy:
+        content: "{{ xray_reality_short_id }}"
+        dest: "{{ xray_pki_path }}/reality_short_id"
+        mode: "0644"
+
+- name: Load existing Reality keys
+  when: reality_keypair.stat.exists
+  block:
+    - name: Load Reality private key
+      set_fact:
+        xray_reality_private_key: "{{ lookup('file', xray_pki_path + '/reality_private.key') }}"
+
+    - name: Load Reality public key
+      set_fact:
+        xray_reality_public_key: "{{ lookup('file', xray_pki_path + '/reality_public.key') }}"
+
+    - name: Load Reality short ID
+      set_fact:
+        xray_reality_short_id: "{{ lookup('file', xray_pki_path + '/reality_short_id') }}"
+
+- name: Ensure user index file exists
+  file:
+    path: "{{ xray_pki_path }}/index.txt"
+    state: touch
+    mode: "0600"
+    modification_time: preserve
+    access_time: preserve
+
+- name: Generate UUIDs for users
+  block:
+    - name: Update user list
+      lineinfile:
+        dest: "{{ xray_pki_path }}/index.txt"
+        create: true
+        mode: "0600"
+        insertafter: EOF
+        line: "{{ item }}"
+      loop: "{{ users }}"
+
+    - name: Read user list
+      set_fact:
+        xray_users: "{{ (lookup('file', xray_pki_path + '/index.txt')).split('\n') | select() | list }}"
+
+    - name: Check for existing UUIDs
+      stat:
+        path: "{{ xray_pki_path }}/{{ item }}.uuid"
+      register: user_uuid_files
+      loop: "{{ xray_users }}"
+
+    - name: Generate UUID for new users
+      copy:
+        content: "{{ lookup('pipe', 'uuidgen') | lower }}"
+        dest: "{{ xray_pki_path }}/{{ item.item }}.uuid"
+        mode: "0600"
+      when: not item.stat.exists
+      loop: "{{ user_uuid_files.results }}"
+      loop_control:
+        label: "{{ item.item }}"

@@ -53,7 +53,7 @@
 
         - name: Configure VPN services (parallel mode)
           when: performance_parallel_services | default(true)
-          tags: [dns, wireguard, ipsec, ssh_tunneling]
+          tags: [dns, wireguard, ipsec, ssh_tunneling, xray]
           block:
             # --- Launch all services asynchronously ---
             - import_role: {name: dns}
@@ -84,6 +84,13 @@
               when: algo_ssh_tunneling
               tags: ssh_tunneling
 
+            - import_role: {name: xray}
+              async: 300
+              poll: 0
+              register: xray_job
+              when: xray_enabled
+              tags: xray
+
             # --- Build job list and wait for completion ---
             - name: Build async job list
               set_fact:
@@ -92,6 +99,7 @@
                   - {name: wireguard, job: "{{ wireguard_job | default({}) }}"}
                   - {name: strongswan, job: "{{ strongswan_job | default({}) }}"}
                   - {name: ssh_tunneling, job: "{{ ssh_tunneling_job | default({}) }}"}
+                  - {name: xray, job: "{{ xray_job | default({}) }}"}
 
             - name: Wait for VPN services to complete
               async_status:
@@ -116,7 +124,7 @@
         # --- Sequential mode (fallback when parallel disabled) ---
         - name: Configure VPN services (sequential mode)
           when: not (performance_parallel_services | default(true))
-          tags: [dns, wireguard, ipsec, ssh_tunneling]
+          tags: [dns, wireguard, ipsec, ssh_tunneling, xray]
           block:
             - import_role: {name: dns}
               when: algo_dns_adblocking or dns_encryption
@@ -133,6 +141,10 @@
             - import_role: {name: ssh_tunneling}
               when: algo_ssh_tunneling
               tags: ssh_tunneling
+
+            - import_role: {name: xray}
+              when: xray_enabled
+              tags: xray
 
         - import_role:
             name: privacy
@@ -162,6 +174,7 @@
                   IP_subject_alt_name: {{ IP_subject_alt_name }}
                   ipsec_enabled: {{ ipsec_enabled }}
                   wireguard_enabled: {{ wireguard_enabled }}
+                  xray_enabled: {{ xray_enabled }}
                   local_service_ip: {{ local_service_ip }}
                   local_service_ipv6: {{ local_service_ipv6 }}
                   {% if tests | default(false) | bool %}
