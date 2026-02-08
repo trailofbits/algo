@@ -13,7 +13,7 @@
 
 - name: Include tasks for Debian/Ubuntu
   include_tasks: ubuntu.yml
-  when: is_debian_based
+  when: is_debian_based | bool
   tags: always
 
 

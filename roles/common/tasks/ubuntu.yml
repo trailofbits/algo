@@ -131,7 +131,8 @@
       - openssl
       - gnupg2
       - cron
-    sysctl: "{{ [{'item': 'net.ipv4.ip_forward', 'value': 1}, {'item': 'net.ipv4.conf.all.forwarding', 'value': 1}, {'item': 'net.ipv4.conf.all.route_localnet', 'value': 1}] + ([{'item': 'net.ipv6.conf.all.forwarding', 'value': 1}] if ipv6_support else []) }}"
+    # yamllint disable-line rule:line-length
+    sysctl: "{{ [{'item': 'net.ipv4.ip_forward', 'value': 1}, {'item': 'net.ipv4.conf.all.forwarding', 'value': 1}, {'item': 'net.ipv4.conf.all.route_localnet', 'value': 1}] + ([{'item': 'net.ipv6.conf.all.forwarding', 'value': 1}] if ipv6_support | bool else []) }}"
 
 - name: Install packages (batch optimization)
   include_tasks: packages.yml
@@ -158,7 +159,7 @@
 
 - name: Configure the alternative ingress ip
   include_tasks: aip/main.yml
-  when: alternative_ingress_ip
+  when: alternative_ingress_ip | bool
 
 - name: Ubuntu 22.04+ | Use iptables-legacy for compatibility
   block:

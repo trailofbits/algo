@@ -69,7 +69,7 @@ def generate_test_private_key():
 
 def test_x25519_pubkey_from_raw_file():
     """Test our x25519_pubkey module with raw private key file"""
-    raw_key_path, b64_key = generate_test_private_key()
+    raw_key_path, _b64_key = generate_test_private_key()
 
     try:
         # Import here so we can mock the module_utils if needed

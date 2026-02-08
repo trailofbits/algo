@@ -41,7 +41,7 @@
     - name: Set the static ip as a fact
       set_fact:
         cloud_alternative_ingress_ip: "{{ digital_ocean_floating_ip.data.floating_ip.ip }}"
-  when: alternative_ingress_ip
+  when: alternative_ingress_ip | bool
 
 - set_fact:
     cloud_instance_ip: "{{ (droplet.networks.v4 | selectattr('type', '==', 'public')).0.ip_address }}"

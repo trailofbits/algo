@@ -21,8 +21,8 @@
   no_log: true
 
 - set_fact:
-    service_account_email: "{{ credentials_file_lookup.client_email | default(lookup('env', 'GCE_EMAIL')) }}"
-    project_id: "{{ credentials_file_lookup.project_id | default(lookup('env', 'GCE_PROJECT')) }}"
+    service_account_email: "{{ credentials_file_lookup.client_email | default(lookup('env', 'GCE_EMAIL'), true) }}"
+    project_id: "{{ credentials_file_lookup.project_id | default(lookup('env', 'GCE_PROJECT'), true) }}"
   no_log: true
 
 - block:

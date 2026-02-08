@@ -33,7 +33,7 @@ block_ipv6 = false
 ######################################################
 
 [blacklist]
-  {{ "blacklist_file = 'blacklist.txt'" if algo_dns_adblocking else "" }}
+  {{ "blacklist_file = 'blacklist.txt'" if algo_dns_adblocking | bool else "" }}
 
 
 
