@@ -32,7 +32,8 @@
           - "{{ ssh_port }}"
       - ip_protocol: icmp
 
-- block:
+- when: cloud_providers.gce.external_static_ip
+  block:
     - name: External IP allocated
       gcp_compute_address:
         auth_kind: serviceaccount
@@ -45,7 +46,6 @@
     - name: Set External IP as a fact
       set_fact:
         external_ip: "{{ gcp_compute_address.address }}"
-  when: cloud_providers.gce.external_static_ip
 
 - name: Instance created
   gcp_compute_instance:

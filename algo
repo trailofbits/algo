@@ -160,6 +160,30 @@ fi
 
 # Run the appropriate playbook
 case "$1" in
+  help|-h|--help)
+    echo "Usage: ./algo [COMMAND] [ANSIBLE_OPTIONS]"
+    echo ""
+    echo "Set up a personal VPN in the cloud."
+    echo ""
+    echo "Commands:"
+    echo "  (default)        Deploy a new VPN server"
+    echo "  update-users     Add or remove users on an existing server"
+    echo ""
+    echo "Configuration:"
+    echo "  Edit config.cfg to set users, DNS, and VPN options before deploying."
+    echo ""
+    echo "Non-interactive deployment:"
+    echo "  ./algo -e 'provider=digitalocean server_name=algo region=nyc3 do_token=TOKEN'"
+    echo ""
+    echo "Common Ansible options (passed through):"
+    echo "  -e KEY=VALUE     Set variable (bypass interactive prompts)"
+    echo "  -v, -vvv         Increase output verbosity"
+    echo "  --skip-tags TAG  Skip specific components"
+    echo "  -t, --tags TAG   Run only specific components"
+    echo ""
+    echo "Docs: https://trailofbits.github.io/algo/"
+    exit 0
+    ;;
   update-users)
     uv run ansible-playbook users.yml "${@:2}" -t update-users ;;
   *)

@@ -1,5 +1,10 @@
 ---
-- block:
+- become: false
+  delegate_to: localhost
+  vars:
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    certificate_validity_days: 3650  # 10 years - configurable certificate lifespan
+  block:
     - debug: var=subjectAltName
 
     - name: Ensure the pki directory does not exist
@@ -68,7 +73,7 @@
             'DNS:' + openssl_constraint_random_id,
             'email:' + openssl_constraint_random_id
           ] + (
-            ['IP:' + ansible_default_ipv6['address'] + '/128'] if ipv6_support else []
+            ['IP:' + ansible_default_ipv6['address'] + '/128'] if ipv6_support | bool else []
           ) }}
         # Block public domains/networks to prevent certificate abuse for impersonation attacks
         # Public TLD exclusion, Email domain exclusion, RFC 1918: prevents lateral movement
@@ -79,7 +84,7 @@
             'email:.com', 'email:.org', 'email:.net', 'email:.gov', 'email:.edu', 'email:.mil', 'email:.int',
             'IP:10.0.0.0/255.0.0.0', 'IP:172.16.0.0/255.240.0.0', 'IP:192.168.0.0/255.255.0.0'
           ] + (
-            ['IP:fc00::/7', 'IP:fe80::/10', 'IP:2001:db8::/32'] if ipv6_support else ['IP:::/0']
+            ['IP:fc00::/7', 'IP:fe80::/10', 'IP:2001:db8::/32'] if ipv6_support | bool else ['IP:::/0']
           ) }}
         name_constraints_critical: true
       register: ca_csr
@@ -267,11 +272,6 @@
       file:
         path: "{{ ipsec_pki_path }}/crl.pem"
         mode: "0644"
-  delegate_to: localhost
-  become: false
-  vars:
-    ansible_python_interpreter: "{{ ansible_playbook_python }}"
-    certificate_validity_days: 3650  # 10 years - configurable certificate lifespan
 
 - name: Copy the CRL to the vpn server
   copy:

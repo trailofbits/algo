@@ -27,7 +27,8 @@
     owner: root
     group: "{{ root_group | default('root') }}"
 
-- block:
+- tags: update-users
+  block:
     - name: Ensure that the SSH users exist
       user:
         name: "{{ item }}"
@@ -41,7 +42,9 @@
         append: true
       loop: "{{ users }}"
 
-    - block:
+    - become: false
+      delegate_to: localhost
+      block:
         - name: Clean up the ssh-tunnel directory
           file:
             dest: "{{ ssh_tunnels_config_path }}"
@@ -89,8 +92,6 @@
             dest: "{{ ssh_tunnels_config_path }}/{{ item }}.ssh_config"
             mode: '0700'
           loop: "{{ users }}"
-      delegate_to: localhost
-      become: false
 
     - name: The authorized keys file created
       authorized_key:
@@ -115,4 +116,3 @@
         force: true
       when: item not in users
       loop: "{{ getent_group['algo'][2].split(',') }}"
-  tags: update-users

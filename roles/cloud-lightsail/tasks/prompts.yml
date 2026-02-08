@@ -25,7 +25,8 @@
     secret_key: "{{ aws_secret_key | default(_aws_secret_key.user_input | default(None)) | default(lookup('env', 'AWS_SECRET_ACCESS_KEY'), true) }}"
   no_log: true
 
-- block:
+- when: region is undefined
+  block:
     - name: Get regions
       lightsail_region_facts:
         aws_access_key: "{{ access_key }}"
@@ -56,7 +57,6 @@
           Enter the number of your desired region
           [{{ default_region }}]
       register: _algo_region
-  when: region is undefined
 
 - set_fact:
     stack_name: "{{ algo_server_name | replace('.', '-') }}"

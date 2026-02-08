@@ -59,6 +59,7 @@ jobs:
               - '**/*.yml'
               - '**/*.yaml'
               - '**/*.sh'
+              - '**/*.j2'
               - '.ansible-lint'
               - '.yamllint'
               - 'pyproject.toml'
@@ -253,6 +254,11 @@ jobs:
 
             # Run Ansible linter
             uv run --with ansible-lint ansible-lint
+
+            # Check Jinja2 templates
+            if git diff --name-only "${BASE_SHA}" "${HEAD_SHA}" | grep -q '\.j2$'; then
+              uv run --with j2lint j2lint roles/ --ignore S3 S5 S6 S7 V1
+            fi
 
             # Check shell scripts if any changed
             if git diff --name-only "${BASE_SHA}" "${HEAD_SHA}" | grep -q '\.sh$'; then

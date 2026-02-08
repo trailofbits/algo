@@ -12,6 +12,6 @@ SaveConfig = false
 # {{ u }}
 PublicKey = {{ lookup('file', wireguard_pki_path + '/public/' + u) }}
 PresharedKey = {{ lookup('file', wireguard_pki_path + '/preshared/' + u) }}
-AllowedIPs = {{ wireguard_network_ipv4 | ansible.utils.ipmath(index | int+1) | ansible.utils.ipv4('address') }}/32{{ ',' + wireguard_network_ipv6 | ansible.utils.ipmath(index | int+1) | ansible.utils.ipv6('address') + '/128' if ipv6_support else '' }}
+AllowedIPs = {{ wireguard_network_ipv4 | ansible.utils.ipmath(index | int + 1) | ansible.utils.ipv4('address') }}/32{{ ',' + wireguard_network_ipv6 | ansible.utils.ipmath(index | int + 1) | ansible.utils.ipv6('address') + '/128' if ipv6_support | bool else '' }}
 {% endif %}
 {% endfor %}

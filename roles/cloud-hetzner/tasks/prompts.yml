@@ -45,4 +45,7 @@
 - name: Set additional facts
   set_fact:
     algo_hcloud_region: >-
-      {%- if region is defined -%}{{ region }}{%- elif _algo_region.user_input -%}{{ hcloud_regions[_algo_region.user_input | int - 1]['location'] }}{%- else -%}{{ hcloud_regions[default_region | int - 1]['location'] }}{%- endif -%}
+      {%- if region is defined -%}{{ region }}{%-
+      elif _algo_region.user_input -%}{{ hcloud_regions[_algo_region.user_input | int - 1]['location'] }}{%-
+      else -%}{{ hcloud_regions[default_region | int - 1]['location'] }}{%-
+      endif -%}

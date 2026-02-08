@@ -7,7 +7,8 @@
     - config.cfg
 
   tasks:
-    - block:
+    - when: server is undefined
+      block:
         - name: Get list of installed config files
           find:
             paths: configs/
@@ -39,13 +40,15 @@
                   {{ loop.index }}. {{ r.server }} ({{ r.IP_subject_alt_name }})
               {% endfor %}
           register: _server
-      when: server is undefined
 
     - block:
         - name: Set facts based on the input
           set_fact:
             algo_server: >-
-              {% if server is defined %}{{ server }}{%- elif _server.user_input %}{{ server_list[_server.user_input | int - 1].server }}{%- else %}omit{% endif %}
+              {%- if server is defined -%}{{ server }}{%-
+              elif _server.user_input -%}{{ server_list[_server.user_input | int - 1].server }}{%-
+              else -%}omit{%-
+              endif -%}
 
         - name: Import host specific variables
           include_vars:
@@ -61,6 +64,7 @@
           when: users | default([]) | length == 0
 
         - name: Local deployment permission validation
+          when: algo_server == 'localhost' or algo_provider | default('') == 'local'
           block:
             - name: Get config directory owner
               stat:
@@ -84,7 +88,6 @@
                   PREVENT: Always run update-users the same way as initial deployment
                   (both with sudo, or both without sudo).
               when: config_dir_stat.stat.pw_name != ansible_user_id
-          when: algo_server == 'localhost' or algo_provider | default('') == 'local'
 
         - name: Test SSH connectivity to server
           wait_for:
@@ -112,7 +115,7 @@
             - algo_server != 'localhost'
             - ssh_check is failed
 
-        - when: ipsec_enabled
+        - when: ipsec_enabled | bool
           block:
             - name: CA password prompt
               pause:
@@ -124,7 +127,10 @@
             - name: Set facts based on the input
               set_fact:
                 CA_password: >-
-                  {%- if ca_password is defined -%}{{ ca_password }}{%- elif _ca_password.user_input -%}{{ _ca_password.user_input }}{%- else -%}omit{%- endif -%}
+                  {%- if ca_password is defined -%}{{ ca_password }}{%-
+                  elif _ca_password.user_input -%}{{ _ca_password.user_input }}{%-
+                  else -%}omit{%-
+                  endif -%}
 
         - name: Local pre-tasks
           import_tasks: playbooks/cloud-pre.yml
@@ -156,16 +162,16 @@
 
         - import_role:
             name: wireguard
-          when: wireguard_enabled
+          when: wireguard_enabled | bool
 
         - import_role:
             name: strongswan
-          when: ipsec_enabled
+          when: ipsec_enabled | bool
           tags: ipsec
 
         - import_role:
             name: ssh_tunneling
-          when: algo_ssh_tunneling
+          when: algo_ssh_tunneling | bool
 
         - debug:
             msg:

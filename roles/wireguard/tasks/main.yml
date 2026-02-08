@@ -13,7 +13,7 @@
 
 - name: Include tasks for Debian/Ubuntu
   include_tasks: ubuntu.yml
-  when: is_debian_based
+  when: is_debian_based | bool
   tags: always
 
 
@@ -23,8 +23,11 @@
   become: false
   tags: update-users
 
-- block:
-    - block:
+- tags: update-users
+  block:
+    - become: false
+      delegate_to: localhost
+      block:
         - name: WireGuard user list updated
           lineinfile:
             dest: "{{ wireguard_pki_path }}/index.txt"
@@ -72,8 +75,6 @@
             chdir: "{{ wireguard_config_path }}"
             executable: bash
           no_log: true
-      become: false
-      delegate_to: localhost
 
     - name: WireGuard configured
       template:
@@ -81,7 +82,6 @@
         dest: "{{ config_prefix | default('/') }}etc/wireguard/{{ wireguard_interface }}.conf"
         mode: "0600"
       notify: restart wireguard
-  tags: update-users
 
 - name: WireGuard enabled and started
   service:

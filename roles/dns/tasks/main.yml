@@ -1,7 +1,7 @@
 ---
 - name: Include tasks for Debian/Ubuntu
   include_tasks: ubuntu.yml
-  when: is_debian_based
+  when: is_debian_based | bool
 
 - name: dnscrypt-proxy ip-blacklist configured
   template:
@@ -21,7 +21,7 @@
 
 - name: Include DNS adblocking tasks
   import_tasks: dns_adblocking.yml
-  when: algo_dns_adblocking
+  when: algo_dns_adblocking | bool
 
 - meta: flush_handlers
 
@@ -31,7 +31,7 @@
     enabled: true
     state: started
     daemon_reload: true
-  when: uses_systemd_socket
+  when: uses_systemd_socket | bool
 
 - name: dnscrypt-proxy enabled and started
   service:

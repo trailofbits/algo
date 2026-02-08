@@ -8,11 +8,11 @@
     name: dnscrypt-proxy.socket
     state: restarted
     daemon_reload: true
-  when: uses_systemd_socket
+  when: uses_systemd_socket | bool
 
 - name: restart dnscrypt-proxy
   systemd:
     name: dnscrypt-proxy
     state: restarted
     daemon_reload: true
-  when: uses_systemd_socket
+  when: uses_systemd_socket | bool

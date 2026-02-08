@@ -25,10 +25,10 @@ conn %default
     right=%any
     rightauth=pubkey
     rightsourceip={{ strongswan_network }},{{ strongswan_network_ipv6 }}
-{% if algo_dns_adblocking or dns_encryption %}
-    rightdns={{ local_service_ip }}{{ ',' + local_service_ipv6 if ipv6_support else '' }}
+{% if algo_dns_adblocking | bool or dns_encryption | bool %}
+    rightdns={{ local_service_ip }}{{ ',' + local_service_ipv6 if ipv6_support | bool else '' }}
 {% else %}
-    rightdns={% for host in dns_servers.ipv4 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% if ipv6_support %},{% for host in dns_servers.ipv6 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}
+    rightdns={% for host in dns_servers.ipv4 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% if ipv6_support | bool %},{% for host in dns_servers.ipv6 %}{{ host }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}
 {% endif %}
 
 conn ikev2-pubkey

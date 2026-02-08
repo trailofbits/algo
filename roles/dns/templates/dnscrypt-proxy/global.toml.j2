@@ -6,20 +6,20 @@
 {# Allow either list to be empty. Output nothing if both are empty. #}
 {% set servers = [] %}
 {% if dnscrypt_servers.ipv4 %}{% set servers = dnscrypt_servers.ipv4 %}{% endif %}
-{% if ipv6_support and dnscrypt_servers.ipv6 %}{% set servers = servers + dnscrypt_servers.ipv6 %}{% endif %}
+{% if ipv6_support | bool and dnscrypt_servers.ipv6 %}{% set servers = servers + dnscrypt_servers.ipv6 %}{% endif %}
 {% if servers %}server_names = ['{{ servers | join("', '") }}']{% endif %}
 
 
 ## List of local addresses and ports to listen to. Can be IPv4 and/or IPv6.
 ## Note: When using systemd socket activation, choose an empty set (i.e. [] ).
 
-{% if uses_systemd_socket %}
+{% if uses_systemd_socket | bool %}
 # Using systemd socket activation on Debian/Ubuntu
 listen_addresses = []
 {% else %}
 # Direct binding on non-systemd systems
 listen_addresses  = [
-  '{{ local_service_ip }}:53'{% if ipv6_support %},
+  '{{ local_service_ip }}:53'{% if ipv6_support | bool %},
   '[{{ local_service_ipv6 }}]:53'{% endif %}
   ]
 {% endif %}

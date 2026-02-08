@@ -15,9 +15,12 @@
             sleep: 10         # Check every 10 seconds (less aggressive)
             state: present
           become: false
-          when: cloudinit
+          when: cloudinit | bool
 
-        - block:
+        - when: inventory_hostname != 'localhost'
+          become: false
+          delegate_to: localhost
+          block:
             - name: Ensure the config directory exists
               file:
                 dest: configs/{{ IP_subject_alt_name }}
@@ -37,9 +40,6 @@
                     IdentityFile {{ SSH_keys.private | realpath }}
                     KeepAlive yes
                     ServerAliveInterval 30
-          when: inventory_hostname != 'localhost'
-          become: false
-          delegate_to: localhost
 
         - import_role:
             name: common
@@ -60,28 +60,28 @@
               async: 300
               poll: 0
               register: dns_job
-              when: algo_dns_adblocking or dns_encryption
+              when: algo_dns_adblocking | bool or dns_encryption | bool
               tags: dns
 
             - import_role: {name: wireguard}
               async: 300
               poll: 0
               register: wireguard_job
-              when: wireguard_enabled
+              when: wireguard_enabled | bool
               tags: wireguard
 
             - import_role: {name: strongswan}
               async: 300
               poll: 0
               register: strongswan_job
-              when: ipsec_enabled
+              when: ipsec_enabled | bool
               tags: ipsec
 
             - import_role: {name: ssh_tunneling}
               async: 300
               poll: 0
               register: ssh_tunneling_job
-              when: algo_ssh_tunneling
+              when: algo_ssh_tunneling | bool
               tags: ssh_tunneling
 
             # --- Build job list and wait for completion ---
@@ -119,19 +119,19 @@
           tags: [dns, wireguard, ipsec, ssh_tunneling]
           block:
             - import_role: {name: dns}
-              when: algo_dns_adblocking or dns_encryption
+              when: algo_dns_adblocking | bool or dns_encryption | bool
               tags: dns
 
             - import_role: {name: wireguard}
-              when: wireguard_enabled
+              when: wireguard_enabled | bool
               tags: wireguard
 
             - import_role: {name: strongswan}
-              when: ipsec_enabled
+              when: ipsec_enabled | bool
               tags: ipsec
 
             - import_role: {name: ssh_tunneling}
-              when: algo_ssh_tunneling
+              when: algo_ssh_tunneling | bool
               tags: ssh_tunneling
 
         - import_role:
@@ -139,7 +139,8 @@
           when: privacy_enhancements_enabled | default(true)
           tags: privacy
 
-        - block:
+        - tags: always
+          block:
             - name: Dump the configuration
               copy:
                 dest: configs/{{ IP_subject_alt_name }}/.config.yml
@@ -195,6 +196,5 @@
                   - "    {{ congrats.p12_pass if algo_ssh_tunneling or ipsec_enabled else '' }}"
                   - "    {{ congrats.ca_key_pass if algo_store_pki and ipsec_enabled else '' }}"
                   - "    {{ congrats.ssh_access if algo_provider != 'local' else '' }}"
-          tags: always
       rescue:
         - include_tasks: playbooks/rescue.yml

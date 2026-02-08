@@ -12,10 +12,20 @@ import pytest
 from jinja2 import Environment, FileSystemLoader
 
 
+def _ansible_bool(value):
+    """Simulate the Ansible bool filter for test purposes."""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.lower() not in ("false", "no", "0", "")
+    return bool(value)
+
+
 def load_template(template_name):
     """Load a Jinja2 template from the roles/common/templates directory."""
     template_dir = Path(__file__).parent.parent.parent / "roles" / "common" / "templates"
     env = Environment(loader=FileSystemLoader(str(template_dir)))
+    env.filters["bool"] = _ansible_bool
     return env.get_template(template_name)
 
 
