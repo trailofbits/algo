@@ -1,0 +1,10 @@
+---
+- name: Destroy Azure resource group
+  azure.azcollection.azure_rm_resourcegroup:
+    name: "{{ algo_server_name }}"
+    state: absent
+    force_delete_nonempty: true
+    secret: "{{ secret }}"
+    tenant: "{{ tenant }}"
+    client_id: "{{ client_id }}"
+    subscription_id: "{{ subscription_id }}"

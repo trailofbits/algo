@@ -1,0 +1,6 @@
+---
+- name: Destroy Hetzner server
+  hetzner.hcloud.server:
+    name: "{{ algo_server_name }}"
+    state: absent
+    api_token: "{{ algo_hcloud_token }}"

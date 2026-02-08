@@ -1,0 +1,144 @@
+---
+- name: Destroy an Algo VPN server
+  hosts: localhost
+  gather_facts: false
+  become: false
+  vars_files:
+    - config.cfg
+
+  tasks:
+    - block:
+        - name: Validate server_ip is provided
+          assert:
+            that: server_ip is defined and server_ip | length > 0
+            fail_msg: |
+              server_ip is required. Usage:
+                ./algo destroy <server-ip>
+                ansible-playbook destroy.yml -e "server_ip=YOUR_SERVER_IP"
+
+        - name: Check that server config exists
+          stat:
+            path: "configs/{{ server_ip }}/.config.yml"
+          register: _server_config
+
+        - name: Fail if server config not found
+          fail:
+            msg: |
+              No config found at configs/{{ server_ip }}/.config.yml
+
+              This server may not have been deployed by Algo, or
+              its configs were already removed.
+
+              Known servers:
+                ls configs/*/
+          when: not _server_config.stat.exists
+
+        - name: Load server configuration
+          include_vars:
+            file: "configs/{{ server_ip }}/.config.yml"
+            name: _server_cfg
+
+        - name: Set provider and server name from config
+          set_fact:
+            algo_provider: "{{ _server_cfg.algo_provider }}"
+            algo_server_name: "{{ _server_cfg.algo_server_name }}"
+
+        - name: Validate required config values
+          assert:
+            that:
+              - algo_provider is defined and algo_provider | length > 0
+              - algo_server_name is defined and algo_server_name | length > 0
+            fail_msg: |
+              Server config is missing algo_provider or algo_server_name.
+              Check configs/{{ server_ip }}/.config.yml
+
+        - name: Install cloud provider dependencies
+          shell: "uv pip install '.[{{ _provider_extras[algo_provider] | default(algo_provider) }}]'"
+          vars:
+            _provider_extras:
+              ec2: aws
+              lightsail: aws
+              azure: azure
+              gce: gcp
+              hetzner: hetzner
+              linode: linode
+              openstack: openstack
+              cloudstack: cloudstack
+          when: algo_provider != "local"
+          changed_when: false
+
+        - name: Set region from stored config
+          set_fact:
+            region: "{{ _server_cfg.algo_region }}"
+          when:
+            - region is not defined
+            - _server_cfg.algo_region is defined
+            - _server_cfg.algo_region | length > 0
+
+        - name: Validate region for providers that require it
+          fail:
+            msg: |
+              Region is required to destroy {{ algo_provider }} servers.
+              Pass it with: -e "region=YOUR_REGION"
+
+              Example:
+                ./algo destroy {{ server_ip }} -e "region=us-east-1"
+          when:
+            - algo_provider in ['ec2', 'lightsail', 'gce', 'scaleway', 'vultr']
+            - region is not defined
+
+        - name: Set dummy region for providers that do not need it
+          set_fact:
+            region: "unused"
+          when:
+            - region is not defined
+            - algo_provider not in ['ec2', 'lightsail', 'gce', 'scaleway', 'vultr']
+
+        - name: Gather provider credentials
+          include_tasks: "roles/cloud-{{ algo_provider }}/tasks/prompts.yml"
+          when: algo_provider != "local"
+
+        - name: Display destroy plan
+          debug:
+            msg:
+              - "Server IP:  {{ server_ip }}"
+              - "Server name: {{ algo_server_name }}"
+              - "Provider:    {{ algo_provider }}"
+
+        - name: Confirm destruction
+          pause:
+            prompt: |
+              This will permanently destroy the server and remove local configs.
+              Type 'yes' to confirm
+          register: _confirm_destroy
+          when: confirm_destroy is not defined or not confirm_destroy | bool
+
+        - name: Abort if not confirmed
+          fail:
+            msg: "Destroy aborted by user."
+          when:
+            - confirm_destroy is not defined or not confirm_destroy | bool
+            - _confirm_destroy.user_input | default('') | lower != 'yes'
+
+        - name: Destroy cloud resources
+          include_tasks: "roles/cloud-{{ algo_provider }}/tasks/destroy.yml"
+          when: algo_provider != "local"
+
+        - name: Remove local config directory
+          file:
+            path: "configs/{{ server_ip }}"
+            state: absent
+
+        - name: Remove localhost symlink
+          file:
+            path: configs/localhost
+            state: absent
+          when: server_ip == "localhost"
+
+        - name: Destroy complete
+          debug:
+            msg:
+              - "Server {{ algo_server_name }} ({{ server_ip }}) destroyed."
+              - "Local configs removed from configs/{{ server_ip }}/"
+      rescue:
+        - include_tasks: playbooks/rescue.yml

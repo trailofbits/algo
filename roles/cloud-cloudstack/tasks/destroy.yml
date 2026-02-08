@@ -1,0 +1,17 @@
+---
+- environment:
+    CLOUDSTACK_KEY: "{{ algo_cs_key }}"
+    CLOUDSTACK_SECRET: "{{ algo_cs_token }}"
+    CLOUDSTACK_ENDPOINT: "{{ algo_cs_url }}"
+  no_log: true
+  block:
+    - name: Destroy CloudStack instance
+      cs_instance:
+        name: "{{ algo_server_name }}"
+        state: expunged
+
+    - name: Remove security group
+      cs_securitygroup:
+        name: "{{ algo_server_name }}-security_group"
+        state: absent
+      failed_when: false
