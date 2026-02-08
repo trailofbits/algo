@@ -51,6 +51,28 @@ jobs:
       - name: Run yamllint
         run: uv run --with yamllint yamllint -c .yamllint .
 
+  jinja2-lint:
+    name: Jinja2 template linting
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98  # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
+
+      - name: Run j2lint
+        run: |
+          # Lint Jinja2 templates for syntax and style issues
+          # Ignored rules (incompatible with Ansible config-file templates):
+          #   S3: indentation (dictated by output format, not Jinja style)
+          #   S5: tabs (some config formats require them)
+          #   S6: whitespace-control delimiters ({%- -%} are standard Ansible)
+          #   S7: single-statement-per-line (inline Jinja in config output)
+          #   V1: lowercase variables (existing names like IP_subject_alt_name)
+          uv run --with j2lint j2lint roles/ --ignore S3 S5 S6 S7 V1
+
   python-lint:
     name: Python linting
     runs-on: ubuntu-22.04
