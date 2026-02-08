@@ -10,6 +10,22 @@ permissions:
   contents: read
 
 jobs:
+  semgrep:
+    name: Semgrep SAST
+    runs-on: ubuntu-22.04
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98  # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run semgrep
+        run: >
+          semgrep --config auto
+          --exclude-rule dockerfile.security.last-user-is-root.last-user-is-root
+          --error --quiet .
+
   pip-audit:
     name: Python dependency audit
     runs-on: ubuntu-22.04
