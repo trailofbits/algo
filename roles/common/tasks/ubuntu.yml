@@ -2,6 +2,7 @@
 - name: Gather facts
   setup:
 - name: Cloud only tasks
+  when: algo_provider != "local"
   block:
     - name: Install software updates
       apt:
@@ -61,7 +62,6 @@
           (reboot_required.stdout == 'optional' and not performance_skip_optional_reboots|default(false))
         )
       become: false
-  when: algo_provider != "local"
 
 - name: Include unattended upgrades configuration
   import_tasks: unattended-upgrades.yml
@@ -162,6 +162,8 @@
   when: alternative_ingress_ip | bool
 
 - name: Ubuntu 22.04+ | Use iptables-legacy for compatibility
+  when: is_ubuntu_22_plus
+  tags: iptables
   block:
     - name: Install iptables packages
       apt:
@@ -178,8 +180,6 @@
       loop:
         - iptables
         - ip6tables
-  when: is_ubuntu_22_plus
-  tags: iptables
 
 - include_tasks: iptables.yml
   tags: iptables

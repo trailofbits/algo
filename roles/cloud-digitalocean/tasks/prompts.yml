@@ -102,7 +102,7 @@
 - name: Set additional facts
   set_fact:
     algo_do_region: >-
-      {%- if region is defined -%}{{ region }}
-      {%- elif _algo_region.user_input -%}{{ do_regions[_algo_region.user_input | int - 1]['slug'] }}
-      {%- else -%}{{ do_regions[default_region | int - 1]['slug'] }}
-      {%- endif -%}
+      {%- if region is defined -%}{{ region }}{%-
+      elif _algo_region.user_input -%}{{ do_regions[_algo_region.user_input | int - 1]['slug'] }}{%-
+      else -%}{{ do_regions[default_region | int - 1]['slug'] }}{%-
+      endif -%}

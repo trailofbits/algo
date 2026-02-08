@@ -67,6 +67,22 @@ Common lint issues to fix before submitting:
 - Jinja2 spacing errors (`{{foo}}` should be `{{ foo }}`)
 - Missing `mode:` on file/directory tasks
 
+### Zero-Tolerance Warning Policy
+
+**No warnings are tolerated in CI.** Every linter finding must be either fixed or explicitly allowlisted in the tool's config file (`.ansible-lint`, `pyproject.toml`, etc.).
+
+Why this matters for Algo:
+- **Security tool** - VPN misconfigurations silently break privacy guarantees. A "cosmetic" warning today hides a real bug tomorrow.
+- **Ansible complexity** - YAML+Jinja2 linting catches real runtime failures (wrong key order breaks `when` evaluation, spacing errors cause template failures). Warnings in Ansible are not style nits.
+- **CI signal integrity** - If 30 warnings scroll by on every run, the 31st one (a real regression) goes unnoticed. Zero warnings means every new finding gets human attention.
+
+Resolution order of preference:
+1. **Fix it** - Preferred. Most findings have straightforward fixes.
+2. **Allowlist in config** - If the rule is wrong for this project, add to `skip_list` with a comment explaining why.
+3. **Inline suppress** - Last resort. Use `# noqa: rule-name` with a comment justifying the exception.
+
+Never use `warn_list` in `.ansible-lint` — it exists as a migration tool, not a permanent home. Rules either pass or are explicitly skipped.
+
 ### Design Requirements
 
 When adding or modifying features, verify these before requesting review:

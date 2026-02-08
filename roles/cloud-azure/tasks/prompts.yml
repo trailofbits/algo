@@ -6,7 +6,8 @@
     subscription_id: "{{ azure_subscription_id | default(lookup('env', 'AZURE_SUBSCRIPTION_ID'), true) }}"
   no_log: true
 
-- block:
+- when: region is undefined
+  block:
     - name: Set the default region
       set_fact:
         default_region: >-
@@ -22,4 +23,3 @@
           Enter the number of your desired region
           [{{ default_region }}]
       register: _algo_region
-  when: region is undefined

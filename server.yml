@@ -17,7 +17,10 @@
           become: false
           when: cloudinit | bool
 
-        - block:
+        - when: inventory_hostname != 'localhost'
+          become: false
+          delegate_to: localhost
+          block:
             - name: Ensure the config directory exists
               file:
                 dest: configs/{{ IP_subject_alt_name }}
@@ -37,9 +40,6 @@
                     IdentityFile {{ SSH_keys.private | realpath }}
                     KeepAlive yes
                     ServerAliveInterval 30
-          when: inventory_hostname != 'localhost'
-          become: false
-          delegate_to: localhost
 
         - import_role:
             name: common
@@ -139,7 +139,8 @@
           when: privacy_enhancements_enabled | default(true)
           tags: privacy
 
-        - block:
+        - tags: always
+          block:
             - name: Dump the configuration
               copy:
                 dest: configs/{{ IP_subject_alt_name }}/.config.yml
@@ -195,6 +196,5 @@
                   - "    {{ congrats.p12_pass if algo_ssh_tunneling or ipsec_enabled else '' }}"
                   - "    {{ congrats.ca_key_pass if algo_store_pki and ipsec_enabled else '' }}"
                   - "    {{ congrats.ssh_access if algo_provider != 'local' else '' }}"
-          tags: always
       rescue:
         - include_tasks: playbooks/rescue.yml

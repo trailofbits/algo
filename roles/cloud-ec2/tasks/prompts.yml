@@ -6,7 +6,10 @@
     aws_profile: "{{ lookup('env', 'AWS_PROFILE') | default('default', true) }}"
 
 # Try to read credentials from file if not already provided
-- block:
+- when:
+    - aws_access_key is undefined
+    - lookup('env', 'AWS_ACCESS_KEY_ID')|length <= 0
+  block:
     - name: Check if AWS credentials file exists
       stat:
         path: "{{ aws_credentials_path }}"
@@ -20,9 +23,6 @@
         _file_session_token: "{{ lookup('ini', 'aws_session_token', section=aws_profile, file=aws_credentials_path, errors='ignore') | default('', true) }}"
       when: aws_creds_file.stat.exists
       no_log: true
-  when:
-    - aws_access_key is undefined
-    - lookup('env', 'AWS_ACCESS_KEY_ID')|length <= 0
 
 # Prompt for credentials if still not available
 - pause:
@@ -69,7 +69,8 @@
          | default('') }}
   no_log: true
 
-- block:
+- when: region is undefined
+  block:
     - name: Get regions
       aws_region_info:
         aws_access_key: "{{ access_key }}"
@@ -101,18 +102,18 @@
           Enter the number of your desired region
           [{{ default_region }}]
       register: _algo_region
-  when: region is undefined
 
 - name: Set algo_region and stack_name facts
   set_fact:
     algo_region: >-
-      {%- if region is defined -%}{{ region }}
-      {%- elif _algo_region.user_input -%}{{ aws_regions[_algo_region.user_input | int - 1]['region_name'] }}
-      {%- else -%}{{ aws_regions[default_region | int - 1]['region_name'] }}
-      {%- endif -%}
+      {%- if region is defined -%}{{ region }}{%-
+      elif _algo_region.user_input -%}{{ aws_regions[_algo_region.user_input | int - 1]['region_name'] }}{%-
+      else -%}{{ aws_regions[default_region | int - 1]['region_name'] }}{%-
+      endif -%}
     stack_name: "{{ algo_server_name | replace('.', '-') }}"
 
-- block:
+- when: cloud_providers.ec2.use_existing_eip
+  block:
     - name: Get existing available Elastic IPs
       ec2_eip_info:
         aws_access_key: "{{ access_key }}"
@@ -137,4 +138,3 @@
 
     - set_fact:
         existing_eip: "{{ available_eip_addresses[_use_existing_eip.user_input | int - 1]['allocation_id'] }}"
-  when: cloud_providers.ec2.use_existing_eip

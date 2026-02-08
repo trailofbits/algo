@@ -51,7 +51,8 @@
     cloud_instance_ip: >-
       {%- if server is defined -%}{{ server }}{%- elif _algo_server.user_input -%}{{ _algo_server.user_input }}{%- else -%}localhost{%- endif -%}
 
-- block:
+- when: cloud_instance_ip != "localhost"
+  block:
     - pause:
         prompt: |
           What user should we use to login on the server? (note: passwordless login required, or ignore if you're deploying to localhost)
@@ -63,7 +64,6 @@
       set_fact:
         ansible_ssh_user: >-
           {%- if ssh_user is defined -%}{{ ssh_user }}{%- elif _algo_ssh_user.user_input -%}{{ _algo_ssh_user.user_input }}{%- else -%}root{%- endif -%}
-  when: cloud_instance_ip != "localhost"
 
 - pause:
     prompt: |

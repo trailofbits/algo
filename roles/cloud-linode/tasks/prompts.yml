@@ -47,8 +47,8 @@
 - name: Set additional facts
   set_fact:
     algo_linode_region: >-
-      {%- if region is defined -%}{{ region }}
-      {%- elif _algo_region.user_input -%}{{ linode_regions[_algo_region.user_input | int - 1]['id'] }}
-      {%- else -%}{{ linode_regions[default_region | int - 1]['id'] }}
-      {%- endif -%}
+      {%- if region is defined -%}{{ region }}{%-
+      elif _algo_region.user_input -%}{{ linode_regions[_algo_region.user_input | int - 1]['id'] }}{%-
+      else -%}{{ linode_regions[default_region | int - 1]['id'] }}{%-
+      endif -%}
     public_key: "{{ lookup('file', SSH_keys.public) }}"

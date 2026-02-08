@@ -17,7 +17,9 @@
     install_recommends: true
   when: not performance_parallel_packages | default(true)
 
-- block:
+- when: apparmor_enabled|default(false)|bool
+  tags: apparmor
+  block:
     # https://bugs.launchpad.net/ubuntu/+source/strongswan/+bug/1826238
     - name: Ubuntu | Charon profile for apparmor configured
       copy:
@@ -35,8 +37,6 @@
         - /usr/lib/ipsec/charon
         - /usr/lib/ipsec/lookip
         - /usr/lib/ipsec/stroke
-  tags: apparmor
-  when: apparmor_enabled|default(false)|bool
 
 - name: Ubuntu | Enable services
   service: name={{ item }} enabled=yes

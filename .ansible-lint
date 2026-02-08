@@ -22,10 +22,6 @@ skip_list:
   - 'no-handler'  # Handler usage - some legitimate non-handler use cases
   - 'name[missing]'  # All tasks should be named - 113 issues to fix (temporary)
 
-warn_list:
-  - yaml[line-length]  # Line length - informational only
-  - key-order[task]  # Task key ordering - many existing violations, fix gradually
-
 # Enable additional rules
 enable_list:
   - no-log-password

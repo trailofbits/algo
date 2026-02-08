@@ -1,5 +1,10 @@
 ---
-- block:
+- become: false
+  delegate_to: localhost
+  vars:
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    certificate_validity_days: 3650  # 10 years - configurable certificate lifespan
+  block:
     - debug: var=subjectAltName
 
     - name: Ensure the pki directory does not exist
@@ -267,11 +272,6 @@
       file:
         path: "{{ ipsec_pki_path }}/crl.pem"
         mode: "0644"
-  delegate_to: localhost
-  become: false
-  vars:
-    ansible_python_interpreter: "{{ ansible_playbook_python }}"
-    certificate_validity_days: 3650  # 10 years - configurable certificate lifespan
 
 - name: Copy the CRL to the vpn server
   copy:

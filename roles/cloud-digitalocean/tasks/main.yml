@@ -30,7 +30,8 @@
 - set_fact:
     droplet: "{{ digital_ocean_droplet.data.droplet | default(digital_ocean_droplet.data) }}"
 
-- block:
+- when: alternative_ingress_ip | bool
+  block:
     - name: Create a Floating IP
       community.digitalocean.digital_ocean_floating_ip:
         state: present
@@ -41,7 +42,6 @@
     - name: Set the static ip as a fact
       set_fact:
         cloud_alternative_ingress_ip: "{{ digital_ocean_floating_ip.data.floating_ip.ip }}"
-  when: alternative_ingress_ip | bool
 
 - set_fact:
     cloud_instance_ip: "{{ (droplet.networks.v4 | selectattr('type', '==', 'public')).0.ip_address }}"

@@ -2,7 +2,9 @@
 - name: Include prompts
   import_tasks: prompts.yml
 
-- block:
+- environment:
+    SCW_TOKEN: "{{ algo_scaleway_token }}"
+  block:
     - name: Get Ubuntu 22.04 image ID from Scaleway Marketplace API
       uri:
         url: "https://api-marketplace.scaleway.com/images?arch={{ cloud_providers.scaleway.arch }}&include_eol=false"
@@ -65,8 +67,6 @@
       until: algo_instance.msg.public_ip
       retries: 3
       delay: 3
-  environment:
-    SCW_TOKEN: "{{ algo_scaleway_token }}"
 
 - set_fact:
     cloud_instance_ip: "{{ algo_instance.msg.public_ip.address }}"

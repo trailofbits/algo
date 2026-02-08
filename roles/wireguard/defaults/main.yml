@@ -8,8 +8,8 @@ wireguard_port_actual: 51820
 keys_clean_all: false
 wireguard_dns_servers: >-
   {%- if algo_dns_adblocking | default(false) | bool or dns_encryption | default(false) | bool -%}
-  {{ local_service_ip }}{{ ', ' + local_service_ipv6 if ipv6_support | bool else '' }}
-  {%- else -%}
+  {{ local_service_ip }}{{ ', ' + local_service_ipv6 if ipv6_support | bool else '' }}{%-
+  else -%}
   {%- for host in dns_servers.ipv4 -%}{{ host }}{% if not loop.last %},{% endif %}{%- endfor -%}
   {%- if ipv6_support | bool -%},{%- for host in dns_servers.ipv6 -%}{{ host }}{% if not loop.last %},{% endif %}{%- endfor -%}
   {%- endif -%}
