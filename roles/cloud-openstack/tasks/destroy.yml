@@ -1,0 +1,11 @@
+---
+- name: Destroy OpenStack server
+  openstack.cloud.server:
+    state: absent
+    name: "{{ algo_server_name }}"
+
+- name: Remove security group
+  openstack.cloud.security_group:
+    state: absent
+    name: "{{ algo_server_name }}-security_group"
+  failed_when: false

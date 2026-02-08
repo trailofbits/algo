@@ -59,3 +59,8 @@
       elif _algo_region.user_input -%}{{ vultr_regions[_algo_region.user_input | int - 1]['id'] }}{%-
       else -%}{{ vultr_regions[default_region | int - 1]['id'] }}{%-
       endif -%}
+    algo_region: >-
+      {%- if region is defined -%}{{ region }}{%-
+      elif _algo_region.user_input -%}{{ vultr_regions[_algo_region.user_input | int - 1]['id'] }}{%-
+      else -%}{{ vultr_regions[default_region | int - 1]['id'] }}{%-
+      endif -%}

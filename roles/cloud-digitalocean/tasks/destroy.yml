@@ -1,0 +1,7 @@
+---
+- name: Destroy DigitalOcean droplet
+  digital_ocean_droplet:
+    state: absent
+    name: "{{ algo_server_name }}"
+    oauth_token: "{{ algo_do_token }}"
+    unique_name: true

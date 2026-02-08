@@ -1,0 +1,55 @@
+---
+- name: Get zones
+  gcp_compute_location_info:
+    auth_kind: serviceaccount
+    service_account_file: "{{ credentials_file_path }}"
+    project: "{{ project_id }}"
+    scope: zones
+    filters:
+      - name={{ algo_region }}-*
+      - status=UP
+  register: gcp_compute_zone_info
+
+- name: Set zone
+  set_fact:
+    algo_zone: >-
+      {{ (gcp_compute_zone_info.resources |
+          random(seed=algo_server_name + algo_region + project_id)
+         ).name }}
+
+- name: Destroy GCE instance
+  gcp_compute_instance:
+    auth_kind: serviceaccount
+    service_account_file: "{{ credentials_file_path }}"
+    project: "{{ project_id }}"
+    name: "{{ algo_server_name }}"
+    zone: "{{ algo_zone }}"
+    state: absent
+
+- name: Remove static IP
+  gcp_compute_address:
+    auth_kind: serviceaccount
+    service_account_file: "{{ credentials_file_path }}"
+    project: "{{ project_id }}"
+    name: "{{ algo_server_name }}"
+    region: "{{ algo_region }}"
+    state: absent
+  failed_when: false
+
+- name: Remove firewall rule
+  gcp_compute_firewall:
+    auth_kind: serviceaccount
+    service_account_file: "{{ credentials_file_path }}"
+    project: "{{ project_id }}"
+    name: algovpn
+    state: absent
+  failed_when: false
+
+- name: Remove network
+  gcp_compute_network:
+    auth_kind: serviceaccount
+    service_account_file: "{{ credentials_file_path }}"
+    project: "{{ project_id }}"
+    name: algovpn
+    state: absent
+  failed_when: false

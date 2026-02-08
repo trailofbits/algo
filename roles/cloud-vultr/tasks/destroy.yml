@@ -1,0 +1,15 @@
+---
+- environment:
+    VULTR_API_KEY: "{{ lookup('ini', 'key', section='default', file=algo_vultr_config) }}"
+  block:
+    - name: Destroy Vultr instance
+      vultr.cloud.instance:
+        name: "{{ algo_server_name }}"
+        region: "{{ algo_vultr_region }}"
+        state: absent
+
+    - name: Remove firewall group
+      vultr.cloud.firewall_group:
+        name: "{{ algo_server_name }}"
+        state: absent
+      failed_when: false

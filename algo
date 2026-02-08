@@ -168,6 +168,8 @@ case "$1" in
     echo "Commands:"
     echo "  (default)        Deploy a new VPN server"
     echo "  update-users     Add or remove users on an existing server"
+    echo "  destroy          Destroy a deployed server and clean up configs"
+    echo "  list-servers     List deployed servers (JSON output)"
     echo ""
     echo "Configuration:"
     echo "  Edit config.cfg to set users, DNS, and VPN options before deploying."
@@ -186,6 +188,24 @@ case "$1" in
     ;;
   update-users)
     uv run ansible-playbook users.yml "${@:2}" -t update-users ;;
+  destroy)
+    if [ -z "${2:-}" ] || [[ "$2" == -* ]]; then
+      echo "Usage: ./algo destroy <server-ip> [ANSIBLE_OPTIONS]"
+      echo ""
+      echo "Destroy a deployed Algo VPN server and remove local configs."
+      echo ""
+      echo "Arguments:"
+      echo "  server-ip        IP address of the server to destroy"
+      echo ""
+      echo "Examples:"
+      echo "  ./algo destroy 188.166.66.185"
+      echo "  ./algo destroy 52.1.2.3 -e \"region=us-east-1\""
+      echo "  ./algo destroy 188.166.66.185 -e \"confirm_destroy=true\""
+      exit 1
+    fi
+    uv run ansible-playbook destroy.yml -e "server_ip=$2" "${@:3}" ;;
+  list-servers)
+    uv run python3 scripts/list_servers.py "${@:2}" ;;
   *)
     uv run ansible-playbook main.yml "${@}" ;;
 esac

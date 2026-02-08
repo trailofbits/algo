@@ -1,0 +1,9 @@
+---
+- environment:
+    SCW_TOKEN: "{{ algo_scaleway_token }}"
+  block:
+    - name: Destroy Scaleway server
+      scaleway_compute:
+        name: "{{ algo_server_name }}"
+        state: absent
+        region: "{{ algo_region }}"

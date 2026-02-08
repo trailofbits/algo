@@ -634,7 +634,8 @@ def core(module):
 
     compute_api = Scaleway(module=module)
 
-    check_image_id(compute_api, wished_server["image"])
+    if wished_server["state"] != "absent":
+        check_image_id(compute_api, wished_server["image"])
 
     # IP parameters of the wished server depends on the configuration
     ip_payload = public_ip_payload(compute_api=compute_api, public_ip=module.params["public_ip"])
@@ -648,16 +649,16 @@ def main():
     argument_spec = scaleway_argument_spec()
     argument_spec.update(
         dict(
-            image=dict(required=True),
+            image=dict(),
             name=dict(),
             region=dict(required=True, choices=SCALEWAY_LOCATION.keys()),
-            commercial_type=dict(required=True),
+            commercial_type=dict(),
             enable_ipv6=dict(default=False, type="bool"),
             boot_type=dict(choices=["bootscript", "local"]),
             public_ip=dict(default="absent"),
             state=dict(choices=state_strategy.keys(), default="present"),
             tags=dict(type="list", default=[]),
-            organization=dict(required=True),
+            organization=dict(),
             wait=dict(type="bool", default=False),
             wait_timeout=dict(type="int", default=300),
             wait_sleep_time=dict(type="int", default=3),
@@ -666,6 +667,12 @@ def main():
     )
     module = AnsibleModule(
         argument_spec=argument_spec,
+        required_if=[
+            ("state", "present", ["image", "commercial_type", "organization"]),
+            ("state", "running", ["image", "commercial_type", "organization"]),
+            ("state", "stopped", ["image", "commercial_type", "organization"]),
+            ("state", "restarted", ["image", "commercial_type", "organization"]),
+        ],
         supports_check_mode=True,
     )
 

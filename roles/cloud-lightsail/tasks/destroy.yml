@@ -1,0 +1,13 @@
+---
+- name: Set stack name
+  set_fact:
+    stack_name: "{{ algo_server_name | replace('.', '-') }}"
+
+- name: Destroy CloudFormation stack
+  cloudformation:
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
+    stack_name: "{{ stack_name }}"
+    state: absent
+    region: "{{ algo_region }}"
+  no_log: true
