@@ -76,9 +76,28 @@ repos:
         files: 'main\.yml|server\.yml|users\.yml'
         pass_filenames: false
 
+      - id: semgrep
+        name: Semgrep security scan
+        entry: >
+          bash -c '
+          command -v semgrep >/dev/null &&
+          semgrep --config auto
+          --exclude-rule dockerfile.security.last-user-is-root.last-user-is-root
+          --error --quiet --skip-unknown-extensions .
+          || echo "semgrep not installed - skipping"'
+        language: system
+        pass_filenames: false
+
       - id: actionlint
         name: GitHub Actions lint
         entry: bash -c 'command -v actionlint >/dev/null && actionlint .github/workflows/ || echo "actionlint not installed - skipping"'
+        language: system
+        files: '^\.github/workflows/.*\.yml$'
+        pass_filenames: false
+
+      - id: zizmor
+        name: GitHub Actions security audit
+        entry: bash -c 'command -v zizmor >/dev/null && zizmor .github/workflows/ || echo "zizmor not installed - skipping"'
         language: system
         files: '^\.github/workflows/.*\.yml$'
         pass_filenames: false

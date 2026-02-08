@@ -54,7 +54,7 @@ algo/
 
 ```bash
 # Run the full lint suite (same as CI)
-ansible-lint . && yamllint . && ruff check . && shellcheck scripts/*.sh
+ansible-lint . && yamllint . && ruff check . && shellcheck scripts/*.sh && semgrep --config auto --exclude-rule dockerfile.security.last-user-is-root.last-user-is-root --error --quiet .
 ansible-playbook main.yml --syntax-check
 ansible-playbook users.yml --syntax-check
 pytest tests/unit/ -q
@@ -101,6 +101,7 @@ When adding or modifying features, verify these before requesting review:
 | `yamllint` | All YAML | Document start `---`, quote `'on':` in workflows |
 | `ruff` | Python | Line length 120, target Python 3.11 |
 | `shellcheck` | Shell scripts | Quote variables, use `set -euo pipefail` |
+| `semgrep` | All code | SAST scanner, `--config auto`, suppress with `# nosemgrep: rule-id` |
 
 ### Git Workflow
 
