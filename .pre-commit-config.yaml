@@ -95,6 +95,13 @@ repos:
         files: '^\.github/workflows/.*\.yml$'
         pass_filenames: false
 
+      - id: zizmor
+        name: GitHub Actions security audit
+        entry: bash -c 'command -v zizmor >/dev/null && zizmor .github/workflows/ || echo "zizmor not installed - skipping"'
+        language: system
+        files: '^\.github/workflows/.*\.yml$'
+        pass_filenames: false
+
 # Configuration for prek
 
 # Files to exclude globally
