@@ -369,6 +369,82 @@ ansible-playbook main.yml -vvv
 - `roles/*/templates/` - Jinja2 templates
 - `library/` - Custom Ansible modules (add to `mock_modules` in `.ansible-lint`)
 
+## Non-Interactive Deployment
+
+All `pause:` prompts in `input.yml` and provider roles skip when their
+variable is pre-defined via `-e` or environment variables. This enables
+fully headless deployment for CI, agents, and scripted workflows.
+See [docs/deploy-from-ansible.md](docs/deploy-from-ansible.md) for
+full human-facing documentation.
+
+### Core variables
+
+These bypass the main prompts in `input.yml`:
+
+| Variable | Type | Default | Purpose |
+|----------|------|---------|---------|
+| `provider` | string | *(prompt)* | Provider alias (e.g., `digitalocean`, `ec2`, `local`) |
+| `server_name` | string | `algo` | VPN server name |
+| `ondemand_cellular` | bool | `false` | iOS/macOS Connect On Demand for cellular |
+| `ondemand_wifi` | bool | `false` | iOS/macOS Connect On Demand for Wi-Fi |
+| `ondemand_wifi_exclude` | string | *(none)* | Comma-separated trusted Wi-Fi networks |
+| `store_pki` | bool | `false` | Retain PKI keys (needed to add users later) |
+| `dns_adblocking` | bool | `false` | Enable DNS ad blocking |
+| `ssh_tunneling` | bool | `false` | Per-user SSH tunnel accounts |
+
+### Provider credentials
+
+| Provider | `-e` variables | Env var fallbacks |
+|----------|---------------|-------------------|
+| `digitalocean` | `do_token`, `region` | `DO_API_TOKEN` |
+| `ec2` | `aws_access_key`, `aws_secret_key`, `region` | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` (also reads `~/.aws/credentials`) |
+| `lightsail` | `aws_access_key`, `aws_secret_key`, `region` | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` |
+| `azure` | `azure_secret`, `azure_tenant`, `azure_client_id`, `azure_subscription_id`, `region` | `AZURE_SECRET`, `AZURE_TENANT`, `AZURE_CLIENT_ID`, `AZURE_SUBSCRIPTION_ID` |
+| `gce` | `gce_credentials_file`, `region` | `GCE_CREDENTIALS_FILE_PATH` |
+| `hetzner` | `hcloud_token`, `region` | `HCLOUD_TOKEN` |
+| `vultr` | `vultr_config`, `region` | `VULTR_API_CONFIG` |
+| `scaleway` | `scaleway_token`, `scaleway_org_id`, `region` | `SCW_TOKEN`, `SCW_DEFAULT_ORGANIZATION_ID` |
+| `linode` | `linode_token`, `region` | `LINODE_API_TOKEN` |
+| `cloudstack` | `cs_key`, `cs_secret`, `cs_url`, `region` | `CLOUDSTACK_KEY`, `CLOUDSTACK_SECRET`, `CLOUDSTACK_ENDPOINT` |
+| `openstack` | `region` | `OS_AUTH_URL` (source your `openrc.sh`) |
+| `local` | `server`, `endpoint`, `local_install_confirmed` | *(none)* |
+
+### Minimal examples
+
+```bash
+# DigitalOcean — fully headless
+ansible-playbook main.yml -e \
+  "provider=digitalocean
+   server_name=algo
+   region=nyc3
+   do_token=YOUR_TOKEN
+   ondemand_cellular=false
+   ondemand_wifi=false
+   dns_adblocking=false
+   ssh_tunneling=false
+   store_pki=false"
+
+# Local — for CI/testing
+ansible-playbook main.yml -e \
+  "provider=local
+   server=localhost
+   endpoint=10.0.0.1
+   local_install_confirmed=true
+   ondemand_cellular=false
+   ondemand_wifi=false
+   dns_adblocking=false
+   ssh_tunneling=false"
+```
+
+### Updating users non-interactively
+
+```bash
+ansible-playbook users.yml -e "server=YOUR_SERVER ca_password=YOUR_CA_PASS"
+```
+
+The `server` variable bypasses the server selection prompt.
+`ca_password` is only required when IPsec is enabled.
+
 ## Security Considerations
 
 - **Never expose secrets** - No passwords/keys in commits
