@@ -182,15 +182,6 @@ wheels = [
 ]
 
 [[package]]
-name = "azure-common"
-version = "1.1.28"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/3e/71/f6f71a276e2e69264a97ad39ef850dca0a04fce67b12570730cb38d0ccac/azure-common-1.1.28.zip", hash = "sha256:4ac0cd3214e36b6a1b6a442686722a5d8cc449603aa833f3f0f40bda836704a3", size = 20914, upload-time = "2022-02-03T19:39:44.373Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/62/55/7f118b9c1b23ec15ca05d15a578d8207aa1706bc6f7c87218efffbbf875d/azure_common-1.1.28-py2.py3-none-any.whl", hash = "sha256:5c12d3dcf4ec20599ca6b0d3e09e86e146353d443e7fcc050c9a19c1f9df20ad", size = 14462, upload-time = "2022-02-03T19:39:42.417Z" },
-]
-
-[[package]]
 name = "azure-core"
 version = "1.38.0"
 source = { registry = "https://pypi.org/simple" }
@@ -205,7 +196,7 @@ wheels = [
 
 [[package]]
 name = "azure-identity"
-version = "1.25.1"
+version = "1.25.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "azure-core" },
@@ -214,9 +205,9 @@ dependencies = [
     { name = "msal-extensions" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/06/8d/1a6c41c28a37eab26dc85ab6c86992c700cd3f4a597d9ed174b0e9c69489/azure_identity-1.25.1.tar.gz", hash = "sha256:87ca8328883de6036443e1c37b40e8dc8fb74898240f61071e09d2e369361456", size = 279826, upload-time = "2025-10-06T20:30:02.194Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c2/3a/439a32a5e23e45f6a91f0405949dc66cfe6834aba15a430aebfc063a81e7/azure_identity-1.25.2.tar.gz", hash = "sha256:030dbaa720266c796221c6cdbd1999b408c079032c919fef725fcc348a540fe9", size = 284709, upload-time = "2026-02-11T01:55:42.323Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/83/7b/5652771e24fff12da9dde4c20ecf4682e606b104f26419d139758cc935a6/azure_identity-1.25.1-py3-none-any.whl", hash = "sha256:e9edd720af03dff020223cd269fa3a61e8f345ea75443858273bcb44844ab651", size = 191317, upload-time = "2025-10-06T20:30:04.251Z" },
+    { url = "https://files.pythonhosted.org/packages/9b/77/f658c76f9e9a52c784bd836aaca6fd5b9aae176f1f53273e758a2bcda695/azure_identity-1.25.2-py3-none-any.whl", hash = "sha256:1b40060553d01a72ba0d708b9a46d0f61f56312e215d8896d836653ffdc6753d", size = 191423, upload-time = "2026-02-11T01:55:44.245Z" },
 ]
 
 [[package]]
@@ -261,17 +252,16 @@ wheels = [
 
 [[package]]
 name = "azure-mgmt-resource"
-version = "24.0.0"
+version = "25.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "azure-common" },
     { name = "azure-mgmt-core" },
     { name = "isodate" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/50/4c/b27a3dfbedebbcc8e346a956a803528bd94a19fdf14b1de4bd781b03a6cc/azure_mgmt_resource-24.0.0.tar.gz", hash = "sha256:cf6b8995fcdd407ac9ff1dd474087129429a1d90dbb1ac77f97c19b96237b265", size = 3030022, upload-time = "2025-06-17T08:04:01.731Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d7/7e/b3f9d544a94782be9c5ab8123d2fa7fb20cbdf3f5a16b883f308865e1406/azure_mgmt_resource-25.0.0.tar.gz", hash = "sha256:dc123a9f6509c37299d7716c9090cff0a9d73309b228cc094ea950ce3cca3603", size = 92837, upload-time = "2026-02-06T06:00:39.699Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/14/18/f047cb553dad6fdb65c625c4fe48552e043c4e9a859416a70c5047d07475/azure_mgmt_resource-24.0.0-py3-none-any.whl", hash = "sha256:27b32cd223e2784269f5a0db3c282042886ee4072d79cedc638438ece7cd0df4", size = 3613790, upload-time = "2025-06-17T08:04:04.046Z" },
+    { url = "https://files.pythonhosted.org/packages/92/41/ce12546aa2a20c4f37d061bfa7df3bf8fa72ff01e7557ec330929c72ec7d/azure_mgmt_resource-25.0.0-py3-none-any.whl", hash = "sha256:f6f17b2305abe9bf6ec6c92a9410af21a2b0d805cc98e94d80c07220924a045b", size = 83670, upload-time = "2026-02-06T06:00:41.317Z" },
 ]
 
 [[package]]
@@ -304,16 +294,16 @@ wheels = [
 
 [[package]]
 name = "boto3"
-version = "1.42.41"
+version = "1.42.46"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "botocore" },
     { name = "jmespath" },
     { name = "s3transfer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/85/b0/f2a371146877b4d60cd2a6f51c440503cbf77a73c85347ad282eebe90269/boto3-1.42.41.tar.gz", hash = "sha256:86dd2bc577e33da5cd9f10e21b22cdda01a24f83f31ca1bb5ac1f5f8b8e9e67e", size = 112806, upload-time = "2026-02-03T20:38:58.004Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d9/87/1ccd436a6815c18107aa74aa2b7b2745dc5a1db83cf58afc591df2755775/boto3-1.42.46.tar.gz", hash = "sha256:c8c82ab34dd8d2d4d93a562d0e75fca164efa644651d3ccddb0f4aa88a481b38", size = 112795, upload-time = "2026-02-10T20:38:10.784Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7b/e8/e671b9aed3e8f6bb5f85aed7fd9dd4e79074798b2a14391fab6b6da04ff7/boto3-1.42.41-py3-none-any.whl", hash = "sha256:32470b1d32208e03b47cf6ce4a7adb337b8a1730aaefb97c336cfd4e2be2577f", size = 140602, upload-time = "2026-02-03T20:38:56.352Z" },
+    { url = "https://files.pythonhosted.org/packages/ce/41/978d749a6604bf93e05e8be56db07eb1402ffe576e1bb9b65aa391ebcb73/boto3-1.42.46-py3-none-any.whl", hash = "sha256:679cf4930e559621653bbd1439cf6e93b138cbaf46e36e5d7d95319999b7a356", size = 140606, upload-time = "2026-02-10T20:38:08.175Z" },
 ]
 
 [[package]]
