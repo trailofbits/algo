@@ -56,6 +56,9 @@ jobs:
       - name: Install Python dependencies
         run: uv sync
 
+      - name: Install Ansible collections
+        run: uv run ansible-galaxy collection install -r requirements.yml
+
       - name: Create test configuration
         run: |
           cat > integration-test.cfg << EOF

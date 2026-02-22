@@ -7,7 +7,7 @@ collections:
   - name: community.general
     version: "==11.1.0"
   - name: community.crypto
-    version: "==3.0.3"
+    version: ">=3.1.1"
   - name: openstack.cloud
     version: "==2.4.1"
   - name: linode.cloud

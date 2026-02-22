@@ -60,6 +60,24 @@
           You must update the requirements to use this version of Algo.
           Try to run: uv sync
 
+    - name: Check cryptography library SECP384R1 support
+      command: >
+        {{ ansible_playbook_python }} -c
+        "from cryptography.hazmat.primitives.asymmetric.ec import SECP384R1"
+      changed_when: false
+      failed_when: false
+      register: _crypto_check
+      when: ipsec_enabled | default(true) | bool
+
+    - name: Verify cryptography library supports IPsec requirements
+      assert:
+        that: _crypto_check.rc == 0
+        msg: >
+          The Python cryptography library is missing or does not support SECP384R1.
+          IPsec/IKEv2 requires the cryptography package with elliptic curve support.
+          Fix: Run ./algo (manages dependencies automatically) or: uv sync && uv run ansible-playbook main.yml
+      when: ipsec_enabled | default(true) | bool
+
 - name: Include prompts playbook
   import_playbook: input.yml
 
