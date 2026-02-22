@@ -142,7 +142,7 @@
             groups: vpn-host
             ansible_ssh_user: "{{ server_user | default('root') }}"
             ansible_connection: "{% if algo_server == 'localhost' %}local{% else %}ssh{% endif %}"
-            ansible_python_interpreter: /usr/bin/python3
+            ansible_python_interpreter: "{% if algo_server == 'localhost' %}{{ ansible_playbook_python }}{% else %}/usr/bin/python3{% endif %}"
             CA_password: "{{ CA_password | default(omit) }}"
       rescue:
         - include_tasks: playbooks/rescue.yml

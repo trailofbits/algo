@@ -10,7 +10,7 @@
     ansible_connection: "{% if cloud_instance_ip == 'localhost' %}local{% else %}ssh{% endif %}"
     ansible_ssh_user: "{{ ansible_ssh_user | default('root') }}"
     ansible_ssh_port: "{{ ansible_ssh_port | default(22) }}"
-    ansible_python_interpreter: /usr/bin/python3
+    ansible_python_interpreter: "{% if cloud_instance_ip == 'localhost' %}{{ ansible_playbook_python }}{% else %}/usr/bin/python3{% endif %}"
     algo_provider: "{{ algo_provider }}"
     algo_server_name: "{{ algo_server_name }}"
     algo_ondemand_cellular: "{{ algo_ondemand_cellular }}"
