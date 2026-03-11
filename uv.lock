@@ -296,30 +296,30 @@ wheels = [
 
 [[package]]
 name = "boto3"
-version = "1.42.56"
+version = "1.42.60"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "botocore" },
     { name = "jmespath" },
     { name = "s3transfer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fe/dc/990222f8c0cd7453c03410bc8b367ccb35ae01d9642ff1f79231cd3f3d8f/boto3-1.42.56.tar.gz", hash = "sha256:8b0779431b349582f4d61b55a2858b943d5295f4b5de62e2d669fdbbcda96bd6", size = 112814, upload-time = "2026-02-24T20:28:51.825Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b8/e0/071e00265d3d8127b28c27ba3918ba283f49b39943864a389ac3f5096ef3/boto3-1.42.60.tar.gz", hash = "sha256:3d549d15c821dcc871a0821319049e7d493ae3317121eb01e4b1f5230c19d5d4", size = 112786, upload-time = "2026-03-03T21:21:07.199Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/59/bb/a7fd6f4f38cf0f6cd91c152442cbe5b5f270275a60a5c7147ae5560f2f25/boto3-1.42.56-py3-none-any.whl", hash = "sha256:e09f91170b19e0ecd5e514321d99323be3e91a58dfa73fd58cf73b7b8b179c84", size = 140556, upload-time = "2026-02-24T20:28:49.815Z" },
+    { url = "https://files.pythonhosted.org/packages/ed/30/156ff2b5afb7dd03383b5f97d0e32535e9c0e783917380c476fe2fbc1874/boto3-1.42.60-py3-none-any.whl", hash = "sha256:c0cc3d93cd76c99461f6e109e04bb020defe3ffcd04c6163c72836dff5591614", size = 140554, upload-time = "2026-03-03T21:21:05.194Z" },
 ]
 
 [[package]]
 name = "botocore"
-version = "1.42.56"
+version = "1.42.65"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jmespath" },
     { name = "python-dateutil" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b8/2f/f6351cca2e3a087fb82a5c19e4d60e93a5dae27e9a085cc5fcb7faca8bd4/botocore-1.42.56.tar.gz", hash = "sha256:b1d7d3cf2fbe4cc1804a6567a051fc7141d21bcdcfde0336257b8dd2085272c2", size = 14939515, upload-time = "2026-02-24T20:28:40.55Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2e/81/2c832e2117d24da4fe800861e8ddd19bbaa308623b1198eb2c2cc6fcd3d4/botocore-1.42.65.tar.gz", hash = "sha256:7d52c148df07f70c375eeda58f99b439c7c7836c25df74cccfba3bb6e12444d2", size = 14970239, upload-time = "2026-03-10T19:44:43.686Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5a/09/dcc3f79de57f684d844ca853eeebff1786e5d672cf600f8ee6a118a9f015/botocore-1.42.56-py3-none-any.whl", hash = "sha256:111089dea212438a5197e909e5b528e7c30fd8cbd02c8c7d469359b368929343", size = 14612466, upload-time = "2026-02-24T20:28:36.379Z" },
+    { url = "https://files.pythonhosted.org/packages/8e/9e/2ca03a55408c0820d7f0a04ae52bc6dfc7e4fff1f007a90135a68e056c93/botocore-1.42.65-py3-none-any.whl", hash = "sha256:0283c332ce00cbd1b894e86b7bed89dd624a5ca3a4ee62ec4db3898d16652e98", size = 14644794, upload-time = "2026-03-10T19:44:37.442Z" },
 ]
 
 [[package]]
@@ -779,16 +779,16 @@ wheels = [
 
 [[package]]
 name = "linode-api4"
-version = "5.39.0"
+version = "5.40.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "deprecated" },
     { name = "polling" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/76/ba/eb9e1150b8b87a9b7c2f6ce7cca7fda05840067ef3f2fe1d5b39e382d094/linode_api4-5.39.0.tar.gz", hash = "sha256:55444c4234fa57e85688a5ff6957396851d461ea2a254df8d8308e7c48902383", size = 256240, upload-time = "2026-01-16T18:44:38.395Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0a/f2/cf7e55ed30c731a7d0be597e4265ea050f018fc417489d5c0ca960624aa7/linode_api4-5.40.0.tar.gz", hash = "sha256:50c522891deb92286606d227ecc84f8559c7a77c2409a30dd3518c25e54bbd24", size = 258141, upload-time = "2026-03-02T16:13:04.043Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e2/84/c914f5eeeefdeccfc9b4d1acab9e68f27f86f97478a655c59ef02a4ddfa4/linode_api4-5.39.0-py3-none-any.whl", hash = "sha256:57c5f125959c25f981ddbcbf6796cd1eb8d868947f0685b8131b93566bfb96af", size = 150177, upload-time = "2026-01-16T18:44:36.321Z" },
+    { url = "https://files.pythonhosted.org/packages/d6/84/73e646f56efea10ce9403afe35e90342904a544025b7b11bab6bd5b92f52/linode_api4-5.40.0-py3-none-any.whl", hash = "sha256:8e520db5e2df5839e5ca833ea1b3e294003da2a9e2a42da2532da8c531d9021b", size = 151306, upload-time = "2026-03-02T16:13:01.953Z" },
 ]
 
 [[package]]
