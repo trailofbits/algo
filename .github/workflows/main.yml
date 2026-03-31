@@ -6,8 +6,8 @@ jobs:
   lint:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2.3.2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
+      - uses: actions/setup-python@7f80679172b057fc5e90d70d197929d454754a5a # v2.3.2
         with:
           python-version: '3.9'
           cache: 'pip'
@@ -32,8 +32,8 @@ jobs:
       matrix:
         UBUNTU_VERSION: ["20.04"]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2.3.2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
+      - uses: actions/setup-python@7f80679172b057fc5e90d70d197929d454754a5a # v2.3.2
         with:
           python-version: '3.9'
           cache: 'pip'
@@ -92,8 +92,8 @@ jobs:
       matrix:
         UBUNTU_VERSION: ["20.04"]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2.3.2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
+      - uses: actions/setup-python@7f80679172b057fc5e90d70d197929d454754a5a # v2.3.2
         with:
           python-version: '3.9'
           cache: 'pip'
