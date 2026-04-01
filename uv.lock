@@ -305,16 +305,16 @@ wheels = [
 
 [[package]]
 name = "boto3"
-version = "1.42.70"
+version = "1.42.75"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "botocore" },
     { name = "jmespath" },
     { name = "s3transfer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/04/7c/d7a533916d1afc9e17f8594203a85799d42f7c5751464fbdb25ead8db9d2/boto3-1.42.70.tar.gz", hash = "sha256:d060b0d83d2832e403671b9a895e73c3b025df8bb5896d89e401b0678705aac4", size = 112808, upload-time = "2026-03-17T19:43:22.445Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/78/1c/f836f5e52095a3374eee9317f980a22d9139477fe6277498ebf4406e35b4/boto3-1.42.75.tar.gz", hash = "sha256:3c7fd95a50c69271bd7707b7eda07dcfddb30e961a392613010f7ee81d91acb3", size = 112812, upload-time = "2026-03-24T21:14:00.529Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/18/a1/128e3676fb9b4fd965a93554e5e07045975ee6bd6e9fdb536cdffa32e99e/boto3-1.42.70-py3-none-any.whl", hash = "sha256:18a108c4d5df89a200b3949de0d39c0879b100c455e3229ea38275dd392db0f4", size = 140554, upload-time = "2026-03-17T19:43:20.406Z" },
+    { url = "https://files.pythonhosted.org/packages/6b/31/c04caef287a0ea507ba634f2280dbe8314d89c1d8da1aef648b661ad1201/boto3-1.42.75-py3-none-any.whl", hash = "sha256:16bc657d16403ee8e11c8b6920c245629e37a36ea60352b919da566f82b4cb4c", size = 140556, upload-time = "2026-03-24T21:13:58.004Z" },
 ]
 
 [[package]]
@@ -627,15 +627,15 @@ wheels = [
 
 [[package]]
 name = "hcloud"
-version = "2.17.0"
+version = "2.17.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "python-dateutil" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/47/46/0f97c3ca36e909488e028b6fef80f3fdff158fa0daa6e6ab7629f2c5327b/hcloud-2.17.0.tar.gz", hash = "sha256:3996adef6bc0f5755650bb8b8b024acebab2c29e217dac579c303722fc37ae85", size = 154427, upload-time = "2026-03-05T18:15:02.766Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/04/38/2902e1a9c05c58c4523d10b95e685c69e93c08abed6a7ab8822fac31561f/hcloud-2.17.1.tar.gz", hash = "sha256:04f1b7d1bb21e05a6b21dafc7fd3632698e2cf0c36d8447880145fd7f412fc13", size = 154481, upload-time = "2026-03-23T10:52:08.462Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/80/fe/5a4c4f0f484eafb081066fb2bb63650ae55409297d6ce44f566074663d13/hcloud-2.17.0-py3-none-any.whl", hash = "sha256:b72096f5a6cd91a962cc1a26d76e4575e25fc337a5b589336f62a7f3b1b7b0b6", size = 111524, upload-time = "2026-03-05T18:15:01.184Z" },
+    { url = "https://files.pythonhosted.org/packages/fe/46/d37cf11666561101c8f4425fbc0fa5cbc066480eeb2b87539af2e5c7eae2/hcloud-2.17.1-py3-none-any.whl", hash = "sha256:6b4adb35aed57ef7bedbcdf307df94496a5d15c1b47e9594a936f664589c6016", size = 111543, upload-time = "2026-03-23T10:52:07.035Z" },
 ]
 
 [[package]]
