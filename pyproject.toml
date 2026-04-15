@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68.0.0"]
+requires = ["setuptools>=82.0.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -23,7 +23,7 @@ py-modules = []
 [project.optional-dependencies]
 # Cloud provider dependencies (installed automatically based on provider selection)
 aws = [
-    "boto3>=1.34.0",
+    "boto3>=1.42.85",
 ]
 azure = [
     "azure-identity>=1.15.0",
