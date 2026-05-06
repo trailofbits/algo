@@ -17,7 +17,7 @@ jobs:
     name: Analyze Test Effectiveness
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98  # v5.0.1
+      - uses: actions/checkout@900f2210b1d28bbbd0bd22d17926b9e224e8f231  # v5.0.1
         with:
           persist-credentials: true
 
