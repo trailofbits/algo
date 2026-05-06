@@ -14,7 +14,7 @@ jobs:
     name: Ansible linting
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98  # v5.0.1
+      - uses: actions/checkout@900f2210b1d28bbbd0bd22d17926b9e224e8f231  # v5.0.1
         with:
           persist-credentials: false
 
@@ -41,7 +41,7 @@ jobs:
     name: YAML linting
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98  # v5.0.1
+      - uses: actions/checkout@900f2210b1d28bbbd0bd22d17926b9e224e8f231  # v5.0.1
         with:
           persist-credentials: false
 
@@ -55,7 +55,7 @@ jobs:
     name: Jinja2 template linting
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98  # v5.0.1
+      - uses: actions/checkout@900f2210b1d28bbbd0bd22d17926b9e224e8f231  # v5.0.1
         with:
           persist-credentials: false
 
@@ -77,7 +77,7 @@ jobs:
     name: Python linting
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98  # v5.0.1
+      - uses: actions/checkout@900f2210b1d28bbbd0bd22d17926b9e224e8f231  # v5.0.1
         with:
           persist-credentials: false
 
@@ -98,7 +98,7 @@ jobs:
     name: Python type checking
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98  # v5.0.1
+      - uses: actions/checkout@900f2210b1d28bbbd0bd22d17926b9e224e8f231  # v5.0.1
         with:
           persist-credentials: false
 
@@ -114,7 +114,7 @@ jobs:
     name: Shell script linting
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98  # v5.0.1
+      - uses: actions/checkout@900f2210b1d28bbbd0bd22d17926b9e224e8f231  # v5.0.1
         with:
           persist-credentials: false
 
@@ -132,7 +132,7 @@ jobs:
     name: PowerShell script linting
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98  # v5.0.1
+      - uses: actions/checkout@900f2210b1d28bbbd0bd22d17926b9e224e8f231  # v5.0.1
         with:
           persist-credentials: false
 
@@ -176,7 +176,7 @@ jobs:
     name: GitHub Actions linting
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98  # v5.0.1
+      - uses: actions/checkout@900f2210b1d28bbbd0bd22d17926b9e224e8f231  # v5.0.1
         with:
           persist-credentials: false
 
@@ -193,7 +193,7 @@ jobs:
     name: GitHub Actions security audit
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98  # v5.0.1
+      - uses: actions/checkout@900f2210b1d28bbbd0bd22d17926b9e224e8f231  # v5.0.1
         with:
           persist-credentials: false
 

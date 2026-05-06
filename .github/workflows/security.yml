@@ -16,7 +16,7 @@ jobs:
     container:
       image: semgrep/semgrep@sha256:d3d1be3a3770514d16a6a57b9761575d7536d70f45a5220274f4ec7d55c442b9  # v1.151.0
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98  # v5.0.1
+      - uses: actions/checkout@900f2210b1d28bbbd0bd22d17926b9e224e8f231  # v5.0.1
         with:
           persist-credentials: false
 
@@ -30,7 +30,7 @@ jobs:
     name: Python dependency audit
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98  # v5.0.1
+      - uses: actions/checkout@900f2210b1d28bbbd0bd22d17926b9e224e8f231  # v5.0.1
         with:
           persist-credentials: false
 
