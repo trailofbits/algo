@@ -18,3 +18,11 @@ collections:
     version: ">=3.0.0"
   - name: vultr.cloud
     version: "==1.14.0"
+  - name: amazon.aws
+    version: "==10.3.1"
+  - name: google.cloud
+    version: "==1.13.0"
+  - name: hetzner.hcloud
+    version: "==6.9.0"
+  - name: ngine_io.cloudstack
+    version: "==3.0.0"
