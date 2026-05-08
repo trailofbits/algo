@@ -16,3 +16,5 @@ collections:
     version: ">=1.26.0"
   - name: azure.azcollection
     version: ">=3.0.0"
+  - name: vultr.cloud
+    version: "==1.14.0"
