@@ -1,6 +1,7 @@
 *.retry
 .idea/
 configs/*
+configs-archive/*
 ~config.cfg
 config.cfg.*
 inventory_users

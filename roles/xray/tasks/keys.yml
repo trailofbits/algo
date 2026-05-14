@@ -16,11 +16,11 @@
 
     - name: Parse private key
       set_fact:
-        xray_reality_private_key: "{{ xray_x25519_output.stdout_lines[0] | regex_replace('^PrivateKey: ', '') }}"
+        xray_reality_private_key: "{{ xray_x25519_output.stdout_lines[0].split(': ') | last | trim }}"
 
     - name: Parse public key
       set_fact:
-        xray_reality_public_key: "{{ xray_x25519_output.stdout_lines[1] | regex_replace('^Password: ', '') }}"
+        xray_reality_public_key: "{{ xray_x25519_output.stdout_lines[1].split(': ') | last | trim }}"
 
     - name: Generate short ID
       set_fact:
