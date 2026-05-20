@@ -79,18 +79,18 @@ requires-dist = [
     { name = "azure-mgmt-compute", marker = "extra == 'azure'", specifier = ">=38.0.0" },
     { name = "azure-mgmt-network", marker = "extra == 'azure'", specifier = ">=25.0.0" },
     { name = "azure-mgmt-resource", marker = "extra == 'azure'", specifier = ">=23.0.0" },
-    { name = "boto3", marker = "extra == 'aws'", specifier = ">=1.43.4" },
+    { name = "boto3", marker = "extra == 'aws'", specifier = ">=1.43.6" },
     { name = "cryptography", specifier = ">=48.0.0" },
     { name = "cs", marker = "extra == 'cloudstack'", specifier = ">=3.0.0" },
-    { name = "google-auth", marker = "extra == 'gcp'", specifier = ">=2.50.0" },
-    { name = "hcloud", marker = "extra == 'hetzner'", specifier = ">=2.19.0" },
+    { name = "google-auth", marker = "extra == 'gcp'", specifier = ">=2.52.0" },
+    { name = "hcloud", marker = "extra == 'hetzner'", specifier = ">=2.20.0" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "linode-api4", marker = "extra == 'linode'", specifier = ">=5.43.0" },
     { name = "msrestazure", marker = "extra == 'azure'", specifier = ">=0.6.4" },
     { name = "netaddr", specifier = "==1.3.0" },
     { name = "openstacksdk", marker = "extra == 'openstack'", specifier = ">=4.12.0" },
     { name = "pyyaml", specifier = ">=6.0.2" },
-    { name = "requests", marker = "extra == 'gcp'", specifier = ">=2.31.0" },
+    { name = "requests", marker = "extra == 'gcp'", specifier = ">=2.34.0" },
     { name = "segno", specifier = ">=1.6.0" },
 ]
 provides-extras = ["aws", "azure", "gcp", "hetzner", "linode", "openstack", "cloudstack"]
@@ -305,16 +305,16 @@ wheels = [
 
 [[package]]
 name = "boto3"
-version = "1.43.4"
+version = "1.43.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "botocore" },
     { name = "jmespath" },
     { name = "s3transfer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/17/04/f391b6e5b607bc00b633e3f18932bf1ef7b92e9a03f8fcc5bb09a561234b/boto3-1.43.4.tar.gz", hash = "sha256:00f40e9ca704c0f860b70ef47b042813c8d9a66b3d5e7bf81d578f79ae17dcd3", size = 113174, upload-time = "2026-05-05T19:34:37.859Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0a/37/78c630d1308964aa9abf44951d9c4df776546ff37251ec2434944e205c4e/boto3-1.43.6.tar.gz", hash = "sha256:e6315effaf12b890b99956e6f8e2c3000a3f64e4ee91943cec3895ce9a836afb", size = 113153, upload-time = "2026-05-07T20:49:59.694Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cd/85/b25499be693449df63c2c91e4e966ee81e46eb86071747e699f458583ebc/boto3-1.43.4-py3-none-any.whl", hash = "sha256:c4910b54c1f2401ab55d9fbca3d92df0a68e4ac64a69f2bab47a079e384a9d4f", size = 140502, upload-time = "2026-05-05T19:34:36.356Z" },
+    { url = "https://files.pythonhosted.org/packages/c8/e2/3c2eef44f55eafab256836d1d9479bd6a74f70c26cbfdc0639a0e23e4327/boto3-1.43.6-py3-none-any.whl", hash = "sha256:179601ec2992726a718053bf41e43c223ceba397d31ceab11f64d9c910d9fc3a", size = 140502, upload-time = "2026-05-07T20:49:57.8Z" },
 ]
 
 [[package]]
@@ -614,28 +614,28 @@ wheels = [
 
 [[package]]
 name = "google-auth"
-version = "2.50.0"
+version = "2.52.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
     { name = "pyasn1-modules" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5f/18/238d7021d151bdab868f23433817b027dd759135202f4dfce0670d1230ca/google_auth-2.50.0.tar.gz", hash = "sha256:f35eafb191195328e8ce10a7883970877e7aeb49c2bfaa54aa0e394316d353d0", size = 336523, upload-time = "2026-04-30T21:19:29.659Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d4/f8/80d2493cbedece1c623dc3e3cb1883300871af0dcdae254409522985ac23/google_auth-2.52.0.tar.gz", hash = "sha256:01f30e1a9e3638698d89464f5e603ce29d18e1c0e63ec31ac570aba4e164aaf5", size = 335027, upload-time = "2026-05-07T19:45:24.033Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/37/cf/4880c2137c14280b2f59975cdf12cc442bc0ae1f9ea473a26eaa0c146786/google_auth-2.50.0-py3-none-any.whl", hash = "sha256:04382175e28b94f49694977f0a792688b59a668def1499e9d8de996dc9ce5b15", size = 246495, upload-time = "2026-04-30T21:19:27.664Z" },
+    { url = "https://files.pythonhosted.org/packages/ee/fc/2cdc74252746f547f81ff3f02d4d4234a3f411b5de5b61af97e633a060b9/google_auth-2.52.0-py3-none-any.whl", hash = "sha256:aee92803ba0ff93a70a3b8a35c7b4797837751cd6380b63ff38372b98f3ed627", size = 245614, upload-time = "2026-05-07T19:45:21.914Z" },
 ]
 
 [[package]]
 name = "hcloud"
-version = "2.19.0"
+version = "2.20.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "python-dateutil" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1e/99/36d18258f90b8d5cf499a6dbad82bb8cc0419d95c55181691bd8a1e16528/hcloud-2.19.0.tar.gz", hash = "sha256:b17a2e7503456e7a470dfbaf6b258bb7d3f5ef1a23227d02199da91cc87dc156", size = 154946, upload-time = "2026-04-28T12:06:36.221Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/43/0c/69b03f17185582631c991e7ad11c3b77c41b37d6e479729286452d9e0711/hcloud-2.20.0.tar.gz", hash = "sha256:27052effab1a25bb3cbfc8e2d2472e0e8503b20aecab5bbad5c4b0e8697696d5", size = 155249, upload-time = "2026-05-07T20:05:41.635Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ee/03/c2a6a35c735445a6909d10c6e5c04732f2f493a2c52a06f3bf0b75c2b7a6/hcloud-2.19.0-py3-none-any.whl", hash = "sha256:b61312827b2c716ca3afc6b2d026b0a385ac074f2372f83e4a38aeeac80f9855", size = 112000, upload-time = "2026-04-28T12:06:34.534Z" },
+    { url = "https://files.pythonhosted.org/packages/42/b1/ecb2bf25a2a1333bd85d29e13db91085a88e4ef32e77afbc57cbe2fc524f/hcloud-2.20.0-py3-none-any.whl", hash = "sha256:7373c807c3dbbe5e35e25945e7c1a54d66b6b126d700cc2b8accf0c160f035a6", size = 112086, upload-time = "2026-05-07T20:05:39.723Z" },
 ]
 
 [[package]]
@@ -1265,7 +1265,7 @@ wheels = [
 
 [[package]]
 name = "requests"
-version = "2.33.1"
+version = "2.34.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "certifi" },
@@ -1273,9 +1273,9 @@ dependencies = [
     { name = "idna" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5f/a4/98b9c7c6428a668bf7e42ebb7c79d576a1c3c1e3ae2d47e674b468388871/requests-2.33.1.tar.gz", hash = "sha256:18817f8c57c6263968bc123d237e3b8b08ac046f5456bd1e307ee8f4250d3517", size = 134120, upload-time = "2026-03-30T16:09:15.531Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/43/b8/7a707d60fea4c49094e40262cc0e2ca6c768cca21587e34d3f705afec47e/requests-2.34.0.tar.gz", hash = "sha256:7d62fe92f50eb82c529b0916bb445afa1531a566fc8f35ffdc64446e771b856a", size = 142436, upload-time = "2026-05-11T19:29:51.717Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d7/8e/7540e8a2036f79a125c1d2ebadf69ed7901608859186c856fa0388ef4197/requests-2.33.1-py3-none-any.whl", hash = "sha256:4e6d1ef462f3626a1f0a0a9c42dd93c63bad33f9f1c1937509b8c5c8718ab56a", size = 64947, upload-time = "2026-03-30T16:09:13.83Z" },
+    { url = "https://files.pythonhosted.org/packages/ef/e6/e300fce5fe83c30520607a015dabd985df3251e188d234bfe9492e17a389/requests-2.34.0-py3-none-any.whl", hash = "sha256:917520a21b767485ce7c588f4ebb917c436b24a31231b44228715eaeb5a52c60", size = 73021, upload-time = "2026-05-11T19:29:49.923Z" },
 ]
 
 [[package]]

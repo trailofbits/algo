@@ -23,7 +23,7 @@ py-modules = []
 [project.optional-dependencies]
 # Cloud provider dependencies (installed automatically based on provider selection)
 aws = [
-    "boto3>=1.43.4",
+    "boto3>=1.43.6",
 ]
 azure = [
     "azure-identity>=1.15.0",
@@ -33,11 +33,11 @@ azure = [
     "msrestazure>=0.6.4",
 ]
 gcp = [
-    "google-auth>=2.50.0",
-    "requests>=2.31.0",
+    "google-auth>=2.52.0",
+    "requests>=2.34.0",
 ]
 hetzner = [
-    "hcloud>=2.19.0",
+    "hcloud>=2.20.0",
 ]
 linode = [
     "linode-api4>=5.43.0",
