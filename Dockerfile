@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM python:3.12-alpine
+FROM python:3.14.5-alpine
 
 ARG VERSION="git"
 # Removed rust/cargo (not needed with uv), simplified package list
