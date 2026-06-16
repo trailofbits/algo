@@ -23,7 +23,7 @@ py-modules = []
 [project.optional-dependencies]
 # Cloud provider dependencies (installed automatically based on provider selection)
 aws = [
-    "boto3>=1.43.21",
+    "boto3>=1.43.25",
 ]
 azure = [
     "azure-identity>=1.15.0",
@@ -46,7 +46,7 @@ openstack = [
     "openstacksdk>=4.14.0",
 ]
 cloudstack = [
-    "cs>=3.4.1",
+    "cs>=4.0.0",
 ]
 
 [tool.ruff]
