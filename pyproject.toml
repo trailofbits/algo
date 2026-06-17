@@ -23,7 +23,7 @@ py-modules = []
 [project.optional-dependencies]
 # Cloud provider dependencies (installed automatically based on provider selection)
 aws = [
-    "boto3>=1.43.21",
+    "boto3>=1.43.26",
 ]
 azure = [
     "azure-identity>=1.15.0",
@@ -43,10 +43,10 @@ linode = [
     "linode-api4>=5.44.0",
 ]
 openstack = [
-    "openstacksdk>=4.14.0",
+    "openstacksdk>=4.15.0",
 ]
 cloudstack = [
-    "cs>=3.4.1",
+    "cs>=4.0.0",
 ]
 
 [tool.ruff]
