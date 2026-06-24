@@ -9,7 +9,7 @@ version = "2.0.0-beta"
 requires-python = ">=3.11"
 dependencies = [
     "ansible==12.3.0",
-    "cryptography>=48.0.1",
+    "cryptography>=49.0.0",
     "jinja2>=3.1.6",
     "netaddr==1.3.0",
     "pyyaml>=6.0.2",
@@ -23,7 +23,7 @@ py-modules = []
 [project.optional-dependencies]
 # Cloud provider dependencies (installed automatically based on provider selection)
 aws = [
-    "boto3>=1.43.21",
+    "boto3>=1.43.31",
 ]
 azure = [
     "azure-identity>=1.15.0",
@@ -33,20 +33,20 @@ azure = [
     "msrestazure>=0.6.4",
 ]
 gcp = [
-    "google-auth>=2.53.0",
+    "google-auth>=2.55.0",
     "requests>=2.34.2",
 ]
 hetzner = [
-    "hcloud>=2.20.0",
+    "hcloud>=2.21.0",
 ]
 linode = [
-    "linode-api4>=5.44.0",
+    "linode-api4>=5.45.0",
 ]
 openstack = [
-    "openstacksdk>=4.14.0",
+    "openstacksdk>=4.16.0",
 ]
 cloudstack = [
-    "cs>=3.4.1",
+    "cs>=4.0.0",
 ]
 
 [tool.ruff]
