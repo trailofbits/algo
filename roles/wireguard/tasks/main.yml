@@ -61,9 +61,9 @@
         - name: Generate QR codes
           shell: >
             umask 077;
-            which segno &&
-            segno --scale=5 --output={{ item }}.png \
-              "{{ lookup('template', 'client.conf.j2') }}" || true
+            {{ ansible_playbook_python | dirname }}/segno
+            --scale=5 --output={{ item }}.png
+            "{{ lookup('template', 'client.conf.j2') }}"
           changed_when: false
           loop: "{{ wireguard_users }}"
           loop_control:
