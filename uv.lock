@@ -76,14 +76,14 @@ dev = [
 requires-dist = [
     { name = "ansible", specifier = "==12.3.0" },
     { name = "azure-identity", marker = "extra == 'azure'", specifier = ">=1.15.0" },
-    { name = "azure-mgmt-compute", marker = "extra == 'azure'", specifier = ">=38.0.0" },
+    { name = "azure-mgmt-compute", marker = "extra == 'azure'", specifier = ">=38.1.0" },
     { name = "azure-mgmt-network", marker = "extra == 'azure'", specifier = ">=25.0.0" },
     { name = "azure-mgmt-resource", marker = "extra == 'azure'", specifier = ">=23.0.0" },
-    { name = "boto3", marker = "extra == 'aws'", specifier = ">=1.43.31" },
+    { name = "boto3", marker = "extra == 'aws'", specifier = ">=1.43.36" },
     { name = "cryptography", specifier = ">=49.0.0" },
-    { name = "cs", marker = "extra == 'cloudstack'", specifier = ">=4.0.0" },
+    { name = "cs", marker = "extra == 'cloudstack'", specifier = ">=4.0.1" },
     { name = "google-auth", marker = "extra == 'gcp'", specifier = ">=2.55.0" },
-    { name = "hcloud", marker = "extra == 'hetzner'", specifier = ">=2.21.0" },
+    { name = "hcloud", marker = "extra == 'hetzner'", specifier = ">=2.22.0" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "linode-api4", marker = "extra == 'linode'", specifier = ">=5.45.0" },
     { name = "msrestazure", marker = "extra == 'azure'", specifier = ">=0.6.4" },
@@ -214,16 +214,16 @@ wheels = [
 
 [[package]]
 name = "azure-mgmt-compute"
-version = "38.0.0"
+version = "38.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "azure-mgmt-core" },
     { name = "isodate" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4f/ee/a143c8395267aea8d735c5336519ef94eeaa45f235c89c06f417d1d2ce60/azure_mgmt_compute-38.0.0.tar.gz", hash = "sha256:46cb0864f943b88463ed50ad006738023120cf7e53f50f7e4a740ccd5337abaf", size = 468888, upload-time = "2026-04-28T19:44:20.051Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/71/74/d756dbdcc8d43a53950c5d8b1ae7745223ba46205ba6037ec9d448f50062/azure_mgmt_compute-38.1.0.tar.gz", hash = "sha256:dbbe8355472bf58e9b358041d0124ca6b0fffff79d60aa6d0f094d8644ccffe5", size = 527915, upload-time = "2026-06-22T06:57:26.965Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/21/fc/b048242e79b14dd58a1dbede501ea2bfd3a43cac4aad4c0d76a81416a6e8/azure_mgmt_compute-38.0.0-py3-none-any.whl", hash = "sha256:6307edc4d1dabb540dadf11204be7663565d3108e16bcd253494457300cb3609", size = 438192, upload-time = "2026-04-28T19:44:22.124Z" },
+    { url = "https://files.pythonhosted.org/packages/ee/29/06d4e0f00ac41b3b55e30aa565bbc98da1d04f20ec4b66e76b67017b0edd/azure_mgmt_compute-38.1.0-py3-none-any.whl", hash = "sha256:c119b41fd1a52a742bfbf20e6570bba81d22ed665f5bc05e9552382d431044a5", size = 447701, upload-time = "2026-06-22T06:57:28.671Z" },
 ]
 
 [[package]]
@@ -305,16 +305,16 @@ wheels = [
 
 [[package]]
 name = "boto3"
-version = "1.43.31"
+version = "1.43.36"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "botocore" },
     { name = "jmespath" },
     { name = "s3transfer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a5/8a/1d33e395da9319b162046ff7d7e75550756425c2a236d8682b4a1bbdec1c/boto3-1.43.31.tar.gz", hash = "sha256:8165b79c02955affbe4b4e9aa7c560684d0d4d86b4b9de66a37b45eb79fc4b69", size = 113122, upload-time = "2026-06-16T19:45:02.677Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ff/9f/897287e955db0f50b12fd69ef45956e4fd2c7ddb48c736872f7ea2314443/boto3-1.43.36.tar.gz", hash = "sha256:587d7ee92a12e440ad12b0e7f11f3358f0c4d65b19f64726efc94aaf194aff28", size = 112690, upload-time = "2026-06-23T02:47:14.561Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/13/66/67b54f12fc0c5b2dc6fd0c04ea4cf1e7fc4a9843de680a22070d1fd77901/boto3-1.43.31-py3-none-any.whl", hash = "sha256:69c5521ad864f33d4d53b0e18a3927697f4558210693b1cb4dd97da959d1f7b9", size = 140533, upload-time = "2026-06-16T19:44:59.93Z" },
+    { url = "https://files.pythonhosted.org/packages/9f/f1/274303f52483ecf199eae6f8d9b6f5951670397ee4d72c06cfd4eb644612/boto3-1.43.36-py3-none-any.whl", hash = "sha256:42942dde254673abcbc9e6e60017c88341a4f49d99d24e1f2e290fb38138c26f", size = 140031, upload-time = "2026-06-23T02:47:13.178Z" },
 ]
 
 [[package]]
@@ -546,14 +546,14 @@ wheels = [
 
 [[package]]
 name = "cs"
-version = "4.0.0"
+version = "4.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d9/52/a0f61d19bd359b54b1a65e2dd1ccbd6f326be4baef0b1ec7420747e564e7/cs-4.0.0.tar.gz", hash = "sha256:6f441658adb10fe97ca0b1ff4f1a0291bc03faed54a7c7aed1b508e6fb5734cd", size = 14988, upload-time = "2026-06-08T06:03:59.133Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/34/87/f993b727965ea6a6467087b3ebd57312a8ff9734d0a9f42c4d15f7d740d0/cs-4.0.1.tar.gz", hash = "sha256:98df824103194aae8e409f1bd0ce100cfa2b52d5dd1c9fc1bf667739edd620f0", size = 14990, upload-time = "2026-06-17T12:40:15.071Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3a/bf/7e43a0e48332d70eca4b7835e853e515018e652b6807f0b3b4fcc1db2342/cs-4.0.0-py2.py3-none-any.whl", hash = "sha256:a86f88f9e30af8a87aa2720d99e9c789a4cad9098c55206526392b2bf5172651", size = 13587, upload-time = "2026-06-08T06:03:57.898Z" },
+    { url = "https://files.pythonhosted.org/packages/4c/32/76c3e428b8b95d0481e22326fbc33f4d559410a3071bd9b576e54095bbf0/cs-4.0.1-py2.py3-none-any.whl", hash = "sha256:efe43a6cb86828b2185790b4b2f76a9651a2264439e1ad053cde104053bfb2e7", size = 13594, upload-time = "2026-06-17T12:40:14.035Z" },
 ]
 
 [[package]]
@@ -623,15 +623,15 @@ wheels = [
 
 [[package]]
 name = "hcloud"
-version = "2.21.0"
+version = "2.22.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "python-dateutil" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2b/1e/7288c8a212fd3339339daee27a0be1da18895c5ad3d9e4788e37fda104fa/hcloud-2.21.0.tar.gz", hash = "sha256:2060b62ea143e474ad755c69ef53c7397f9638f4df83a502edcce7c5b5feb19e", size = 155266, upload-time = "2026-06-12T12:39:43.716Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/57/1b/6ca00d43a8062b24cc709de2fe4c35ee5c60505a53071f2c4a3f9b91e43b/hcloud-2.22.0.tar.gz", hash = "sha256:4bdbe7fb5b9e4bd3eab118f1278b9e24dc62a092799dfbf6d9e5cdf568ed7ca4", size = 155901, upload-time = "2026-06-18T15:34:48.058Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/90/ef/b78bac1694920591ad7749330b4e04445a95f5f617c80c25a935bb0dc227/hcloud-2.21.0-py3-none-any.whl", hash = "sha256:6bb10bf84ff30b50b99908a0f030a9dc603198a67bff6447bbc43a6cd4ad76aa", size = 112098, upload-time = "2026-06-12T12:39:42.308Z" },
+    { url = "https://files.pythonhosted.org/packages/e6/44/c59c048fea898c867f0b81b9f911ddeb5fb2237fda19d8f17a69b2eae6f9/hcloud-2.22.0-py3-none-any.whl", hash = "sha256:8f6e70c737c425a9a6e918d7a8a92e794f9e5bfa0326c71761f2bce84946d3ac", size = 112755, upload-time = "2026-06-18T15:34:46.818Z" },
 ]
 
 [[package]]

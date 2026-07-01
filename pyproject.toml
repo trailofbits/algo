@@ -23,11 +23,11 @@ py-modules = []
 [project.optional-dependencies]
 # Cloud provider dependencies (installed automatically based on provider selection)
 aws = [
-    "boto3>=1.43.31",
+    "boto3>=1.43.36",
 ]
 azure = [
     "azure-identity>=1.15.0",
-    "azure-mgmt-compute>=38.0.0",
+    "azure-mgmt-compute>=38.1.0",
     "azure-mgmt-network>=25.0.0",
     "azure-mgmt-resource>=23.0.0",
     "msrestazure>=0.6.4",
@@ -37,7 +37,7 @@ gcp = [
     "requests>=2.34.2",
 ]
 hetzner = [
-    "hcloud>=2.21.0",
+    "hcloud>=2.22.0",
 ]
 linode = [
     "linode-api4>=5.45.0",
@@ -46,7 +46,7 @@ openstack = [
     "openstacksdk>=4.16.0",
 ]
 cloudstack = [
-    "cs>=4.0.0",
+    "cs>=4.0.1",
 ]
 
 [tool.ruff]
