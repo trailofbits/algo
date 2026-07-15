@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=82.0.1"]
+requires = ["setuptools>=83.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -23,17 +23,17 @@ py-modules = []
 [project.optional-dependencies]
 # Cloud provider dependencies (installed automatically based on provider selection)
 aws = [
-    "boto3>=1.43.38",
+    "boto3>=1.43.42",
 ]
 azure = [
     "azure-identity>=1.15.0",
     "azure-mgmt-compute>=38.1.0",
-    "azure-mgmt-network>=31.0.0",
+    "azure-mgmt-network>=31.0.1",
     "azure-mgmt-resource>=26.0.0",
     "msrestazure>=0.6.4",
 ]
 gcp = [
-    "google-auth>=2.55.1",
+    "google-auth>=2.55.2",
     "requests>=2.34.2",
 ]
 hetzner = [
