@@ -33,7 +33,7 @@
         boot_type: local
         state: present
         image: "{{ scaleway_image_id }}"
-        project: "{{ algo_scaleway_org_id }}"
+        organization: "{{ algo_scaleway_org_id }}"
         region: "{{ algo_region }}"
         commercial_type: "{{ cloud_providers.scaleway.size }}"
         wait: true
@@ -60,7 +60,7 @@
         boot_type: local
         state: running
         image: "{{ scaleway_image_id }}"
-        project: "{{ algo_scaleway_org_id }}"
+        organization: "{{ algo_scaleway_org_id }}"
         region: "{{ algo_region }}"
         commercial_type: "{{ cloud_providers.scaleway.size }}"
         wait: true
@@ -68,7 +68,7 @@
           - Environment:Algo
           - AUTHORIZED_KEY={{ lookup('file', SSH_keys.public) | regex_replace(' ', '_') }}
       register: algo_instance
-      until: algo_instance.msg.public_ip
+      until: algo_instance.msg.public_ip is not none
       retries: 3
       delay: 3
 

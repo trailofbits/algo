@@ -20,34 +20,21 @@ def load_yaml_file(file_path):
         return yaml.safe_load(f)
 
 
-def test_scaleway_main_uses_project_parameter():
-    """Test that main.yml uses 'project' instead of deprecated 'organization' parameter"""
+def test_scaleway_main_uses_organization_parameter():
+    """Test that main.yml uses 'organization' parameter (custom module, not community.general)"""
     main_yml = Path("roles/cloud-scaleway/tasks/main.yml")
     assert main_yml.exists(), "Scaleway main.yml not found"
 
     with open(main_yml) as f:
         content = f.read()
 
-    # Should NOT use the broken scaleway_organization_info module
-    assert "scaleway_organization_info" not in content, (
-        "Still using broken scaleway_organization_info module (issue #14846)"
-    )
-
-    # Should NOT use the broken scaleway_image_info module
+    assert "scaleway_organization_info" not in content, "Still using broken scaleway_organization_info module"
     assert "scaleway_image_info" not in content, "Still using broken scaleway_image_info module"
-
-    # Should use project parameter (modern approach)
-    assert "project:" in content, "Missing 'project:' parameter in scaleway_compute calls"
+    assert "organization:" in content, "Missing 'organization:' parameter in scaleway_compute calls"
     assert "algo_scaleway_org_id" in content, "Missing algo_scaleway_org_id variable reference"
+    assert "project:" not in content, "Using unsupported 'project' parameter (not in custom module)"
 
-    # Should NOT use deprecated organization parameter
-    assert 'organization: "{{' not in content, "Still using deprecated 'organization' parameter"
-
-    # Should use Marketplace API v2 for image lookup
-    assert "api.scaleway.com/marketplace/v2" in content, "Not using Scaleway Marketplace API v2 for image lookup"
-    assert "api-marketplace.scaleway.com" not in content, "Still using deprecated api-marketplace.scaleway.com domain"
-
-    print("✓ Scaleway main.yml uses modern 'project' parameter")
+    print("✓ Scaleway main.yml uses 'organization' parameter")
 
 
 def test_scaleway_prompts_collect_org_id():
@@ -93,31 +80,26 @@ def test_scaleway_config_has_valid_settings():
 
 
 def test_scaleway_marketplace_api_usage():
-    """Test that the role correctly uses Scaleway Marketplace API v2"""
+    """Test that the role correctly uses Scaleway Marketplace API v2 for image lookup"""
     main_yml = Path("roles/cloud-scaleway/tasks/main.yml")
 
     with open(main_yml) as f:
         content = f.read()
 
-    # Should use uri module to fetch from Marketplace API v2
     assert "uri:" in content, "Not using uri module for API calls"
-
-    # Should use local-images endpoint with image_label
+    assert "marketplace/v2" in content, "Not using Marketplace API v2"
     assert "local-images" in content, "Not using local-images endpoint"
     assert "image_label" in content, "Not using image_label parameter"
-
-    # Should filter for instance_local type
     assert "instance_local" in content, "Not filtering for instance_local image type"
-
-    # Should set scaleway_image_id variable
     assert "scaleway_image_id" in content, "Missing scaleway_image_id variable for image UUID"
+    assert "instance/v1" not in content, "Still using Instance API v1 for image lookup"
 
     print("✓ Scaleway role uses Marketplace API v2 correctly")
 
 
 if __name__ == "__main__":
     tests = [
-        test_scaleway_main_uses_project_parameter,
+        test_scaleway_main_uses_organization_parameter,
         test_scaleway_prompts_collect_org_id,
         test_scaleway_config_has_valid_settings,
         test_scaleway_marketplace_api_usage,

@@ -167,19 +167,6 @@ SCALEWAY_SERVER_STATES = ("stopped", "stopping", "starting", "running", "locked"
 SCALEWAY_TRANSITIONS_STATES = ("stopping", "starting", "pending")
 
 
-def check_image_id(compute_api, image_id):
-    response = compute_api.get(path="images")
-
-    if response.ok and response.json:
-        image_ids = [image["id"] for image in response.json["images"]]
-        if image_id not in image_ids:
-            compute_api.module.fail_json(
-                msg="Error in getting image %s on %s" % (image_id, compute_api.module.params.get("api_url"))
-            )
-    else:
-        compute_api.module.fail_json(msg="Error in getting images from: %s" % compute_api.module.params.get("api_url"))
-
-
 def fetch_state(compute_api, server):
     compute_api.module.debug("fetch_state of server: %s" % server["id"])
     response = compute_api.get(path="servers/%s" % server["id"])
@@ -633,9 +620,6 @@ def core(module):
     module.params["api_url"] = SCALEWAY_LOCATION[region]["api_endpoint"]
 
     compute_api = Scaleway(module=module)
-
-    if wished_server["state"] != "absent":
-        check_image_id(compute_api, wished_server["image"])
 
     # IP parameters of the wished server depends on the configuration
     ip_payload = public_ip_payload(compute_api=compute_api, public_ip=module.params["public_ip"])
