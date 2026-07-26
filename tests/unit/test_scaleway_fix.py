@@ -43,8 +43,9 @@ def test_scaleway_main_uses_project_parameter():
     # Should NOT use deprecated organization parameter
     assert 'organization: "{{' not in content, "Still using deprecated 'organization' parameter"
 
-    # Should use Marketplace API for image lookup
-    assert "api-marketplace.scaleway.com" in content, "Not using Scaleway Marketplace API for image lookup"
+    # Should use Marketplace API v2 for image lookup
+    assert "api.scaleway.com/marketplace/v2" in content, "Not using Scaleway Marketplace API v2 for image lookup"
+    assert "api-marketplace.scaleway.com" not in content, "Still using deprecated api-marketplace.scaleway.com domain"
 
     print("✓ Scaleway main.yml uses modern 'project' parameter")
 
@@ -92,22 +93,26 @@ def test_scaleway_config_has_valid_settings():
 
 
 def test_scaleway_marketplace_api_usage():
-    """Test that the role correctly uses Scaleway Marketplace API"""
+    """Test that the role correctly uses Scaleway Marketplace API v2"""
     main_yml = Path("roles/cloud-scaleway/tasks/main.yml")
 
     with open(main_yml) as f:
         content = f.read()
 
-    # Should use uri module to fetch from Marketplace API
+    # Should use uri module to fetch from Marketplace API v2
     assert "uri:" in content, "Not using uri module for API calls"
 
-    # Should filter for Ubuntu 22.04 Jammy
-    assert "Ubuntu" in content and "22" in content, "Not filtering for Ubuntu 22.04 image"
+    # Should use local-images endpoint with image_label
+    assert "local-images" in content, "Not using local-images endpoint"
+    assert "image_label" in content, "Not using image_label parameter"
+
+    # Should filter for instance_local type
+    assert "instance_local" in content, "Not filtering for instance_local image type"
 
     # Should set scaleway_image_id variable
     assert "scaleway_image_id" in content, "Missing scaleway_image_id variable for image UUID"
 
-    print("✓ Scaleway role uses Marketplace API correctly")
+    print("✓ Scaleway role uses Marketplace API v2 correctly")
 
 
 if __name__ == "__main__":
