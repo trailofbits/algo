@@ -5,21 +5,25 @@
 - environment:
     SCW_TOKEN: "{{ algo_scaleway_token }}"
   block:
-    - name: Get Ubuntu 22.04 image ID from Scaleway Marketplace API
+    - name: Set Scaleway API zone name
+      set_fact:
+        scaleway_zone: >-
+          {{ scaleway_regions | selectattr('alias', 'equalto', algo_region) | map(attribute='zone') | first }}
+
+    - name: Get Ubuntu image ID from Scaleway Marketplace API
       uri:
-        url: "https://api-marketplace.scaleway.com/images?arch={{ cloud_providers.scaleway.arch }}&include_eol=false"
+        url: "https://api.scaleway.com/marketplace/v2/local-images?image_label={{ cloud_providers.scaleway.image_label }}&zone={{ scaleway_zone }}"
         method: GET
         return_content: true
       register: marketplace_images
 
-    - name: Find Ubuntu 22.04 Jammy image
+    - name: Find Ubuntu local image ID
       set_fact:
         scaleway_image_id: >-
-          {{ (marketplace_images.json.images |
-              selectattr('name', 'match', '.*Ubuntu.*22\\.04.*Jammy.*') |
-              first).versions[0].local_images |
-              selectattr('zone', 'equalto', algo_region) |
-              map(attribute='id') | first }}
+          {{ (marketplace_images.json.local_images |
+              selectattr('arch', 'equalto', cloud_providers.scaleway.arch) |
+              selectattr('type', 'equalto', 'instance_local') |
+              first).id }}
 
     - name: Create a server
       scaleway_compute:
@@ -29,7 +33,7 @@
         boot_type: local
         state: present
         image: "{{ scaleway_image_id }}"
-        project: "{{ algo_scaleway_org_id }}"
+        organization: "{{ algo_scaleway_org_id }}"
         region: "{{ algo_region }}"
         commercial_type: "{{ cloud_providers.scaleway.size }}"
         wait: true
@@ -56,7 +60,7 @@
         boot_type: local
         state: running
         image: "{{ scaleway_image_id }}"
-        project: "{{ algo_scaleway_org_id }}"
+        organization: "{{ algo_scaleway_org_id }}"
         region: "{{ algo_region }}"
         commercial_type: "{{ cloud_providers.scaleway.size }}"
         wait: true
@@ -64,7 +68,7 @@
           - Environment:Algo
           - AUTHORIZED_KEY={{ lookup('file', SSH_keys.public) | regex_replace(' ', '_') }}
       register: algo_instance
-      until: algo_instance.msg.public_ip
+      until: algo_instance.msg.public_ip is not none
       retries: 3
       delay: 3
 

@@ -1,4 +1,6 @@
 ---
 scaleway_regions:
   - alias: par1
+    zone: fr-par-1
   - alias: ams1
+    zone: nl-ams-1
