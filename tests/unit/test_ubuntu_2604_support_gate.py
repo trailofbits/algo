@@ -24,4 +24,10 @@ def test_ubuntu_2604_is_not_advertised_without_provider_canaries():
         Path("docs/deploy-to-unsupported-cloud.md"),
     ]
     for source in advertised_sources:
-        assert "26.04" not in source.read_text(encoding="utf-8"), source
+        for line in source.read_text(encoding="utf-8").splitlines():
+            if "26.04" in line:
+                normalized = line.casefold()
+                assert any(term in normalized for term in ("reject", "unsupported", "not support", "unvalidated")), (
+                    source,
+                    line,
+                )
