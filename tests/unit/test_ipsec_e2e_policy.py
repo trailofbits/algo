@@ -32,6 +32,17 @@ def test_ipsec_e2e_runs_an_isolated_swanctl_client_and_requires_both_sas():
     assert "Full tunnel test requires" not in script
 
 
+def test_ipsec_client_uses_a_private_executable_path_outside_host_apparmor_attachment():
+    script = _script()
+
+    assert 'install -m 0700 "${charon_binary}" "${IPSEC_CLIENT_DIR}/charon-client"' in script
+    assert 'charon_binary="${IPSEC_CLIENT_DIR}/charon-client"' in script
+    assert "command -v charon" not in script
+    assert 'stat -c "%u" -- "${candidate}"' in script
+    assert 'stat -c "%a" -- "${candidate}"' in script
+    assert '|| -L "${candidate}"' in script
+
+
 def test_ipsec_e2e_proves_dns_and_routed_source_ip_through_the_tunnel():
     script = _script()
 

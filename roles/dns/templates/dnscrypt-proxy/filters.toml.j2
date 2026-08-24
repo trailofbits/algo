@@ -32,8 +32,10 @@ block_ipv6 = false
 #        Pattern-based blocking (blacklists)        #
 ######################################################
 
+{% if algo_dns_adblocking | bool %}
 [blacklist]
-  {{ "blacklist_file = 'blacklist.txt'" if algo_dns_adblocking | bool else "" }}
+  blacklist_file = 'blacklist.txt'
+{% endif %}
 
 
 

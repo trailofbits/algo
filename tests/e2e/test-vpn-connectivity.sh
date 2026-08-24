@@ -441,6 +441,7 @@ test_ipsec() {
     local user_key="${CONFIG_DIR}/ipsec/.pki/private/${TEST_USER}.key"
     local server_id="127.0.0.1"
     local charon_binary=""
+    local candidate_owner candidate_mode
     local charon_log client_config vici_socket sa_status
     local server_source_ip vpn_source_ip
 
@@ -541,18 +542,26 @@ EOF
     chmod 600 "${IPSEC_CLIENT_DIR}/strongswan.conf" || return 1
 
     for candidate in /usr/lib/ipsec/charon /usr/libexec/ipsec/charon; do
-        if [[ -x "${candidate}" ]]; then
-            charon_binary="${candidate}"
-            break
+        if [[ ! -x "${candidate}" || ! -f "${candidate}" || -L "${candidate}" ]]; then
+            continue
         fi
+        candidate_owner=$(stat -c "%u" -- "${candidate}") || continue
+        candidate_mode=$(stat -c "%a" -- "${candidate}") || continue
+        if [[ "${candidate_owner}" != "0" ]] || (( (8#${candidate_mode} & 8#022) != 0 )); then
+            continue
+        fi
+        charon_binary="${candidate}"
+        break
     done
-    if [[ -z "${charon_binary}" ]] && command -v charon >/dev/null 2>&1; then
-        charon_binary=$(command -v charon)
-    fi
     if [[ -z "${charon_binary}" ]]; then
         log_error "charon executable not found; install the strongSwan charon package"
         return 1
     fi
+    # Ubuntu attaches the host AppArmor profile to the packaged charon path.
+    # Execute a root-owned private copy so the isolated test client can read
+    # its private namespace configuration without weakening the server profile.
+    install -m 0700 "${charon_binary}" "${IPSEC_CLIENT_DIR}/charon-client" || return 1
+    charon_binary="${IPSEC_CLIENT_DIR}/charon-client"
 
     log_info "Starting an isolated charon client in namespace ${NAMESPACE}"
     ip netns exec "${NAMESPACE}" unshare --mount --pid --fork --kill-child --mount-proc \
