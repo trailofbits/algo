@@ -33,11 +33,31 @@ def test_pull_requests_run_the_complete_pytest_suite():
 
 
 def test_validation_commands_do_not_mask_failures():
-    paths = [WORKFLOWS / name for name in VALIDATION_WORKFLOWS] + [ROOT / "scripts" / "lint.sh"]
+    paths = [WORKFLOWS / name for name in VALIDATION_WORKFLOWS] + [
+        ROOT / "scripts" / "lint.sh",
+        ROOT / ".pre-commit-config.yaml",
+    ]
     fail_open = re.compile(r"\|\|\s*(?:true|echo\b)|continue-on-error\s*:\s*true")
 
     offenders = [str(path.relative_to(ROOT)) for path in paths if fail_open.search(path.read_text(encoding="utf-8"))]
     assert offenders == []
+
+
+def test_integration_triggers_cover_e2e_config_dependencies_providers_and_workflows():
+    workflow = _load_workflow("integration-tests.yml")
+    paths = set(_triggers(workflow)["pull_request"]["paths"])
+    required = {
+        "tests/e2e/**",
+        "tests/integration/**",
+        "config.cfg",
+        "pyproject.toml",
+        "uv.lock",
+        "requirements.yml",
+        "roles/cloud-*/**",
+        ".github/workflows/**",
+        ".github/actions/**",
+    }
+    assert required <= paths
 
 
 def test_actionlint_checks_both_workflow_extensions():

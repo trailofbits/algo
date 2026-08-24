@@ -9,6 +9,15 @@ name: Integration Tests
       - 'roles/**'
       - 'playbooks/**'
       - 'library/**'
+      - 'tests/e2e/**'
+      - 'tests/integration/**'
+      - 'config.cfg'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'requirements.yml'
+      - 'roles/cloud-*/**'
+      - '.github/workflows/**'
+      - '.github/actions/**'
   workflow_dispatch:
   schedule:
     - cron: '0 2 * * 1'  # Weekly on Monday at 2 AM
