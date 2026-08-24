@@ -30,7 +30,7 @@ ec2:
   arch: arm64
 ```
 
-The t4g.nano instance is currently the least expensive option without promotional requirements. AWS is also running a promotion offering free t4g.small instances until December 31, 2025 - see the [AWS documentation](https://aws.amazon.com/ec2/faqs/#t4g-instances) for details.
+The t4g.nano instance is often an inexpensive option without promotional requirements. Confirm current instance availability and pricing in the AWS console before deployment.
 
 For additional EC2 configuration options, see the [deploy from ansible guide](https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md#amazon-ec2).
 

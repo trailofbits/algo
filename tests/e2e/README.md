@@ -1,7 +1,8 @@
-# End-to-End VPN Connectivity Tests
+# WireGuard End-to-End and IPsec Validation Tests
 
-This directory contains end-to-end tests that verify actual VPN connectivity
-using Linux network namespaces.
+This directory verifies a WireGuard tunnel using Linux network namespaces. The
+IPsec checks validate generated certificates, ports, DNS, and service health;
+they do not establish an IPsec client tunnel.
 
 ## Architecture
 
@@ -29,13 +30,13 @@ These tests require Linux (network namespaces are a Linux kernel feature).
 # Deploy Algo first
 ansible-playbook main.yml -e "provider=local"
 
-# Run all connectivity tests
+# Run WireGuard connectivity and IPsec validation
 sudo tests/e2e/test-vpn-connectivity.sh both
 
 # Run only WireGuard tests
 sudo tests/e2e/test-vpn-connectivity.sh wireguard
 
-# Run only IPsec tests
+# Run only IPsec validation
 sudo tests/e2e/test-vpn-connectivity.sh ipsec
 ```
 
@@ -103,7 +104,7 @@ specifically for testing.
 4. Ping to server VPN IP (10.49.0.1) succeeds
 5. DNS resolution through VPN (172.16.0.1) works
 
-### IPsec Tests
+### IPsec Validation (No Client Tunnel)
 1. Certificate and key files exist
 2. Certificate chain validates
 3. IPsec service is running and listening
@@ -115,7 +116,7 @@ specifically for testing.
 1. **Setup**: Create `algo-client` network namespace with veth pair
 2. **Validate**: Check mobileconfig XML and certificates
 3. **WireGuard**: Start wg-quick in namespace, verify handshake and connectivity
-4. **IPsec**: Verify certificates and service status
+4. **IPsec**: Validate certificates and service status (no client tunnel)
 5. **Cleanup**: Remove namespace, NAT rules, and temp files
 
 ## Troubleshooting
@@ -146,10 +147,10 @@ sudo ip netns del algo-client
 
 If tests fail, debug information is automatically collected including:
 - Network interfaces and routes
-- WireGuard and IPsec status
+- Sanitized service status (never client configuration or key material)
 - iptables NAT rules
 - DNS service status
-- Recent system logs
+- No raw system or VPN logs are uploaded
 
 ## CI Integration
 

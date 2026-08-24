@@ -102,6 +102,9 @@ jobs:
           # Verify consistent Python formatting
           uv run --with ruff ruff format --check .
 
+      - name: Check internal documentation links
+        run: scripts/check-internal-links.py
+
   python-types:
     name: Python type checking
     runs-on: ubuntu-22.04

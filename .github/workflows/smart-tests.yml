@@ -85,7 +85,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Setup uv environment
         uses: ./.github/actions/setup-uv
@@ -106,7 +106,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Setup uv environment
         uses: ./.github/actions/setup-uv
@@ -150,7 +150,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Setup uv environment
         uses: ./.github/actions/setup-uv
@@ -179,7 +179,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Setup uv environment
         uses: ./.github/actions/setup-uv
@@ -231,7 +231,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Setup uv environment
         uses: ./.github/actions/setup-uv

@@ -15,7 +15,7 @@ First of all, check [this](https://github.com/trailofbits/algo#features) and ens
         * [AWS: not authorized to perform: cloudformation:UpdateStack](#aws-not-authorized-to-perform-cloudformationupdatestack)
         * [Azure: No such file or directory .azure/azureProfile.json](#azure-no-such-file-or-directory-homeusernameazureazureprofilejson)
         * [Azure: Deployment Permissions Error](#azure-deployment-permissions-error)
-        * [Linode: Stackscript error](#linode-error-unable-to-query-the-linode-api-saw-400-the-requested-distribution-is-not-supported-by-this-stackscript-)
+        * [Linode: Stackscript error](#linode-error-unable-to-query-the-linode-api-saw-400-the-requested-distribution-is-not-supported-by-this-stackscript)
      * Windows
         * [Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid](#windows-the-value-of-parameter-linuxconfigurationsshpublickeyskeydata-is-invalid)
         * [Windows: "The parameter is incorrect" error when connecting](#windows-the-parameter-is-incorrect-error-when-connecting)
@@ -46,7 +46,7 @@ Look here if you have a problem running the installer to set up a new Algo serve
 
 ### Python version is not supported
 
-The minimum Python version required to run Algo is 3.11. Most modern operation systems should have it by default, but if the OS you are using doesn't meet the requirements, you have to upgrade. See the official documentation for your OS, or manual download it from https://www.python.org/downloads/. Otherwise, you may [deploy from docker](deploy-from-docker.md)
+The minimum Python version required to run Algo is 3.12. If your operating system does not provide it, let `./algo` install a managed Python with uv, follow your operating system's upgrade instructions, or [deploy from Docker](deploy-from-docker.md).
 
 ### Error: "ansible-playbook: command not found"
 
@@ -122,7 +122,7 @@ TASK [cloud-ec2 : Deploy the template] *****************************************
 fatal: [localhost]: FAILED! => {"changed": false, "failed": true, "msg": "User: arn:aws:iam::082851645362:user/algo is not authorized to perform: cloudformation:UpdateStack on resource: arn:aws:cloudformation:us-east-1:082851645362:stack/algo/*"}
 ```
 
-This error indicates you already have Algo deployed to Cloudformation. Need to [delete it](cloud-amazon-ec2.md#cleanup) first, then re-deploy.
+This error indicates you already have Algo deployed to CloudFormation. [Delete the existing stack](cloud-amazon-ec2.md#resource-cleanup) first, then re-deploy.
 
 ### Azure: No such file or directory: '/home/username/.azure/azureProfile.json'
 

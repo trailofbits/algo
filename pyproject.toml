@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "algo"
 description = "Set up a personal IPSEC VPN in the cloud"
-version = "2.0.0-beta"
+version = "2.0.0b0"
 requires-python = ">=3.12"
 dependencies = [
     "ansible==14.3.1",

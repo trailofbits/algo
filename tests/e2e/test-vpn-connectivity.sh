@@ -495,8 +495,8 @@ EOF
     # Check current IPsec status without logging certificate identities.
     ipsec statusall >/dev/null
 
-    # For a true E2E test, we would connect from the namespace
-    # But IPsec in namespaces requires running charon which is complex
+    # These IPsec checks validate artifacts and the server only; they do not
+    # establish a client tunnel from the namespace.
     # Instead, verify the server is accepting connections by checking logs
 
     # Test connectivity to IPsec ports

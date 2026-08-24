@@ -8,7 +8,7 @@ See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo
 
 ## Features
 
-* Supports only IKEv2 with strong crypto (AES-GCM, SHA2, and P-256) for iOS, MacOS, and Linux
+* Supports only IKEv2 with strong crypto (AES-GCM, SHA2, and P-256) for iOS, macOS, and tested Ubuntu 22.04 Linux clients
 * Supports [WireGuard](https://www.wireguard.com/) for all of the above, in addition to Android and Windows 11
 * Generates .conf files and QR codes for iOS, macOS, Android, and Windows WireGuard clients
 * Generates Apple profiles to auto-configure iOS and macOS devices for IPsec - no client software required
@@ -56,7 +56,7 @@ The easiest way to get an Algo server running is to run it on your local system 
     .\algo.ps1
     ```
 
-    The first time you run the script, it will automatically install the required Python environment (Python 3.11+). On subsequent runs, it starts immediately and works on all platforms (macOS, Linux, Windows via WSL). The Windows PowerShell script automatically uses WSL when needed, since Ansible requires a Unix-like environment. There are several optional features available, none of which are required for a fully functional VPN server. These optional features are described in the [deployment documentation](docs/deploy-from-ansible.md).
+    The first time you run the script, it automatically installs the required Python 3.12 environment. The launchers are tested on current macOS releases, Ubuntu 22.04, and Windows 11 with WSL2. The Windows PowerShell script uses WSL because Ansible requires a Unix-like environment. Optional features are described in the [deployment documentation](docs/deploy-from-ansible.md).
 
 That's it! You can now set up clients to connect to your VPN. Proceed to [Configure the VPN Clients](#configure-the-vpn-clients) below.
 
@@ -102,11 +102,11 @@ Install the [WireGuard VPN Client](https://www.wireguard.com/install/#windows-7-
 
 ### Linux
 
-Linux clients can use either WireGuard or IPsec:
+Ubuntu 22.04 clients are tested with both WireGuard and IPsec. Other Linux distributions may work but are not part of the supported test matrix:
 
-WireGuard: WireGuard works great with Linux clients. See the [Linux WireGuard setup guide](docs/client-linux-wireguard.md) for step-by-step instructions on configuring WireGuard on Ubuntu and other distributions.
+WireGuard: See the [Linux WireGuard setup guide](docs/client-linux-wireguard.md) for the tested Ubuntu setup.
 
-IPsec: For strongSwan IPsec clients (including OpenWrt, Ubuntu Server, and other distributions), see the [Linux IPsec setup guide](docs/client-linux-ipsec.md) for detailed configuration instructions.
+IPsec: See the [Linux IPsec setup guide](docs/client-linux-ipsec.md) for the tested Ubuntu strongSwan setup.
 
 ### OpenWrt
 
@@ -266,7 +266,7 @@ If you've read all the documentation and have further questions, [create a new d
 
 ## Contributing
 
-See our [Development Guide](docs/DEVELOPMENT.md) for information on:
+See our [contribution guide](CONTRIBUTING.md) for information on:
 * Setting up your development environment
 * Using prek hooks for code quality
 * Running tests and linters

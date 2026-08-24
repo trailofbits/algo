@@ -1,0 +1,63 @@
+"""Release metadata, support scope, and documentation link policy."""
+
+import re
+import subprocess
+import tomllib
+from pathlib import Path
+
+import yaml
+
+ROOT = Path(__file__).parents[2]
+
+
+def test_release_version_and_python_support_are_consistent():
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
+    lock = tomllib.loads((ROOT / "uv.lock").read_text(encoding="utf-8"))
+    locked_algo = next(package for package in lock["package"] if package["name"] == "algo")
+
+    assert project["version"] == locked_algo["version"] == "2.0.0b0"
+    assert project["requires-python"] == ">=3.12"
+
+    documentation = [ROOT / "README.md", ROOT / "docs" / "deploy-from-macos.md", ROOT / "docs" / "troubleshooting.md"]
+    ci_files = list((ROOT / ".github" / "workflows").glob("*.*ml"))
+    ci_files += list((ROOT / ".github" / "actions").glob("*/action.yml"))
+    assert not [
+        str(path.relative_to(ROOT)) for path in documentation if "Python 3.11" in path.read_text(encoding="utf-8")
+    ]
+    assert not [
+        str(path.relative_to(ROOT))
+        for path in ci_files
+        if re.search(r"(?:python-version:|default:) ['\"]3\.11['\"]", path.read_text(encoding="utf-8"))
+    ]
+
+
+def test_support_and_promotion_claims_are_bounded_and_current():
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    ec2 = (ROOT / "docs" / "cloud-amazon-ec2.md").read_text(encoding="utf-8")
+
+    assert "works on all platforms" not in readme
+    assert "Ubuntu and other distributions" not in readme
+    assert "promotion offering free t4g.small instances until December 31, 2025" not in ec2
+    assert "Ubuntu 22.04 LTS" in readme
+
+
+def test_ipsec_checks_are_not_described_as_end_to_end_connectivity():
+    workflow = (ROOT / ".github" / "workflows" / "integration-tests.yml").read_text(encoding="utf-8")
+    documentation = (ROOT / "tests" / "e2e" / "README.md").read_text(encoding="utf-8")
+    script = (ROOT / "tests" / "e2e" / "test-vpn-connectivity.sh").read_text(encoding="utf-8")
+
+    assert "Run E2E VPN connectivity tests" not in workflow
+    assert not re.search(r"IPsec.*(?:end-to-end|connectivity)", documentation, re.IGNORECASE)
+    assert "true E2E" not in script
+
+
+def test_internal_link_checker_runs_in_ci_and_reports_no_broken_links():
+    checker = ROOT / "scripts" / "check-internal-links.py"
+    assert checker.is_file()
+
+    result = subprocess.run([str(checker)], cwd=ROOT, capture_output=True, text=True)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+    workflow = yaml.safe_load((ROOT / ".github" / "workflows" / "lint.yml").read_text(encoding="utf-8"))
+    commands = "\n".join(step.get("run", "") for job in workflow["jobs"].values() for step in job.get("steps", []))
+    assert "scripts/check-internal-links.py" in commands

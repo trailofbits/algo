@@ -33,7 +33,7 @@ jobs:
 
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           # Note: No pip cache - we use uv for dependency management
 
       - name: Install system dependencies
@@ -207,7 +207,7 @@ jobs:
             sudo ipsec statusall | grep -E "INSTALLED|ESTABLISHED" || echo "No active IPsec connections (expected)"
           fi
 
-      - name: Run E2E VPN connectivity tests
+      - name: Run WireGuard connectivity and IPsec validation tests
         env:
           VPN_TYPE: ${{ matrix.vpn_type }}
         run: |

@@ -5,7 +5,7 @@ inputs:
   python-version:
     description: 'Python version to use'
     required: false
-    default: '3.11'
+    default: '3.12'
   install-shellcheck:
     description: 'Install shellcheck for shell script linting'
     required: false

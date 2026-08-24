@@ -96,7 +96,7 @@ You can temporarily disable DNS filtering for all IPsec clients at once with the
 
 ## Does Algo support zero logging?
 
-Yes, Algo includes privacy enhancements that minimize logging by default. StrongSwan connection logging is disabled, DNSCrypt syslog is turned off, and logs are automatically rotated after 7 days. However, some system-level logging remains for security and troubleshooting purposes. For detailed privacy configuration and limitations, see the [Privacy and Logging](#privacy-and-logging) section in the README.
+Yes, Algo includes privacy enhancements that minimize logging by default. StrongSwan connection logging is disabled, DNSCrypt syslog is turned off, and logs are automatically rotated after 7 days. However, some system-level logging remains for security and troubleshooting purposes. For detailed privacy configuration and limitations, see [Privacy and Logging](../README.md#privacy-and-logging) in the README.
 
 ## Wasn't IPSEC backdoored by the US government?
 

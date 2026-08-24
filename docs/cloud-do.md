@@ -20,7 +20,7 @@ Copy or note down the hash that shows below the name you entered, as this will b
 
 ## Select a Droplet (optional)
 
-The default option is the `s-1vcpu-1gb` because it is available in all regions. However, you may want to switch to a cheaper droplet such as `s-1vcpu-512mb-10gb` even though it is not available in all regions. This can be edited in the [Configuration File](config.cfg) under `cloud_providers > digitalocean > size`. See this brief comparison between the two droplets below:
+The default option is the `s-1vcpu-1gb` because it is available in all regions. However, you may want to switch to a cheaper droplet such as `s-1vcpu-512mb-10gb` even though it is not available in all regions. This can be edited in the [Configuration File](../config.cfg) under `cloud_providers > digitalocean > size`. See this brief comparison between the two droplets below:
 
 | Droplet Type | Monthly Cost | Bandwidth | Availability |
 |:--|:-:|:-:|:--|

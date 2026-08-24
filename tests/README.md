@@ -84,4 +84,4 @@ sudo ip netns del algo-client
 Add the filter to the mock in `conftest.py`.
 
 **CI fails but local passes**
-Check Python/Ansible versions match CI (Python 3.11, Ansible 12+).
+Check Python/Ansible versions match CI (Python 3.12, Ansible 12+).
