@@ -8,6 +8,7 @@ import os
 import sys
 from pathlib import Path
 
+import pytest
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, TemplateSyntaxError, UndefinedError
 
 # Add parent directory to path for fixtures
@@ -182,6 +183,41 @@ def test_variable_consistency():
             print(f"⚠ Variables possibly not defined in main.yml: {missing}")
 
     print("✓ Variable consistency check completed")
+
+
+@pytest.mark.parametrize(
+    ("endpoint", "expected"),
+    [
+        ("vpn.example.com", "vpn.example.com:51820"),
+        ("192.0.2.10", "192.0.2.10:51820"),
+        ("2001:db8::10", "[2001:db8::10]:51820"),
+    ],
+)
+@pytest.mark.parametrize("keepalive", [0, 25])
+def test_wireguard_endpoint_and_keepalive_are_separate_lines(endpoint, expected, keepalive):
+    env = Environment(
+        loader=FileSystemLoader("roles/wireguard/templates"),
+        undefined=StrictUndefined,
+        trim_blocks=True,
+        keep_trailing_newline=True,
+    )
+    env.globals["lookup"] = mock_lookup
+    variables = {
+        **get_test_variables(),
+        "item": "test-user",
+        "IP_subject_alt_name": endpoint,
+        "wireguard_PersistentKeepalive": keepalive,
+    }
+
+    output = env.get_template("client.conf.j2").render(**variables)
+    lines = output.splitlines()
+
+    assert f"Endpoint = {expected}" in lines
+    assert not any("Endpoint =" in line and "PersistentKeepalive" in line for line in lines)
+    if keepalive:
+        assert f"PersistentKeepalive = {keepalive}" in lines
+    else:
+        assert not any(line.startswith("PersistentKeepalive =") for line in lines)
 
 
 def test_wireguard_ipv6_endpoints():
