@@ -1,5 +1,5 @@
 ---
-- name: Copy the keys to the strongswan directory
+- name: Copy the keys to the starter credential directories
   copy:
     src: "{{ ipsec_pki_path }}/{{ item.src }}"
     dest: "{{ config_prefix | default('/') }}etc/ipsec.d/{{ item.dest }}"
@@ -22,5 +22,24 @@
       owner: strongswan
       group: "{{ root_group | default('root') }}"
       mode: "0600"
+  notify: reload systemd and restart strongswan
+  when: strongswan_backend == 'starter'
+
+- name: Copy the keys to the swanctl credential directories
+  copy:
+    src: "{{ ipsec_pki_path }}/{{ item.src }}"
+    dest: "{{ config_prefix | default('/') }}etc/swanctl/{{ item.dest }}"
+    owner: strongswan
+    group: "{{ root_group | default('root') }}"
+    mode: "0600"
+  loop:
+    - src: cacert.pem
+      dest: x509ca/ca.crt
+    - src: certs/{{ IP_subject_alt_name }}.crt
+      dest: x509/{{ IP_subject_alt_name }}.crt
+    - src: private/{{ IP_subject_alt_name }}.key
+      dest: private/{{ IP_subject_alt_name }}.key
   notify:
     - reload systemd and restart strongswan
+    - reload swanctl configuration
+  when: strongswan_backend == 'swanctl'

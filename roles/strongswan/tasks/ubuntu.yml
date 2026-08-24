@@ -9,15 +9,29 @@
     state: present
     persistent: present
 
-- name: Ubuntu | Install strongSwan (individual)
+- name: Ubuntu | Install strongSwan starter backend
   apt:
     name: strongswan
     state: present
     update_cache: true
     install_recommends: true
-  when: not performance_parallel_packages | default(true)
+  when:
+    - strongswan_backend == 'starter'
+    - not performance_parallel_packages | default(true)
 
-- when: apparmor_enabled|default(false)|bool
+- name: Ubuntu | Install strongSwan swanctl backend
+  apt:
+    name:
+      - charon-systemd
+      - strongswan-swanctl
+    state: present
+    update_cache: true
+    install_recommends: true
+  when: strongswan_backend == 'swanctl'
+
+- when:
+    - apparmor_enabled|default(false)|bool
+    - strongswan_backend == 'starter'
   tags: apparmor
   block:
     # https://bugs.launchpad.net/ubuntu/+source/strongswan/+bug/1826238

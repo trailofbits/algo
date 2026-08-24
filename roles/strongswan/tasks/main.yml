@@ -13,6 +13,7 @@
 
 - name: Install strongSwan
   package: name=strongswan state=present
+  when: not is_debian_based | bool
 
 - import_tasks: ipsec_configuration.yml
 - import_tasks: openssl.yml

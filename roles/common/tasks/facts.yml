@@ -3,7 +3,14 @@
   set_fact:
     is_debian_based: "{{ ansible_distribution in ['Debian', 'Ubuntu'] }}"
     uses_systemd_socket: "{{ ansible_distribution in ['Debian', 'Ubuntu'] }}"
+    is_ubuntu_22: "{{ ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04' }}"
+    is_ubuntu_24: "{{ ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04' }}"
     is_ubuntu_22_plus: "{{ ansible_distribution == 'Ubuntu' and ansible_distribution_version is version('22.04', '>=') }}"
+  tags: always
+
+- name: Select the StrongSwan control backend from supported OS facts
+  set_fact:
+    strongswan_backend: "{{ 'swanctl' if is_ubuntu_24 else 'starter' }}"
   tags: always
 
 - name: Define facts

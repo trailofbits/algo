@@ -5,6 +5,12 @@
     daemon_reload: true
     state: restarted
 
+- name: reload swanctl configuration
+  command: swanctl --load-all --noprompt
+  when: strongswan_backend == 'swanctl'
+  changed_when: false
+  no_log: true
+
 - name: restart apparmor
   service: name=apparmor state=restarted
 
@@ -18,12 +24,14 @@
       exit 0
     fi
 
-    # StrongSwan is running, wait a moment for it to stabilize
     sleep 2
-
-    # Try to reload CRLs with retries
     for attempt in 1 2 3; do
-      if ipsec rereadcrls 2>/dev/null && ipsec purgecrls 2>/dev/null; then
+      if [[ "{{ strongswan_backend }}" == "swanctl" ]]; then
+        reload_command="swanctl --load-authorities --noprompt"
+      else
+        reload_command="ipsec rereadcrls && ipsec purgecrls"
+      fi
+      if eval "${reload_command}" 2>/dev/null; then
         echo "Successfully reloaded CRLs"
         exit 0
       fi
@@ -31,7 +39,8 @@
       sleep 2
     done
 
-    # If StrongSwan is running but we can't reload CRLs, that's a real problem
     echo "Failed to reload CRLs after 3 attempts"
     exit 1
+  args:
+    executable: bash
   changed_when: false

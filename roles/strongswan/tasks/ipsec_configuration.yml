@@ -1,34 +1,48 @@
 ---
-- name: Setup the config files from our templates
+- name: Setup common StrongSwan configuration
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ config_prefix | default('/') }}etc/{{ item.dest }}"
+    owner: root
+    group: "{{ root_group | default('root') }}"
+    mode: "0644"
+  loop:
+    - src: strongswan.conf.j2
+      dest: strongswan.conf
+    - src: charon.conf.j2
+      dest: strongswan.d/charon.conf
+  notify: reload systemd and restart strongswan
+
+- name: Setup starter configuration
   template:
     src: "{{ item.src }}"
     dest: "{{ config_prefix | default('/') }}etc/{{ item.dest }}"
     owner: "{{ item.owner }}"
-    group: "{{ item.group }}"
+    group: "{{ root_group | default('root') }}"
     mode: "{{ item.mode }}"
   loop:
-    - src: strongswan.conf.j2
-      dest: strongswan.conf
-      owner: root
-      group: "{{ root_group | default('root') }}"
-      mode: "0644"
     - src: ipsec.conf.j2
       dest: ipsec.conf
       owner: root
-      group: "{{ root_group | default('root') }}"
       mode: "0644"
     - src: ipsec.secrets.j2
       dest: ipsec.secrets
       owner: strongswan
-      group: "{{ root_group | default('root') }}"
       mode: "0600"
-    - src: charon.conf.j2
-      dest: strongswan.d/charon.conf
-      owner: root
-      group: "{{ root_group | default('root') }}"
-      mode: "0644"
+  when: strongswan_backend == 'starter'
+  notify: reload systemd and restart strongswan
+
+- name: Setup secure swanctl configuration
+  template:
+    src: swanctl.conf.j2
+    dest: "{{ config_prefix | default('/') }}etc/swanctl/swanctl.conf"
+    owner: root
+    group: "{{ root_group | default('root') }}"
+    mode: "0600"
+  when: strongswan_backend == 'swanctl'
   notify:
     - reload systemd and restart strongswan
+    - reload swanctl configuration
 
 - name: Get loaded plugins
   shell: |
@@ -46,14 +60,16 @@
     regexp: .*load.*
     line: load = no
     state: present
-  notify:
-    - reload systemd and restart strongswan
+  notify: reload systemd and restart strongswan
   when: item not in strongswan_enabled_plugins and item not in strongswan_additional_plugins
   loop: "{{ strongswan_plugins.stdout_lines }}"
 
 - name: Ensure that required plugins are enabled
-  lineinfile: dest="{{ config_prefix | default('/') }}etc/strongswan.d/charon/{{ item }}.conf" regexp='.*load.*' line='load = yes' state=present
-  notify:
-    - reload systemd and restart strongswan
+  lineinfile:
+    dest: "{{ config_prefix | default('/') }}etc/strongswan.d/charon/{{ item }}.conf"
+    regexp: '.*load.*'
+    line: load = yes
+    state: present
+  notify: reload systemd and restart strongswan
   when: item in strongswan_enabled_plugins or item in strongswan_additional_plugins
   loop: "{{ strongswan_plugins.stdout_lines }}"

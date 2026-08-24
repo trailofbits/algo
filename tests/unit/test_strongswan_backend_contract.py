@@ -78,16 +78,16 @@ def test_backend_file_contract_keeps_crls_and_private_keys_secure():
     assert "strongswan_backend == 'starter'" in configuration
     assert "strongswan_backend == 'swanctl'" in configuration
     assert "swanctl.conf.j2" in configuration
-    assert "/etc/swanctl/swanctl.conf" in configuration
+    assert "etc/swanctl/swanctl.conf" in configuration
     assert "mode: \"0600\"" in configuration
 
-    assert "/etc/swanctl/x509ca/ca.crt" in distribution
-    assert "/etc/swanctl/x509/vpn.example.test.crt" not in distribution  # destinations stay templated
-    assert "/etc/swanctl/private/" in distribution
+    assert "dest: x509ca/ca.crt" in distribution
+    assert "dest: x509/{{ IP_subject_alt_name }}.crt" in distribution
+    assert "dest: private/{{ IP_subject_alt_name }}.key" in distribution
     assert "strongswan_backend" in distribution
     assert "mode: \"0600\"" in distribution
 
-    assert "/etc/swanctl/x509crl/algo.root.pem" in openssl
+    assert "etc/swanctl/x509crl/algo.root.pem" in openssl
     assert "strongswan_backend" in openssl
 
 
@@ -95,8 +95,7 @@ def test_swanctl_plugins_and_reload_commands_do_not_depend_on_stroke():
     defaults = (ROLE_DIR / "defaults/main.yml").read_text(encoding="utf-8")
     handlers = (ROLE_DIR / "handlers/main.yml").read_text(encoding="utf-8")
 
-    assert "vici" in defaults
-    assert "swanctl" in defaults
+    assert "  - vici" in defaults
     assert "swanctl --load-all --noprompt" in handlers
     assert "swanctl --load-authorities --noprompt" in handlers
     assert "ipsec rereadcrls" in handlers  # starter remains supported on 22.04

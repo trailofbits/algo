@@ -1,0 +1,64 @@
+connections {
+    ikev2-pubkey {
+        version = 2
+        local_addrs = %any
+        proposals = {{ ciphers.defaults.ike | replace('!', '') }}
+        pools = algo-ipv4, algo-ipv6
+        fragmentation = yes
+        send_cert = always
+        unique = never
+        dpd_delay = 35s
+        rekey_time = 0s
+
+        local {
+            auth = pubkey
+            id = {{ IP_subject_alt_name }}
+            certs = {{ IP_subject_alt_name }}.crt
+        }
+        remote {
+            auth = pubkey
+            revocation = strict
+        }
+        children {
+            ikev2-pubkey {
+                local_ts = 0.0.0.0/0, ::/0
+                esp_proposals = {{ ciphers.defaults.esp | replace('!', '') }}
+                life_time = 3h
+                rekey_time = 0s
+                dpd_action = clear
+                ipcomp = yes
+            }
+        }
+    }
+}
+
+pools {
+    algo-ipv4 {
+        addrs = {{ strongswan_network }}
+{% if algo_dns_adblocking | bool or dns_encryption | bool %}
+        dns = {{ local_service_ip }}
+{% else %}
+        dns = {% for host in dns_servers.ipv4 %}{{ host }}{% if not loop.last %}, {% endif %}{% endfor %}
+{% endif %}
+    }
+    algo-ipv6 {
+        addrs = {{ strongswan_network_ipv6 }}
+{% if algo_dns_adblocking | bool or dns_encryption | bool %}
+        dns = {{ local_service_ipv6 }}
+{% else %}
+        dns = {% for host in dns_servers.ipv6 %}{{ host }}{% if not loop.last %}, {% endif %}{% endfor %}
+{% endif %}
+    }
+}
+
+authorities {
+    algo {
+        cacert = ca.crt
+    }
+}
+
+secrets {
+    private-algo {
+        file = {{ IP_subject_alt_name }}.key
+    }
+}

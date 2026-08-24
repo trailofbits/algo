@@ -273,10 +273,20 @@
         path: "{{ ipsec_pki_path }}/crl.pem"
         mode: "0644"
 
-- name: Copy the CRL to the vpn server
+- name: Copy the CRL to the starter credential directory
   copy:
     src: "{{ ipsec_pki_path }}/crl.pem"
     dest: "{{ config_prefix | default('/') }}etc/ipsec.d/crls/algo.root.pem"
     mode: '0644'
   notify:
     - rereadcrls
+  when: strongswan_backend == 'starter'
+
+- name: Copy the CRL to the swanctl credential directory
+  copy:
+    src: "{{ ipsec_pki_path }}/crl.pem"
+    dest: "{{ config_prefix | default('/') }}etc/swanctl/x509crl/algo.root.pem"
+    mode: '0644'
+  notify:
+    - rereadcrls
+  when: strongswan_backend == 'swanctl'
