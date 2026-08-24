@@ -1,0 +1,269 @@
+---
+name: Provider firewall canary
+
+# Credentialed execution is intentionally manual until dedicated canary OIDC
+# roles exist. Restrict each trust policy to this repository, this workflow,
+# the selected `cloud-firewall-canary` environment, and the minimum provider
+# create/read/update/delete permissions needed for tagged canary resources.
+'on':
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: Dedicated canary provider account/project
+        required: true
+        type: choice
+        options:
+          - ec2
+          - gce
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: provider-firewall-canary-${{ inputs.provider }}
+  cancel-in-progress: false
+
+jobs:
+  canary:
+    name: ${{ inputs.provider }} firewall transitions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    environment: cloud-firewall-canary
+    env:
+      CANARY_NAME: algo-firewall-canary-${{ github.run_id }}
+      PROVIDER: ${{ inputs.provider }}
+      AWS_REGION: ${{ vars.CANARY_AWS_REGION }}
+      GCE_REGION: ${{ vars.CANARY_GCE_REGION }}
+      GCE_PROJECT: ${{ vars.CANARY_GCE_PROJECT }}
+      # Keep every Ansible task that may handle credentials or generated keys quiet.
+      ANSIBLE_NO_LOG: 'true'
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
+        with:
+          python-version: '3.12'
+
+      - name: Authenticate to AWS with OIDC
+        if: inputs.provider == 'ec2'
+        uses: aws-actions/configure-aws-credentials@00943011d9042930efac3dcd3a170e4273319bc8  # v5.1.0
+        with:
+          role-to-assume: ${{ vars.CANARY_AWS_ROLE_ARN }}
+          aws-region: ${{ vars.CANARY_AWS_REGION }}
+          role-session-name: algo-firewall-canary
+          mask-aws-account-id: true
+
+      - name: Authenticate to Google Cloud with OIDC
+        id: google-auth
+        if: inputs.provider == 'gce'
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093  # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.CANARY_GCE_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CANARY_GCE_SERVICE_ACCOUNT }}
+          create_credentials_file: true
+          export_environment_variables: true
+
+      - name: Set up gcloud for GCE cleanup fallback
+        if: inputs.provider == 'gce'
+        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db  # v3.0.1
+        with:
+          project_id: ${{ vars.CANARY_GCE_PROJECT }}
+
+      - name: Set up uv environment
+        uses: ./.github/actions/setup-uv
+
+      - name: Install provider adapter dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$PROVIDER" == "ec2" ]]; then
+            uv sync --extra aws
+          else
+            uv sync --extra gcp
+            echo "GCE_CREDENTIALS_FILE_PATH=$GOOGLE_GHA_CREDS_PATH" >> "$GITHUB_ENV"
+          fi
+
+      - name: Preflight dedicated GCE project
+        if: inputs.provider == 'gce'
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXISTING_INSTANCE="$(gcloud compute instances list \
+            --project="$GCE_PROJECT" \
+            --filter="name=$CANARY_NAME" \
+            --format='value(name)' \
+            2> "$RUNNER_TEMP/gcloud-preflight.log")"
+          if [[ -n "$EXISTING_INSTANCE" ]]; then
+            echo "::error::Dedicated canary project already contains the requested instance name."
+            exit 1
+          fi
+          if gcloud compute firewall-rules describe algovpn --project="$GCE_PROJECT" \
+            > /dev/null 2> "$RUNNER_TEMP/gcloud-preflight.log"; then
+            echo "::error::Dedicated canary project already contains the Algo firewall."
+            exit 1
+          fi
+          if gcloud compute networks describe algovpn --project="$GCE_PROJECT" \
+            > /dev/null 2> "$RUNNER_TEMP/gcloud-preflight.log"; then
+            echo "::error::Dedicated canary project already contains the Algo network."
+            exit 1
+          fi
+          # Cleanup may remove these exact names only because preflight proved
+          # they did not exist before this run.
+          echo "GCE_FALLBACK_SAFE=true" >> "$GITHUB_ENV"
+
+      - name: Deploy both protocols
+        shell: bash
+        run: |
+          set -euo pipefail
+          REGION="$AWS_REGION"
+          [[ "$PROVIDER" == "gce" ]] && REGION="$GCE_REGION"
+          if ! ./algo \
+            -e "provider=$PROVIDER" \
+            -e "server_name=$CANARY_NAME" \
+            -e "region=$REGION" \
+            -e 'users=[canary]' \
+            -e 'ipsec_enabled=true' \
+            -e 'wireguard_enabled=true' \
+            -e 'algo_no_log=true' \
+            > "$RUNNER_TEMP/algo-canary.log" 2>&1; then
+            echo "::error::Canary deployment failed; potentially sensitive logs were withheld."
+            exit 1
+          fi
+
+      - name: Discover managed canary
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./algo list-servers > "$RUNNER_TEMP/managed-servers.json"
+          uv run python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          servers = json.loads((Path(os.environ["RUNNER_TEMP"]) / "managed-servers.json").read_text())
+          matches = [server for server in servers if server.get("algo_server_name") == os.environ["CANARY_NAME"]]
+          if len(matches) != 1:
+              raise SystemExit("Expected exactly one locally managed canary")
+          server_ip = str(matches[0].get("server", ""))
+          if not server_ip:
+              raise SystemExit("Managed canary has no server address")
+          with Path(os.environ["GITHUB_ENV"]).open("a", encoding="utf-8") as env_file:
+              env_file.write(f"CANARY_SERVER_IP={server_ip}\n")
+          PY
+          if [[ "$PROVIDER" == "ec2" ]]; then
+            FIREWALL_ID="$(aws cloudformation describe-stack-resources \
+              --stack-name "$CANARY_NAME" \
+              --logical-resource-id InstanceSecurityGroup \
+              --query 'StackResources[0].PhysicalResourceId' \
+              --output text)"
+          else
+            FIREWALL_ID=algovpn
+          fi
+          if [[ -z "$FIREWALL_ID" || "$FIREWALL_ID" == "None" ]]; then
+            echo "::error::Canary firewall was not found."
+            exit 1
+          fi
+          echo "::add-mask::$FIREWALL_ID"
+          echo "CANARY_FIREWALL_ID=$FIREWALL_ID" >> "$GITHUB_ENV"
+
+      - name: Verify both protocols
+        run: >-
+          tests/e2e/verify-cloud-firewall.py
+          --provider "$PROVIDER"
+          --resource-id "$CANARY_FIREWALL_ID"
+          --stage both
+          --state-file "$RUNNER_TEMP/firewall-states.json"
+
+      - name: Transition to WireGuard only
+        shell: bash
+        run: |
+          set -euo pipefail
+          REGION="$AWS_REGION"
+          [[ "$PROVIDER" == "gce" ]] && REGION="$GCE_REGION"
+          if ! ./algo -e "provider=$PROVIDER" -e "server_name=$CANARY_NAME" -e "region=$REGION" \
+            -e 'users=[canary]' -e 'ipsec_enabled=false' -e 'wireguard_enabled=true' -e 'algo_no_log=true' \
+            > "$RUNNER_TEMP/algo-canary.log" 2>&1; then
+            echo "::error::Canary transition failed; potentially sensitive logs were withheld."
+            exit 1
+          fi
+
+      - name: Verify WireGuard only
+        run: >-
+          tests/e2e/verify-cloud-firewall.py
+          --provider "$PROVIDER"
+          --resource-id "$CANARY_FIREWALL_ID"
+          --stage wireguard-only
+          --state-file "$RUNNER_TEMP/firewall-states.json"
+
+      - name: Transition to IPsec only
+        shell: bash
+        run: |
+          set -euo pipefail
+          REGION="$AWS_REGION"
+          [[ "$PROVIDER" == "gce" ]] && REGION="$GCE_REGION"
+          if ! ./algo -e "provider=$PROVIDER" -e "server_name=$CANARY_NAME" -e "region=$REGION" \
+            -e 'users=[canary]' -e 'ipsec_enabled=true' -e 'wireguard_enabled=false' -e 'algo_no_log=true' \
+            > "$RUNNER_TEMP/algo-canary.log" 2>&1; then
+            echo "::error::Canary transition failed; potentially sensitive logs were withheld."
+            exit 1
+          fi
+
+      - name: Verify IPsec only
+        run: >-
+          tests/e2e/verify-cloud-firewall.py
+          --provider "$PROVIDER"
+          --resource-id "$CANARY_FIREWALL_ID"
+          --stage ipsec-only
+          --state-file "$RUNNER_TEMP/firewall-states.json"
+
+      - name: Destroy canary
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "${CANARY_SERVER_IP:-}" ]]; then
+            if ! ./algo destroy "$CANARY_SERVER_IP" -e 'confirm_destroy=true' \
+              > "$RUNNER_TEMP/algo-destroy.log" 2>&1; then
+              echo "::error::Canary destroy failed; potentially sensitive logs were withheld."
+              exit 1
+            fi
+          elif [[ "$PROVIDER" == "ec2" ]]; then
+            aws cloudformation delete-stack --stack-name "$CANARY_NAME"
+            aws cloudformation wait stack-delete-complete --stack-name "$CANARY_NAME"
+          elif [[ "$PROVIDER" == "gce" && "${GCE_FALLBACK_SAFE:-}" == "true" ]]; then
+            mapfile -t INSTANCE_ROWS < <(gcloud compute instances list \
+              --project="$GCE_PROJECT" \
+              --filter="name=$CANARY_NAME" \
+              --format='csv[no-heading](name,zone.basename())' \
+              2> "$RUNNER_TEMP/gcloud-destroy.log")
+            if (( ${#INSTANCE_ROWS[@]} > 1 )); then
+              echo "::error::Refusing fallback cleanup because the exact instance lookup was not unique."
+              exit 1
+            fi
+            if (( ${#INSTANCE_ROWS[@]} == 1 )); then
+              IFS=, read -r FOUND_NAME FOUND_ZONE <<< "${INSTANCE_ROWS[0]}"
+              if [[ "$FOUND_NAME" != "$CANARY_NAME" || -z "$FOUND_ZONE" ]]; then
+                echo "::error::Refusing fallback cleanup of an unexpected GCE instance."
+                exit 1
+              fi
+              gcloud compute instances delete "$CANARY_NAME" \
+                --project="$GCE_PROJECT" --zone="$FOUND_ZONE" --quiet \
+                > "$RUNNER_TEMP/gcloud-destroy.log" 2>&1
+            fi
+            if gcloud compute firewall-rules describe algovpn --project="$GCE_PROJECT" \
+              > /dev/null 2> "$RUNNER_TEMP/gcloud-destroy.log"; then
+              gcloud compute firewall-rules delete algovpn --project="$GCE_PROJECT" --quiet \
+                > "$RUNNER_TEMP/gcloud-destroy.log" 2>&1
+            fi
+            if gcloud compute networks describe algovpn --project="$GCE_PROJECT" \
+              > /dev/null 2> "$RUNNER_TEMP/gcloud-destroy.log"; then
+              gcloud compute networks delete algovpn --project="$GCE_PROJECT" --quiet \
+                > "$RUNNER_TEMP/gcloud-destroy.log" 2>&1
+            fi
+          else
+            echo "::error::No canary ownership proof was recorded for safe destruction."
+            exit 1
+          fi
