@@ -4,7 +4,9 @@ import re
 from pathlib import Path
 
 import pytest
+import yaml
 from jinja2 import Environment, FileSystemLoader
+from jinja2.nativetypes import NativeEnvironment
 
 ROOT = Path(__file__).parents[2]
 EXPECTED = {
@@ -25,7 +27,9 @@ MANAGED_PROVIDER_FILES = (
 
 def _render_host_firewall(template_name: str, ipsec: bool, wireguard: bool) -> str:
     template_dir = ROOT / "roles/common/templates"
-    environment = Environment(loader=FileSystemLoader(template_dir), trim_blocks=True)
+    environment = Environment(  # nosemgrep: python.flask.security.xss.audit.direct-use-of-jinja2.direct-use-of-jinja2
+        loader=FileSystemLoader(template_dir), trim_blocks=True
+    )
     environment.filters["bool"] = bool
     environment.filters["ansible.utils.ipaddr"] = lambda value, _kind: value
     return environment.get_template(template_name).render(
@@ -86,6 +90,72 @@ def test_managed_cloud_firewalls_condition_both_protocol_families(path):
     assert "wireguard_enabled" in text or "WireguardEnabled" in text
 
 
+def _render_native_expression(expression: str, **variables):
+    environment = NativeEnvironment()
+    environment.filters["bool"] = bool
+    environment.filters["difference"] = lambda values, excluded: [value for value in values if value not in excluded]
+    return environment.from_string(expression).render(**variables)
+
+
+def _find_task(path: str, name: str):
+    tasks = yaml.safe_load((ROOT / path).read_text(encoding="utf-8"))
+    stack = list(tasks)
+    while stack:
+        task = stack.pop()
+        if task.get("name") == name:
+            return task
+        stack.extend(task.get("block", []))
+    raise AssertionError(f"No task named {name!r} in {path}")
+
+
+def _disabled_loop(path: str) -> str:
+    for name in (
+        "Disabled protocol security rules removed",
+        "Removing disabled protocol firewall rules",
+    ):
+        try:
+            return _find_task(path, name)["loop"]
+        except AssertionError:
+            pass
+    raise AssertionError(f"No disabled-rule task in {path}")
+
+
+def test_gce_combines_enabled_udp_ports_into_one_api_entry():
+    task = _find_task("roles/cloud-gce/tasks/main.yml", "Firewall configured")
+    rendered = _render_native_expression(
+        task["gcp_compute_firewall"]["allowed"],
+        ipsec_enabled=True,
+        wireguard_enabled=True,
+        wireguard_port=51820,
+        ssh_port=22,
+    )
+    udp_entries = [entry for entry in rendered if entry["ip_protocol"] == "udp"]
+
+    assert len(udp_entries) == 1
+    assert set(udp_entries[0]["ports"]) == {"500", "4500", "51820"}
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "roles/cloud-cloudstack/tasks/main.yml",
+        "roles/cloud-openstack/tasks/main.yml",
+        "roles/cloud-vultr/tasks/main.yml",
+    ],
+)
+def test_stale_rule_cleanup_preserves_an_enabled_protocol_on_shared_port(path):
+    rendered = _render_native_expression(
+        _disabled_loop(path),
+        ipsec_enabled=False,
+        wireguard_enabled=True,
+        wireguard_port=500,
+    )
+    removed_ports = {item["port"] for item in rendered} if rendered and isinstance(rendered[0], dict) else set(rendered)
+
+    assert 500 not in removed_ports
+    assert 4500 in removed_ports
+
+
 @pytest.mark.parametrize(
     "path",
     [
@@ -102,12 +172,13 @@ def test_rule_managed_providers_revoke_disabled_protocol_rules(path):
     assert "not wireguard_enabled" in text
 
 
-def test_ec2_uses_conditional_ingress_resources():
+def test_ec2_uses_inline_conditionals_for_update_safe_ingress():
     text = (ROOT / "roles/cloud-ec2/files/stack.yaml").read_text(encoding="utf-8")
 
     assert "OpenIpsecPorts" in text
     assert "OpenWireguardPorts" in text
-    assert text.count("Type: AWS::EC2::SecurityGroupIngress") == 3
+    assert "Type: AWS::EC2::SecurityGroupIngress" not in text
+    assert text.count("AWS::NoValue") >= 3
 
 
 def test_input_rejects_both_protocols_disabled():
@@ -115,3 +186,5 @@ def test_input_rejects_both_protocols_disabled():
 
     assert "At least one VPN protocol must be enabled" in text
     assert "ipsec_enabled | bool or wireguard_enabled | bool" in text
+    assert "WireGuard port must not overlap IPsec UDP ports 500 or 4500" in text
+    assert "wireguard_port | int not in [500, 4500]" in text

@@ -27,6 +27,18 @@
     - config.cfg
 
   tasks:
+    - name: Require at least one VPN protocol
+      ansible.builtin.assert:
+        that:
+          - ipsec_enabled | bool or wireguard_enabled | bool
+        fail_msg: At least one VPN protocol must be enabled
+
+    - name: Require non-overlapping VPN ports
+      ansible.builtin.assert:
+        that:
+          - not (ipsec_enabled | bool and wireguard_enabled | bool) or wireguard_port | int not in [500, 4500]
+        fail_msg: WireGuard port must not overlap IPsec UDP ports 500 or 4500
+
     - block:
         - name: Cloud prompt
           pause:

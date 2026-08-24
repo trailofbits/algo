@@ -13,7 +13,7 @@
       vultr.cloud.firewall_group:
         name: "{{ algo_server_name }}"
 
-    - name: Creating firewall rules
+    - name: Creating enabled firewall rules
       vultr.cloud.firewall_rule:
         group: "{{ algo_server_name }}"
         protocol: "{{ item.protocol }}"
@@ -21,15 +21,48 @@
         ip_type: "{{ item.ip }}"
         subnet: "{{ item.cidr.split('/')[0] }}"
         subnet_size: "{{ item.cidr.split('/')[1] }}"
-      loop:
-        - { protocol: tcp, port: "{{ ssh_port }}", ip: v4, cidr: 0.0.0.0/0 }
-        - { protocol: tcp, port: "{{ ssh_port }}", ip: v6, cidr: "::/0" }
-        - { protocol: udp, port: 500, ip: v4, cidr: 0.0.0.0/0 }
-        - { protocol: udp, port: 500, ip: v6, cidr: "::/0" }
-        - { protocol: udp, port: 4500, ip: v4, cidr: 0.0.0.0/0 }
-        - { protocol: udp, port: 4500, ip: v6, cidr: "::/0" }
-        - { protocol: udp, port: "{{ wireguard_port }}", ip: v4, cidr: 0.0.0.0/0 }
-        - { protocol: udp, port: "{{ wireguard_port }}", ip: v6, cidr: "::/0" }
+      loop: >-
+        {{
+          [
+            {'protocol': 'tcp', 'port': ssh_port, 'ip': 'v4', 'cidr': '0.0.0.0/0'},
+            {'protocol': 'tcp', 'port': ssh_port, 'ip': 'v6', 'cidr': '::/0'}
+          ]
+          + ([
+            {'protocol': 'udp', 'port': 500, 'ip': 'v4', 'cidr': '0.0.0.0/0'},
+            {'protocol': 'udp', 'port': 500, 'ip': 'v6', 'cidr': '::/0'},
+            {'protocol': 'udp', 'port': 4500, 'ip': 'v4', 'cidr': '0.0.0.0/0'},
+            {'protocol': 'udp', 'port': 4500, 'ip': 'v6', 'cidr': '::/0'}
+          ] if ipsec_enabled | bool else [])
+          + ([
+            {'protocol': 'udp', 'port': wireguard_port, 'ip': 'v4', 'cidr': '0.0.0.0/0'},
+            {'protocol': 'udp', 'port': wireguard_port, 'ip': 'v6', 'cidr': '::/0'}
+          ] if wireguard_enabled | bool else [])
+        }}
+
+    - name: Removing disabled protocol firewall rules
+      vultr.cloud.firewall_rule:
+        group: "{{ algo_server_name }}"
+        protocol: udp
+        port: "{{ item.port }}"
+        ip_type: "{{ item.ip }}"
+        subnet: "{{ item.cidr.split('/')[0] }}"
+        subnet_size: "{{ item.cidr.split('/')[1] }}"
+        state: absent
+      loop: >-
+        {{
+          ([
+            {'port': 500, 'ip': 'v4', 'cidr': '0.0.0.0/0'},
+            {'port': 500, 'ip': 'v6', 'cidr': '::/0'}
+          ] if not ipsec_enabled | bool and (not wireguard_enabled | bool or wireguard_port | int != 500) else [])
+          + ([
+            {'port': 4500, 'ip': 'v4', 'cidr': '0.0.0.0/0'},
+            {'port': 4500, 'ip': 'v6', 'cidr': '::/0'}
+          ] if not ipsec_enabled | bool and (not wireguard_enabled | bool or wireguard_port | int != 4500) else [])
+          + ([
+            {'port': wireguard_port, 'ip': 'v4', 'cidr': '0.0.0.0/0'},
+            {'port': wireguard_port, 'ip': 'v6', 'cidr': '::/0'}
+          ] if not wireguard_enabled | bool and (not ipsec_enabled | bool or wireguard_port | int not in [500, 4500]) else [])
+        }}
 
     - name: Upload the startup script
       vultr.cloud.startup_script:

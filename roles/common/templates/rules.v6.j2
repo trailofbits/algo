@@ -71,9 +71,11 @@ COMMIT
 -A INPUT -i lo -j ACCEPT
 # Accept any packet from an open TCP connection
 -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-# Accept packets using the encapsulation protocol
+{% if ipsec_enabled | bool %}
+# Accept packets using the IPsec encapsulation protocols
 -A INPUT -p esp -j ACCEPT
 -A INPUT -m ah -j ACCEPT
+{% endif %}
 # rate limit ICMP traffic per source
 -A INPUT -p icmpv6 --icmpv6-type echo-request -m hashlimit --hashlimit-upto 5/s --hashlimit-mode srcip --hashlimit-srcmask 32 --hashlimit-name icmp-echo-drop -j ACCEPT
 # Accept IPSEC/WireGuard traffic to ports {{ subnets | join(',') }}

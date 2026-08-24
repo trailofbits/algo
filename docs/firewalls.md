@@ -2,9 +2,9 @@
 
 Your AlgoVPN requires properly configured firewalls. The key points to know are:
 
-* If you deploy to a **cloud** provider all firewall configuration will done automatically.
+* Algo manages provider-level ingress rules for Amazon EC2, Google Compute Engine, CloudStack, OpenStack, and Vultr. Those rules follow the enabled VPN protocols and remove stale protocol rules during updates.
 
-* If you perform a **local** installation on an existing server you are responsible for configuring any external firewalls. You must also take care not to interfere with the server firewall configuration of the AlgoVPN.
+* DigitalOcean, Hetzner, Linode, Scaleway, and local/unsupported deployments rely on Algo's host firewall. If you add an external provider firewall for one of these targets, you are responsible for allowing SSH and only the VPN protocols enabled in `config.cfg`.
 
 ## The Two Types of Firewall
 

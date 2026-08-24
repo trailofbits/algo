@@ -12,7 +12,7 @@
     description: AlgoVPN security group
   register: os_security_group
 
-- name: Security rules created
+- name: Enabled security rules created
   openstack.cloud.security_group_rule:
     state: "{{ state | default('present') }}"
     security_group: "{{ os_security_group.id }}"
@@ -20,12 +20,40 @@
     port_range_min: "{{ item.port_min }}"
     port_range_max: "{{ item.port_max }}"
     remote_ip_prefix: "{{ item.range }}"
-  loop:
-    - { proto: tcp, port_min: "{{ ssh_port }}", port_max: "{{ ssh_port }}", range: 0.0.0.0/0 }
-    - { proto: icmp, port_min: -1, port_max: -1, range: 0.0.0.0/0 }
-    - { proto: udp, port_min: 4500, port_max: 4500, range: 0.0.0.0/0 }
-    - { proto: udp, port_min: 500, port_max: 500, range: 0.0.0.0/0 }
-    - { proto: udp, port_min: "{{ wireguard_port }}", port_max: "{{ wireguard_port }}", range: 0.0.0.0/0 }
+  loop: >-
+    {{
+      [
+        {'proto': 'tcp', 'port_min': ssh_port, 'port_max': ssh_port, 'range': '0.0.0.0/0'},
+        {'proto': 'icmp', 'port_min': -1, 'port_max': -1, 'range': '0.0.0.0/0'}
+      ]
+      + ([
+        {'proto': 'udp', 'port_min': 4500, 'port_max': 4500, 'range': '0.0.0.0/0'},
+        {'proto': 'udp', 'port_min': 500, 'port_max': 500, 'range': '0.0.0.0/0'}
+      ] if ipsec_enabled | bool else [])
+      + ([
+        {'proto': 'udp', 'port_min': wireguard_port, 'port_max': wireguard_port, 'range': '0.0.0.0/0'}
+      ] if wireguard_enabled | bool else [])
+    }}
+
+- name: Disabled protocol security rules removed
+  openstack.cloud.security_group_rule:
+    state: absent
+    security_group: "{{ os_security_group.id }}"
+    protocol: udp
+    port_range_min: "{{ item }}"
+    port_range_max: "{{ item }}"
+    remote_ip_prefix: 0.0.0.0/0
+  loop: >-
+    {{
+      (
+        ([500, 4500] if not ipsec_enabled | bool else [])
+        + ([wireguard_port] if not wireguard_enabled | bool else [])
+      )
+      | difference(
+        ([500, 4500] if ipsec_enabled | bool else [])
+        + ([wireguard_port] if wireguard_enabled | bool else [])
+      )
+    }}
 
 - name: Gather facts about flavors
   openstack.cloud.compute_flavor_info:

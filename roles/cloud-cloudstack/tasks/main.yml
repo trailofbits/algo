@@ -21,18 +21,44 @@
         description: AlgoVPN security group
       register: cs_security_group
 
-    - name: Security rules created
+    - name: Enabled security rules created
       cs_securitygroup_rule:
         security_group: "{{ cs_security_group.name }}"
         protocol: "{{ item.proto }}"
         start_port: "{{ item.start_port }}"
         end_port: "{{ item.end_port }}"
         cidr: "{{ item.range }}"
-      loop:
-        - { proto: tcp, start_port: "{{ ssh_port }}", end_port: "{{ ssh_port }}", range: 0.0.0.0/0 }
-        - { proto: udp, start_port: 4500, end_port: 4500, range: 0.0.0.0/0 }
-        - { proto: udp, start_port: 500, end_port: 500, range: 0.0.0.0/0 }
-        - { proto: udp, start_port: "{{ wireguard_port }}", end_port: "{{ wireguard_port }}", range: 0.0.0.0/0 }
+      loop: >-
+        {{
+          [{'proto': 'tcp', 'start_port': ssh_port, 'end_port': ssh_port, 'range': '0.0.0.0/0'}]
+          + ([
+            {'proto': 'udp', 'start_port': 4500, 'end_port': 4500, 'range': '0.0.0.0/0'},
+            {'proto': 'udp', 'start_port': 500, 'end_port': 500, 'range': '0.0.0.0/0'}
+          ] if ipsec_enabled | bool else [])
+          + ([
+            {'proto': 'udp', 'start_port': wireguard_port, 'end_port': wireguard_port, 'range': '0.0.0.0/0'}
+          ] if wireguard_enabled | bool else [])
+        }}
+
+    - name: Disabled protocol security rules removed
+      cs_securitygroup_rule:
+        security_group: "{{ cs_security_group.name }}"
+        protocol: udp
+        start_port: "{{ item }}"
+        end_port: "{{ item }}"
+        cidr: 0.0.0.0/0
+        state: absent
+      loop: >-
+        {{
+          (
+            ([500, 4500] if not ipsec_enabled | bool else [])
+            + ([wireguard_port] if not wireguard_enabled | bool else [])
+          )
+          | difference(
+            ([500, 4500] if ipsec_enabled | bool else [])
+            + ([wireguard_port] if wireguard_enabled | bool else [])
+          )
+        }}
 
     - name: Set facts
       set_fact:
