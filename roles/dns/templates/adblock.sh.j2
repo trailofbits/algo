@@ -38,6 +38,9 @@ else
     cat "$TEMP_SORTED" > $BLOCKHOSTS
 fi
 
+# dnscrypt-proxy runs unprivileged; do not inherit a restrictive caller umask.
+chmod 0644 "$BLOCKHOSTS"
+
 echo 'Restarting dns service...'
 #Restart the dns service
 systemctl restart dnscrypt-proxy.service

@@ -8,6 +8,7 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 ROOT = Path(__file__).parents[2]
 TEMPLATE_DIR = ROOT / "roles/dns/templates/dnscrypt-proxy"
+ADBLOCK_TEMPLATE = ROOT / "roles/dns/templates/adblock.sh.j2"
 
 
 def render_sources(custom_server_stamps):
@@ -57,3 +58,9 @@ def test_enabled_adblocking_uses_the_generated_blacklist_file():
     parsed = tomllib.loads(render_filters(True))
 
     assert parsed["blacklist"] == {"blacklist_file": "blacklist.txt"}
+
+
+def test_generated_blacklist_permissions_do_not_depend_on_controller_umask():
+    script = ADBLOCK_TEMPLATE.read_text(encoding="utf-8")
+
+    assert 'chmod 0644 "$BLOCKHOSTS"' in script
