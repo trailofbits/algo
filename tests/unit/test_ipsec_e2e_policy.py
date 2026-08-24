@@ -43,6 +43,14 @@ def test_ipsec_client_uses_a_private_executable_path_outside_host_apparmor_attac
     assert '|| -L "${candidate}"' in script
 
 
+def test_ipsec_client_strongswan_config_uses_parser_safe_dynamic_values():
+    script = _script()
+
+    assert "${charon_log} {" not in script
+    assert "stderr {" in script
+    assert 'socket = "unix://${vici_socket}"' in script
+
+
 def test_ipsec_e2e_proves_dns_and_routed_source_ip_through_the_tunnel():
     script = _script()
 

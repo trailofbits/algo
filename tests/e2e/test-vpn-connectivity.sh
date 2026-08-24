@@ -442,7 +442,7 @@ test_ipsec() {
     local server_id="127.0.0.1"
     local charon_binary=""
     local candidate_owner candidate_mode
-    local charon_log client_config vici_socket sa_status
+    local client_config vici_socket sa_status
     local server_source_ip vpn_source_ip
 
     for f in "${cacert}" "${user_cert}" "${user_key}"; do
@@ -462,7 +462,6 @@ test_ipsec() {
     umask 077
     IPSEC_CLIENT_DIR=$(mktemp -d /tmp/algo-ipsec-client.XXXXXX) || return 1
     chmod 700 "${IPSEC_CLIENT_DIR}" || return 1
-    charon_log="${IPSEC_CLIENT_DIR}/charon.log"
     client_config="${IPSEC_CLIENT_DIR}/swanctl.conf"
     vici_socket="${IPSEC_CLIENT_DIR}/charon.vici"
     IPSEC_VICI_URI="unix://${vici_socket}"
@@ -523,11 +522,11 @@ charon {
     plugins {
         include /etc/strongswan.d/charon/*.conf
         vici {
-            socket = unix://${vici_socket}
+            socket = "unix://${vici_socket}"
         }
     }
     filelog {
-        ${charon_log} {
+        stderr {
             default = 1
             ike = 1
             append = no
