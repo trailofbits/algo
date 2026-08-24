@@ -17,6 +17,7 @@ name: Integration Tests
       - 'requirements.yml'
       - 'roles/cloud-*/**'
       - '.github/workflows/**'
+      - '.github/workflows/integration-tests.yml'
       - '.github/actions/**'
   workflow_dispatch:
   schedule:
