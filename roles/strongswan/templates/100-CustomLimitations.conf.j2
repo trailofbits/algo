@@ -14,8 +14,8 @@ ProtectControlGroups=yes
 # AF_UNIX required for VICI socket communication (swanctl/modern StrongSwan interface)
 RestrictAddressFamilies=AF_INET AF_INET6 AF_NETLINK AF_PACKET AF_UNIX
 
-# Allow writes only to StrongSwan's runtime state. ProtectSystem already keeps
-# both starter and swanctl credential/configuration directories read-only.
+# Keep the host filesystem read-only to the daemon except for runtime state.
+ProtectSystem=strict
 ReadWritePaths=/var/lib/strongswan
 
 # System call filtering (complements AppArmor restrictions)

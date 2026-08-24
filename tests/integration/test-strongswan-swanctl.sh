@@ -112,6 +112,7 @@ sleep 2
 swanctl --load-all --noprompt
 swanctl --list-conns | grep -q ikev2-pubkey
 systemctl is-active --quiet strongswan
+systemctl show strongswan --property=ProtectSystem --value | grep -Fx strict
 '
 
 journal="$(lxc exec "${INSTANCE}" -- journalctl -b --no-pager -u strongswan.service)"

@@ -19,6 +19,15 @@
     - strongswan_backend == 'starter'
     - not performance_parallel_packages | default(true)
 
+- name: Remove starter backend packages for swanctl
+  apt:
+    name:
+      - strongswan
+      - strongswan-starter
+    state: absent
+    purge: false
+  when: strongswan_backend == 'swanctl'
+
 - name: Ubuntu | Install strongSwan swanctl backend
   apt:
     name:

@@ -3,6 +3,7 @@
 import re
 from pathlib import Path
 
+import yaml
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 TEMPLATE_DIR = Path("roles/strongswan/templates")
@@ -100,24 +101,39 @@ def test_logging_privacy_and_firewall_contract_is_backend_independent():
 
 
 def test_backend_file_contract_keeps_crls_and_private_keys_secure():
-    configuration = (ROLE_DIR / "tasks/ipsec_configuration.yml").read_text(encoding="utf-8")
-    distribution = (ROLE_DIR / "tasks/distribute_keys.yml").read_text(encoding="utf-8")
-    openssl = (ROLE_DIR / "tasks/openssl.yml").read_text(encoding="utf-8")
+    configuration = yaml.safe_load((ROLE_DIR / "tasks/ipsec_configuration.yml").read_text(encoding="utf-8"))
+    distribution = yaml.safe_load((ROLE_DIR / "tasks/distribute_keys.yml").read_text(encoding="utf-8"))
+    openssl = yaml.safe_load((ROLE_DIR / "tasks/openssl.yml").read_text(encoding="utf-8"))
 
-    assert "strongswan_backend == 'starter'" in configuration
-    assert "strongswan_backend == 'swanctl'" in configuration
-    assert "swanctl.conf.j2" in configuration
-    assert "etc/swanctl/swanctl.conf" in configuration
-    assert 'mode: "0600"' in configuration
+    swanctl_config = next(task for task in configuration if task.get("name") == "Setup secure swanctl configuration")
+    assert swanctl_config["template"] == {
+        "src": "swanctl.conf.j2",
+        "dest": "{{ config_prefix | default('/') }}etc/swanctl/swanctl.conf",
+        "owner": "root",
+        "group": "{{ root_group | default('root') }}",
+        "mode": "0600",
+    }
+    assert swanctl_config["when"] == "strongswan_backend == 'swanctl'"
 
-    assert "dest: x509ca/ca.crt" in distribution
-    assert "dest: x509/{{ IP_subject_alt_name }}.crt" in distribution
-    assert "dest: private/{{ IP_subject_alt_name }}.key" in distribution
-    assert "strongswan_backend" in distribution
-    assert 'mode: "0600"' in distribution
+    swanctl_keys = next(
+        task for task in distribution if task.get("name") == "Copy the keys to the swanctl credential directories"
+    )
+    assert swanctl_keys["copy"]["dest"] == "{{ config_prefix | default('/') }}etc/swanctl/{{ item.dest }}"
+    assert swanctl_keys["copy"]["owner"] == "strongswan"
+    assert swanctl_keys["copy"]["mode"] == "0600"
+    assert {item["dest"] for item in swanctl_keys["loop"]} == {
+        "x509ca/ca.crt",
+        "x509/{{ IP_subject_alt_name }}.crt",
+        "private/{{ IP_subject_alt_name }}.key",
+    }
+    assert swanctl_keys["when"] == "strongswan_backend == 'swanctl'"
 
-    assert "etc/swanctl/x509crl/algo.root.pem" in openssl
-    assert "strongswan_backend" in openssl
+    swanctl_crl = next(
+        task for task in openssl if task.get("name") == "Copy the CRL to the swanctl credential directory"
+    )
+    assert swanctl_crl["copy"]["dest"] == "{{ config_prefix | default('/') }}etc/swanctl/x509crl/algo.root.pem"
+    assert swanctl_crl["copy"]["mode"] == "0644"
+    assert swanctl_crl["when"] == "strongswan_backend == 'swanctl'"
 
 
 def test_swanctl_plugins_and_reload_commands_do_not_depend_on_stroke():

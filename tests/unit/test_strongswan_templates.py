@@ -179,6 +179,7 @@ def test_strongswan_systemd_hardening_and_restart_lifecycle():
 
     assert "AF_UNIX" in template
     assert "ReadOnlyPaths=/proc/net/pfkey" not in template
+    assert "ProtectSystem=strict" in template
     assert "ReadWritePaths=/var/lib/strongswan" in template
     assert "ReadWritePaths=/etc/ipsec.d" not in template
     assert "/etc/swanctl" not in next(line for line in template.splitlines() if line.startswith("ReadWritePaths="))

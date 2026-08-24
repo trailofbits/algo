@@ -97,6 +97,8 @@ lxc exec "${INSTANCE}" -- systemctl daemon-reload
 
 lxc exec "${INSTANCE}" -- systemctl restart strongswan-starter.service
 lxc exec "${INSTANCE}" -- systemctl is-active --quiet strongswan-starter.service
+lxc exec "${INSTANCE}" -- bash -c \
+  'systemctl show strongswan-starter --property=ProtectSystem --value | grep -Fx strict'
 lxc exec "${INSTANCE}" -- ipsec statusall
 
 journal="$(lxc exec "${INSTANCE}" -- journalctl -b --no-pager \

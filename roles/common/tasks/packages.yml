@@ -11,6 +11,7 @@
   when:
     - performance_parallel_packages | default(true)
     - ipsec_enabled | default(false)
+    - strongswan_backend == 'starter'
 
 - name: Add WireGuard packages
   set_fact:

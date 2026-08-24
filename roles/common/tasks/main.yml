@@ -9,8 +9,8 @@
 - fail:
   when: cloud_test|default(false)|bool
 
-- name: Gather platform facts
-  setup:
+- name: Gather host facts before backend and package selection
+  ansible.builtin.setup:
   tags:
     - always
     - update-users
@@ -23,13 +23,15 @@
     - always
     - update-users
 
-- include_tasks: ubuntu.yml
 
-# Include facts separately - always runs to ensure OS detection facts are available
+# Establish OS/backend facts before Ubuntu's batch package selection.
 - include_tasks: facts.yml
   tags:
     - always
     - update-users
+
+- include_tasks: ubuntu.yml
+  when: '"Ubuntu" in OS.stdout or "Linux" in OS.stdout'
 
 - name: Sysctl tuning
   sysctl: name="{{ item.item }}" value="{{ item.value }}"
