@@ -1,4 +1,14 @@
 ---
+- name: Validate the Ubuntu server release
+  assert:
+    that:
+      - ansible_distribution == 'Ubuntu'
+      - ansible_distribution_version in ['22.04', '24.04']
+    fail_msg: >-
+      Ubuntu {{ ansible_distribution_version }} is not supported. Ubuntu 26.04
+      and other unvalidated releases require successful deployment, reboot,
+      firewall, DNS, WireGuard, IPsec, and provider-family canaries first.
+
 - name: Cloud only tasks
   when: algo_provider != "local"
   block:
