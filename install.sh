@@ -2,28 +2,45 @@
 
 set -ex
 
-METHOD="${1:-${METHOD:-cloud}}"
-ONDEMAND_CELLULAR="${2:-${ONDEMAND_CELLULAR:-false}}"
-ONDEMAND_WIFI="${3:-${ONDEMAND_WIFI:-false}}"
-ONDEMAND_WIFI_EXCLUDE="${4:-${ONDEMAND_WIFI_EXCLUDE:-_null}}"
-STORE_PKI="${5:-${STORE_PKI:-false}}"
-DNS_ADBLOCKING="${6:-${DNS_ADBLOCKING:-false}}"
-SSH_TUNNELING="${7:-${SSH_TUNNELING:-false}}"
-ENDPOINT="${8:-${ENDPOINT:-localhost}}"
-USERS="${9:-${USERS:-user1}}"
-REPO_SLUG="${10:-${REPO_SLUG:-trailofbits/algo}}"
-REPO_BRANCH="${11:-${REPO_BRANCH:-master}}"
-EXTRA_VARS="${12:-${EXTRA_VARS:-placeholder=null}}"
-ANSIBLE_EXTRA_ARGS="${13:-${ANSIBLE_EXTRA_ARGS}}"
+if [ "$#" -ne 0 ]; then
+  echo "Error: positional arguments are not supported; use environment variables instead." >&2
+  exit 2
+fi
 
-cd /opt/
+METHOD="${METHOD:-cloud}"
+ONDEMAND_CELLULAR="${ONDEMAND_CELLULAR:-false}"
+ONDEMAND_WIFI="${ONDEMAND_WIFI:-false}"
+ONDEMAND_WIFI_EXCLUDE="${ONDEMAND_WIFI_EXCLUDE:-_null}"
+STORE_PKI="${STORE_PKI:-false}"
+DNS_ADBLOCKING="${DNS_ADBLOCKING:-false}"
+SSH_TUNNELING="${SSH_TUNNELING:-false}"
+ENDPOINT="${ENDPOINT:-localhost}"
+USERS="${USERS:-user1}"
+REPO_SLUG="${REPO_SLUG:-trailofbits/algo}"
+REPO_BRANCH="${REPO_BRANCH:-main}"
+EXTRA_VARS="${EXTRA_VARS:-placeholder=null}"
+ANSIBLE_EXTRA_ARGS="${ANSIBLE_EXTRA_ARGS:-}"
+
+case "$METHOD" in
+  cloud | local) ;;
+  *)
+    echo "Error: METHOD must be 'cloud' or 'local'." >&2
+    exit 2
+    ;;
+esac
+
+if [ -z "$REPO_SLUG" ] || [ -z "$REPO_BRANCH" ] || [ -z "$USERS" ]; then
+  echo "Error: REPO_SLUG, REPO_BRANCH, and USERS must not be empty." >&2
+  exit 2
+fi
 
 installRequirements() {
   export DEBIAN_FRONTEND=noninteractive
   apt-get update
-  apt-get install \
+  apt-get install -y \
     curl \
-    jq -y
+    git \
+    jq
 
   # Install uv
   curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -31,8 +48,8 @@ installRequirements() {
 }
 
 getAlgo() {
-  [ ! -d "algo" ] && git clone "https://github.com/${REPO_SLUG}" -b "${REPO_BRANCH}" algo
-  cd algo
+  [ ! -d /opt/algo ] && git clone --branch "${REPO_BRANCH}" "https://github.com/${REPO_SLUG}.git" /opt/algo
+  cd /opt/algo
 
   # uv handles all dependency installation automatically
   uv sync
