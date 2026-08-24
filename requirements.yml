@@ -1,28 +1,28 @@
 ---
 collections:
   - name: ansible.posix
-    version: "==2.1.0"
+    version: "==2.2.2"
   - name: ansible.utils
-    version: ">=4.0.0"
+    version: "==6.1.0"
   - name: community.general
-    version: "==11.1.0"
+    version: "==13.3.0"
   - name: community.crypto
-    version: ">=3.1.1"
+    version: "==3.3.0"
   - name: openstack.cloud
-    version: "==2.4.1"
+    version: "==2.6.0"
   - name: linode.cloud
-    version: ">=0.41.0"
+    version: "==0.41.0"
   - name: community.digitalocean
-    version: ">=1.26.0"
+    version: "==1.26.0"
   - name: azure.azcollection
-    version: ">=3.0.0"
+    version: "==3.21.0"
   - name: vultr.cloud
-    version: "==1.14.0"
+    version: "==1.14.1"
   - name: amazon.aws
-    version: "==10.3.1"
+    version: "==11.4.0"
   - name: google.cloud
-    version: "==1.13.0"
+    version: "==1.14.0"
   - name: hetzner.hcloud
-    version: "==6.9.0"
+    version: "==6.10.0"
   - name: ngine_io.cloudstack
     version: "==3.0.0"

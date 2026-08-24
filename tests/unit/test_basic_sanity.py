@@ -4,15 +4,17 @@ Basic sanity tests for Algo VPN that don't require deployment
 """
 
 import os
+import shutil
 import subprocess
 import sys
 
+import pytest
 import yaml
 
 
 def test_python_version():
-    """Ensure we're running on Python 3.11+"""
-    assert sys.version_info >= (3, 11), f"Python 3.11+ required, got {sys.version}"
+    """Ensure we're running on Python 3.12+"""
+    assert sys.version_info >= (3, 12), f"Python 3.12+ required, got {sys.version}"
     print("✓ Python version check passed")
 
 
@@ -53,6 +55,8 @@ def test_ansible_syntax():
 
 def test_shellcheck():
     """Run shellcheck on shell scripts"""
+    if shutil.which("shellcheck") is None:
+        pytest.skip("shellcheck is not installed")
     shell_scripts = ["algo", "install.sh"]
 
     for script in shell_scripts:

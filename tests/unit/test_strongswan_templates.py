@@ -8,6 +8,7 @@ import os
 import sys
 import uuid
 
+import pytest
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 # Add parent directory to path for fixtures
@@ -165,14 +166,8 @@ def test_strongswan_templates():
                 errors.append(f"{template_path} ({scenario}): {e!s}")
                 print(f"  ❌ {template_name} ({scenario}): {e!s}")
 
-    if errors:
-        print(f"\n❌ StrongSwan template tests failed with {len(errors)} errors")
-        for error in errors[:5]:
-            print(f"    {error}")
-        return False
-    else:
-        print(f"\n✅ All StrongSwan template tests passed ({tested} tests)")
-        return True
+    assert not errors, "StrongSwan template errors:\n" + "\n".join(errors[:5])
+    print(f"\n✅ All StrongSwan template tests passed ({tested} tests)")
 
 
 def test_openssl_template_constraints():
@@ -182,8 +177,7 @@ def test_openssl_template_constraints():
 
     openssl_path = "roles/strongswan/tasks/openssl.yml"
     if not os.path.exists(openssl_path):
-        print("⚠️  OpenSSL tasks file not found")
-        return True
+        pytest.skip("OpenSSL tasks file not found")
 
     try:
         with open(openssl_path) as f:
@@ -209,15 +203,12 @@ def test_openssl_template_constraints():
                 jinja_blocks = re.findall(r"\{\{.*?\}\}", str(constraints), re.DOTALL)
                 for block in jinja_blocks:
                     if "#" in block:
-                        print("❌ Found inline comment in Jinja2 expression")
-                        return False
+                        raise AssertionError("Found inline comment in Jinja2 expression")
 
         print("✅ OpenSSL template constraints validated")
-        return True
 
     except Exception as e:
-        print(f"⚠️  Error checking OpenSSL tasks: {e}")
-        return True  # Don't fail the test for this
+        raise AssertionError(f"Error checking OpenSSL tasks: {e}") from e
 
 
 def test_mobileconfig_template():
@@ -225,14 +216,12 @@ def test_mobileconfig_template():
     template_path = "roles/strongswan/templates/mobileconfig.j2"
 
     if not os.path.exists(template_path):
-        print("⚠️  Mobileconfig template not found")
-        return True
+        pytest.skip("Mobileconfig template not found")
 
     # Skip this test - mobileconfig.j2 is too tightly coupled to Ansible runtime
     # It requires complex mock objects (item.1.stdout) and many dynamic variables
     # that are generated during playbook execution
-    print("⚠️  Skipping mobileconfig template test (requires Ansible runtime context)")
-    return True
+    pytest.skip("mobileconfig template requires Ansible runtime context")
 
     test_cases = [
         {

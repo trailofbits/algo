@@ -10,6 +10,8 @@ import subprocess
 import sys
 import tempfile
 
+import pytest
+
 # Add library directory to path to import our custom module
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "library"))
 
@@ -20,10 +22,8 @@ def test_wireguard_tools_available():
         result = subprocess.run(["wg", "--version"], capture_output=True, text=True)
         assert result.returncode == 0, "WireGuard tools not available"
         print(f"✓ WireGuard tools available: {result.stdout.strip()}")
-        return True
     except FileNotFoundError:
-        print("⚠ WireGuard tools not available - skipping validation tests")
-        return False
+        pytest.skip("WireGuard tools not available")
 
 
 def test_x25519_module_import():
@@ -32,7 +32,6 @@ def test_x25519_module_import():
         import x25519_pubkey  # noqa: F401
 
         print("✓ x25519_pubkey module imports successfully")
-        return True
     except ImportError as e:
         assert False, f"Cannot import x25519_pubkey module: {e}"
 
@@ -124,8 +123,6 @@ def test_x25519_pubkey_from_raw_file():
 
                 print(f"✓ Derived public key from raw file: {derived_pubkey[:12]}...")
 
-                return derived_pubkey
-
             finally:
                 x25519_pubkey.AnsibleModule = original_AnsibleModule
 
@@ -181,8 +178,6 @@ def test_x25519_pubkey_from_b64_string():
 
             print(f"✓ Derived public key from base64 string: {derived_pubkey[:12]}...")
 
-            return derived_pubkey
-
         finally:
             x25519_pubkey.AnsibleModule = original_AnsibleModule
 
@@ -193,8 +188,7 @@ def test_x25519_pubkey_from_b64_string():
 
 def test_wireguard_validation():
     """Test that our derived keys work with actual WireGuard tools"""
-    if not test_wireguard_tools_available():
-        return
+    test_wireguard_tools_available()
 
     # Generate keys using our method
     raw_key_path, b64_key = generate_test_private_key()

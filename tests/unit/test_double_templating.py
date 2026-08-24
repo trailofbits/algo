@@ -24,7 +24,7 @@ def find_yaml_files() -> list[Path]:
         yaml_files.extend(repo_root.glob(pattern))
 
     # Exclude test files and vendor directories
-    excluded_dirs = {"venv", ".venv", "env", ".git", "__pycache__", ".pytest_cache"}
+    excluded_dirs = {"venv", ".venv", "env", ".git", ".ansible", "__pycache__", ".pytest_cache"}
     yaml_files = [f for f in yaml_files if not any(excluded in f.parts for excluded in excluded_dirs)]
 
     return sorted(yaml_files)

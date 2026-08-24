@@ -54,7 +54,6 @@ def test_openssl_version_detection():
     minor = int(version_match.group(2))
 
     print(f"✓ OpenSSL version detected: {major}.{minor}")
-    return (major, minor)
 
 
 def validate_ca_certificate_real(cert_files):
