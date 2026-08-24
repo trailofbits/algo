@@ -28,7 +28,7 @@
         owner: root
         group: root
         mode: '0644'
-      notify: restart strongswan
+      notify: reload systemd and restart strongswan
 
     - name: Ubuntu | Enforcing ipsec with apparmor
       command: aa-enforce "{{ item }}"
@@ -58,6 +58,4 @@
     src: 100-CustomLimitations.conf.j2
     dest: /etc/systemd/system/{{ strongswan_service }}.service.d/100-CustomLimitations.conf
     mode: '0644'
-  notify:
-    - daemon-reload
-    - restart strongswan
+  notify: reload systemd and restart strongswan

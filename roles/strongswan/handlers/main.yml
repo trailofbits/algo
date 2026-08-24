@@ -1,9 +1,9 @@
 ---
-- name: restart strongswan
-  service: name={{ strongswan_service }} state=restarted
-
-- name: daemon-reload
-  systemd: daemon_reload=true
+- name: reload systemd and restart strongswan
+  systemd:
+    name: "{{ strongswan_service }}"
+    daemon_reload: true
+    state: restarted
 
 - name: restart apparmor
   service: name=apparmor state=restarted

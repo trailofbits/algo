@@ -7,8 +7,10 @@ Tests all strongswan role templates with various configurations.
 import os
 import sys
 import uuid
+from pathlib import Path
 
 import pytest
+import yaml
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 # Add parent directory to path for fixtures
@@ -168,6 +170,26 @@ def test_strongswan_templates():
 
     assert not errors, "StrongSwan template errors:\n" + "\n".join(errors[:5])
     print(f"\n✅ All StrongSwan template tests passed ({tested} tests)")
+
+
+def test_strongswan_systemd_hardening_and_restart_lifecycle():
+    template = Path("roles/strongswan/templates/100-CustomLimitations.conf.j2").read_text(encoding="utf-8")
+    handlers = yaml.safe_load(Path("roles/strongswan/handlers/main.yml").read_text(encoding="utf-8"))
+    ubuntu_tasks = Path("roles/strongswan/tasks/ubuntu.yml").read_text(encoding="utf-8")
+
+    assert "AF_UNIX" in template
+    assert "ReadOnlyPaths=/proc/net/pfkey" not in template
+
+    combined = next(item for item in handlers if item["name"] == "reload systemd and restart strongswan")
+    systemd = combined["systemd"]
+    assert systemd["name"] == "{{ strongswan_service }}"
+    assert systemd["daemon_reload"] is True
+    assert systemd["state"] == "restarted"
+
+    assert "- daemon-reload" not in ubuntu_tasks
+    assert "notify: restart strongswan" not in ubuntu_tasks
+    assert "- restart strongswan" not in ubuntu_tasks
+    assert "reload systemd and restart strongswan" in ubuntu_tasks
 
 
 def test_openssl_template_constraints():

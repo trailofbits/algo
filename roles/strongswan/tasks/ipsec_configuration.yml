@@ -28,7 +28,7 @@
       group: "{{ root_group | default('root') }}"
       mode: "0644"
   notify:
-    - restart strongswan
+    - reload systemd and restart strongswan
 
 - name: Get loaded plugins
   shell: |
@@ -47,13 +47,13 @@
     line: load = no
     state: present
   notify:
-    - restart strongswan
+    - reload systemd and restart strongswan
   when: item not in strongswan_enabled_plugins and item not in strongswan_additional_plugins
   loop: "{{ strongswan_plugins.stdout_lines }}"
 
 - name: Ensure that required plugins are enabled
   lineinfile: dest="{{ config_prefix | default('/') }}etc/strongswan.d/charon/{{ item }}.conf" regexp='.*load.*' line='load = yes' state=present
   notify:
-    - restart strongswan
+    - reload systemd and restart strongswan
   when: item in strongswan_enabled_plugins or item in strongswan_additional_plugins
   loop: "{{ strongswan_plugins.stdout_lines }}"
