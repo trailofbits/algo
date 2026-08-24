@@ -19,6 +19,8 @@ def test_ipsec_e2e_runs_an_isolated_swanctl_client_and_requires_both_sas():
     assert E2E_SCRIPT.stat().st_mode & 0o111, "E2E script must be directly executable"
 
     assert 'ip netns exec "${NAMESPACE}"' in script
+    assert "unshare --mount --pid --fork --kill-child --mount-proc" in script
+    assert "mount -t tmpfs" in script and "tmpfs /run" in script
     assert "charon" in script
     assert "swanctl --load-all" in script
     assert "swanctl --initiate" in script

@@ -510,8 +510,9 @@ EOF
     fi
 
     log_info "Starting an isolated charon client in namespace ${NAMESPACE}"
-    ip netns exec "${NAMESPACE}" env \
-        STRONGSWAN_CONF="${IPSEC_CLIENT_DIR}/strongswan.conf" \
+    ip netns exec "${NAMESPACE}" unshare --mount --pid --fork --kill-child --mount-proc \
+        sh -c 'mount --make-rprivate / && mount -t tmpfs -o mode=0755,nosuid,nodev tmpfs /run && exec "$@"' \
+        sh env STRONGSWAN_CONF="${IPSEC_CLIENT_DIR}/strongswan.conf" \
         "${charon_binary}" >"${IPSEC_CLIENT_DIR}/launcher.log" 2>&1 &
     IPSEC_CLIENT_PID=$!
 
@@ -655,7 +656,7 @@ main() {
 
     # Check required commands
     local missing_cmds=()
-    for cmd in ip wg wg-quick ipsec swanctl xmllint openssl host dig curl; do
+    for cmd in ip wg wg-quick ipsec swanctl xmllint openssl host dig curl unshare mount; do
         if ! command -v "${cmd}" &> /dev/null; then
             missing_cmds+=("${cmd}")
         fi
