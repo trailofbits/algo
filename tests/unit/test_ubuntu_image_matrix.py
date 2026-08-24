@@ -12,7 +12,8 @@ GROUNDED_SELECTORS = {
     "vultr": {"22.04": "Ubuntu 22.04 LTS x64", "24.04": "Ubuntu 24.04 LTS x64"},
     "linode": {"22.04": "linode/ubuntu22.04", "24.04": "linode/ubuntu24.04"},
 }
-UNVERIFIED_24_04 = {"azure", "lightsail", "openstack", "cloudstack"}
+UNVERIFIED_24_04 = {"openstack", "cloudstack"}
+EXCLUDED_PROVIDERS = {"azure", "lightsail"}
 
 
 def _config():
@@ -32,6 +33,13 @@ def test_grounded_provider_native_selectors_cover_both_supported_releases():
         if provider == "ec2":
             image = image["name"]
         assert image == expected
+
+
+def test_excluded_providers_are_never_validated_as_supported():
+    config = _config()
+    support = config["cloud_provider_ubuntu_versions"]
+    for provider in EXCLUDED_PROVIDERS:
+        assert support[provider] == []
 
 
 def test_tenant_or_catalog_specific_24_04_images_are_not_advertised():
@@ -60,7 +68,9 @@ def test_input_rejects_unknown_or_provider_unverified_versions_before_provisioni
     text = (ROOT / "input.yml").read_text()
     assert "supported_ubuntu_versions" in text
     assert "cloud_provider_ubuntu_versions" in text
-    assert "Ubuntu 24.04 image selection is not verified" in text
+    assert "Ubuntu {{ ubuntu_version }} image selection is not verified" in text
+    assert "Amazon Lightsail (unsupported/unverified)" in text
+    assert "Microsoft Azure (unsupported/unverified)" in text
 
 
 def test_local_deployment_ci_covers_both_supported_releases():

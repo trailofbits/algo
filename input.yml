@@ -12,9 +12,9 @@
       store_pki: false
     providers_map:
       - { name: DigitalOcean, alias: digitalocean }
-      - { name: Amazon Lightsail, alias: lightsail }
+      - { name: Amazon Lightsail (unsupported/unverified), alias: lightsail }
       - { name: Amazon EC2, alias: ec2 }
-      - { name: Microsoft Azure, alias: azure }
+      - { name: Microsoft Azure (unsupported/unverified), alias: azure }
       - { name: Google Compute Engine, alias: gce }
       - { name: Hetzner Cloud, alias: hetzner }
       - { name: Vultr, alias: vultr }
@@ -65,7 +65,7 @@
           assert:
             that: ubuntu_version | string in cloud_provider_ubuntu_versions[algo_provider] | default([])
             fail_msg: >-
-              Ubuntu 24.04 image selection is not verified for {{ algo_provider }};
+              Ubuntu {{ ubuntu_version }} image selection is not verified for {{ algo_provider }};
               choose a supported version or provide and validate a provider-native selector.
 
         - name: VPN server name prompt

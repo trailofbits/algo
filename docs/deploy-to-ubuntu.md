@@ -23,8 +23,8 @@ No live provider deployment was performed for this support matrix. "Public selec
 | Linode | Public image | Public image | The unauthenticated public image API exposes [`linode/ubuntu22.04`](https://api.linode.com/v4/images/linode/ubuntu22.04) and [`linode/ubuntu24.04`](https://api.linode.com/v4/images/linode/ubuntu24.04). |
 | OpenStack | Existing 22.04 only | **Unverified/unsupported** | Image names are deployment-specific; there is no universal 24.04 selector. Configure and test the target cloud catalog before advertising support. |
 | CloudStack | Existing 22.04 only | **Unverified/unsupported** | Templates are cloud/zone-specific; there is no universal 24.04 selector. |
-| Azure | Existing 22.04 only | **Unverified/unsupported in this change** | Azure was explicitly excluded from the 24.04 selector work. |
-| Amazon Lightsail | Existing 22.04 only | **Unverified/unsupported in this change** | Lightsail was explicitly excluded from the 24.04 selector work. |
+| Azure | **Excluded/unverified** | **Excluded/unverified** | Azure is outside the retained release scope and is rejected before provisioning. |
+| Amazon Lightsail | **Excluded/unverified** | **Excluded/unverified** | Lightsail is outside the retained release scope and is rejected before provisioning. |
 | Existing/local server | Accepted after fact validation | Accepted after fact validation | No provider image is created; the common role verifies the actual distribution and version before configuration. |
 
 ## Installation
