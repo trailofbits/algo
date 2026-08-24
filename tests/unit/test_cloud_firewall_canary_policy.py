@@ -58,8 +58,8 @@ def test_gce_cleanup_does_not_depend_on_managed_server_discovery():
     steps = _workflow()["jobs"]["canary"]["steps"]
     cleanup = next(step for step in steps if step.get("name") == "Destroy canary")
 
-    assert 'elif [[ "$PROVIDER" == "gce" && "${GCE_FALLBACK_SAFE:-}" == "true" ]]' in cleanup["run"]
-    assert cleanup["run"].index('elif [[ "$PROVIDER" == "gce"') > cleanup["run"].index("CANARY_SERVER_IP")
+    assert '"$NEED_FALLBACK" == "true" && "$PROVIDER" == "gce"' in cleanup["run"]
+    assert cleanup["run"].index('"$PROVIDER" == "gce"') > cleanup["run"].index("CANARY_SERVER_IP")
 
 
 def test_gce_fallback_after_pre_discovery_failure_deletes_only_exact_owned_names(tmp_path):
@@ -122,6 +122,71 @@ def test_gce_cleanup_without_preflight_ownership_refuses_all_deletes(tmp_path):
 
     assert result.returncode == 1
     assert "No canary ownership proof" in result.stdout
+
+
+def test_gce_preflight_api_failure_never_records_cleanup_ownership(tmp_path):
+    steps = _workflow()["jobs"]["canary"]["steps"]
+    preflight = next(step for step in steps if step.get("name") == "Preflight dedicated GCE project")["run"]
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    gcloud = fake_bin / "gcloud"
+    gcloud.write_text(
+        "#!/usr/bin/env bash\nif [[ \"$*\" == *'instances list'* ]]; then exit 0; fi\nexit 42\n",
+        encoding="utf-8",
+    )
+    gcloud.chmod(0o700)
+    github_env = tmp_path / "github-env"
+    environment = {
+        **os.environ,
+        "PATH": f"{fake_bin}:{os.environ['PATH']}",
+        "GCE_PROJECT": "dedicated-canary-project",
+        "CANARY_NAME": "algo-firewall-canary-123",
+        "RUNNER_TEMP": str(tmp_path),
+        "GITHUB_ENV": str(github_env),
+    }
+
+    result = subprocess.run(["bash", "-c", preflight], env=environment, capture_output=True, text=True, check=False)
+
+    assert result.returncode != 0
+    assert not github_env.exists() or "GCE_FALLBACK_SAFE" not in github_env.read_text(encoding="utf-8")
+
+
+def test_failed_managed_destroy_still_attempts_exact_provider_fallback(tmp_path):
+    steps = _workflow()["jobs"]["canary"]["steps"]
+    cleanup = next(step for step in steps if step.get("name") == "Destroy canary")["run"]
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    call_log = tmp_path / "calls"
+    algo = tmp_path / "algo"
+    algo.write_text("#!/usr/bin/env bash\nexit 1\n", encoding="utf-8")
+    algo.chmod(0o700)
+    gcloud = fake_bin / "gcloud"
+    gcloud.write_text(
+        "#!/usr/bin/env bash\n"
+        'printf \'%s\\n\' "$*" >> "$CALL_LOG"\n'
+        "if [[ \"$*\" == *'instances list'* ]]; then\n"
+        "  printf '%s\\n' \"$CANARY_NAME,us-central1-a\"\n"
+        "fi\n",
+        encoding="utf-8",
+    )
+    gcloud.chmod(0o700)
+    environment = {
+        **os.environ,
+        "PATH": f"{fake_bin}:{os.environ['PATH']}",
+        "PROVIDER": "gce",
+        "GCE_FALLBACK_SAFE": "true",
+        "GCE_PROJECT": "dedicated-canary-project",
+        "CANARY_NAME": "algo-firewall-canary-123",
+        "CANARY_SERVER_IP": "192.0.2.10",
+        "RUNNER_TEMP": str(tmp_path),
+        "CALL_LOG": str(call_log),
+    }
+
+    subprocess.run(["bash", "-c", cleanup], cwd=tmp_path, env=environment, capture_output=True, text=True, check=False)
+
+    assert call_log.exists()
+    calls = call_log.read_text(encoding="utf-8")
+    assert "instances delete algo-firewall-canary-123" in calls
 
 
 def test_canary_never_enables_shell_tracing_or_prints_credentials():

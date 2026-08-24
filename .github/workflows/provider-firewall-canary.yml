@@ -100,13 +100,21 @@ jobs:
             echo "::error::Dedicated canary project already contains the requested instance name."
             exit 1
           fi
-          if gcloud compute firewall-rules describe algovpn --project="$GCE_PROJECT" \
-            > /dev/null 2> "$RUNNER_TEMP/gcloud-preflight.log"; then
+          EXISTING_FIREWALL="$(gcloud compute firewall-rules list \
+            --project="$GCE_PROJECT" \
+            --filter='name=algovpn' \
+            --format='value(name)' \
+            2> "$RUNNER_TEMP/gcloud-preflight.log")"
+          if [[ -n "$EXISTING_FIREWALL" ]]; then
             echo "::error::Dedicated canary project already contains the Algo firewall."
             exit 1
           fi
-          if gcloud compute networks describe algovpn --project="$GCE_PROJECT" \
-            > /dev/null 2> "$RUNNER_TEMP/gcloud-preflight.log"; then
+          EXISTING_NETWORK="$(gcloud compute networks list \
+            --project="$GCE_PROJECT" \
+            --filter='name=algovpn' \
+            --format='value(name)' \
+            2> "$RUNNER_TEMP/gcloud-preflight.log")"
+          if [[ -n "$EXISTING_NETWORK" ]]; then
             echo "::error::Dedicated canary project already contains the Algo network."
             exit 1
           fi
@@ -224,16 +232,23 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          CLEANUP_STATUS=0
+          NEED_FALLBACK=false
           if [[ -n "${CANARY_SERVER_IP:-}" ]]; then
             if ! ./algo destroy "$CANARY_SERVER_IP" -e 'confirm_destroy=true' \
               > "$RUNNER_TEMP/algo-destroy.log" 2>&1; then
-              echo "::error::Canary destroy failed; potentially sensitive logs were withheld."
-              exit 1
+              echo "::warning::Managed canary destroy failed; attempting exact provider cleanup."
+              CLEANUP_STATUS=1
+              NEED_FALLBACK=true
             fi
-          elif [[ "$PROVIDER" == "ec2" ]]; then
+          else
+            NEED_FALLBACK=true
+          fi
+
+          if [[ "$NEED_FALLBACK" == "true" && "$PROVIDER" == "ec2" ]]; then
             aws cloudformation delete-stack --stack-name "$CANARY_NAME"
             aws cloudformation wait stack-delete-complete --stack-name "$CANARY_NAME"
-          elif [[ "$PROVIDER" == "gce" && "${GCE_FALLBACK_SAFE:-}" == "true" ]]; then
+          elif [[ "$NEED_FALLBACK" == "true" && "$PROVIDER" == "gce" && "${GCE_FALLBACK_SAFE:-}" == "true" ]]; then
             mapfile -t INSTANCE_ROWS < <(gcloud compute instances list \
               --project="$GCE_PROJECT" \
               --filter="name=$CANARY_NAME" \
@@ -263,7 +278,8 @@ jobs:
               gcloud compute networks delete algovpn --project="$GCE_PROJECT" --quiet \
                 > "$RUNNER_TEMP/gcloud-destroy.log" 2>&1
             fi
-          else
+          elif [[ "$NEED_FALLBACK" == "true" ]]; then
             echo "::error::No canary ownership proof was recorded for safe destruction."
             exit 1
           fi
+          exit "$CLEANUP_STATUS"
