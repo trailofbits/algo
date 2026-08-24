@@ -3,8 +3,11 @@ name: Security
 
 'on':
   push:
-    branches: [main, master]
+    branches: [main]
   pull_request:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -26,8 +29,8 @@ jobs:
           --exclude-rule dockerfile.security.last-user-is-root.last-user-is-root
           --error --quiet .
 
-  pip-audit:
-    name: Python dependency audit
+  dependency-audit:
+    name: Retained-provider dependency audit
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
@@ -36,6 +39,63 @@ jobs:
 
       - name: Setup Algo environment
         uses: ./.github/actions/setup-algo
+        with:
+          python-version: '3.12'
 
-      - name: Run pip-audit
-        run: uv run --with pip-audit pip-audit
+      - name: Audit retained provider and development dependencies
+        run: scripts/audit-dependencies.sh
+
+  collection-updates:
+    name: Report Ansible collection updates
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Setup Algo environment
+        uses: ./.github/actions/setup-algo
+        with:
+          python-version: '3.12'
+
+      - name: Report exact collection pin updates
+        run: >
+          uv run python scripts/check-collection-updates.py
+          --exclude azure.azcollection
+          --output "$GITHUB_STEP_SUMMARY"
+
+  container-audit:
+    name: Built image SBOM and vulnerability audit
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Build image under test
+        run: docker build --tag algo-security-scan:${{ github.sha }} .
+
+      - name: Generate image SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610  # v0
+        with:
+          image: algo-security-scan:${{ github.sha }}
+          format: spdx-json
+          output-file: algo-security-scan.spdx.json
+          artifact-name: algo-security-scan-sbom.spdx.json
+          upload-artifact: true
+          upload-artifact-retention: 14
+          upload-release-assets: false
+
+      - name: Scan built image
+        uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2  # v7
+        with:
+          image: algo-security-scan:${{ github.sha }}
+          fail-build: true
+          severity-cutoff: low
+          only-fixed: false
+          output-format: table

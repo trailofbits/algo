@@ -179,3 +179,59 @@ def test_project_collection_directory_is_ignored_explicitly():
 
     assert ".ansible/collections/" in ignored
     assert ".ansible/" in docker_ignored
+
+
+def test_security_workflow_runs_weekly_and_invokes_dependency_audits():
+    workflow = yaml.safe_load((ROOT / ".github/workflows/security.yml").read_text(encoding="utf-8"))
+    triggers = workflow["on"]
+
+    assert triggers["schedule"] == [{"cron": "17 6 * * 1"}]
+    assert "workflow_dispatch" in triggers
+    audit_job = workflow["jobs"]["dependency-audit"]
+    commands = "\n".join(step.get("run", "") for step in audit_job["steps"])
+    assert "scripts/audit-dependencies.sh" in commands
+
+
+def test_dependency_audit_covers_only_retained_provider_extras_and_cleans_up():
+    script_path = ROOT / "scripts/audit-dependencies.sh"
+    assert script_path.is_file(), "scripts/audit-dependencies.sh must exist"
+    script = script_path.read_text(encoding="utf-8")
+
+    assert "set -euo pipefail" in script
+    assert 'RETAINED_EXTRAS=("aws" "gcp" "hetzner" "linode" "openstack" "cloudstack")' in script
+    assert "trap 'rm -rf \"$audit_dir\"' EXIT" in script
+    assert 'uv export --frozen --quiet --extra "$extra" --no-dev' in script
+    assert "uv export --frozen --quiet --only-group dev" in script
+    assert 'readonly PIP_AUDIT_VERSION="2.10.1"' in script
+    assert 'uvx --from "pip-audit==${PIP_AUDIT_VERSION}" pip-audit --strict' in script
+    assert "azure" not in script.casefold()
+    assert "lightsail" not in script.casefold()
+
+
+def test_security_workflow_generates_sbom_and_fails_on_image_vulnerabilities():
+    workflow = yaml.safe_load((ROOT / ".github/workflows/security.yml").read_text(encoding="utf-8"))
+    image_job = workflow["jobs"]["container-audit"]
+    serialized = yaml.safe_dump(image_job)
+
+    assert "docker build" in serialized
+    assert "anchore/sbom-action@" in serialized
+    assert "anchore/scan-action@" in serialized
+    assert "algo-security-scan" in serialized
+    assert image_job["permissions"] == {"contents": "read"}
+    scan_step = next(step for step in image_job["steps"] if step.get("name") == "Scan built image")
+    assert scan_step["with"]["fail-build"] is True
+    assert scan_step["with"]["severity-cutoff"] == "low"
+    assert scan_step["with"]["only-fixed"] is False
+
+
+def test_collection_update_check_is_report_only_and_excludes_azure():
+    workflow = yaml.safe_load((ROOT / ".github/workflows/security.yml").read_text(encoding="utf-8"))
+    update_job = workflow["jobs"]["collection-updates"]
+    commands = "\n".join(step.get("run", "") for step in update_job["steps"])
+
+    assert workflow["permissions"] == {"contents": "read"}
+    assert update_job["permissions"] == {"contents": "read"}
+    assert "scripts/check-collection-updates.py" in commands
+    assert "--exclude azure.azcollection" in commands
+    assert "GITHUB_STEP_SUMMARY" in commands
+    assert "pull-requests" not in yaml.safe_dump(workflow["permissions"])
