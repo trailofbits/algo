@@ -2,8 +2,11 @@
 name: Smart Test Selection
 
 'on':
+  push:
+    branches: [main, master]
   pull_request:
     types: [opened, synchronize, reopened]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -213,7 +216,7 @@ jobs:
             --check \
             --diff \
             -vv \
-            --skip-tags "facts,tests,local,update-alternatives,cloud_api" || true
+            --skip-tags "facts,tests,local,update-alternatives,cloud_api"
 
   lint:
     name: Linting

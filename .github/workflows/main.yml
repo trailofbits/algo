@@ -6,6 +6,7 @@ name: Main
     branches:
       - master
       - main
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -59,7 +60,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y shellcheck
 
       - name: Run basic sanity tests
-        run: uv run pytest tests/unit/ -v
+        run: uv run pytest -v
 
   docker-build:
     name: Docker build test
@@ -170,7 +171,4 @@ jobs:
             --check \
             --diff \
             -vv \
-            --skip-tags "facts,tests,local,update-alternatives,cloud_api" || true
-
-          # The || true is because check mode will fail on some tasks
-          # but we're looking for syntax/undefined variable errors
+            --skip-tags "facts,tests,local,update-alternatives,cloud_api"

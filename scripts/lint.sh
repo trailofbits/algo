@@ -10,16 +10,19 @@ echo "Running playbook dry-run check..."
 ansible-playbook main.yml --check --connection=local \
   -e "server_ip=test" \
   -e "server_name=ci-test" \
-  -e "IP_subject_alt_name=192.168.1.1" \
-  || echo "Dry-run completed with issues - check output above"
+  -e "IP_subject_alt_name=192.168.1.1"
 
 echo "Running yamllint..."
 yamllint -c .yamllint .
 
 echo "Running ruff..."
-ruff check . || true  # Start with warnings only
+ruff check .
 
 echo "Running shellcheck..."
-find . -type f -name "*.sh" -not -path "./.git/*" -exec shellcheck {} \;
+find . -type f -name "*.sh" \
+  -not -path "./.git/*" \
+  -not -path "./.venv/*" \
+  -not -path "./.ansible/*" \
+  -print0 | xargs -0 --no-run-if-empty shellcheck
 
 echo "All linting completed!"

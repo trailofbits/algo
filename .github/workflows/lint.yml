@@ -5,6 +5,7 @@ name: Lint
   push:
     branches: [main, master]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -42,8 +43,7 @@ jobs:
           uv run ansible-playbook main.yml --check --connection=local \
             -e "server_ip=test" \
             -e "server_name=ci-test" \
-            -e "IP_subject_alt_name=192.168.1.1" \
-            || echo "Dry-run check completed with issues - review output above"
+            -e "IP_subject_alt_name=192.168.1.1"
 
   yaml-lint:
     name: YAML linting
@@ -133,8 +133,12 @@ jobs:
 
       - name: Run shellcheck
         run: |
-          # Check all shell scripts, not just algo and install.sh
-          find . -type f -name "*.sh" -not -path "./.git/*" -exec shellcheck {} \;
+          # Check repository scripts as one fail-closed batch; exclude generated dependencies.
+          find . -type f -name "*.sh" \
+            -not -path "./.git/*" \
+            -not -path "./.venv/*" \
+            -not -path "./.ansible/*" \
+            -print0 | xargs -0 --no-run-if-empty shellcheck
 
   powershell-lint:
     name: PowerShell script linting
