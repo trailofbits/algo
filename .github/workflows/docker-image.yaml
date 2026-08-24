@@ -3,7 +3,8 @@ name: Create and publish a Docker image
 
 'on':
   push:
-    branches: ['master']
+    branches: ['main']
+    tags: ['v*.*.*']
 
 env:
   REGISTRY: ghcr.io
@@ -41,8 +42,14 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            # set latest tag for master branch
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
+            # Stable semver tags generate latest automatically; main also updates latest.
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+          labels: |
+            org.opencontainers.image.created={{commit_date 'YYYY-MM-DDTHH:mm:ss.SSS[Z]'}}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ github.ref_name }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a  # v7.3.0

@@ -25,7 +25,9 @@ def test_installer_defaults_to_main():
 def test_docker_workflow_publishes_from_main():
     workflow = yaml.safe_load((ROOT / ".github/workflows/docker-image.yaml").read_text())
 
-    assert workflow["on"]["push"]["branches"] == ["main"]
+    push = workflow["on"]["push"]
+    assert push["branches"] == ["main"]
+    assert push["tags"] == ["v*.*.*"]
 
     metadata_steps = [step for step in workflow["jobs"]["build-and-push-image"]["steps"] if step.get("id") == "meta"]
     assert len(metadata_steps) == 1
@@ -35,7 +37,41 @@ def test_docker_workflow_publishes_from_main():
         for line in metadata_steps[0]["with"]["tags"].splitlines()
         if line.strip() and not line.lstrip().startswith("#")
     ]
-    assert active_tag_rules == ["type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}"]
+    assert active_tag_rules == [
+        "type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}",
+        "type=semver,pattern={{version}}",
+        "type=semver,pattern={{major}}.{{minor}}",
+    ]
+
+    active_labels = [
+        line.strip()
+        for line in metadata_steps[0]["with"]["labels"].splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    assert active_labels == [
+        "org.opencontainers.image.created={{commit_date 'YYYY-MM-DDTHH:mm:ss.SSS[Z]'}}",
+        "org.opencontainers.image.revision=${{ github.sha }}",
+        "org.opencontainers.image.version=${{ github.ref_name }}",
+    ]
+
+    build_steps = [
+        step
+        for step in workflow["jobs"]["build-and-push-image"]["steps"]
+        if step.get("uses", "").startswith("docker/build-push-action@")
+    ]
+    assert len(build_steps) == 1
+    assert build_steps[0]["with"]["labels"] == "${{ steps.meta.outputs.labels }}"
+
+
+def test_actionlint_checks_yml_and_yaml_workflows():
+    workflow = yaml.safe_load((ROOT / ".github/workflows/lint.yml").read_text())
+    actionlint_steps = [
+        step for step in workflow["jobs"]["actionlint"]["steps"] if step.get("name") == "Run actionlint"
+    ]
+
+    assert len(actionlint_steps) == 1
+    commands = [line.strip() for line in actionlint_steps[0]["run"].splitlines() if line.strip()]
+    assert commands == ["actionlint .github/workflows/*.yml .github/workflows/*.yaml"]
 
 
 def test_installer_documentation_does_not_use_positional_arguments():
