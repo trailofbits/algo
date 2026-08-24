@@ -5,14 +5,27 @@ import yaml
 ROOT = Path(__file__).parents[2]
 GROUNDED_SELECTORS = {
     "digitalocean": {"22.04": "ubuntu-22-04-x64", "24.04": "ubuntu-24-04-x64"},
-    "ec2": {"22.04": "ubuntu-jammy-22.04", "24.04": "ubuntu-noble-24.04"},
+    "ec2": {
+        "22.04": "ubuntu/images/hvm-ssd/ubuntu-jammy-22.04",
+        "24.04": "ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04",
+    },
     "gce": {"22.04": "ubuntu-2204-lts", "24.04": "ubuntu-2404-lts-amd64"},
     "scaleway": {"22.04": "ubuntu_jammy", "24.04": "ubuntu_noble"},
     "hetzner": {"22.04": "ubuntu-22.04", "24.04": "ubuntu-24.04"},
     "vultr": {"22.04": "Ubuntu 22.04 LTS x64", "24.04": "Ubuntu 24.04 LTS x64"},
     "linode": {"22.04": "linode/ubuntu22.04", "24.04": "linode/ubuntu24.04"},
 }
-UNVERIFIED_24_04 = {"openstack", "cloudstack"}
+UNVERIFIED_24_04 = {
+    "digitalocean",
+    "ec2",
+    "gce",
+    "scaleway",
+    "hetzner",
+    "vultr",
+    "linode",
+    "openstack",
+    "cloudstack",
+}
 EXCLUDED_PROVIDERS = {"azure", "lightsail"}
 
 
@@ -42,11 +55,12 @@ def test_excluded_providers_are_never_validated_as_supported():
         assert support[provider] == []
 
 
-def test_tenant_or_catalog_specific_24_04_images_are_not_advertised():
+def test_uncanaried_cloud_images_are_not_advertised_as_supported():
     config = _config()
     support = config["cloud_provider_ubuntu_versions"]
     for provider in UNVERIFIED_24_04:
         assert support[provider] == ["22.04"]
+    for provider in ("openstack", "cloudstack"):
         assert "24.04" not in config["cloud_providers"][provider].get("image", {})
 
 
@@ -62,6 +76,9 @@ def test_image_consumers_select_the_requested_ubuntu_version():
     for provider, path in task_files.items():
         text = (ROOT / path).read_text()
         assert "ubuntu_version" in text, f"{provider} does not select by ubuntu_version"
+    ec2_task = (ROOT / task_files["ec2"]).read_text()
+    assert "ubuntu/images/hvm-ssd/" not in ec2_task
+    assert 'name: "{{ cloud_providers.ec2.image.name[ubuntu_version] }}-*64-server-*"' in ec2_task
 
 
 def test_input_rejects_unknown_or_provider_unverified_versions_before_provisioning():
