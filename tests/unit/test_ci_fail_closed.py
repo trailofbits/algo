@@ -43,6 +43,20 @@ def test_validation_commands_do_not_mask_failures():
     assert offenders == []
 
 
+def test_smart_required_check_rejects_failed_detection_cancelled_and_unexpected_skips():
+    workflow = _load_workflow("smart-tests.yml")
+    aggregate = workflow["jobs"]["all-tests-required"]
+    needs = set(aggregate["needs"])
+    step = next(step for step in aggregate["steps"] if step.get("name") == "Check test results")
+
+    assert "changed-files" in needs
+    assert "CHANGED_FILES_RESULT" in step["env"]
+    command = step["run"]
+    assert '${CHANGED_FILES_RESULT}" != "success"' in command
+    assert '!= "success" && "${result}" != "skipped"' in command
+    assert '== "failure"' not in command
+
+
 def test_integration_triggers_cover_e2e_config_dependencies_providers_and_workflows():
     workflow = _load_workflow("integration-tests.yml")
     paths = set(_triggers(workflow)["pull_request"]["paths"])

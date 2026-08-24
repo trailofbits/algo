@@ -271,29 +271,37 @@ jobs:
 
   all-tests-required:
     name: All Required Tests
-    needs: [syntax-check, basic-tests, docker-tests, config-tests, lint]
+    needs: [changed-files, syntax-check, basic-tests, docker-tests, config-tests, lint]
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Check test results
         env:
+          CHANGED_FILES_RESULT: ${{ needs.changed-files.result }}
           SYNTAX_CHECK_RESULT: ${{ needs.syntax-check.result }}
           BASIC_TESTS_RESULT: ${{ needs.basic-tests.result }}
           DOCKER_TESTS_RESULT: ${{ needs.docker-tests.result }}
           CONFIG_TESTS_RESULT: ${{ needs.config-tests.result }}
           LINT_RESULT: ${{ needs.lint.result }}
         run: |
-          # This job ensures all required tests pass
-          # It will fail if any dependent job failed
-          if [[ "${SYNTAX_CHECK_RESULT}" == "failure" ]] || \
-             [[ "${BASIC_TESTS_RESULT}" == "failure" ]] || \
-             [[ "${DOCKER_TESTS_RESULT}" == "failure" ]] || \
-             [[ "${CONFIG_TESTS_RESULT}" == "failure" ]] || \
-             [[ "${LINT_RESULT}" == "failure" ]]; then
-            echo "One or more required tests failed"
+          # Detection itself must succeed. Test jobs may be skipped only when
+          # the successful path filter established they are irrelevant.
+          if [[ "${CHANGED_FILES_RESULT}" != "success" ]]; then
+            echo "Changed-file detection did not succeed: ${CHANGED_FILES_RESULT}"
             exit 1
           fi
-          echo "All required tests passed!"
+          for result in \
+            "${SYNTAX_CHECK_RESULT}" \
+            "${BASIC_TESTS_RESULT}" \
+            "${DOCKER_TESTS_RESULT}" \
+            "${CONFIG_TESTS_RESULT}" \
+            "${LINT_RESULT}"; do
+            if [[ "${result}" != "success" && "${result}" != "skipped" ]]; then
+              echo "A required test had an invalid terminal result: ${result}"
+              exit 1
+            fi
+          done
+          echo "All required tests passed or were intentionally skipped."
 
   trigger-integration:
     name: Trigger Integration Tests
