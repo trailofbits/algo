@@ -89,7 +89,6 @@ class TestCloudInitTemplate:
             parsed = yaml.safe_load(cloud_init_content)
             print("✅ YAML parsing successful")
             assert parsed is not None, "YAML should parse to a non-None value"
-            return parsed
         except yaml.YAMLError as e:
             print(f"❌ YAML parsing failed: {e}")
             assert False, f"YAML parsing failed: {e}"
@@ -98,7 +97,7 @@ class TestCloudInitTemplate:
         """Test that all required cloud-init sections are present."""
         print("🧪 Testing required sections...")
 
-        parsed = self.test_yaml_validity()
+        parsed = yaml.safe_load(create_expected_cloud_init())
 
         required_sections = ["package_update", "package_upgrade", "packages", "users", "write_files", "runcmd"]
 
@@ -111,7 +110,7 @@ class TestCloudInitTemplate:
         """Test that SSH configuration is correct."""
         print("🧪 Testing SSH configuration...")
 
-        parsed = self.test_yaml_validity()
+        parsed = yaml.safe_load(create_expected_cloud_init())
 
         write_files = parsed.get("write_files", [])
         assert write_files, "write_files section should be present"
@@ -144,7 +143,7 @@ class TestCloudInitTemplate:
         """Test that algo user will be created correctly."""
         print("🧪 Testing user creation...")
 
-        parsed = self.test_yaml_validity()
+        parsed = yaml.safe_load(create_expected_cloud_init())
 
         users = parsed.get("users", [])
         assert users, "users section should be present"
@@ -173,7 +172,7 @@ class TestCloudInitTemplate:
         """Test that runcmd section will restart SSH correctly."""
         print("🧪 Testing runcmd section...")
 
-        parsed = self.test_yaml_validity()
+        parsed = yaml.safe_load(create_expected_cloud_init())
 
         runcmd = parsed.get("runcmd", [])
         assert runcmd, "runcmd section should be present"

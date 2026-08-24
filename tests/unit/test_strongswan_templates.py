@@ -259,27 +259,24 @@ def test_mobileconfig_template():
     if not os.path.exists(template_path):
         pytest.skip("Mobileconfig template not found")
 
-    # Skip this test - mobileconfig.j2 is too tightly coupled to Ansible runtime
-    # It requires complex mock objects (item.1.stdout) and many dynamic variables
-    # that are generated during playbook execution
-    pytest.skip("mobileconfig template requires Ansible runtime context")
-
     test_cases = [
         {
             "name": "iPhone with cellular on-demand",
-            "algo_ondemand_cellular": "true",
-            "algo_ondemand_wifi": "false",
+            "algo_ondemand_cellular": True,
+            "algo_ondemand_wifi": False,
+            "algo_ondemand_wifi_exclude": "X251bGw=",
         },
         {
             "name": "iPad with WiFi on-demand",
-            "algo_ondemand_cellular": "false",
-            "algo_ondemand_wifi": "true",
-            "algo_ondemand_wifi_exclude": "MyHomeNetwork,OfficeWiFi",
+            "algo_ondemand_cellular": False,
+            "algo_ondemand_wifi": True,
+            "algo_ondemand_wifi_exclude": "TXlIb21lTmV0d29yayxPZmZpY2VXaUZp",
         },
         {
             "name": "Mac without on-demand",
-            "algo_ondemand_cellular": "false",
-            "algo_ondemand_wifi": "false",
+            "algo_ondemand_cellular": False,
+            "algo_ondemand_wifi": False,
+            "algo_ondemand_wifi_exclude": "X251bGw=",
         },
     ]
 
@@ -310,6 +307,7 @@ def test_mobileconfig_template():
             env.filters["to_uuid"] = mock_to_uuid
             env.filters["b64encode"] = mock_b64encode
             env.filters["b64decode"] = mock_b64decode
+            env.filters["random"] = lambda upper: upper - 1
 
             template = env.get_template("mobileconfig.j2")
             output = template.render(**test_vars)
@@ -320,7 +318,7 @@ def test_mobileconfig_template():
             assert "PayloadType" in output, "Missing PayloadType"
 
             # Check on-demand configuration
-            if test_case.get("algo_ondemand_cellular") == "true" or test_case.get("algo_ondemand_wifi") == "true":
+            if test_case.get("algo_ondemand_cellular") or test_case.get("algo_ondemand_wifi"):
                 assert "OnDemandEnabled" in output, f"Missing OnDemand config for {test_case['name']}"
 
             print(f"  ✅ Mobileconfig: {test_case['name']}")
@@ -329,17 +327,13 @@ def test_mobileconfig_template():
             errors.append(f"Mobileconfig ({test_case['name']}): {e!s}")
             print(f"  ❌ Mobileconfig ({test_case['name']}): {e!s}")
 
-    if errors:
-        return False
+    assert not errors, "\n".join(errors)
 
     print("✅ All mobileconfig tests passed")
-    return True
 
 
 if __name__ == "__main__":
     print("🔍 Testing StrongSwan templates...\n")
-
-    all_passed = True
 
     # Run tests
     tests = [
@@ -349,12 +343,6 @@ if __name__ == "__main__":
     ]
 
     for test in tests:
-        if not test():
-            all_passed = False
+        test()
 
-    if all_passed:
-        print("\n✅ All StrongSwan template tests passed!")
-        sys.exit(0)
-    else:
-        print("\n❌ Some tests failed")
-        sys.exit(1)
+    print("\n✅ All StrongSwan template tests passed!")

@@ -129,7 +129,7 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["tests/unit"]
+testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
@@ -138,6 +138,11 @@ addopts = [
     "--strict-markers",     # Strict marker validation
     "--strict-config",      # Strict config validation
     "--tb=short",          # Short traceback format
+]
+filterwarnings = [
+    "error",
+    # Third-party waiver; expires 2026-12-31. Remove when passlib no longer imports Python's deprecated crypt module.
+    "ignore:'crypt' is deprecated and slated for removal in Python 3.13:DeprecationWarning:passlib.utils",
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
