@@ -105,8 +105,8 @@ An optional flag is not by itself sufficient. Features failing the gate should l
 
 The following decisions are examples of the gate in action and are intentional project boundaries:
 
-* [#14959, add Xray support](https://github.com/trailofbits/algo/issues/14959), was rejected. Xray is aimed at proxying, obfuscation, and censorship circumvention; it introduces another network daemon, protocol suite, configuration surface, and supply chain outside Algo's personal VPN mission.
-* [#14916, add a web UI](https://github.com/trailofbits/algo/issues/14916), was rejected. A web control plane adds a public application, authentication and session handling, secret management, and a long-lived privileged service for convenience rather than improving tunnel security.
+* [#14959, add Xray support](https://github.com/trailofbits/algo/issues/14959) is outside the accepted secure-core scope under this policy. Xray is aimed at proxying, obfuscation, and censorship circumvention; it introduces another network daemon, protocol suite, configuration surface, and supply chain outside Algo's personal VPN mission.
+* [#14916, add a web UI](https://github.com/trailofbits/algo/issues/14916) is outside the accepted secure-core scope under this policy. A web control plane adds a public application, authentication and session handling, secret management, and a long-lived privileged service for convenience rather than improving tunnel security.
 
 Reconsidering either class of feature requires an explicit threat-model revision, not only an implementation pull request.
 

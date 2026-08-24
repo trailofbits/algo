@@ -17,7 +17,27 @@ def _headings(markdown: str) -> set[str]:
 
 def _local_links(markdown: str) -> list[str]:
     links = re.findall(r"(?<!!)\[[^]]+\]\(([^)]+)\)", markdown)
-    return [link.split("#", 1)[0] for link in links if link and "://" not in link and not link.startswith("#")]
+    return [link for link in links if link and "://" not in link and not link.startswith("#")]
+
+
+def _heading_anchor(heading: str) -> str:
+    normalized = re.sub(r"[^\w\- ]", "", heading.casefold())
+    return re.sub(r"\s+", "-", normalized.strip())
+
+
+def _local_link_exists(base: Path, link: str) -> bool:
+    relative_path, separator, fragment = link.partition("#")
+    target = (base / relative_path).resolve()
+    if not target.is_file():
+        return False
+    if not separator:
+        return True
+    anchors = {_heading_anchor(heading) for heading in _headings(target.read_text(encoding="utf-8"))}
+    return fragment.casefold() in anchors
+
+
+def test_local_link_parser_preserves_fragments_for_anchor_validation():
+    assert _local_links("[supported](../SECURITY.md#supported-versions)") == ["../SECURITY.md#supported-versions"]
 
 
 def test_threat_model_records_the_secure_core_policy():
@@ -71,8 +91,9 @@ def test_threat_model_records_the_secure_core_policy():
     ):
         assert required_control in normalized
     assert "#14959" in threat_model and "#14916" in threat_model
-    assert re.search(r"azure[^\n]*(excluded|unverified)", normalized)
-    assert re.search(r"lightsail[^\n]*(excluded|unverified)", normalized)
+    assert (
+        "microsoft azure is currently excluded and unverified. amazon lightsail is currently excluded and unverified."
+    ) in normalized
 
 
 def test_security_policy_links_to_the_threat_model_and_states_supported_versions():
@@ -98,5 +119,5 @@ def test_changed_security_documents_have_no_broken_local_links():
     for relative_path in ("README.md", "SECURITY.md", "docs/threat-model.md"):
         markdown = _read(relative_path)
         base = (ROOT / relative_path).parent
-        broken = [link for link in _local_links(markdown) if not (base / link).resolve().exists()]
+        broken = [link for link in _local_links(markdown) if not _local_link_exists(base, link)]
         assert not broken, f"{relative_path} has broken local links: {broken}"
