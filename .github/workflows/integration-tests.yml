@@ -52,7 +52,9 @@ jobs:
             wireguard \
             wireguard-tools \
             strongswan \
+            strongswan-swanctl \
             libstrongswan-standard-plugins \
+            libcharon-extra-plugins \
             dnsmasq \
             qrencode \
             openssl \
@@ -74,6 +76,9 @@ jobs:
 
       - name: Create test configuration
         run: |
+          CA_PASSWORD=$(openssl rand -hex 24)
+          P12_PASSWORD=$(openssl rand -hex 24)
+          umask 077
           cat > integration-test.cfg << EOF
           users:
             - alice
@@ -91,10 +96,10 @@ jobs:
           algo_server_name: github-ci-test
           server: localhost
           algo_ssh_port: 22
-          CA_password: "test-ca-password-${{ github.run_id }}"
-          p12_export_password: "test-p12-password-${{ github.run_id }}"
+          CA_password: "${CA_PASSWORD}"
+          p12_export_password: "${P12_PASSWORD}"
           tests: true
-          no_log: true
+          algo_no_log: true
           ansible_connection: local
           dns_encryption: true
           algo_dns_adblocking: true
@@ -117,8 +122,7 @@ jobs:
             -i "localhost," \
             -c local \
             -e @integration-test.cfg \
-            -e "provider=local" \
-            -vv
+            -e "provider=local"
 
       - name: Verify services are running
         run: |

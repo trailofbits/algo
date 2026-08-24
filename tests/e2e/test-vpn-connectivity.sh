@@ -23,6 +23,10 @@ CLIENT_BRIDGE_IP="10.99.0.2"
 CONFIG_DIR="${ALGO_ROOT}/configs/localhost"
 TEST_USER="${TEST_USER:-alice}"
 VPN_TYPE="${1:-both}"
+IPSEC_CLIENT_DIR=""
+IPSEC_CLIENT_PID=""
+IPSEC_VICI_URI=""
+PUBLIC_IP_URL="${PUBLIC_IP_URL:-https://api.ipify.org}"
 
 # WireGuard network from config.cfg defaults
 WG_SERVER_IP="10.49.0.1"
@@ -55,9 +59,16 @@ cleanup() {
     # Tear down WireGuard in namespace (if running)
     ip netns exec "${NAMESPACE}" wg-quick down /tmp/algo-test-wg.conf 2>/dev/null || true
 
-    # Tear down IPsec in namespace (if running)
-    ip netns exec "${NAMESPACE}" ipsec stroke down-nb "algovpn" 2>/dev/null || true
-    ip netns exec "${NAMESPACE}" ipsec stop 2>/dev/null || true
+    # Tear down the isolated swanctl/charon client without exposing credentials.
+    if [[ -n "${IPSEC_VICI_URI}" ]]; then
+        ip netns exec "${NAMESPACE}" swanctl --terminate --ike algovpn \
+            --uri "${IPSEC_VICI_URI}" >/dev/null 2>&1 || true
+    fi
+    if [[ -n "${IPSEC_CLIENT_PID}" ]]; then
+        kill "${IPSEC_CLIENT_PID}" 2>/dev/null || true
+        wait "${IPSEC_CLIENT_PID}" 2>/dev/null || true
+        IPSEC_CLIENT_PID=""
+    fi
 
     # Remove firewall rules we added
     iptables -t nat -D POSTROUTING -s "${CLIENT_BRIDGE_IP}/32" ! -d 10.99.0.0/24 -j MASQUERADE 2>/dev/null || true
@@ -71,9 +82,12 @@ cleanup() {
     # Clean up server-side veth if orphaned
     ip link del "${VETH_SERVER}" 2>/dev/null || true
 
-    # Clean up temp files
-    rm -f /tmp/algo-test-wg.conf /tmp/algo-ipsec-test-* /tmp/algo-tcpdump.log 2>/dev/null || true
-    rm -rf /tmp/algo-ipsec-test 2>/dev/null || true
+    # Clean up temp files and the credential-bearing client directory.
+    rm -f /tmp/algo-test-wg.conf /tmp/algo-tcpdump.log 2>/dev/null || true
+    if [[ -n "${IPSEC_CLIENT_DIR}" ]]; then
+        rm -rf "${IPSEC_CLIENT_DIR}"
+        IPSEC_CLIENT_DIR=""
+    fi
     pkill -f "tcpdump.*port 51820" 2>/dev/null || true
 
     log_info "Cleanup complete"
@@ -267,10 +281,11 @@ test_wireguard() {
     log_info "Endpoint changed to ${SERVER_BRIDGE_IP}"
 
     # Debug: Show server WireGuard state before client connects
+    log_info "Server WireGuard peers:"
     local server_peers
     server_peers=$(wg show wg0 peers 2>/dev/null || echo "")
     if [[ -n "${server_peers}" ]]; then
-        log_info "WireGuard server has configured peers"
+        log_info "Found peers: ${server_peers}"
     else
         log_error "Server WireGuard has no peers configured!"
         log_error "Check that deployment created /etc/wireguard/wg0.conf with [Peer] sections"
@@ -325,6 +340,10 @@ test_wireguard() {
 
     if [[ ${attempts} -ge ${max_attempts} ]]; then
         log_error "WireGuard handshake timeout after ${max_attempts} seconds"
+        log_error "Debug - client wg show:"
+        ip netns exec "${NAMESPACE}" wg show 2>&1 || true
+        log_error "Debug - server wg0 state:"
+        wg show wg0 2>&1 || true
         log_error "Debug - iptables INPUT chain (first 15 rules):"
         iptables -L INPUT -n -v --line-numbers 2>&1 | head -20 || true
         log_error "Debug - packet capture (tcpdump):"
@@ -341,8 +360,8 @@ test_wireguard() {
     # Stop packet capture
     kill "${tcpdump_pid}" 2>/dev/null || true
 
-    # Confirm the WireGuard interface remains available without logging keys.
-    ip netns exec "${NAMESPACE}" wg show interfaces >/dev/null
+    # Show WireGuard status
+    ip netns exec "${NAMESPACE}" wg show
 
     # Test connectivity to VPN server IP
     log_info "Testing ping to WireGuard server (${WG_SERVER_IP})..."
@@ -376,36 +395,43 @@ test_wireguard() {
 # =============================================================================
 
 test_ipsec() {
-    log_step "Testing IPsec/StrongSwan connectivity..."
+    log_step "Testing a genuine IPsec/StrongSwan tunnel..."
 
     local cacert="${CONFIG_DIR}/ipsec/.pki/cacert.pem"
     local user_cert="${CONFIG_DIR}/ipsec/.pki/certs/${TEST_USER}.crt"
     local user_key="${CONFIG_DIR}/ipsec/.pki/private/${TEST_USER}.key"
+    local server_id="127.0.0.1"
+    local charon_binary=""
+    local charon_log client_config vici_socket sa_status
+    local server_source_ip vpn_source_ip
 
-    # Verify required files exist
     for f in "${cacert}" "${user_cert}" "${user_key}"; do
         if [[ ! -f "${f}" ]]; then
-            log_error "IPsec file not found: ${f}"
-            log_error "Fix: Ensure Algo deployed with ipsec_enabled: true"
+            log_error "Required generated IPsec credential is missing"
+            log_error "Fix: deploy localhost with IPsec and store_pki enabled"
             return 1
         fi
     done
 
-    log_info "All IPsec certificates found"
+    if ! openssl verify -CAfile "${cacert}" "${user_cert}" >/dev/null 2>&1; then
+        log_error "Generated client certificate does not verify against the generated CA"
+        return 1
+    fi
 
-    # Create temporary directory for namespace StrongSwan config
-    local ns_ipsec_dir="/tmp/algo-ipsec-test"
-    rm -rf "${ns_ipsec_dir}"
-    mkdir -p "${ns_ipsec_dir}"/{ipsec.d/certs,ipsec.d/private,ipsec.d/cacerts}
+    # Never make copied credentials group/world-readable or echo their contents.
+    umask 077
+    IPSEC_CLIENT_DIR=$(mktemp -d /tmp/algo-ipsec-client.XXXXXX)
+    chmod 700 "${IPSEC_CLIENT_DIR}"
+    charon_log="${IPSEC_CLIENT_DIR}/charon.log"
+    client_config="${IPSEC_CLIENT_DIR}/swanctl.conf"
+    vici_socket="${IPSEC_CLIENT_DIR}/charon.vici"
+    IPSEC_VICI_URI="unix://${vici_socket}"
 
-    # Copy certificates
-    cp "${cacert}" "${ns_ipsec_dir}/ipsec.d/cacerts/"
-    cp "${user_cert}" "${ns_ipsec_dir}/ipsec.d/certs/"
-    cp "${user_key}" "${ns_ipsec_dir}/ipsec.d/private/"
-    chmod 600 "${ns_ipsec_dir}/ipsec.d/private/${TEST_USER}.key"
+    install -m 600 "${cacert}" "${IPSEC_CLIENT_DIR}/cacert.pem"
+    install -m 600 "${user_cert}" "${IPSEC_CLIENT_DIR}/client.crt"
+    install -m 600 "${user_key}" "${IPSEC_CLIENT_DIR}/client.key"
 
-    # Create swanctl.conf for the client
-    cat > "${ns_ipsec_dir}/swanctl.conf" << EOF
+    cat > "${client_config}" <<EOF
 connections {
     algovpn {
         version = 2
@@ -414,129 +440,156 @@ connections {
         dpd_delay = 35s
         remote_addrs = ${SERVER_BRIDGE_IP}
         vips = 0.0.0.0
-
         local {
             auth = pubkey
-            certs = ${TEST_USER}.crt
+            certs = ${IPSEC_CLIENT_DIR}/client.crt
         }
         remote {
             auth = pubkey
-            id = ${SERVER_BRIDGE_IP}
+            id = ${server_id}
         }
         children {
             algovpn {
                 esp_proposals = aes256gcm16-ecp384
-                remote_ts = ${DNS_SERVICE_IP}/32
+                local_ts = dynamic
+                remote_ts = 0.0.0.0/0
                 rekey_time = 0
                 dpd_action = clear
             }
         }
     }
 }
-
+authorities {
+    algo {
+        cacert = ${IPSEC_CLIENT_DIR}/cacert.pem
+    }
+}
 secrets {
-    ecdsa-${TEST_USER} {
-        file = ${TEST_USER}.key
+    private-client {
+        file = ${IPSEC_CLIENT_DIR}/client.key
     }
 }
 EOF
+    chmod 600 "${client_config}"
 
-    log_info "StrongSwan configuration created"
-
-    # Start a minimal charon in the namespace
-    log_info "Starting StrongSwan in namespace..."
-
-    # Create a minimal strongswan.conf
-    cat > "${ns_ipsec_dir}/strongswan.conf" << EOF
+    cat > "${IPSEC_CLIENT_DIR}/strongswan.conf" <<EOF
 charon {
     load_modular = yes
+    install_routes = yes
+    install_virtual_ip = yes
     plugins {
         include /etc/strongswan.d/charon/*.conf
+        vici {
+            socket = unix://${vici_socket}
+        }
     }
     filelog {
-        /tmp/algo-ipsec-test/charon.log {
-            default = 2
-            ike = 2
-            net = 1
+        ${charon_log} {
+            default = 1
+            ike = 1
+            append = no
+            flush_line = yes
         }
     }
 }
-
-swanctl {
-    load = pem pkcs1 x509 revocation constraints pubkey openssl kernel-netlink socket-default updown vici
-}
 EOF
+    chmod 600 "${IPSEC_CLIENT_DIR}/strongswan.conf"
 
-    # Try to initiate IPsec connection using swanctl
-    # First, we need charon running in the namespace
-    log_info "Initiating IPsec connection..."
-
-    # Use the host's charon but connect to server via bridge
-    # This is simpler than running charon in a namespace
-    # Instead, test that the certificates are valid and connection can be established
-
-    # Test certificate chain validity
-    log_info "Verifying certificate chain..."
-    if openssl verify -CAfile "${cacert}" "${user_cert}" 2>&1 | grep -q "OK"; then
-        log_info "Client certificate verification passed"
-    else
-        log_error "Client certificate verification failed"
-        openssl verify -CAfile "${cacert}" "${user_cert}" 2>&1
+    for candidate in /usr/lib/ipsec/charon /usr/libexec/ipsec/charon; do
+        if [[ -x "${candidate}" ]]; then
+            charon_binary="${candidate}"
+            break
+        fi
+    done
+    if [[ -z "${charon_binary}" ]] && command -v charon >/dev/null 2>&1; then
+        charon_binary=$(command -v charon)
+    fi
+    if [[ -z "${charon_binary}" ]]; then
+        log_error "charon executable not found; install the strongSwan charon package"
         return 1
     fi
 
-    # Check if IPsec service is running on host
-    if ! ipsec status >/dev/null 2>&1; then
-        log_error "IPsec service not running on host"
-        return 1
-    fi
-    log_info "IPsec service is running on host"
+    log_info "Starting an isolated charon client in namespace ${NAMESPACE}"
+    ip netns exec "${NAMESPACE}" env \
+        STRONGSWAN_CONF="${IPSEC_CLIENT_DIR}/strongswan.conf" \
+        "${charon_binary}" >"${IPSEC_CLIENT_DIR}/launcher.log" 2>&1 &
+    IPSEC_CLIENT_PID=$!
 
-    # Check current IPsec status without logging certificate identities.
-    ipsec statusall >/dev/null
-
-    # These IPsec checks validate artifacts and the server only; they do not
-    # establish a client tunnel from the namespace.
-    # Instead, verify the server is accepting connections by checking logs
-
-    # Test connectivity to IPsec ports
-    log_info "Testing IPsec port reachability..."
-    if ip netns exec "${NAMESPACE}" timeout 2 bash -c \
-        "echo >/dev/udp/${SERVER_BRIDGE_IP}/500" 2>/dev/null; then
-        log_info "IKE port (UDP 500) reachable"
-    else
-        log_warn "IKE port (UDP 500) not reachable through namespace"
-    fi
-
-    if ip netns exec "${NAMESPACE}" timeout 2 bash -c \
-        "echo >/dev/udp/${SERVER_BRIDGE_IP}/4500" 2>/dev/null; then
-        log_info "NAT-T port (UDP 4500) reachable"
-    else
-        log_warn "NAT-T port (UDP 4500) not reachable through namespace"
-    fi
-
-    # Verify strongswan is configured correctly on server
-    log_info "Checking StrongSwan server configuration..."
-    if ipsec statusall | grep -q "Listening"; then
-        log_info "StrongSwan is listening for connections"
-    fi
-
-    # Test DNS service is accessible (for when IPsec tunnel would be up)
-    log_info "Testing DNS service accessibility..."
-    if host -W 5 google.com "${DNS_SERVICE_IP}" 2>&1 | grep -q "has address"; then
-        log_info "DNS service at ${DNS_SERVICE_IP} is responding"
-    else
-        log_error "DNS service at ${DNS_SERVICE_IP} is not responding"
-        log_error "Fix: Check dnscrypt-proxy service status"
+    local attempts=0
+    while [[ ! -S "${vici_socket}" && ${attempts} -lt 10 ]]; do
+        if ! kill -0 "${IPSEC_CLIENT_PID}" 2>/dev/null; then
+            log_error "Isolated charon client exited before opening its control socket"
+            sed -E "s#${IPSEC_CLIENT_DIR}#<redacted-client-dir>#g" \
+                "${IPSEC_CLIENT_DIR}/launcher.log" >&2 || true
+            return 1
+        fi
+        sleep 1
+        ((attempts += 1))
+    done
+    if [[ ! -S "${vici_socket}" ]]; then
+        log_error "Timed out waiting for the isolated charon control socket"
         return 1
     fi
 
-    # Cleanup
-    rm -rf "${ns_ipsec_dir}"
+    log_info "Loading generated credentials and connection into the isolated client"
+    if ! ip netns exec "${NAMESPACE}" swanctl --load-all \
+        --file "${client_config}" --uri "${IPSEC_VICI_URI}" >/dev/null; then
+        log_error "swanctl failed to load the isolated client configuration"
+        return 1
+    fi
 
-    log_info "IPsec E2E tests PASSED"
-    log_info "Note: Full tunnel test requires running charon in namespace (complex)"
-    return 0
+    log_info "Initiating IKEv2 and CHILD SA from the client namespace"
+    if ! ip netns exec "${NAMESPACE}" swanctl --initiate --child algovpn \
+        --timeout 30 --uri "${IPSEC_VICI_URI}" >/dev/null; then
+        log_error "swanctl failed to initiate the IPsec tunnel"
+        return 1
+    fi
+
+    sa_status=$(ip netns exec "${NAMESPACE}" swanctl --list-sas \
+        --uri "${IPSEC_VICI_URI}" 2>&1)
+    if ! grep -q "ESTABLISHED" <<<"${sa_status}"; then
+        log_error "The client has no ESTABLISHED IKE SA"
+        return 1
+    fi
+    if ! grep -q "INSTALLED" <<<"${sa_status}"; then
+        log_error "The client has no INSTALLED CHILD SA"
+        return 1
+    fi
+    log_info "IKE SA is ESTABLISHED and CHILD SA is INSTALLED"
+
+    log_info "Resolving DNS explicitly through the VPN service"
+    if ! ip netns exec "${NAMESPACE}" dig "@${DNS_SERVICE_IP}" google.com \
+        +short +time=5 +tries=1 | grep -q .; then
+        log_error "DNS resolution through the IPsec tunnel failed"
+        return 1
+    fi
+
+    # Both values stay out of logs to avoid leaking runner/network metadata.
+    if ! server_source_ip=$(curl --fail --silent --show-error --max-time 15 "${PUBLIC_IP_URL}"); then
+        log_error "Could not obtain the server source IP from the test endpoint"
+        return 1
+    fi
+    if ! vpn_source_ip=$(ip netns exec "${NAMESPACE}" curl --fail --silent \
+        --show-error --max-time 15 "${PUBLIC_IP_URL}"); then
+        log_error "Routed HTTPS fetch through the IPsec tunnel failed"
+        return 1
+    fi
+    if [[ -z "${server_source_ip}" || "${vpn_source_ip}" != "${server_source_ip}" ]]; then
+        log_error "VPN source IP does not match server source IP"
+        return 1
+    fi
+    log_info "Routed HTTPS fetch used the VPN server source IP"
+
+    ip netns exec "${NAMESPACE}" swanctl --terminate --ike algovpn \
+        --uri "${IPSEC_VICI_URI}" >/dev/null
+    IPSEC_VICI_URI=""
+    kill "${IPSEC_CLIENT_PID}"
+    wait "${IPSEC_CLIENT_PID}" 2>/dev/null || true
+    IPSEC_CLIENT_PID=""
+    rm -rf "${IPSEC_CLIENT_DIR}"
+    IPSEC_CLIENT_DIR=""
+
+    log_info "IPsec genuine tunnel E2E tests PASSED"
 }
 
 # =============================================================================
@@ -602,7 +655,7 @@ main() {
 
     # Check required commands
     local missing_cmds=()
-    for cmd in ip wg wg-quick ipsec xmllint openssl host; do
+    for cmd in ip wg wg-quick ipsec swanctl xmllint openssl host dig curl; do
         if ! command -v "${cmd}" &> /dev/null; then
             missing_cmds+=("${cmd}")
         fi
@@ -610,7 +663,7 @@ main() {
 
     if [[ ${#missing_cmds[@]} -gt 0 ]]; then
         log_error "Required command(s) not found: ${missing_cmds[*]}"
-        log_error "Fix: apt-get install iproute2 wireguard-tools strongswan libxml2-utils openssl dnsutils"
+        log_error "Fix: apt-get install iproute2 wireguard-tools strongswan strongswan-swanctl libxml2-utils openssl dnsutils curl"
         exit 1
     fi
 

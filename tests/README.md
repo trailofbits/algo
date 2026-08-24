@@ -9,7 +9,9 @@ ansible-lint . && yamllint . && ruff check . && shellcheck scripts/*.sh
 # Run Python unit tests
 pytest tests/unit/ -q
 
-# Run E2E connectivity tests (requires deployed Algo on localhost)
+# Run privileged E2E connectivity tests after an Algo localhost deployment.
+# IPsec requires the generated PKI (`store_pki: true`) and runs a separate
+# charon/swanctl client inside a network namespace.
 sudo tests/e2e/test-vpn-connectivity.sh both
 ```
 
@@ -40,7 +42,7 @@ tests/
 | Templates | `test_template_rendering.py` | Jinja2 template syntax, filter compatibility |
 | Certificates | `test_certificate_validation.py` | OpenSSL compatibility, PKCS#12 export |
 | Cloud Providers | `test_cloud_provider_configs.py` | Region formats, instance types, OS images |
-| E2E | `test-vpn-connectivity.sh` | WireGuard handshake, IPsec connection, DNS through VPN |
+| E2E | `test-vpn-connectivity.sh` | Real WireGuard and IPsec handshakes, IKE/CHILD SAs, DNS through each tunnel, routed source IP |
 
 ## CI Workflows
 
@@ -72,6 +74,23 @@ Use bash strict mode and pass shellcheck:
 #!/bin/bash
 set -euo pipefail
 ```
+
+### Privileged IPsec E2E prerequisites
+
+The IPsec case is not a certificate-only smoke test. It starts a dedicated
+`charon` process in `algo-client`, loads the generated CA/certificate/private
+key with `swanctl --load-all`, initiates IKEv2, and requires both an
+`ESTABLISHED` IKE SA and an `INSTALLED` CHILD SA. It then resolves DNS at
+`172.16.0.1` through the tunnel and compares a routed HTTPS request's public
+source address with the server's. Set `PUBLIC_IP_URL` to a trusted plain-text
+IP endpoint when the default `https://api.ipify.org` is unavailable.
+
+Required Ubuntu packages include `strongswan`, `strongswan-swanctl`,
+`libstrongswan-standard-plugins`, `libcharon-extra-plugins`, `iproute2`,
+`dnsutils`, and `curl`. The test must run as root on a host that permits network
+namespaces and XFRM state. Generated credentials are copied into a mode-0700
+temporary directory with mode-0600 files, are never printed or uploaded by the
+integration workflow, and are removed by the exit trap.
 
 ## Troubleshooting
 
