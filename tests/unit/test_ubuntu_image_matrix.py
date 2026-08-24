@@ -97,6 +97,14 @@ def test_local_deployment_ci_covers_both_supported_releases():
     assert job["runs-on"] == "${{ matrix.os }}"
 
 
+def test_main_ci_covers_both_supported_releases():
+    workflow = yaml.safe_load((ROOT / ".github/workflows/main.yml").read_text())
+    for job_name in ("syntax-check", "basic-tests"):
+        job = workflow["jobs"][job_name]
+        assert job["strategy"]["matrix"]["os"] == ["ubuntu-22.04", "ubuntu-24.04"]
+        assert job["runs-on"] == "${{ matrix.os }}"
+
+
 def test_support_documentation_marks_live_provider_verification_status():
     docs = (ROOT / "docs/deploy-to-ubuntu.md").read_text()
     assert "Provider image selector status" in docs

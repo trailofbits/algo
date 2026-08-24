@@ -13,8 +13,12 @@ permissions:
 
 jobs:
   syntax-check:
-    name: Ansible syntax check
-    runs-on: ubuntu-22.04
+    name: Ansible syntax check (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: read
     steps:
@@ -32,8 +36,12 @@ jobs:
         run: uv run ansible-playbook main.yml --syntax-check
 
   basic-tests:
-    name: Basic sanity tests
-    runs-on: ubuntu-22.04
+    name: Basic sanity tests (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: read
     steps:
