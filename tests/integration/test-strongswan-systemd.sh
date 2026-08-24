@@ -73,35 +73,34 @@ lxc exec "${INSTANCE}" -- env DEBIAN_FRONTEND=noninteractive apt-get install -y 
 lxc exec "${INSTANCE}" -- modprobe af_key
 [[ "$(lxc exec "${INSTANCE}" -- stat -c '%a' /proc/net/pfkey)" == "444" ]]
 
-cat >"${WORK_DIR}/algo-strongswan-hardening-test.service" <<'EOF'
-[Unit]
-Description=Algo StrongSwan systemd hardening regression probe
+systemd_properties=()
+while IFS= read -r directive; do
+  if [[ -z "${directive}" || "${directive}" == \#* || "${directive}" == "[Service]" ]]; then
+    continue
+  fi
+  systemd_properties+=("--property=${directive}")
+done <"${HARDENING_TEMPLATE}"
 
-[Service]
-Type=oneshot
-ExecStart=/bin/true
-EOF
+lxc exec "${INSTANCE}" -- systemd-run \
+  --unit=algo-strongswan-hardening-test \
+  --wait \
+  --collect \
+  "${systemd_properties[@]}" \
+  /bin/true
 
-lxc file push "${WORK_DIR}/algo-strongswan-hardening-test.service" \
-  "${INSTANCE}/etc/systemd/system/algo-strongswan-hardening-test.service"
 lxc exec "${INSTANCE}" -- mkdir -p \
-  /etc/systemd/system/algo-strongswan-hardening-test.service.d \
   /etc/systemd/system/strongswan-starter.service.d
-lxc file push "${HARDENING_TEMPLATE}" \
-  "${INSTANCE}/etc/systemd/system/algo-strongswan-hardening-test.service.d/100-CustomLimitations.conf"
 lxc file push "${HARDENING_TEMPLATE}" \
   "${INSTANCE}/etc/systemd/system/strongswan-starter.service.d/100-CustomLimitations.conf"
 
 lxc exec "${INSTANCE}" -- systemctl daemon-reload
-lxc exec "${INSTANCE}" -- systemctl start algo-strongswan-hardening-test.service
-[[ "$(lxc exec "${INSTANCE}" -- systemctl show --property=Result --value algo-strongswan-hardening-test.service)" == "success" ]]
 
 lxc exec "${INSTANCE}" -- systemctl restart strongswan-starter.service
 lxc exec "${INSTANCE}" -- systemctl is-active --quiet strongswan-starter.service
 lxc exec "${INSTANCE}" -- ipsec statusall
 
 journal="$(lxc exec "${INSTANCE}" -- journalctl -b --no-pager \
-  -u algo-strongswan-hardening-test.service -u strongswan-starter.service)"
+  -u algo-strongswan-hardening-test -u strongswan-starter.service)"
 if grep -Eiq '226/NAMESPACE|Failed to set up mount namespacing|Address family not supported|unsupported address family' <<<"${journal}"; then
   printf '%s\n' "${journal}" >&2
   exit 1

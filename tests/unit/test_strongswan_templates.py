@@ -192,6 +192,14 @@ def test_strongswan_systemd_hardening_and_restart_lifecycle():
     assert "reload systemd and restart strongswan" in ubuntu_tasks
 
 
+def test_strongswan_harness_uses_a_transient_unit():
+    harness = Path("tests/integration/test-strongswan-systemd.sh").read_text(encoding="utf-8")
+
+    assert "systemd-run" in harness
+    assert "systemd_properties" in harness
+    assert "algo-strongswan-hardening-test.service" not in harness
+
+
 def test_strongswan_harness_preserves_signal_failure_status():
     harness = Path("tests/integration/test-strongswan-systemd.sh").read_text(encoding="utf-8")
 
