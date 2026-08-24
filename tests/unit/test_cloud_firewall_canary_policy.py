@@ -43,26 +43,30 @@ def test_canary_verifies_every_transition_and_always_destroys():
     assert any("./algo list-servers" in step.get("run", "") for step in steps)
     cleanup = next(step for step in steps if step.get("name") == "Destroy canary")
     assert cleanup["if"] == "${{ always() }}"
-    assert "./algo destroy" in cleanup["run"]
+    assert "./algo destroy" not in cleanup["run"]
     assert "aws cloudformation delete-stack" in cleanup["run"]
     assert "gcloud compute instances delete" in cleanup["run"]
-    assert '"$CANARY_NAME"' in cleanup["run"]
-    assert "GCE_FALLBACK_SAFE" in cleanup["run"]
+    assert "GCE_INSTANCE_ID" in cleanup["run"]
+    assert "GCE_FIREWALL_ID" in cleanup["run"]
+    assert "GCE_NETWORK_ID" in cleanup["run"]
+    assert "EC2_STACK_ID" in cleanup["run"]
+    assert "GCE_FALLBACK_SAFE" not in cleanup["run"]
     assert "--all" not in cleanup["run"]
     preflight = next(step for step in steps if step.get("name") == "Preflight dedicated GCE project")
     assert '--filter="name=$CANARY_NAME"' in preflight["run"]
-    assert "GCE_FALLBACK_SAFE=true" in preflight["run"]
+    assert "GCE_FALLBACK_SAFE" not in preflight["run"]
 
 
-def test_gce_cleanup_does_not_depend_on_managed_server_discovery():
+def test_gce_fallback_requires_discovered_immutable_ownership_ids():
     steps = _workflow()["jobs"]["canary"]["steps"]
     cleanup = next(step for step in steps if step.get("name") == "Destroy canary")
 
     assert '"$NEED_FALLBACK" == "true" && "$PROVIDER" == "gce"' in cleanup["run"]
-    assert cleanup["run"].index('"$PROVIDER" == "gce"') > cleanup["run"].index("CANARY_SERVER_IP")
+    for proof in ("GCE_INSTANCE_ID", "GCE_INSTANCE_ZONE", "GCE_FIREWALL_ID", "GCE_NETWORK_ID"):
+        assert proof in cleanup["run"]
 
 
-def test_gce_fallback_after_pre_discovery_failure_deletes_only_exact_owned_names(tmp_path):
+def test_gce_fallback_after_discovery_deletes_only_exact_owned_resources(tmp_path):
     steps = _workflow()["jobs"]["canary"]["steps"]
     cleanup = next(step for step in steps if step.get("name") == "Destroy canary")["run"]
     fake_bin = tmp_path / "bin"
@@ -73,7 +77,11 @@ def test_gce_fallback_after_pre_discovery_failure_deletes_only_exact_owned_names
         "#!/usr/bin/env bash\n"
         'printf \'%s\\n\' "$*" >> "$CALL_LOG"\n'
         "if [[ \"$*\" == *'instances list'* ]]; then\n"
-        "  printf '%s\\n' \"$CANARY_NAME,us-central1-a\"\n"
+        "  printf '%s\\n' \"$CANARY_NAME,instance-123,us-central1-a,$CANARY_OWNER\"\n"
+        "elif [[ \"$*\" == *'firewall-rules list'* ]]; then\n"
+        "  printf '%s\\n' \"algovpn,firewall-123,algo-canary-owner=$CANARY_OWNER\"\n"
+        "elif [[ \"$*\" == *'networks list'* ]]; then\n"
+        "  printf '%s\\n' \"algovpn,network-123,algo-canary-owner=$CANARY_OWNER\"\n"
         "fi\n",
         encoding="utf-8",
     )
@@ -82,9 +90,13 @@ def test_gce_fallback_after_pre_discovery_failure_deletes_only_exact_owned_names
         **os.environ,
         "PATH": f"{fake_bin}:{os.environ['PATH']}",
         "PROVIDER": "gce",
-        "GCE_FALLBACK_SAFE": "true",
         "GCE_PROJECT": "dedicated-canary-project",
         "CANARY_NAME": "algo-firewall-canary-123",
+        "CANARY_OWNER": "algo-123-1",
+        "GCE_INSTANCE_ID": "instance-123",
+        "GCE_INSTANCE_ZONE": "us-central1-a",
+        "GCE_FIREWALL_ID": "firewall-123",
+        "GCE_NETWORK_ID": "network-123",
         "RUNNER_TEMP": str(tmp_path),
         "CALL_LOG": str(call_log),
     }
@@ -121,7 +133,7 @@ def test_gce_cleanup_without_preflight_ownership_refuses_all_deletes(tmp_path):
     result = subprocess.run(["bash", "-c", cleanup], env=environment, capture_output=True, text=True, check=False)
 
     assert result.returncode == 1
-    assert "No canary ownership proof" in result.stdout
+    assert "No GCE ownership proof" in result.stdout
 
 
 def test_gce_preflight_api_failure_never_records_cleanup_ownership(tmp_path):
@@ -151,21 +163,22 @@ def test_gce_preflight_api_failure_never_records_cleanup_ownership(tmp_path):
     assert not github_env.exists() or "GCE_FALLBACK_SAFE" not in github_env.read_text(encoding="utf-8")
 
 
-def test_failed_managed_destroy_still_attempts_exact_provider_fallback(tmp_path):
+def test_exact_provider_cleanup_does_not_use_managed_destroy_by_name(tmp_path):
     steps = _workflow()["jobs"]["canary"]["steps"]
     cleanup = next(step for step in steps if step.get("name") == "Destroy canary")["run"]
     fake_bin = tmp_path / "bin"
     fake_bin.mkdir()
     call_log = tmp_path / "calls"
-    algo = tmp_path / "algo"
-    algo.write_text("#!/usr/bin/env bash\nexit 1\n", encoding="utf-8")
-    algo.chmod(0o700)
     gcloud = fake_bin / "gcloud"
     gcloud.write_text(
         "#!/usr/bin/env bash\n"
         'printf \'%s\\n\' "$*" >> "$CALL_LOG"\n'
         "if [[ \"$*\" == *'instances list'* ]]; then\n"
-        "  printf '%s\\n' \"$CANARY_NAME,us-central1-a\"\n"
+        "  printf '%s\\n' \"$CANARY_NAME,instance-123,us-central1-a,$CANARY_OWNER\"\n"
+        "elif [[ \"$*\" == *'firewall-rules list'* ]]; then\n"
+        "  printf '%s\\n' \"algovpn,firewall-123,algo-canary-owner=$CANARY_OWNER\"\n"
+        "elif [[ \"$*\" == *'networks list'* ]]; then\n"
+        "  printf '%s\\n' \"algovpn,network-123,algo-canary-owner=$CANARY_OWNER\"\n"
         "fi\n",
         encoding="utf-8",
     )
@@ -174,17 +187,24 @@ def test_failed_managed_destroy_still_attempts_exact_provider_fallback(tmp_path)
         **os.environ,
         "PATH": f"{fake_bin}:{os.environ['PATH']}",
         "PROVIDER": "gce",
-        "GCE_FALLBACK_SAFE": "true",
         "GCE_PROJECT": "dedicated-canary-project",
         "CANARY_NAME": "algo-firewall-canary-123",
+        "CANARY_OWNER": "algo-123-1",
+        "GCE_INSTANCE_ID": "instance-123",
+        "GCE_INSTANCE_ZONE": "us-central1-a",
+        "GCE_FIREWALL_ID": "firewall-123",
+        "GCE_NETWORK_ID": "network-123",
         "CANARY_SERVER_IP": "192.0.2.10",
         "RUNNER_TEMP": str(tmp_path),
         "CALL_LOG": str(call_log),
     }
 
-    subprocess.run(["bash", "-c", cleanup], cwd=tmp_path, env=environment, capture_output=True, text=True, check=False)
+    result = subprocess.run(
+        ["bash", "-c", cleanup], cwd=tmp_path, env=environment, capture_output=True, text=True, check=False
+    )
 
-    assert call_log.exists()
+    assert result.returncode == 0, result.stderr
+    assert "./algo destroy" not in cleanup
     calls = call_log.read_text(encoding="utf-8")
     assert "instances delete algo-firewall-canary-123" in calls
 
@@ -209,6 +229,73 @@ def test_gce_canary_uses_adc_application_auth_without_service_account_key():
         "service_account_file: \"{{ omit if gce_auth_kind_effective == 'application' "
         'else credentials_file_path }}"' in provider_tasks
     )
+
+
+def test_gce_oidc_is_refreshed_before_each_long_transition_and_cleanup():
+    steps = _workflow()["jobs"]["canary"]["steps"]
+    names = [step.get("name") for step in steps]
+    refreshes = [
+        index for index, step in enumerate(steps) if step.get("uses", "").startswith("google-github-actions/auth@")
+    ]
+
+    assert len(refreshes) >= 4
+    for operation in (
+        "Deploy both protocols",
+        "Transition to WireGuard only",
+        "Transition to IPsec only",
+        "Destroy canary",
+    ):
+        operation_index = names.index(operation)
+        assert any(refresh < operation_index for refresh in refreshes)
+        if operation != "Deploy both protocols":
+            prior_operation = max(
+                names.index(candidate)
+                for candidate in (
+                    "Deploy both protocols",
+                    "Transition to WireGuard only",
+                    "Transition to IPsec only",
+                )
+                if candidate in names and names.index(candidate) < operation_index
+            )
+            assert any(prior_operation < refresh < operation_index for refresh in refreshes)
+
+    cleanup_refresh = steps[max(index for index in refreshes if index < names.index("Destroy canary"))]
+    assert cleanup_refresh["if"] == "${{ always() && inputs.provider == 'gce' }}"
+
+
+def test_canary_records_and_verifies_run_specific_provider_ownership():
+    workflow_text = WORKFLOW_PATH.read_text(encoding="utf-8")
+
+    assert "CANARY_OWNER:" in workflow_text
+    assert '-e "algo_canary_owner=$CANARY_OWNER"' in workflow_text
+    assert "algo-canary-owner" in workflow_text
+    assert "AlgoCanaryOwner" in workflow_text
+    assert "GCE_FALLBACK_SAFE" not in workflow_text
+
+
+def test_gce_cleanup_fails_closed_on_lookup_errors_and_ownership_mismatch():
+    workflow_text = WORKFLOW_PATH.read_text(encoding="utf-8")
+    cleanup = workflow_text.split("- name: Destroy canary", 1)[1]
+
+    assert "mapfile -t INSTANCE_ROWS < <(" not in cleanup
+    assert "gcloud compute instances list" in cleanup
+    assert "gcloud compute firewall-rules list" in cleanup
+    assert "gcloud compute networks list" in cleanup
+    assert "Refusing fallback cleanup" in cleanup
+
+
+def test_gce_cleanup_validates_every_owned_resource_before_first_delete():
+    workflow_text = WORKFLOW_PATH.read_text(encoding="utf-8")
+    cleanup = workflow_text.split("- name: Destroy canary", 1)[1]
+
+    first_delete = min(
+        cleanup.index("gcloud compute instances delete"),
+        cleanup.index("gcloud compute firewall-rules delete"),
+        cleanup.index("gcloud compute networks delete"),
+    )
+    assert cleanup.index("Refusing fallback cleanup of an unowned GCE instance") < first_delete
+    assert cleanup.index("Refusing fallback cleanup of an unowned GCE firewall") < first_delete
+    assert cleanup.index("Refusing fallback cleanup of an unowned GCE network") < first_delete
 
 
 def test_canary_never_enables_shell_tracing_or_prints_credentials():

@@ -8,6 +8,7 @@
     service_account_file: "{{ omit if gce_auth_kind_effective == 'application' else credentials_file_path }}"
     project: "{{ project_id }}"
     name: algovpn
+    description: "{{ ('algo-canary-owner=' ~ algo_canary_owner) if algo_canary_owner is defined else omit }}"
     auto_create_subnetworks: true
     routing_config:
       routing_mode: REGIONAL
@@ -19,6 +20,7 @@
     service_account_file: "{{ omit if gce_auth_kind_effective == 'application' else credentials_file_path }}"
     project: "{{ project_id }}"
     name: algovpn
+    description: "{{ ('algo-canary-owner=' ~ algo_canary_owner) if algo_canary_owner is defined else omit }}"
     network: "{{ gcp_compute_network }}"
     direction: INGRESS
     allowed: >-
@@ -72,6 +74,7 @@
     tags:
       items:
         - environment-algo
+    labels: "{{ {'algo-canary-owner': algo_canary_owner} if algo_canary_owner is defined else omit }}"
   register: gcp_compute_instance
 
 - set_fact:

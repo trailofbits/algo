@@ -43,7 +43,7 @@ class FirewallAdapter(Protocol):
 
 
 def _source_kinds(values: list[str], has_restricted_reference: bool = False) -> set[str]:
-    kinds = {"public" if value in PUBLIC_RANGES else "restricted" for value in values}
+    kinds = {value if value in PUBLIC_RANGES else "restricted" for value in values}
     if has_restricted_reference or not values:
         kinds.add("restricted")
     return kinds
@@ -138,18 +138,19 @@ def _parse_gce_port(port: str | None) -> tuple[int | None, int | None]:
 def expected_rules(provider: str, stage: str, ssh_port: int, wireguard_port: int) -> set[IngressRule]:
     if provider not in {"ec2", "gce"} or stage not in TRANSITION_ORDER:
         raise VerificationError("unsupported provider or transition stage")
-    rules = {IngressRule("tcp", ssh_port, ssh_port, "public")}
+    public_ipv4 = "0.0.0.0/0"
+    rules = {IngressRule("tcp", ssh_port, ssh_port, public_ipv4)}
     if provider == "gce":
-        rules.add(IngressRule("icmp", None, None, "public"))
+        rules.add(IngressRule("icmp", None, None, public_ipv4))
     if stage in {"both", "ipsec-only"}:
         rules.update(
             {
-                IngressRule("udp", 500, 500, "public"),
-                IngressRule("udp", 4500, 4500, "public"),
+                IngressRule("udp", 500, 500, public_ipv4),
+                IngressRule("udp", 4500, 4500, public_ipv4),
             }
         )
     if stage in {"both", "wireguard-only"}:
-        rules.add(IngressRule("udp", wireguard_port, wireguard_port, "public"))
+        rules.add(IngressRule("udp", wireguard_port, wireguard_port, public_ipv4))
     return rules
 
 
@@ -191,12 +192,13 @@ def record_transition(state_file: Path, provider: str, stage: str) -> None:
 
 
 def _rule_label(rule: IngressRule, ssh_port: int = 4160, wireguard_port: int = 51820) -> str:
+    public_ipv4 = "0.0.0.0/0"
     keys = {
-        IngressRule("tcp", ssh_port, ssh_port, "public"): "ssh",
-        IngressRule("udp", 500, 500, "public"): "ipsec-500",
-        IngressRule("udp", 4500, 4500, "public"): "ipsec-4500",
-        IngressRule("udp", wireguard_port, wireguard_port, "public"): "wireguard",
-        IngressRule("icmp", None, None, "public"): "icmp",
+        IngressRule("tcp", ssh_port, ssh_port, public_ipv4): "ssh",
+        IngressRule("udp", 500, 500, public_ipv4): "ipsec-500",
+        IngressRule("udp", 4500, 4500, public_ipv4): "ipsec-4500",
+        IngressRule("udp", wireguard_port, wireguard_port, public_ipv4): "wireguard",
+        IngressRule("icmp", None, None, public_ipv4): "icmp",
     }
     return keys.get(rule, "unexpected")
 

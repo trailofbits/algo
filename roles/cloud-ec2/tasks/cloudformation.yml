@@ -21,7 +21,8 @@
       InstanceMarketTypeParameter: "{{ cloud_providers.ec2.instance_market_type }}"
       IpsecEnabled: "{{ ipsec_enabled | bool | string | lower }}"
       WireguardEnabled: "{{ wireguard_enabled | bool | string | lower }}"
-    tags:
-      Environment: Algo
+    tags: >-
+      {{ {'Environment': 'Algo'} |
+         combine({'AlgoCanaryOwner': algo_canary_owner} if algo_canary_owner is defined else {}) }}
   register: stack
   no_log: true

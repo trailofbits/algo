@@ -109,6 +109,39 @@ def test_gce_adapter_rejects_filter_injection_before_api_call():
         adapter.query('name" OR name="other')
 
 
+def test_ec2_adapter_preserves_public_address_family_so_extra_ipv6_is_rejected():
+    verifier = _load_verifier()
+
+    class EC2Client:
+        def describe_security_groups(self, **_kwargs):
+            return {
+                "SecurityGroups": [
+                    {
+                        "IpPermissions": [
+                            {
+                                "IpProtocol": "udp",
+                                "FromPort": 51820,
+                                "ToPort": 51820,
+                                "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
+                                "Ipv6Ranges": [{"CidrIpv6": "::/0"}],
+                            },
+                            {
+                                "IpProtocol": "tcp",
+                                "FromPort": 4160,
+                                "ToPort": 4160,
+                                "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
+                            },
+                        ]
+                    }
+                ]
+            }
+
+    observed = verifier.EC2Adapter(client=EC2Client()).query("sg-private-id")
+
+    with pytest.raises(verifier.VerificationError, match="firewall does not match"):
+        verifier.assert_stage("ec2", "wireguard-only", observed, 4160, 51820)
+
+
 def test_exact_stage_assertion_rejects_extra_or_missing_ingress():
     verifier = _load_verifier()
     expected = verifier.expected_rules("ec2", "wireguard-only", 4160, 51820)

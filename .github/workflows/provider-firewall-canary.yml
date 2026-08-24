@@ -32,6 +32,7 @@ jobs:
     environment: cloud-firewall-canary
     env:
       CANARY_NAME: algo-firewall-canary-${{ github.run_id }}
+      CANARY_OWNER: algo-${{ github.run_id }}-${{ github.run_attempt }}
       PROVIDER: ${{ inputs.provider }}
       AWS_REGION: ${{ vars.CANARY_AWS_REGION }}
       GCE_REGION: ${{ vars.CANARY_GCE_REGION }}
@@ -120,9 +121,15 @@ jobs:
             echo "::error::Dedicated canary project already contains the Algo network."
             exit 1
           fi
-          # Cleanup may remove these exact names only because preflight proved
-          # they did not exist before this run.
-          echo "GCE_FALLBACK_SAFE=true" >> "$GITHUB_ENV"
+
+      - name: Refresh Google Cloud OIDC before initial deployment
+        if: inputs.provider == 'gce'
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093  # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.CANARY_GCE_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CANARY_GCE_SERVICE_ACCOUNT }}
+          create_credentials_file: true
+          export_environment_variables: true
 
       - name: Deploy both protocols
         shell: bash
@@ -133,6 +140,7 @@ jobs:
           if ! ./algo \
             -e "provider=$PROVIDER" \
             -e "server_name=$CANARY_NAME" \
+            -e "algo_canary_owner=$CANARY_OWNER" \
             -e "region=$REGION" \
             -e 'users=[canary]' \
             -e 'ipsec_enabled=true' \
@@ -142,6 +150,15 @@ jobs:
             echo "::error::Canary deployment failed; potentially sensitive logs were withheld."
             exit 1
           fi
+
+      - name: Refresh Google Cloud OIDC before ownership discovery
+        if: inputs.provider == 'gce'
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093  # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.CANARY_GCE_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CANARY_GCE_SERVICE_ACCOUNT }}
+          create_credentials_file: true
+          export_environment_variables: true
 
       - name: Discover managed canary
         shell: bash
@@ -169,8 +186,40 @@ jobs:
               --logical-resource-id InstanceSecurityGroup \
               --query 'StackResources[0].PhysicalResourceId' \
               --output text)"
+            STACK_ROW="$(aws cloudformation describe-stacks --stack-name "$CANARY_NAME" \
+              --query "Stacks[0].[StackId,StackName,Tags[?Key=='AlgoCanaryOwner']|[0].Value]" \
+              --output text)"
+            read -r EC2_STACK_ID FOUND_STACK_NAME FOUND_OWNER <<< "$STACK_ROW"
+            if [[ -z "$EC2_STACK_ID" || "$FOUND_STACK_NAME" != "$CANARY_NAME" || "$FOUND_OWNER" != "$CANARY_OWNER" ]]; then
+              echo "::error::EC2 canary ownership metadata is missing or inconsistent."
+              exit 1
+            fi
+            echo "EC2_STACK_ID=$EC2_STACK_ID" >> "$GITHUB_ENV"
           else
             FIREWALL_ID=algovpn
+            INSTANCE_ROW="$(gcloud compute instances list --project="$GCE_PROJECT" \
+              --filter="name=$CANARY_NAME" \
+              --format='csv[no-heading](name,id,zone.basename(),labels.algo-canary-owner)')"
+            FIREWALL_ROW="$(gcloud compute firewall-rules list --project="$GCE_PROJECT" \
+              --filter='name=algovpn' --format='csv[no-heading](name,id,description)')"
+            NETWORK_ROW="$(gcloud compute networks list --project="$GCE_PROJECT" \
+              --filter='name=algovpn' --format='csv[no-heading](name,id,description)')"
+            IFS=, read -r FOUND_INSTANCE GCE_INSTANCE_ID GCE_INSTANCE_ZONE INSTANCE_OWNER <<< "$INSTANCE_ROW"
+            IFS=, read -r FOUND_FIREWALL GCE_FIREWALL_ID FIREWALL_OWNER <<< "$FIREWALL_ROW"
+            IFS=, read -r FOUND_NETWORK GCE_NETWORK_ID NETWORK_OWNER <<< "$NETWORK_ROW"
+            if [[ "$FOUND_INSTANCE" != "$CANARY_NAME" || "$INSTANCE_OWNER" != "$CANARY_OWNER" || \
+                  "$FOUND_FIREWALL" != "algovpn" || "$FIREWALL_OWNER" != "algo-canary-owner=$CANARY_OWNER" || \
+                  "$FOUND_NETWORK" != "algovpn" || "$NETWORK_OWNER" != "algo-canary-owner=$CANARY_OWNER" || \
+                  -z "$GCE_INSTANCE_ID" || -z "$GCE_INSTANCE_ZONE" || -z "$GCE_FIREWALL_ID" || -z "$GCE_NETWORK_ID" ]]; then
+              echo "::error::GCE canary ownership metadata is missing or inconsistent."
+              exit 1
+            fi
+            {
+              echo "GCE_INSTANCE_ID=$GCE_INSTANCE_ID"
+              echo "GCE_INSTANCE_ZONE=$GCE_INSTANCE_ZONE"
+              echo "GCE_FIREWALL_ID=$GCE_FIREWALL_ID"
+              echo "GCE_NETWORK_ID=$GCE_NETWORK_ID"
+            } >> "$GITHUB_ENV"
           fi
           if [[ -z "$FIREWALL_ID" || "$FIREWALL_ID" == "None" ]]; then
             echo "::error::Canary firewall was not found."
@@ -187,6 +236,15 @@ jobs:
           --stage both
           --state-file "$RUNNER_TEMP/firewall-states.json"
 
+      - name: Refresh Google Cloud OIDC before WireGuard transition
+        if: inputs.provider == 'gce'
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093  # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.CANARY_GCE_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CANARY_GCE_SERVICE_ACCOUNT }}
+          create_credentials_file: true
+          export_environment_variables: true
+
       - name: Transition to WireGuard only
         shell: bash
         run: |
@@ -194,6 +252,7 @@ jobs:
           REGION="$AWS_REGION"
           [[ "$PROVIDER" == "gce" ]] && REGION="$GCE_REGION"
           if ! ./algo -e "provider=$PROVIDER" -e "server_name=$CANARY_NAME" -e "region=$REGION" \
+            -e "algo_canary_owner=$CANARY_OWNER" \
             -e 'users=[canary]' -e 'ipsec_enabled=false' -e 'wireguard_enabled=true' -e 'algo_no_log=true' \
             > "$RUNNER_TEMP/algo-canary.log" 2>&1; then
             echo "::error::Canary transition failed; potentially sensitive logs were withheld."
@@ -208,6 +267,15 @@ jobs:
           --stage wireguard-only
           --state-file "$RUNNER_TEMP/firewall-states.json"
 
+      - name: Refresh Google Cloud OIDC before IPsec transition
+        if: inputs.provider == 'gce'
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093  # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.CANARY_GCE_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CANARY_GCE_SERVICE_ACCOUNT }}
+          create_credentials_file: true
+          export_environment_variables: true
+
       - name: Transition to IPsec only
         shell: bash
         run: |
@@ -215,6 +283,7 @@ jobs:
           REGION="$AWS_REGION"
           [[ "$PROVIDER" == "gce" ]] && REGION="$GCE_REGION"
           if ! ./algo -e "provider=$PROVIDER" -e "server_name=$CANARY_NAME" -e "region=$REGION" \
+            -e "algo_canary_owner=$CANARY_OWNER" \
             -e 'users=[canary]' -e 'ipsec_enabled=true' -e 'wireguard_enabled=false' -e 'algo_no_log=true' \
             > "$RUNNER_TEMP/algo-canary.log" 2>&1; then
             echo "::error::Canary transition failed; potentially sensitive logs were withheld."
@@ -229,54 +298,93 @@ jobs:
           --stage ipsec-only
           --state-file "$RUNNER_TEMP/firewall-states.json"
 
+      - name: Refresh Google Cloud OIDC before cleanup
+        if: ${{ always() && inputs.provider == 'gce' }}
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093  # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.CANARY_GCE_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CANARY_GCE_SERVICE_ACCOUNT }}
+          create_credentials_file: true
+          export_environment_variables: true
+
       - name: Destroy canary
         if: ${{ always() }}
         shell: bash
         run: |
           set -euo pipefail
-          CLEANUP_STATUS=0
-          NEED_FALLBACK=false
-          if [[ -n "${CANARY_SERVER_IP:-}" ]]; then
-            if ! ./algo destroy "$CANARY_SERVER_IP" -e 'confirm_destroy=true' \
-              > "$RUNNER_TEMP/algo-destroy.log" 2>&1; then
-              echo "::warning::Managed canary destroy failed; attempting exact provider cleanup."
-              CLEANUP_STATUS=1
-              NEED_FALLBACK=true
-            fi
-          else
-            NEED_FALLBACK=true
-          fi
+          # Never call provider destroy-by-name. Cleanup is permitted only
+          # after immutable IDs and run-specific ownership metadata match.
+          NEED_FALLBACK=true
 
           if [[ "$NEED_FALLBACK" == "true" && "$PROVIDER" == "ec2" ]]; then
-            aws cloudformation delete-stack --stack-name "$CANARY_NAME"
-            aws cloudformation wait stack-delete-complete --stack-name "$CANARY_NAME"
-          elif [[ "$NEED_FALLBACK" == "true" && "$PROVIDER" == "gce" && "${GCE_FALLBACK_SAFE:-}" == "true" ]]; then
-            mapfile -t INSTANCE_ROWS < <(gcloud compute instances list \
-              --project="$GCE_PROJECT" \
-              --filter="name=$CANARY_NAME" \
-              --format='csv[no-heading](name,zone.basename())' \
-              2> "$RUNNER_TEMP/gcloud-destroy.log")
-            if (( ${#INSTANCE_ROWS[@]} > 1 )); then
-              echo "::error::Refusing fallback cleanup because the exact instance lookup was not unique."
+            if [[ -z "${EC2_STACK_ID:-}" ]]; then
+              echo "::error::No EC2 ownership proof was recorded for safe destruction."
               exit 1
             fi
-            if (( ${#INSTANCE_ROWS[@]} == 1 )); then
-              IFS=, read -r FOUND_NAME FOUND_ZONE <<< "${INSTANCE_ROWS[0]}"
-              if [[ "$FOUND_NAME" != "$CANARY_NAME" || -z "$FOUND_ZONE" ]]; then
-                echo "::error::Refusing fallback cleanup of an unexpected GCE instance."
+            STACK_ROW="$(aws cloudformation describe-stacks --stack-name "$EC2_STACK_ID" \
+              --query "Stacks[0].[StackId,StackName,Tags[?Key=='AlgoCanaryOwner']|[0].Value]" \
+              --output text)"
+            read -r FOUND_STACK_ID FOUND_STACK_NAME FOUND_OWNER <<< "$STACK_ROW"
+            if [[ "$FOUND_STACK_ID" != "$EC2_STACK_ID" || "$FOUND_STACK_NAME" != "$CANARY_NAME" || \
+                  "$FOUND_OWNER" != "$CANARY_OWNER" ]]; then
+              echo "::error::Refusing fallback cleanup of an unowned EC2 stack."
+              exit 1
+            fi
+            aws cloudformation delete-stack --stack-name "$EC2_STACK_ID"
+            aws cloudformation wait stack-delete-complete --stack-name "$EC2_STACK_ID"
+          elif [[ "$NEED_FALLBACK" == "true" && "$PROVIDER" == "gce" ]]; then
+            if [[ -z "${GCE_INSTANCE_ID:-}" || -z "${GCE_INSTANCE_ZONE:-}" || \
+                  -z "${GCE_FIREWALL_ID:-}" || -z "${GCE_NETWORK_ID:-}" ]]; then
+              echo "::error::No GCE ownership proof was recorded for safe destruction."
+              exit 1
+            fi
+            INSTANCE_ROW="$(gcloud compute instances list --project="$GCE_PROJECT" \
+              --filter="name=$CANARY_NAME" \
+              --format='csv[no-heading](name,id,zone.basename(),labels.algo-canary-owner)' \
+              2> "$RUNNER_TEMP/gcloud-destroy.log")"
+            FIREWALL_ROW="$(gcloud compute firewall-rules list --project="$GCE_PROJECT" \
+              --filter='name=algovpn' --format='csv[no-heading](name,id,description)' \
+              2> "$RUNNER_TEMP/gcloud-destroy.log")"
+            NETWORK_ROW="$(gcloud compute networks list --project="$GCE_PROJECT" \
+              --filter='name=algovpn' --format='csv[no-heading](name,id,description)' \
+              2> "$RUNNER_TEMP/gcloud-destroy.log")"
+            if [[ -n "$INSTANCE_ROW" ]]; then
+              IFS=, read -r FOUND_NAME FOUND_ID FOUND_ZONE FOUND_OWNER <<< "$INSTANCE_ROW"
+              if [[ "$FOUND_NAME" != "$CANARY_NAME" || "$FOUND_ID" != "$GCE_INSTANCE_ID" || \
+                    "$FOUND_ZONE" != "$GCE_INSTANCE_ZONE" || "$FOUND_OWNER" != "$CANARY_OWNER" ]]; then
+                echo "::error::Refusing fallback cleanup of an unowned GCE instance."
                 exit 1
               fi
-              gcloud compute instances delete "$CANARY_NAME" \
-                --project="$GCE_PROJECT" --zone="$FOUND_ZONE" --quiet \
-                > "$RUNNER_TEMP/gcloud-destroy.log" 2>&1
+
             fi
-            if gcloud compute firewall-rules describe algovpn --project="$GCE_PROJECT" \
-              > /dev/null 2> "$RUNNER_TEMP/gcloud-destroy.log"; then
+            if [[ -n "$FIREWALL_ROW" ]]; then
+              IFS=, read -r FOUND_NAME FOUND_ID FOUND_OWNER <<< "$FIREWALL_ROW"
+              if [[ "$FOUND_NAME" != "algovpn" || "$FOUND_ID" != "$GCE_FIREWALL_ID" || \
+                    "$FOUND_OWNER" != "algo-canary-owner=$CANARY_OWNER" ]]; then
+                echo "::error::Refusing fallback cleanup of an unowned GCE firewall."
+                exit 1
+              fi
+
+            fi
+            if [[ -n "$NETWORK_ROW" ]]; then
+              IFS=, read -r FOUND_NAME FOUND_ID FOUND_OWNER <<< "$NETWORK_ROW"
+              if [[ "$FOUND_NAME" != "algovpn" || "$FOUND_ID" != "$GCE_NETWORK_ID" || \
+                    "$FOUND_OWNER" != "algo-canary-owner=$CANARY_OWNER" ]]; then
+                echo "::error::Refusing fallback cleanup of an unowned GCE network."
+                exit 1
+              fi
+            fi
+            # Validate every observed resource before performing the first
+            # irreversible operation, so an ownership mismatch changes nothing.
+            if [[ -n "$INSTANCE_ROW" ]]; then
+              gcloud compute instances delete "$CANARY_NAME" --project="$GCE_PROJECT" \
+                --zone="$GCE_INSTANCE_ZONE" --quiet > "$RUNNER_TEMP/gcloud-destroy.log" 2>&1
+            fi
+            if [[ -n "$FIREWALL_ROW" ]]; then
               gcloud compute firewall-rules delete algovpn --project="$GCE_PROJECT" --quiet \
                 > "$RUNNER_TEMP/gcloud-destroy.log" 2>&1
             fi
-            if gcloud compute networks describe algovpn --project="$GCE_PROJECT" \
-              > /dev/null 2> "$RUNNER_TEMP/gcloud-destroy.log"; then
+            if [[ -n "$NETWORK_ROW" ]]; then
               gcloud compute networks delete algovpn --project="$GCE_PROJECT" --quiet \
                 > "$RUNNER_TEMP/gcloud-destroy.log" 2>&1
             fi
@@ -284,4 +392,4 @@ jobs:
             echo "::error::No canary ownership proof was recorded for safe destruction."
             exit 1
           fi
-          exit "$CLEANUP_STATUS"
+          exit 0
