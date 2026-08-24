@@ -7,7 +7,9 @@ inventory_users
 .venv/
 .DS_Store
 .vagrant
-.ansible/
+.ansible/collections/
+.ansible/modules/
+.ansible/roles/
 __pycache__/
 *.pyc
 algo.egg-info/

@@ -1,5 +1,7 @@
 """Dependency and Ansible collection support policy tests."""
 
+import configparser
+import re
 import tomllib
 from pathlib import Path
 
@@ -144,3 +146,36 @@ def test_ansible_posix_contains_authorized_key_fix():
 
     assert len(matches) == 1, "requirements.yml must contain exactly one ansible.posix collection"
     assert _exact_collection_version(matches[0]) >= Version("2.2.1"), "ansible.posix must be 2.2.1 or newer"
+
+
+def test_ansible_uses_only_the_project_collection_path():
+    configuration = configparser.ConfigParser()
+    configuration.read(ROOT / "ansible.cfg", encoding="utf-8")
+
+    value = configuration["defaults"]["collections_path"]
+    paths = [path.strip() for path in value.split(":") if path.strip()]
+    assert paths == ["./.ansible/collections"]
+
+
+def test_collection_installers_are_project_local_and_fail_closed():
+    expected = "uv run ansible-galaxy collection install --force -p .ansible/collections -r requirements.yml"
+    launcher = (ROOT / "algo").read_text(encoding="utf-8")
+    dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
+
+    launcher_commands = [line.strip() for line in launcher.splitlines() if "ansible-galaxy collection install" in line]
+    docker_commands = [
+        line.removeprefix("RUN ").strip()
+        for line in dockerfile.splitlines()
+        if "ansible-galaxy collection install" in line
+    ]
+    assert launcher_commands == [expected]
+    assert docker_commands == [expected]
+    assert not re.search(r"ansible-galaxy collection install[^\n]*(?:\|\|\s*true|2>\s*/dev/null)", launcher)
+
+
+def test_project_collection_directory_is_ignored_explicitly():
+    ignored = {line.strip() for line in (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()}
+    docker_ignored = {line.strip() for line in (ROOT / ".dockerignore").read_text(encoding="utf-8").splitlines()}
+
+    assert ".ansible/collections/" in ignored
+    assert ".ansible/" in docker_ignored

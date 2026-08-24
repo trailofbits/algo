@@ -2,6 +2,18 @@
 
 set -e
 
+ALGO_SOURCE="${BASH_SOURCE[0]}"
+while [ -L "$ALGO_SOURCE" ]; do
+    ALGO_SOURCE_DIR="$(cd -P -- "$(dirname -- "$ALGO_SOURCE")" && pwd)"
+    ALGO_SOURCE="$(readlink "$ALGO_SOURCE")"
+    [[ "$ALGO_SOURCE" != /* ]] && ALGO_SOURCE="$ALGO_SOURCE_DIR/$ALGO_SOURCE"
+done
+ALGO_DIR="$(cd -P -- "$(dirname -- "$ALGO_SOURCE")" && pwd)"
+unset ALGO_SOURCE ALGO_SOURCE_DIR
+cd "$ALGO_DIR"
+export ANSIBLE_CONFIG="$ALGO_DIR/ansible.cfg"
+export ANSIBLE_COLLECTIONS_PATH="$ALGO_DIR/.ansible/collections"
+
 UV_VERSION="0.12.3"
 UV_INSTALLER_SHA256="a7e3924ea1cd06bf1518c577d635c624ae2e2db030e0fc8ff8cf426224384e17"
 UV_INSTALLER_PS1_SHA256="7b84813e3fad9586da122e362d4dcba1e2e611664244d004bcfc32b2fdf10430"
@@ -235,7 +247,7 @@ fi
 # Install Ansible Galaxy collections if requirements.yml exists
 # This is needed for cloud providers that use collection modules (Linode, DigitalOcean, Azure, etc.)
 if [ -f "requirements.yml" ]; then
-    uv run ansible-galaxy collection install -r requirements.yml > /dev/null 2>&1 || true
+    uv run ansible-galaxy collection install --force -p .ansible/collections -r requirements.yml
 fi
 
 # Run the appropriate playbook

@@ -116,3 +116,52 @@ echo CONTINUED
     assert result.returncode != 0
     assert "CONTINUED" not in result.stdout
     assert not installer.exists()
+
+
+def test_launcher_forces_local_ansible_paths_and_preserves_galaxy_failure(tmp_path):
+    launcher = tmp_path / "algo"
+    launcher.write_text(LAUNCHER.read_text())
+    launcher.chmod(0o755)
+    link_directory = tmp_path / "links"
+    link_directory.mkdir()
+    launcher_link = link_directory / "algo"
+    launcher_link.symlink_to(launcher)
+    (tmp_path / "ansible.cfg").write_text("[defaults]\ncollections_path = ./.ansible/collections\n")
+    (tmp_path / "requirements.yml").write_text("---\ncollections: []\n")
+
+    stub_bin = tmp_path / "bin"
+    stub_bin.mkdir()
+    uv = stub_bin / "uv"
+    uv.write_text(
+        """#!/bin/sh
+for argument in "$@"; do
+  if [ "$argument" = ansible-galaxy ]; then
+    printf '%s\n%s\n%s\n' "$ANSIBLE_CONFIG" "$ANSIBLE_COLLECTIONS_PATH" "$*" > "$TEST_GALAXY_LOG"
+    echo 'GALAXY FAILURE DETAIL' >&2
+    exit 42
+  fi
+done
+exit 0
+"""
+    )
+    uv.chmod(0o755)
+    log = tmp_path / "galaxy.log"
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "ANSIBLE_COLLECTIONS_PATH": str(tmp_path.parent / "evil-collections"),
+            "ANSIBLE_CONFIG": str(tmp_path.parent / "evil-ansible.cfg"),
+            "HOME": str(tmp_path / "home"),
+            "PATH": f"{stub_bin}:/usr/bin:/bin",
+            "TEST_GALAXY_LOG": str(log),
+        }
+    )
+
+    result = subprocess.run([str(launcher_link)], cwd=tmp_path.parent, capture_output=True, text=True, env=environment)
+
+    assert result.returncode == 42
+    assert "GALAXY FAILURE DETAIL" in result.stderr
+    config_path, collections_path, command = log.read_text().splitlines()
+    assert config_path == str(tmp_path / "ansible.cfg")
+    assert collections_path == str(tmp_path / ".ansible/collections")
+    assert command == "run ansible-galaxy collection install --force -p .ansible/collections -r requirements.yml"

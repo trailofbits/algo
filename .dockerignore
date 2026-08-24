@@ -5,6 +5,7 @@
 
 # Development environment
 .env
+.ansible/
 .venv/
 .ruff_cache/
 __pycache__/
