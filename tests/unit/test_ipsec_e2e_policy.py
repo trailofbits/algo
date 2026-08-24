@@ -68,6 +68,17 @@ def test_ipsec_e2e_proves_dns_and_routed_source_ip_through_the_tunnel():
     assert "remote_ts = 0.0.0.0/0" in script
 
 
+def test_ipsec_client_populates_swanctl_credential_directories():
+    script = _script()
+
+    assert 'install -d -m 0700 "${IPSEC_CLIENT_DIR}/x509"' in script
+    assert '"${IPSEC_CLIENT_DIR}/x509ca"' in script
+    assert '"${IPSEC_CLIENT_DIR}/private"' in script
+    assert 'install -m 0600 "${user_cert}" "${IPSEC_CLIENT_DIR}/x509/client.crt"' in script
+    assert 'install -m 0600 "${cacert}" "${IPSEC_CLIENT_DIR}/x509ca/cacert.pem"' in script
+    assert 'install -m 0600 "${user_key}" "${IPSEC_CLIENT_DIR}/private/client.key"' in script
+
+
 def test_ipsec_client_credentials_are_private_and_torn_down():
     script = _script()
 
@@ -77,6 +88,15 @@ def test_ipsec_client_credentials_are_private_and_torn_down():
     assert 'kill "${IPSEC_CLIENT_PID}"' in script
     assert 'rm -rf "${IPSEC_CLIENT_DIR}"' in script
     assert "set -x" not in script
+
+
+def test_ipsec_client_shutdown_is_bounded_and_escalates_if_needed():
+    script = _script()
+
+    assert "stop_ipsec_client()" in script
+    assert 'kill -KILL "${IPSEC_CLIENT_PID}"' in script
+    assert "for _ in 1 2 3 4 5; do" in script
+    assert script.count('wait "${IPSEC_CLIENT_PID}"') == 1
 
 
 def test_ipsec_e2e_preserves_signal_failure_status():

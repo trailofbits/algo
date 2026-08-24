@@ -59,6 +59,25 @@ log_step()  { echo -e "\n${GREEN}==>${NC} $*"; }
 # Cleanup Functions
 # =============================================================================
 
+# shellcheck disable=SC2317,SC2329  # Functions are invoked directly and via trap
+stop_ipsec_client() {
+    if [[ -z "${IPSEC_CLIENT_PID}" ]]; then
+        return 0
+    fi
+    kill "${IPSEC_CLIENT_PID}" 2>/dev/null || true
+    for _ in 1 2 3 4 5; do
+        if ! kill -0 "${IPSEC_CLIENT_PID}" 2>/dev/null; then
+            break
+        fi
+        sleep 1
+    done
+    if kill -0 "${IPSEC_CLIENT_PID}" 2>/dev/null; then
+        kill -KILL "${IPSEC_CLIENT_PID}" 2>/dev/null || true
+    fi
+    wait "${IPSEC_CLIENT_PID}" 2>/dev/null || true
+    IPSEC_CLIENT_PID=""
+}
+
 # shellcheck disable=SC2317,SC2329  # Function is invoked indirectly via trap
 cleanup() {
     local exit_code=$?
@@ -74,11 +93,7 @@ cleanup() {
         ip netns exec "${NAMESPACE}" "${IPSEC_SWANCTL_BINARY}" --terminate --ike algovpn \
             --uri "${IPSEC_VICI_URI}" >/dev/null 2>&1 || true
     fi
-    if [[ -n "${IPSEC_CLIENT_PID}" ]]; then
-        kill "${IPSEC_CLIENT_PID}" 2>/dev/null || true
-        wait "${IPSEC_CLIENT_PID}" 2>/dev/null || true
-        IPSEC_CLIENT_PID=""
-    fi
+    stop_ipsec_client
 
     # Remove exactly the firewall rules this process successfully added.
     if [[ "${NAT_RULE_ADDED}" == true ]]; then
@@ -468,9 +483,11 @@ test_ipsec() {
     vici_socket="${IPSEC_CLIENT_DIR}/charon.vici"
     IPSEC_VICI_URI="unix://${vici_socket}"
 
-    install -m 600 "${cacert}" "${IPSEC_CLIENT_DIR}/cacert.pem" || return 1
-    install -m 600 "${user_cert}" "${IPSEC_CLIENT_DIR}/client.crt" || return 1
-    install -m 600 "${user_key}" "${IPSEC_CLIENT_DIR}/client.key" || return 1
+    install -d -m 0700 "${IPSEC_CLIENT_DIR}/x509" \
+        "${IPSEC_CLIENT_DIR}/x509ca" "${IPSEC_CLIENT_DIR}/private" || return 1
+    install -m 0600 "${cacert}" "${IPSEC_CLIENT_DIR}/x509ca/cacert.pem" || return 1
+    install -m 0600 "${user_cert}" "${IPSEC_CLIENT_DIR}/x509/client.crt" || return 1
+    install -m 0600 "${user_key}" "${IPSEC_CLIENT_DIR}/private/client.key" || return 1
 
     if ! cat > "${client_config}" <<EOF
 connections {
@@ -483,7 +500,7 @@ connections {
         vips = 0.0.0.0
         local {
             auth = pubkey
-            certs = ${IPSEC_CLIENT_DIR}/client.crt
+            certs = ${IPSEC_CLIENT_DIR}/x509/client.crt
         }
         remote {
             auth = pubkey
@@ -502,12 +519,12 @@ connections {
 }
 authorities {
     algo {
-        cacert = ${IPSEC_CLIENT_DIR}/cacert.pem
+        cacert = ${IPSEC_CLIENT_DIR}/x509ca/cacert.pem
     }
 }
 secrets {
     private-client {
-        file = ${IPSEC_CLIENT_DIR}/client.key
+        file = ${IPSEC_CLIENT_DIR}/private/client.key
     }
 }
 EOF
@@ -670,9 +687,7 @@ EOF
     ip netns exec "${NAMESPACE}" "${IPSEC_SWANCTL_BINARY}" --terminate --ike algovpn \
         --uri "${IPSEC_VICI_URI}" >/dev/null || return 1
     IPSEC_VICI_URI=""
-    kill "${IPSEC_CLIENT_PID}" || return 1
-    wait "${IPSEC_CLIENT_PID}" 2>/dev/null || true
-    IPSEC_CLIENT_PID=""
+    stop_ipsec_client
     rm -rf "${IPSEC_CLIENT_DIR}" || return 1
     IPSEC_CLIENT_DIR=""
     IPSEC_SWANCTL_BINARY=""
