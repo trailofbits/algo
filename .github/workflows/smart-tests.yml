@@ -278,6 +278,12 @@ jobs:
       - name: Check test results
         env:
           CHANGED_FILES_RESULT: ${{ needs.changed-files.result }}
+          RUN_SYNTAX_CHECK: ${{ needs.changed-files.outputs.run_syntax_check }}
+          RUN_BASIC_TESTS: ${{ needs.changed-files.outputs.run_basic_tests }}
+          RUN_TEMPLATE_TESTS: ${{ needs.changed-files.outputs.run_template_tests }}
+          RUN_DOCKER_TESTS: ${{ needs.changed-files.outputs.run_docker_tests }}
+          RUN_CONFIG_TESTS: ${{ needs.changed-files.outputs.run_config_tests }}
+          RUN_LINT: ${{ needs.changed-files.outputs.run_lint }}
           SYNTAX_CHECK_RESULT: ${{ needs.syntax-check.result }}
           BASIC_TESTS_RESULT: ${{ needs.basic-tests.result }}
           DOCKER_TESTS_RESULT: ${{ needs.docker-tests.result }}
@@ -290,18 +296,43 @@ jobs:
             echo "Changed-file detection did not succeed: ${CHANGED_FILES_RESULT}"
             exit 1
           fi
-          for result in \
-            "${SYNTAX_CHECK_RESULT}" \
-            "${BASIC_TESTS_RESULT}" \
-            "${DOCKER_TESTS_RESULT}" \
-            "${CONFIG_TESTS_RESULT}" \
-            "${LINT_RESULT}"; do
-            if [[ "${result}" != "success" && "${result}" != "skipped" ]]; then
-              echo "A required test had an invalid terminal result: ${result}"
+          check_result() {
+            local name=$1 expected=$2 result=$3
+            if [[ "${expected}" != "true" && "${expected}" != "false" ]]; then
+              echo "${name} selector had invalid value: ${expected}"
+              exit 1
+            fi
+            if [[ "${expected}" == "true" && "${result}" != "success" ]]; then
+              echo "${name} was selected but ended as ${result}"
+              exit 1
+            fi
+            if [[ "${expected}" == "false" && "${result}" != "skipped" ]]; then
+              echo "${name} was not selected but ended as ${result}"
+              exit 1
+            fi
+          }
+          for selector in \
+            "${RUN_SYNTAX_CHECK}" \
+            "${RUN_BASIC_TESTS}" \
+            "${RUN_TEMPLATE_TESTS}" \
+            "${RUN_DOCKER_TESTS}" \
+            "${RUN_CONFIG_TESTS}" \
+            "${RUN_LINT}"; do
+            if [[ "${selector}" != "true" && "${selector}" != "false" ]]; then
+              echo "Changed-file selector had invalid value: ${selector}"
               exit 1
             fi
           done
-          echo "All required tests passed or were intentionally skipped."
+          BASIC_EXPECTED=false
+          if [[ "${RUN_BASIC_TESTS}" == "true" || "${RUN_TEMPLATE_TESTS}" == "true" ]]; then
+            BASIC_EXPECTED=true
+          fi
+          check_result syntax "${RUN_SYNTAX_CHECK}" "${SYNTAX_CHECK_RESULT}"
+          check_result basic "${BASIC_EXPECTED}" "${BASIC_TESTS_RESULT}"
+          check_result docker "${RUN_DOCKER_TESTS}" "${DOCKER_TESTS_RESULT}"
+          check_result config "${RUN_CONFIG_TESTS}" "${CONFIG_TESTS_RESULT}"
+          check_result lint "${RUN_LINT}" "${LINT_RESULT}"
+          echo "All selected required tests passed; unselected tests were skipped."
 
   trigger-integration:
     name: Trigger Integration Tests

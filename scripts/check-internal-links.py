@@ -12,6 +12,8 @@ from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 LINK = re.compile(r"!?\[[^\]]*\]\(([^)\s]+)(?:\s+['\"][^)]*['\"])?\)")
+REFERENCE_TARGET = re.compile(r"^\s{0,3}\[[^\]]+\]:\s*(\S+)")
+HTML_HREF = re.compile(r"<a\b[^>]*\bhref=['\"]([^'\"]+)['\"]", re.IGNORECASE)
 HEADING = re.compile(r"^\s{0,3}#{1,6}\s+(.+?)\s*#*\s*$")
 HTML_ANCHOR = re.compile(r"<a\s+(?:name|id)=['\"]([^'\"]+)['\"]", re.IGNORECASE)
 REMOTE_SCHEMES = {"http", "https", "mailto", "tel", "data"}
@@ -56,8 +58,17 @@ def check_repository_links() -> list[str]:
     anchor_cache: dict[Path, set[str]] = {}
     for source in tracked_markdown():
         text = source.read_text(encoding="utf-8")
+        in_fence = False
         for line_number, line in enumerate(text.splitlines(), 1):
-            for raw_target in LINK.findall(line):
+            if line.lstrip().startswith(("```", "~~~")):
+                in_fence = not in_fence
+                continue
+            if in_fence:
+                continue
+            raw_targets = LINK.findall(line)
+            raw_targets.extend(REFERENCE_TARGET.findall(line))
+            raw_targets.extend(HTML_HREF.findall(line))
+            for raw_target in raw_targets:
                 target = raw_target.strip("<>")
                 parsed = urlsplit(target)
                 if parsed.scheme.lower() in REMOTE_SCHEMES or target.startswith("//") or "{{" in target:

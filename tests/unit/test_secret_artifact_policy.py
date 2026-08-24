@@ -1,11 +1,42 @@
 """Repository policy preventing generated credentials and VPN configs from becoming artifacts."""
 
+import re
 import subprocess
 from pathlib import Path
 
 import yaml
 
 ROOT = Path(__file__).parents[2]
+APPROVED_SYNTHETIC_CONTENT_FILES = {
+    "docs/client-openwrt-router-wireguard.md",
+    "tests/unit/test_config_validation.py",
+    "tests/unit/test_docker_localhost_deployment.py",
+    "tests/unit/test_generated_configs.py",
+    "tests/unit/test_secret_artifact_policy.py",
+    "tests/unit/test_wireguard_key_generation.py",
+}
+
+
+def _looks_like_private_material(tracked: str, content: bytes) -> bool:
+    path = Path(tracked)
+    if path.suffix.lower() in {".key", ".p12", ".pfx", ".mobileconfig", ".secrets"}:
+        return True
+    if path.name in {"id_rsa", "id_ecdsa", "id_ed25519", "id_dsa"}:
+        return True
+    if "/wireguard/.pki/private/" in f"/{tracked}":
+        return True
+    if tracked in APPROVED_SYNTHETIC_CONTENT_FILES:
+        return False
+    markers = (
+        b"BEGIN PRIVATE KEY",
+        b"BEGIN EC PRIVATE KEY",
+        b"BEGIN RSA PRIVATE KEY",
+        b"BEGIN OPENSSH PRIVATE KEY",
+    )
+    if any(marker in content for marker in markers):
+        return True
+    text = content.decode("utf-8", errors="ignore")
+    return re.search(r"(?m)^\s*PrivateKey\s*=\s*(?!\{\{)\S+", text) is not None
 
 
 def _tracked_paths():
@@ -22,12 +53,8 @@ def test_generated_integration_credentials_are_never_tracked():
 
 
 def test_no_generated_private_material_is_tracked_anywhere():
-    forbidden_suffixes = {".key", ".p12", ".pfx", ".mobileconfig"}
     approved_fixture_prefix = "tests/fixtures/synthetic/"
     offenders = []
-    private_key_markers = tuple(
-        b"BEGIN " + key_type for key_type in (b"PRIVATE KEY", b"EC PRIVATE KEY", b"RSA PRIVATE KEY")
-    )
 
     for tracked in _tracked_paths():
         if not tracked or tracked.startswith(approved_fixture_prefix):
@@ -35,18 +62,26 @@ def test_no_generated_private_material_is_tracked_anywhere():
         path = ROOT / tracked
         if not path.is_file():
             continue
-        if path.suffix.lower() in forbidden_suffixes:
-            offenders.append(tracked)
-            continue
         try:
             content = path.read_bytes()
         except OSError:
             offenders.append(tracked)
             continue
-        if any(marker in content for marker in private_key_markers):
+        if _looks_like_private_material(tracked, content):
             offenders.append(tracked)
 
     assert offenders == []
+
+
+def test_private_material_detector_covers_wireguard_openssh_and_secret_files():
+    cases = {
+        "configs/client.conf": b"[Interface]\nPrivateKey = synthetic-value\n",
+        "configs/id_ed25519": b"synthetic-extensionless-key",
+        "configs/vpn.secrets": b"client : EAP synthetic-password\n",
+        "configs/key.txt": b"-----BEGIN OPENSSH PRIVATE KEY-----\nsynthetic\n",
+        "scripts/leak.sh": b"-----BEGIN OPENSSH PRIVATE KEY-----\nreal-material\n",
+    }
+    assert all(_looks_like_private_material(path, content) for path, content in cases.items())
 
 
 def test_generated_integration_credentials_are_ignored():

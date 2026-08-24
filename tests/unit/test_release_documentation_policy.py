@@ -43,6 +43,20 @@ def test_support_and_promotion_claims_are_bounded_and_current():
     assert "Microsoft Azure" not in readme
 
 
+def test_excluded_provider_claims_are_consistent_repository_wide():
+    forbidden = (
+        "Supported cloud providers: DigitalOcean, AWS, Azure",
+        "Deploy on AWS, DigitalOcean, Azure, GCP",
+        "Amazon [EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) and [Lightsail]",
+    )
+    stale = []
+    for path in [ROOT / "CONTRIBUTING.md", *sorted((ROOT / "docs").rglob("*.md"))]:
+        text = path.read_text(encoding="utf-8")
+        if any(claim in text for claim in forbidden):
+            stale.append(str(path.relative_to(ROOT)))
+    assert not stale, f"contradictory excluded-provider claims: {stale}"
+
+
 def test_repository_documentation_uses_main_branch_links():
     stale = []
     for path in [ROOT / "README.md", *sorted((ROOT / "docs").rglob("*.md"))]:

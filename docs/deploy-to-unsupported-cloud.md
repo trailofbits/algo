@@ -64,7 +64,7 @@ We strongly recommend choosing a provider that supports native kernel modules ra
 
 If your preferred provider doesn't support Algo's requirements:
 
-1. **Use a supported provider** - Deploy on AWS, DigitalOcean, Azure, GCP, or another [officially supported provider](https://github.com/trailofbits/algo/blob/main/README.md#deploy-the-algo-server)
+1. **Use a supported provider** - Deploy on AWS EC2, DigitalOcean, GCP, or another [officially supported provider](https://github.com/trailofbits/algo/blob/main/README.md#deploy-the-algo-server)
 2. **Deploy locally** - Use the [Ubuntu server deployment option](deploy-to-ubuntu.md) on your own hardware
 3. **Hybrid approach** - Deploy the VPN server on a supported provider while using your preferred provider for other services
 

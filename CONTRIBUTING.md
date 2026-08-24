@@ -3,7 +3,7 @@
 * We welcome bug reports! Before filing, a quick check of the [FAQ](docs/faq.md) or [troubleshooting](docs/troubleshooting.md) docs might have your answer
 * Algo automatically installs dependencies with uv - no manual setup required
 * We support modern clients: macOS 12+, iOS 15+, Windows 11+, Ubuntu 22.04+, etc.
-* Supported cloud providers: DigitalOcean, AWS, Azure, GCP, Vultr, Hetzner, Linode, OpenStack, CloudStack
+* Supported cloud providers: DigitalOcean, AWS EC2, GCP, Vultr, Hetzner, Linode, OpenStack, CloudStack. Azure and Lightsail are excluded and unverified.
 * If you need to file a new issue, fill out any relevant fields in the Issue Template
 
 ### Pull Requests

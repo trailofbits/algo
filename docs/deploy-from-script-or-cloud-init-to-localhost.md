@@ -7,7 +7,7 @@ The script doesn't configure any parameters in your cloud, so you're on your own
 
 You can copy-paste the snippet below to the user data (cloud-init or startup script) field when creating a new server.
 
-For now this has only been successfully tested on [DigitalOcean](https://www.digitalocean.com/docs/droplets/resources/metadata/), Amazon [EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) and [Lightsail](https://lightsail.aws.amazon.com/ls/docs/en/articles/lightsail-how-to-configure-server-additional-data-shell-script), [Google Cloud](https://cloud.google.com/compute/docs/startupscript), [Azure](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/using-cloud-init) and [Vultr](https://my.vultr.com/startup/), although Vultr doesn't [officially support cloud-init](https://www.vultr.com/docs/getting-started-with-cloud-init).
+For now this has only been successfully tested on [DigitalOcean](https://www.digitalocean.com/docs/droplets/resources/metadata/), Amazon [EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html), [Google Cloud](https://cloud.google.com/compute/docs/startupscript), and [Vultr](https://my.vultr.com/startup/), although Vultr doesn't [officially support cloud-init](https://www.vultr.com/docs/getting-started-with-cloud-init). Azure and Lightsail are excluded and unverified in this release.
 
 ```
 #!/bin/bash
