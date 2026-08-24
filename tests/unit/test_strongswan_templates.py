@@ -192,6 +192,17 @@ def test_strongswan_systemd_hardening_and_restart_lifecycle():
     assert "reload systemd and restart strongswan" in ubuntu_tasks
 
 
+def test_strongswan_harness_preserves_signal_failure_status():
+    harness = Path("tests/integration/test-strongswan-systemd.sh").read_text(encoding="utf-8")
+
+    assert "trap cleanup EXIT INT TERM" not in harness
+    assert "trap cleanup EXIT" in harness
+    assert "trap 'exit 130' INT" in harness
+    assert "trap 'exit 143' TERM" in harness
+    assert "local status=$?" in harness
+    assert 'exit "${status}"' in harness
+
+
 def test_openssl_template_constraints():
     """Test the OpenSSL task template that had the inline comment issue."""
     # This tests the actual openssl.yml task file to ensure our fix works

@@ -16,6 +16,8 @@ network_created=false
 instance_created=false
 
 cleanup() {
+  local status=$?
+  trap - EXIT INT TERM
   set +e
   if [[ "${instance_created}" == true ]]; then
     lxc delete --force "${INSTANCE}" >/dev/null 2>&1
@@ -27,8 +29,11 @@ cleanup() {
     lxc storage delete "${POOL}" >/dev/null 2>&1
   fi
   rm -rf "${WORK_DIR}"
+  exit "${status}"
 }
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 command -v lxc >/dev/null 2>&1 || {
   printf 'lxc is required for the StrongSwan systemd integration test\n' >&2
