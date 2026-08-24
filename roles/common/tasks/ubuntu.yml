@@ -1,6 +1,4 @@
 ---
-- name: Gather facts
-  setup:
 - name: Cloud only tasks
   when: algo_provider != "local"
   block:

@@ -4,14 +4,14 @@
 
 ## Requirements
 
-Algo currently supports **Ubuntu 22.04 LTS only**. Your target server must be running an unmodified installation of Ubuntu 22.04.
+Algo supports **Ubuntu 22.04 LTS and Ubuntu 24.04 LTS**. Your target server must be running an unmodified installation of one of these releases. Other distributions and Ubuntu releases, including Ubuntu 26.04, are rejected before Ubuntu-specific configuration begins.
 
 ## Installation
 
 You can install Algo on an existing Ubuntu server instead of creating a new cloud instance. This is called a **local** installation. If you're new to Algo or Linux, cloud deployment is easier.
 
 1. Follow the normal Algo installation instructions
-2. When prompted, choose: `Install to existing Ubuntu latest LTS server (for advanced users)`
+2. When prompted, choose: `Install to existing Ubuntu 22.04 or 24.04 LTS server (for advanced users)`
 3. The target can be:
    - The same system where you installed Algo (requires `sudo ./algo`)
    - A remote Ubuntu server accessible via SSH without password prompts (use `ssh-agent`)

@@ -9,8 +9,21 @@
 - fail:
   when: cloud_test|default(false)|bool
 
+- name: Gather platform facts
+  setup:
+  tags:
+    - always
+    - update-users
+
+- name: Verify the server platform is supported
+  assert:
+    that: ansible_distribution == 'Ubuntu' and ansible_distribution_version in ['22.04', '24.04']
+    fail_msg: Algo supports only Ubuntu 22.04 LTS and Ubuntu 24.04 LTS.
+  tags:
+    - always
+    - update-users
+
 - include_tasks: ubuntu.yml
-  when: '"Ubuntu" in OS.stdout or "Linux" in OS.stdout'
 
 # Include facts separately - always runs to ensure OS detection facts are available
 - include_tasks: facts.yml
