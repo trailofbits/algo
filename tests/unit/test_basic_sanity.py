@@ -47,7 +47,8 @@ def test_config_file_valid():
 
 def test_ansible_syntax():
     """Check that main playbook has valid syntax"""
-    result = subprocess.run(["ansible-playbook", "main.yml", "--syntax-check"], capture_output=True, text=True)
+    ansible_playbook = os.path.join(os.path.dirname(sys.executable), "ansible-playbook")
+    result = subprocess.run([ansible_playbook, "main.yml", "--syntax-check"], capture_output=True, text=True)
 
     assert result.returncode == 0, f"Ansible syntax check failed:\n{result.stderr}"
     print("✓ Ansible playbook syntax is valid")

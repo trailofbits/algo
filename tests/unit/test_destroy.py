@@ -2,6 +2,7 @@
 
 import os
 import subprocess
+import sys
 
 import yaml  # type: ignore[import-untyped]
 
@@ -40,8 +41,9 @@ def test_destroy_playbook_valid_yaml():
 
 def test_destroy_playbook_syntax():
     """destroy.yml must pass ansible-playbook --syntax-check."""
+    ansible_playbook = os.path.join(os.path.dirname(sys.executable), "ansible-playbook")
     result = subprocess.run(
-        ["ansible-playbook", "destroy.yml", "--syntax-check"],
+        [ansible_playbook, "destroy.yml", "--syntax-check"],
         capture_output=True,
         text=True,
     )

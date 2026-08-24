@@ -7,6 +7,7 @@ Verifies services can start and config files exist in expected locations
 import os
 import subprocess
 import sys
+from pathlib import Path
 
 
 def check_docker_available():
@@ -101,7 +102,7 @@ def test_localhost_deployment_requirements():
     """Test that localhost deployment requirements are met"""
     requirements = {
         "Python 3.12+": sys.version_info >= (3, 12),
-        "Ansible installed": subprocess.run(["which", "ansible"], capture_output=True).returncode == 0,
+        "Ansible installed": Path(sys.executable).with_name("ansible-playbook").is_file(),
         "Main playbook exists": os.path.exists("main.yml"),
         "Project config exists": os.path.exists("pyproject.toml"),
         "Config template exists": os.path.exists("config.cfg.example") or os.path.exists("config.cfg"),
