@@ -267,11 +267,10 @@ test_wireguard() {
     log_info "Endpoint changed to ${SERVER_BRIDGE_IP}"
 
     # Debug: Show server WireGuard state before client connects
-    log_info "Server WireGuard peers:"
     local server_peers
     server_peers=$(wg show wg0 peers 2>/dev/null || echo "")
     if [[ -n "${server_peers}" ]]; then
-        log_info "Found peers: ${server_peers}"
+        log_info "WireGuard server has configured peers"
     else
         log_error "Server WireGuard has no peers configured!"
         log_error "Check that deployment created /etc/wireguard/wg0.conf with [Peer] sections"
@@ -326,10 +325,6 @@ test_wireguard() {
 
     if [[ ${attempts} -ge ${max_attempts} ]]; then
         log_error "WireGuard handshake timeout after ${max_attempts} seconds"
-        log_error "Debug - client wg show:"
-        ip netns exec "${NAMESPACE}" wg show 2>&1 || true
-        log_error "Debug - server wg0 state:"
-        wg show wg0 2>&1 || true
         log_error "Debug - iptables INPUT chain (first 15 rules):"
         iptables -L INPUT -n -v --line-numbers 2>&1 | head -20 || true
         log_error "Debug - packet capture (tcpdump):"
@@ -346,8 +341,8 @@ test_wireguard() {
     # Stop packet capture
     kill "${tcpdump_pid}" 2>/dev/null || true
 
-    # Show WireGuard status
-    ip netns exec "${NAMESPACE}" wg show
+    # Confirm the WireGuard interface remains available without logging keys.
+    ip netns exec "${NAMESPACE}" wg show interfaces >/dev/null
 
     # Test connectivity to VPN server IP
     log_info "Testing ping to WireGuard server (${WG_SERVER_IP})..."
@@ -497,9 +492,8 @@ EOF
     fi
     log_info "IPsec service is running on host"
 
-    # Show current IPsec status
-    log_info "Current IPsec status:"
-    ipsec statusall | head -20 || true
+    # Check current IPsec status without logging certificate identities.
+    ipsec statusall >/dev/null
 
     # For a true E2E test, we would connect from the namespace
     # But IPsec in namespaces requires running charon which is complex

@@ -13,3 +13,5 @@ inventory_users
 __pycache__/
 *.pyc
 algo.egg-info/
+/tests/integration/test-configs/
+/tests/integration/test-run.log

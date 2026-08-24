@@ -57,6 +57,12 @@ jobs:
       - name: Install Ansible collections
         run: uv run ansible-galaxy collection install -r requirements.yml
 
+      - name: Prepare ephemeral integration fixtures
+        run: |
+          rm -rf configs
+          mkdir -p "${RUNNER_TEMP}/algo-configs"
+          ln -s "${RUNNER_TEMP}/algo-configs" configs
+
       - name: Create test configuration
         run: |
           cat > integration-test.cfg << EOF
@@ -79,7 +85,7 @@ jobs:
           CA_password: "test-ca-password-${{ github.run_id }}"
           p12_export_password: "test-p12-password-${{ github.run_id }}"
           tests: true
-          no_log: false
+          no_log: true
           ansible_connection: local
           dns_encryption: true
           algo_dns_adblocking: true
@@ -110,7 +116,7 @@ jobs:
           # Check WireGuard
           if [[ "${{ matrix.vpn_type }}" == "wireguard" || "${{ matrix.vpn_type }}" == "both" ]]; then
             echo "Checking WireGuard..."
-            sudo wg show
+            sudo wg show interfaces
             if ! sudo systemctl is-active --quiet wg-quick@wg0; then
               echo "✗ WireGuard service not running"
               exit 1
@@ -121,7 +127,6 @@ jobs:
           # Check StrongSwan (service name is strongswan-starter on Ubuntu 20.04+)
           if [[ "${{ matrix.vpn_type }}" == "ipsec" || "${{ matrix.vpn_type }}" == "both" ]]; then
             echo "Checking StrongSwan..."
-            sudo ipsec statusall
             if ! sudo systemctl is-active --quiet strongswan-starter; then
               echo "✗ StrongSwan service not running"
               exit 1
@@ -191,10 +196,6 @@ jobs:
 
           # Test WireGuard
           if [[ "${{ matrix.vpn_type }}" == "wireguard" || "${{ matrix.vpn_type }}" == "both" ]]; then
-            # Get server's WireGuard public key
-            SERVER_PUBKEY=$(sudo wg show wg0 public-key)
-            echo "Server public key: $SERVER_PUBKEY"
-
             # Check if interface has peers
             PEER_COUNT=$(sudo wg show wg0 peers | wc -l)
             echo "✓ WireGuard has $PEER_COUNT peer(s) configured"
@@ -213,48 +214,29 @@ jobs:
           chmod +x tests/e2e/test-vpn-connectivity.sh
           sudo tests/e2e/test-vpn-connectivity.sh "${VPN_TYPE}"
 
-      - name: Collect E2E debug info on failure
+      - name: Create sanitized diagnostics on failure
         if: failure()
         run: |
-          echo "=== E2E Test Debug Information ==="
-          echo "=== Network Namespaces ==="
-          ip netns list || true
-          echo "=== WireGuard Config (alice) ==="
-          cat configs/localhost/wireguard/alice.conf 2>/dev/null || echo "Not found"
-          echo "=== IPsec Certificates ==="
-          ls -la configs/localhost/ipsec/.pki/certs/ 2>/dev/null || echo "Not found"
-          echo "=== iptables NAT ==="
-          sudo iptables -t nat -L -n -v || true
+          {
+            echo "vpn_type=${{ matrix.vpn_type }}"
+            echo "wireguard_service=$(sudo systemctl is-active wg-quick@wg0 2>/dev/null || printf unavailable)"
+            echo "strongswan_service=$(sudo systemctl is-active strongswan-starter 2>/dev/null || printf unavailable)"
+            echo "dnsmasq_service=$(sudo systemctl is-active dnsmasq 2>/dev/null || printf unavailable)"
+          } > "${RUNNER_TEMP}/algo-diagnostics.txt"
 
-      - name: Upload configs as artifacts
-        if: always()
+      - name: Upload sanitized diagnostics
+        if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
-          name: vpn-configs-${{ matrix.os }}-${{ matrix.vpn_type }}-${{ github.run_id }}
-          path: configs/
+          name: sanitized-diagnostics-${{ matrix.os }}-${{ matrix.vpn_type }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/algo-diagnostics.txt
           retention-days: 7
 
-      - name: Upload logs on failure
-        if: failure()
+      - name: Remove ephemeral integration fixtures
+        if: always()
         run: |
-          echo "=== Network Interfaces ==="
-          ip addr || true
-          echo "=== Listening Ports ==="
-          sudo ss -tulnp || true
-          echo "=== WireGuard Status ==="
-          sudo wg show || true
-          echo "=== IPsec Status ==="
-          sudo ipsec statusall || true
-          echo "=== DNS Services ==="
-          sudo systemctl status dnscrypt-proxy dnscrypt-proxy.socket dnsmasq --no-pager || true
-          echo "=== WireGuard Log ==="
-          sudo journalctl -u wg-quick@wg0 -n 50 --no-pager || true
-          echo "=== StrongSwan Log ==="
-          sudo journalctl -u strongswan -n 50 --no-pager || true
-          echo "=== dnscrypt-proxy Log ==="
-          sudo journalctl -u dnscrypt-proxy -n 50 --no-pager || true
-          echo "=== System Log (last 100 lines) ==="
-          sudo journalctl -n 100 --no-pager || true
+          rm -f integration-test.cfg configs
+          rm -rf "${RUNNER_TEMP}/algo-configs"
 
   docker-build-test:
     name: Docker Image Build Test
@@ -272,7 +254,7 @@ jobs:
       - name: Test Docker image
         run: |
           # Test that the image can run and show help
-          docker run --rm --entrypoint /bin/sh algo:ci-test -c "cd /algo && ./algo --help" || true
+          docker run --rm --entrypoint /bin/sh algo:ci-test -c "cd /algo && ./algo --help"
 
           # Test that required binaries exist in the virtual environment
           docker run --rm --entrypoint /bin/sh algo:ci-test -c "cd /algo && uv run which ansible"
