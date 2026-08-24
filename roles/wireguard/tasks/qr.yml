@@ -15,62 +15,114 @@
       ({{ ansible_playbook_python }}). Install Algo's Python dependencies in
       that environment (for example: uv sync), then run the playbook again.
 
-- name: Inspect existing QR codes
-  stat:
-    path: "{{ wireguard_config_path }}/{{ item }}.png"
-  loop: "{{ wireguard_users }}"
-  register: wireguard_qr_files
-  when: item in users
-
-- name: Prepare secure QR output
-  file:
-    path: "{{ wireguard_config_path }}/.{{ item }}.tmp.png"
-    state: touch
-    mode: "0600"
-  loop: "{{ wireguard_users }}"
-  loop_control:
-    index_var: index
-  when:
-    - item in users
-    - not wireguard_qr_files.results[index].stat.exists
-
-- name: Generate QR codes
-  command:
+- name: Acquire QR generation lock atomically
+  ansible.builtin.command:
     argv:
-      - "{{ ansible_playbook_python | dirname }}/segno"
-      - "--scale=5"
-      - "--output={{ wireguard_config_path }}/.{{ item }}.tmp.png"
-      - "{{ lookup('template', 'client.conf.j2') }}"
-    creates: "{{ wireguard_config_path }}/{{ item }}.png"
-  loop: "{{ wireguard_users }}"
-  loop_control:
-    index_var: index
-  when: item in users
-  no_log: true
+      - "{{ ansible_playbook_python }}"
+      - -c
+      - |
+        import fcntl
+        import os
+        import sys
+        import time
+        primary, guard, ttl = sys.argv[1], sys.argv[2], int(sys.argv[3])
+        guard_fd = os.open(guard, os.O_CREAT | os.O_RDWR, 0o600)
+        try:
+            fcntl.flock(guard_fd, fcntl.LOCK_EX)
+            try:
+                os.mkdir(primary, 0o700)
+            except FileExistsError:
+                age = time.time() - os.stat(primary, follow_symlinks=False).st_mtime
+                if age <= ttl:
+                    raise
+                os.rmdir(primary)
+                os.mkdir(primary, 0o700)
+        finally:
+            os.close(guard_fd)
+      - "{{ wireguard_config_path }}/.algo-qr.lock"
+      - "{{ wireguard_config_path }}/.algo-qr-recovery.lock"
+      - "900"
+  changed_when: true
 
-- name: Install generated QR codes
-  copy:
-    src: "{{ wireguard_config_path }}/.{{ item }}.tmp.png"
-    dest: "{{ wireguard_config_path }}/{{ item }}.png"
-    remote_src: true
-    mode: "0600"
-  loop: "{{ wireguard_users }}"
-  loop_control:
-    index_var: index
-  when:
-    - item in users
-    - not wireguard_qr_files.results[index].stat.exists
+- name: Generate QR codes under lock
+  block:
+    - name: Inspect existing QR codes
+      stat:
+        path: "{{ wireguard_config_path }}/{{ item }}.png"
+      loop: "{{ wireguard_users }}"
+      register: wireguard_qr_files
+      when: item in users
 
-- name: Remove temporary QR files
-  file:
-    path: "{{ wireguard_config_path }}/.{{ item }}.tmp.png"
-    state: absent
-  loop: "{{ wireguard_users }}"
-  when: item in users
+    - name: Allocate secure QR output files
+      ansible.builtin.tempfile:
+        state: file
+        path: "{{ wireguard_config_path }}"
+        prefix: .algo-qr-
+        suffix: .png
+      loop: "{{ wireguard_users }}"
+      loop_control:
+        index_var: index
+      register: wireguard_qr_temp_files
+      when:
+        - item in users
+        - not wireguard_qr_files.results[index].stat.exists
+      no_log: true
 
-- name: Restrict QR code permissions
-  file:
-    path: "{{ wireguard_config_path }}/{{ item }}.png"
-    mode: "0600"
-  loop: "{{ wireguard_users }}"
-  when: item in users
+    - name: Generate and install QR codes safely
+      block:
+        - name: Generate QR codes
+          command:
+            argv:
+              - "{{ ansible_playbook_python }}"
+              - -c
+              - >-
+                import sys; import segno;
+                segno.make(sys.stdin.read(), micro=False).save(sys.argv[1], scale=5)
+              - "{{ wireguard_qr_job.path }}"
+            stdin: "{{ lookup('template', 'client.conf.j2') }}"
+            stdin_add_newline: false
+          changed_when: true
+          loop: "{{ wireguard_qr_temp_files.results }}"
+          loop_control:
+            loop_var: wireguard_qr_job
+          vars:
+            item: "{{ wireguard_qr_job.item }}"
+          when: not wireguard_qr_job.skipped | default(false)
+          no_log: true
+
+        - name: Install generated QR codes
+          copy:
+            src: "{{ wireguard_qr_job.path }}"
+            dest: "{{ wireguard_config_path }}/{{ wireguard_qr_job.item }}.png"
+            remote_src: true
+            force: false
+            follow: false
+            unsafe_writes: false
+            mode: "0600"
+          loop: "{{ wireguard_qr_temp_files.results }}"
+          loop_control:
+            loop_var: wireguard_qr_job
+          when: not wireguard_qr_job.skipped | default(false)
+          no_log: true
+      always:
+        - name: Remove temporary QR files
+          file:
+            path: "{{ wireguard_qr_job.path }}"
+            state: absent
+          loop: "{{ wireguard_qr_temp_files.results }}"
+          loop_control:
+            loop_var: wireguard_qr_job
+          when: not wireguard_qr_job.skipped | default(false)
+          no_log: true
+
+    - name: Restrict QR code permissions
+      file:
+        path: "{{ wireguard_config_path }}/{{ item }}.png"
+        mode: "0600"
+      loop: "{{ wireguard_users }}"
+      when: item in users
+  always:
+    - name: Release QR generation lock
+      ansible.builtin.file:
+        path: "{{ wireguard_config_path }}/.algo-qr.lock"
+        state: absent
