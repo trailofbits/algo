@@ -70,6 +70,35 @@ def test_starter_and_swanctl_share_pool_and_dns_contract():
         assert "fd00::10" in config
 
 
+def test_certificate_identity_constraints_and_strict_revocation_match():
+    starter = render("ipsec.conf.j2")
+    swanctl = render("swanctl.conf.j2")
+    openssl = (ROLE_DIR / "tasks/openssl.yml").read_text(encoding="utf-8")
+
+    assert "strictcrlpolicy=yes" in starter
+    assert "revocation = strict" in swanctl
+    assert 'common_name: "{{ item }}"' in openssl
+    assert "email:{{ item }}@{{ openssl_constraint_random_id }}" in openssl
+    assert "clientAuth" in openssl
+    assert "serverAuth" in openssl
+    assert 'loop: "{{ users }}"' in openssl
+
+
+def test_logging_privacy_and_firewall_contract_is_backend_independent():
+    starter = render("ipsec.conf.j2")
+    strongswan = render("strongswan.conf.j2")
+    rules_v4 = (ROLE_DIR.parent / "common/templates/rules.v4.j2").read_text(encoding="utf-8")
+    rules_v6 = (ROLE_DIR.parent / "common/templates/rules.v6.j2").read_text(encoding="utf-8")
+
+    assert 'charondebug="ike -1' in starter
+    assert "charon-systemd" in strongswan
+    assert "default = -1" in strongswan
+    for rules in (rules_v4, rules_v6):
+        assert "strongswan_backend" not in rules
+        assert "500" in rules and "4500" in rules
+        assert "esp" in rules and "ah" in rules
+
+
 def test_backend_file_contract_keeps_crls_and_private_keys_secure():
     configuration = (ROLE_DIR / "tasks/ipsec_configuration.yml").read_text(encoding="utf-8")
     distribution = (ROLE_DIR / "tasks/distribute_keys.yml").read_text(encoding="utf-8")
@@ -79,13 +108,13 @@ def test_backend_file_contract_keeps_crls_and_private_keys_secure():
     assert "strongswan_backend == 'swanctl'" in configuration
     assert "swanctl.conf.j2" in configuration
     assert "etc/swanctl/swanctl.conf" in configuration
-    assert "mode: \"0600\"" in configuration
+    assert 'mode: "0600"' in configuration
 
     assert "dest: x509ca/ca.crt" in distribution
     assert "dest: x509/{{ IP_subject_alt_name }}.crt" in distribution
     assert "dest: private/{{ IP_subject_alt_name }}.key" in distribution
     assert "strongswan_backend" in distribution
-    assert "mode: \"0600\"" in distribution
+    assert 'mode: "0600"' in distribution
 
     assert "etc/swanctl/x509crl/algo.root.pem" in openssl
     assert "strongswan_backend" in openssl

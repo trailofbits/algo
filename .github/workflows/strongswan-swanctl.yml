@@ -1,0 +1,44 @@
+---
+name: StrongSwan swanctl backend
+
+'on':
+  pull_request:
+    paths:
+      - 'roles/strongswan/**'
+      - 'tests/integration/render-strongswan-swanctl.py'
+      - 'tests/integration/test-strongswan-swanctl.sh'
+      - '.github/workflows/strongswan-swanctl.yml'
+      - 'uv.lock'
+  push:
+    branches: [main]
+    paths:
+      - 'roles/strongswan/**'
+      - 'tests/integration/render-strongswan-swanctl.py'
+      - 'tests/integration/test-strongswan-swanctl.sh'
+      - '.github/workflows/strongswan-swanctl.yml'
+      - 'uv.lock'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ubuntu-2404-swanctl:
+    name: Ubuntu 24.04 native swanctl load
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Set up LXD
+        uses: canonical/setup-lxd@8c6a87bfb56aa48f3fb9b830baa18562d8bfd4ee  # v1
+        with:
+          channel: 5.21/stable
+
+      - name: Set up frozen uv environment
+        uses: ./.github/actions/setup-uv
+
+      - name: Run native swanctl load harness
+        run: tests/integration/test-strongswan-swanctl.sh

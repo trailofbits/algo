@@ -13,4 +13,20 @@ charon {
 	group = nogroup
 }
 
+# Match the starter backend's deliberately minimal logging in the systemd
+# journal. Keep identity decoration disabled to reduce metadata exposure.
+charon-systemd {
+    journal {
+        default = {{ strongswan_log_level }}
+        ike = {{ strongswan_log_level }}
+        knl = {{ strongswan_log_level }}
+        cfg = {{ strongswan_log_level }}
+        net = {{ strongswan_log_level }}
+        esp = {{ strongswan_log_level }}
+        dmn = {{ strongswan_log_level }}
+        mgr = {{ strongswan_log_level }}
+        ike_name = no
+    }
+}
+
 include strongswan.d/*.conf

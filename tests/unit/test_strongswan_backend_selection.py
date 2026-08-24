@@ -5,6 +5,14 @@ from pathlib import Path
 import yaml
 
 
+def test_swanctl_native_harness_recreates_role_runtime_prerequisites():
+    harness = Path("tests/integration/test-strongswan-swanctl.sh").read_text(encoding="utf-8")
+
+    assert "install -d -m 0755 /var/lib/strongswan" in harness
+    assert harness.index("install -d -m 0755 /var/lib/strongswan") < harness.index("systemctl restart strongswan")
+    assert "journalctl -b --no-pager -u strongswan.service" in harness
+
+
 def test_supported_ubuntu_facts_select_starter_for_2204_and_swanctl_for_2404():
     facts = Path("roles/common/tasks/facts.yml").read_text(encoding="utf-8")
 
@@ -18,7 +26,10 @@ def test_backend_controls_service_and_packages_without_version_guessing():
     defaults = Path("roles/strongswan/defaults/main.yml").read_text(encoding="utf-8")
     ubuntu = Path("roles/strongswan/tasks/ubuntu.yml").read_text(encoding="utf-8")
 
-    assert "strongswan_service: \"{{ 'strongswan-starter' if strongswan_backend == 'starter' else 'strongswan' }}\"" in defaults
+    assert (
+        "strongswan_service: \"{{ 'strongswan-starter' if strongswan_backend == 'starter' else 'strongswan' }}\""
+        in defaults
+    )
     assert "distribution_version" not in defaults.split("strongswan_service:", 1)[1].splitlines()[0]
     assert "charon-systemd" in ubuntu
     assert "strongswan-swanctl" in ubuntu

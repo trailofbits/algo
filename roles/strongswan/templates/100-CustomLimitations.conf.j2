@@ -14,8 +14,9 @@ ProtectControlGroups=yes
 # AF_UNIX required for VICI socket communication (swanctl/modern StrongSwan interface)
 RestrictAddressFamilies=AF_INET AF_INET6 AF_NETLINK AF_PACKET AF_UNIX
 
-# Allow access to IPsec configuration, state, and kernel interfaces
-ReadWritePaths=/etc/ipsec.d /var/lib/strongswan
+# Allow writes only to StrongSwan's runtime state. ProtectSystem already keeps
+# both starter and swanctl credential/configuration directories read-only.
+ReadWritePaths=/var/lib/strongswan
 
 # System call filtering (complements AppArmor restrictions)
 # Allow crypto operations, remove cpu-emulation restriction for crypto algorithms
