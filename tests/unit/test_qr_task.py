@@ -83,6 +83,13 @@ def test_qr_output_is_precreated_securely_before_segno_writes_secrets():
     assert generate["command"]["argv"][2] == "--output={{ wireguard_config_path }}/.{{ item }}.tmp.png"
 
 
+def test_qr_integration_play_covers_failure_paths():
+    playbook = (ROOT / "tests/integration/test_qr_generation.yml").read_text(encoding="utf-8")
+    assert "Verify invalid QR output path fails closed" in playbook
+    assert "qr_invalid_path_rejected" in playbook
+    assert "no_log: true" in playbook
+
+
 def test_generated_qr_permissions_are_explicitly_restricted():
     tasks = load_tasks(QR_TASKS)
     permissions = task_named(tasks, "Restrict QR code permissions")

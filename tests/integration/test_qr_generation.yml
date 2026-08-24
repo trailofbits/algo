@@ -53,6 +53,7 @@
               content: BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=
             - dest: "{{ wireguard_pki_path }}/preshared/{{ qr_user }}"
               content: CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC=
+          no_log: true
 
         - name: Generate QR code through the role
           include_role:
@@ -94,6 +95,29 @@
             that:
               - qr_second.stat.checksum == qr_first.stat.checksum
               - qr_second.stat.mtime == qr_first.stat.mtime
+
+        - name: Verify invalid QR output path fails closed
+          block:
+            - name: Select an invalid QR output path
+              set_fact:
+                wireguard_config_path: /proc/algo-invalid-qr-output
+
+            - name: Attempt QR generation with invalid output
+              include_role:
+                name: "{{ playbook_dir }}/../../roles/wireguard"
+                tasks_from: qr
+
+            - name: Reject an unexpected invalid-path success
+              fail:
+                msg: QR generation unexpectedly accepted an invalid output path
+          rescue:
+            - name: Record invalid output rejection
+              set_fact:
+                qr_invalid_path_rejected: true
+
+        - name: Confirm invalid output rejection
+          assert:
+            that: qr_invalid_path_rejected | default(false) | bool
 
       always:
         - name: Remove integration workspace
