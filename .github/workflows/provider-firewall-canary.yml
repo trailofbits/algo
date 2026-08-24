@@ -36,6 +36,8 @@ jobs:
       AWS_REGION: ${{ vars.CANARY_AWS_REGION }}
       GCE_REGION: ${{ vars.CANARY_GCE_REGION }}
       GCE_PROJECT: ${{ vars.CANARY_GCE_PROJECT }}
+      GCE_EMAIL: ${{ vars.CANARY_GCE_SERVICE_ACCOUNT }}
+      GCE_AUTH_KIND: application
       # Keep every Ansible task that may handle credentials or generated keys quiet.
       ANSIBLE_NO_LOG: 'true'
     steps:

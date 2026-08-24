@@ -1,10 +1,18 @@
 ---
+- name: Select GCE authentication mode
+  set_fact:
+    gce_auth_kind_effective: >-
+      {{ gce_auth_kind | default(lookup('env', 'GCE_AUTH_KIND'), true) |
+         default('serviceaccount', true) }}
+  no_log: true
+
 - pause:
     prompt: |
       Enter the local path to your credentials JSON file
       (https://support.google.com/cloud/answer/6158849?hl=en&ref_topic=6262490#serviceaccounts)
   register: _gce_credentials_file
   when:
+    - gce_auth_kind_effective != 'application'
     - gce_credentials_file is undefined
     - lookup('env', 'GCE_CREDENTIALS_FILE_PATH')|length <= 0
   no_log: true
@@ -29,8 +37,8 @@
   block:
     - name: Get regions
       gcp_compute_location_info:
-        auth_kind: serviceaccount
-        service_account_file: "{{ credentials_file_path }}"
+        auth_kind: "{{ gce_auth_kind_effective }}"
+        service_account_file: "{{ omit if gce_auth_kind_effective == 'application' else credentials_file_path }}"
         project: "{{ project_id }}"
         scope: regions
         filters: status=UP
@@ -68,8 +76,8 @@
 
 - name: Get zones
   gcp_compute_location_info:
-    auth_kind: serviceaccount
-    service_account_file: "{{ credentials_file_path }}"
+    auth_kind: "{{ gce_auth_kind_effective }}"
+    service_account_file: "{{ omit if gce_auth_kind_effective == 'application' else credentials_file_path }}"
     project: "{{ project_id }}"
     scope: zones
     filters:

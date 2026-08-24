@@ -189,6 +189,28 @@ def test_failed_managed_destroy_still_attempts_exact_provider_fallback(tmp_path)
     assert "instances delete algo-firewall-canary-123" in calls
 
 
+def test_gce_canary_uses_adc_application_auth_without_service_account_key():
+    workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
+    prompts = (ROOT / "roles/cloud-gce/tasks/prompts.yml").read_text(encoding="utf-8")
+    provider_tasks = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (
+            ROOT / "roles/cloud-gce/tasks/main.yml",
+            ROOT / "roles/cloud-gce/tasks/destroy.yml",
+            ROOT / "roles/cloud-gce/tasks/prompts.yml",
+        )
+    )
+
+    assert "GCE_AUTH_KIND: application" in workflow
+    assert "CANARY_GCE_SERVICE_ACCOUNT" in workflow
+    assert "gce_auth_kind_effective" in prompts
+    assert 'auth_kind: "{{ gce_auth_kind_effective }}"' in provider_tasks
+    assert (
+        "service_account_file: \"{{ omit if gce_auth_kind_effective == 'application' "
+        'else credentials_file_path }}"' in provider_tasks
+    )
+
+
 def test_canary_never_enables_shell_tracing_or_prints_credentials():
     text = WORKFLOW_PATH.read_text(encoding="utf-8")
 
