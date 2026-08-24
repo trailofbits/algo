@@ -9,6 +9,14 @@ name: Lint
 permissions:
   contents: read
 
+env:
+  ACTIONLINT_VERSION: '1.7.12'
+  ACTIONLINT_SHA256: '8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8'
+  POWERSHELL_VERSION: '7.4.0'
+  POWERSHELL_DEB_SHA256: '550331e243a7311e1bf0ca83d8c96c5e78ba82a765c4a9ba34aa0db6eb9a9f22'
+  PSSCRIPTANALYZER_VERSION: '1.25.0'
+  PSSCRIPTANALYZER_SHA256: '14e634c828eb98efb9f40b2918ba90f139ed5eccdf663a2a747736d996995d60'
+
 jobs:
   ansible-lint:
     name: Ansible linting
@@ -138,14 +146,25 @@ jobs:
 
       - name: Install PowerShell
         run: |
-          # Install PowerShell Core
-          wget -q https://github.com/PowerShell/PowerShell/releases/download/v7.4.0/powershell_7.4.0-1.deb_amd64.deb
-          sudo dpkg -i powershell_7.4.0-1.deb_amd64.deb
-          sudo apt-get install -f
+          archive="powershell_${POWERSHELL_VERSION}-1.deb_amd64.deb"
+          curl --fail --location --show-error \
+            "https://github.com/PowerShell/PowerShell/releases/download/v${POWERSHELL_VERSION}/${archive}" \
+            --output "${archive}"
+          printf '%s  %s\n' "${POWERSHELL_DEB_SHA256}" "${archive}" | sha256sum --check
+          sudo dpkg -i "${archive}"
+          sudo apt-get install -f -y
 
       - name: Install PSScriptAnalyzer
         run: |
-          pwsh -Command "Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser"
+          archive="PSScriptAnalyzer.${PSSCRIPTANALYZER_VERSION}.nupkg"
+          module_dir="${HOME}/.local/share/powershell/Modules/PSScriptAnalyzer/${PSSCRIPTANALYZER_VERSION}"
+          curl --fail --location --show-error \
+            "https://github.com/PowerShell/PSScriptAnalyzer/releases/download/${PSSCRIPTANALYZER_VERSION}/${archive}" \
+            --output "${archive}"
+          printf '%s  %s\n' "${PSSCRIPTANALYZER_SHA256}" "${archive}" | sha256sum --check
+          mkdir -p "${module_dir}"
+          PSSCRIPTANALYZER_ARCHIVE="${archive}" PSSCRIPTANALYZER_MODULE_DIR="${module_dir}" python3 -c \
+            'import os, zipfile; zipfile.ZipFile(os.environ["PSSCRIPTANALYZER_ARCHIVE"]).extractall(os.environ["PSSCRIPTANALYZER_MODULE_DIR"])'
 
       - name: Run PowerShell syntax check
         run: |
@@ -182,8 +201,13 @@ jobs:
 
       - name: Install actionlint
         run: |
-          bash <(curl -sL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-          sudo mv actionlint /usr/local/bin/
+          archive="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          curl --fail --location --show-error \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/${archive}" \
+            --output "${archive}"
+          printf '%s  %s\n' "${ACTIONLINT_SHA256}" "${archive}" | sha256sum --check
+          tar --extract --gzip --file "${archive}" actionlint
+          sudo install -m 0755 actionlint /usr/local/bin/actionlint
 
       - name: Run actionlint
         run: |

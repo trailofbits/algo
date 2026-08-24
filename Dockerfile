@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM python:3.12-alpine
+FROM python:3.12-alpine@sha256:d09d15e60962ca365d1cd544a48773bac9d33f2fb1b00f2aa0deec78ade7dc31
 
 ARG VERSION="git"
 # Removed rust/cargo (not needed with uv), simplified package list
@@ -20,8 +20,8 @@ RUN apk --no-cache add ${PACKAGES} && \
 
 WORKDIR /algo
 
-# Copy uv binary from official image (using latest tag for automatic updates)
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
+# uv 0.12.3; keep the version tag visible for dependency automation.
+COPY --from=ghcr.io/astral-sh/uv:0.12.3@sha256:2d890623d310b57771ce840f0da5eed5fc6d657da05ffaa45d82797b53fa3abc /uv /bin/uv
 
 # Copy dependency files and install in single layer for better optimization
 COPY pyproject.toml uv.lock ./

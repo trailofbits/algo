@@ -2,6 +2,21 @@
 
 set -ex
 
+UV_VERSION="0.12.3"
+UV_INSTALLER_SHA256="a7e3924ea1cd06bf1518c577d635c624ae2e2db030e0fc8ff8cf426224384e17"
+
+verify_sha256() {
+  file="$1"
+  expected="$2"
+  printf '%s  %s\n' "$expected" "$file" | sha256sum --check
+}
+
+cleanup_uv_installer() {
+  if [ -n "${uv_installer:-}" ]; then
+    rm -f "$uv_installer"
+  fi
+}
+
 if [ "$#" -ne 0 ]; then
   echo "Error: positional arguments are not supported; use environment variables instead." >&2
   exit 2
@@ -42,8 +57,27 @@ installRequirements() {
     git \
     jq
 
-  # Install uv
-  curl -LsSf https://astral.sh/uv/install.sh | sh
+  # Install a pinned uv release after verifying the published installer digest.
+  uv_installer="$(mktemp)"
+  trap cleanup_uv_installer 0
+  trap 'exit 1' 1 2 15
+  if ! curl --proto '=https' --tlsv1.2 --fail --location --show-error \
+    "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-installer.sh" \
+    --output "$uv_installer"; then
+    rm -f "$uv_installer"
+    return 1
+  fi
+  if ! verify_sha256 "$uv_installer" "$UV_INSTALLER_SHA256"; then
+    rm -f "$uv_installer"
+    return 1
+  fi
+  if ! sh "$uv_installer"; then
+    rm -f "$uv_installer"
+    return 1
+  fi
+  rm -f "$uv_installer"
+  uv_installer=""
+  trap - 0 1 2 15
   export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 }
 

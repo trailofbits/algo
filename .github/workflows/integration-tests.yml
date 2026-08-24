@@ -50,11 +50,8 @@ jobs:
             libxml2-utils \
             dnsutils
 
-      - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
-
-      - name: Install Python dependencies
-        run: uv sync
+      - name: Setup uv environment
+        uses: ./.github/actions/setup-uv
 
       - name: Install Ansible collections
         run: uv run ansible-galaxy collection install -r requirements.yml

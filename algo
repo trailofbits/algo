@@ -2,8 +2,48 @@
 
 set -e
 
+UV_VERSION="0.12.3"
+UV_INSTALLER_SHA256="a7e3924ea1cd06bf1518c577d635c624ae2e2db030e0fc8ff8cf426224384e17"
+UV_INSTALLER_PS1_SHA256="7b84813e3fad9586da122e362d4dcba1e2e611664244d004bcfc32b2fdf10430"
+
 # Track which installation method succeeded
 UV_INSTALL_METHOD=""
+
+verify_sha256() {
+    file="$1"
+    expected="$2"
+    if command -v sha256sum &> /dev/null; then
+        if ! actual="$(sha256sum "$file")"; then
+            echo "Error: sha256sum failed while verifying the uv installer."
+            return 1
+        fi
+    elif command -v shasum &> /dev/null; then
+        if ! actual="$(shasum -a 256 "$file")"; then
+            echo "Error: shasum failed while verifying the uv installer."
+            return 1
+        fi
+    else
+        echo "Error: sha256sum or shasum is required to verify the uv installer."
+        return 1
+    fi
+    actual="${actual%% *}"
+    if [[ "$actual" != "$expected" ]]; then
+        echo "Error: uv installer checksum mismatch."
+        return 1
+    fi
+}
+
+cleanup_uv_installer() {
+    if [[ -n "${installer_path:-}" ]]; then
+        rm -f "$installer_path"
+    fi
+}
+
+handle_uv_installer_signal() {
+    cleanup_uv_installer
+    trap - EXIT HUP INT TERM
+    exit 1
+}
 
 # Function to install uv via package managers (most secure)
 install_uv_via_package_manager() {
@@ -94,9 +134,7 @@ install_uv_via_download() {
     echo ""
     echo "⚠️  SECURITY NOTICE ⚠️"
     echo "uv is not available via system package managers on this system."
-    echo "To continue, we need to download and execute an installation script from:"
-    echo "  https://astral.sh/uv/install.sh (Linux/macOS)"
-    echo "  https://astral.sh/uv/install.ps1 (Windows)"
+    echo "To continue, we need to download and verify the uv ${UV_VERSION} installer from GitHub Releases."
     echo ""
     echo "For maximum security, you can install uv manually instead:"
     echo "  1. Visit: https://docs.astral.sh/uv/getting-started/installation/"
@@ -114,12 +152,54 @@ install_uv_via_download() {
 
     echo "Downloading uv installation script..."
     if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "linux-gnu" && -n "${WSL_DISTRO_NAME:-}" ]] || uname -s | grep -q "MINGW\|MSYS"; then
-        # Windows (Git Bash/WSL/MINGW) - use versioned installer
-        powershell -ExecutionPolicy ByPass -c "irm https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.ps1 | iex"
+        # Windows (Git Bash/WSL/MINGW) - download, verify, then execute.
+        powershell_command=""
+        for candidate in powershell.exe pwsh.exe powershell pwsh; do
+            if command -v "$candidate" &> /dev/null; then
+                powershell_command="$candidate"
+                break
+            fi
+        done
+        if [[ -z "$powershell_command" ]]; then
+            echo "Error: PowerShell was not found. Install uv manually and retry."
+            return 1
+        fi
+        if ! "$powershell_command" -NoProfile -ExecutionPolicy ByPass -Command "
+            \$path = [IO.Path]::GetTempFileName()
+            try {
+                Invoke-WebRequest -Uri 'https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-installer.ps1' -OutFile \$path
+                \$actual = (Get-FileHash -Algorithm SHA256 \$path).Hash.ToLowerInvariant()
+                if (\$actual -ne '${UV_INSTALLER_PS1_SHA256}') { throw 'uv installer checksum mismatch' }
+                & ([ScriptBlock]::Create([IO.File]::ReadAllText(\$path)))
+            } finally {
+                Remove-Item -LiteralPath \$path -Force -ErrorAction SilentlyContinue
+            }
+        "; then
+            return 1
+        fi
         UV_INSTALL_METHOD="official installer (Windows)"
     else
-        # macOS/Linux - use the versioned script for consistency
-        curl --proto '=https' --tlsv1.2 -LsSf https://github.com/astral-sh/uv/releases/download/0.8.5/uv-installer.sh | sh
+        # macOS/Linux - download, verify, then execute.
+        installer_path="$(mktemp)"
+        trap cleanup_uv_installer EXIT
+        trap handle_uv_installer_signal HUP INT TERM
+        if ! curl --proto '=https' --tlsv1.2 --fail --location --show-error \
+            "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-installer.sh" \
+            --output "$installer_path"; then
+            rm -f "$installer_path"
+            return 1
+        fi
+        if ! verify_sha256 "$installer_path" "$UV_INSTALLER_SHA256"; then
+            rm -f "$installer_path"
+            return 1
+        fi
+        if ! sh "$installer_path"; then
+            rm -f "$installer_path"
+            return 1
+        fi
+        rm -f "$installer_path"
+        installer_path=""
+        trap - EXIT HUP INT TERM
         UV_INSTALL_METHOD="official installer"
     fi
 }

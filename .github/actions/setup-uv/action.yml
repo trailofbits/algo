@@ -13,6 +13,7 @@ runs:
       uses: astral-sh/setup-uv@1ddb97e5078301c0bec13b38151f8664ed04edc8  # v6
       with:
         enable-cache: true
+        version: '0.12.3'
     - name: Sync dependencies
       run: uv sync
       shell: bash

@@ -14,7 +14,7 @@ def _write_stub(directory, name, body):
     path.chmod(0o755)
 
 
-def _run_installer(tmp_path, *arguments, environment_overrides=None):
+def _run_installer(tmp_path, *arguments, environment_overrides=None, checksum_succeeds=True):
     stub_bin = tmp_path / "bin"
     stub_bin.mkdir()
     command_log = tmp_path / "commands.log"
@@ -26,7 +26,25 @@ done
 printf '\n' >> "$TEST_COMMAND_LOG"'''
 
     _write_stub(stub_bin, "apt-get", log_arguments)
-    _write_stub(stub_bin, "curl", f"{log_arguments}\nprintf ':\\n'")
+    _write_stub(
+        stub_bin,
+        "curl",
+        log_arguments
+        + """
+output=''
+previous=''
+for argument in "$@"; do
+  if [ "$previous" = -o ]; then
+    output="$argument"
+  fi
+  previous="$argument"
+done
+if [ -n "$output" ]; then
+  printf '%s\n' "${TEST_DOWNLOADED_PAYLOAD:-:}" > "$output"
+else
+  printf '%s\n' "${TEST_DOWNLOADED_PAYLOAD:-:}"
+fi""",
+    )
     _write_stub(
         stub_bin,
         "git",
@@ -45,6 +63,8 @@ fi""",
     )
     _write_stub(stub_bin, "uv", log_arguments)
     _write_stub(stub_bin, "jq", f"{log_arguments}\nprintf '[\"user1\"]\\n'")
+    checksum_exit = "" if checksum_succeeds else "\nexit 1"
+    _write_stub(stub_bin, "sha256sum", f"{log_arguments}\n/bin/cat >/dev/null{checksum_exit}")
     _write_stub(stub_bin, "tee", f"{log_arguments}\n/bin/cat >/dev/null")
 
     harness = tmp_path / "harness.sh"
@@ -78,6 +98,7 @@ cd() {
             "METHOD": "local",
             "PATH": f"{stub_bin}:/usr/bin:/bin",
             "TEST_COMMAND_LOG": str(command_log),
+            "TEST_DOWNLOADED_PAYLOAD": ":",
             "TEST_ROOT": str(tmp_path),
         }
     )
@@ -121,3 +142,22 @@ def test_installer_rejects_invalid_method_before_side_effects(tmp_path):
     assert result.returncode == 2
     assert "METHOD must be 'cloud' or 'local'" in result.stderr
     assert commands == []
+
+
+def test_installer_checksum_mismatch_prevents_execution_and_cleans_download(tmp_path):
+    marker = tmp_path / "payload-executed"
+    result, commands = _run_installer(
+        tmp_path,
+        checksum_succeeds=False,
+        environment_overrides={
+            "TEST_DOWNLOADED_PAYLOAD": 'touch "$TEST_PAYLOAD_MARKER"',
+            "TEST_PAYLOAD_MARKER": str(marker),
+        },
+    )
+
+    assert result.returncode != 0
+    assert not any(command[0] in {"git", "uv", "tee"} for command in commands)
+    assert not marker.exists()
+    curl_command = next(command for command in commands if command[0] == "curl")
+    installer_path = Path(curl_command[curl_command.index("--output") + 1])
+    assert not installer_path.exists()
