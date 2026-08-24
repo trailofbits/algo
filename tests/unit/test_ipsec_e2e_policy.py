@@ -116,6 +116,14 @@ def test_cleanup_tracks_and_removes_only_rules_the_harness_added():
     assert not any("iptables" in line and "|| true" in line for line in cleanup.splitlines())
 
 
+def test_server_ipsec_cli_is_optional_for_swanctl_backend():
+    script = _script()
+    prerequisite_loop = next(line for line in script.splitlines() if line.strip().startswith("for cmd in "))
+
+    assert " ipsec " not in f" {prerequisite_loop} "
+    assert "ipsec statusall || true" in script
+
+
 def test_integration_workflow_installs_and_exercises_swanctl_without_exporting_credentials():
     workflow = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
     job = workflow["jobs"]["localhost-deployment"]
@@ -123,6 +131,7 @@ def test_integration_workflow_installs_and_exercises_swanctl_without_exporting_c
 
     assert "strongswan-swanctl" in serialized
     assert "libcharon-extra-plugins" in serialized
+    assert "libxml2-utils" in serialized
     assert "tests/e2e/test-vpn-connectivity.sh" in serialized
     assert "algo_no_log: true" in serialized
     assert "test-ca-password" not in serialized

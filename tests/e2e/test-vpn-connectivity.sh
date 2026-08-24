@@ -713,7 +713,7 @@ main() {
 
     # Check required commands
     local missing_cmds=()
-    for cmd in ip wg wg-quick ipsec swanctl xmllint openssl host dig curl unshare mount; do
+    for cmd in ip wg wg-quick swanctl xmllint openssl host dig curl unshare mount; do
         if ! command -v "${cmd}" &> /dev/null; then
             missing_cmds+=("${cmd}")
         fi
