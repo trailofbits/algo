@@ -39,6 +39,19 @@ def test_support_and_promotion_claims_are_bounded_and_current():
     assert "Ubuntu and other distributions" not in readme
     assert "promotion offering free t4g.small instances until December 31, 2025" not in ec2
     assert "Ubuntu 22.04 LTS" in readme
+    assert "Amazon Lightsail" not in readme
+    assert "Microsoft Azure" not in readme
+
+
+def test_repository_documentation_uses_main_branch_links():
+    stale = []
+    for path in [ROOT / "README.md", *sorted((ROOT / "docs").rglob("*.md"))]:
+        text = path.read_text(encoding="utf-8")
+        if re.search(
+            r"github\.com/trailofbits/algo/(?:blob|raw)/master/|github\.com/trailofbits/algo/archive/master", text
+        ):
+            stale.append(str(path.relative_to(ROOT)))
+    assert not stale, f"stale master-branch links: {stale}"
 
 
 def test_ipsec_checks_are_not_described_as_end_to_end_connectivity():

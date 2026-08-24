@@ -17,7 +17,8 @@ See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo
 * Sets up limited SSH users for tunneling traffic (optional)
 * Privacy-focused with minimal logging, automatic log rotation, and configurable privacy enhancements
 * Supports Ubuntu 22.04 and 24.04 LTS for existing/local servers; cloud provisioning remains on 22.04 until credentialed 24.04 provider canaries pass
-* Installs to DigitalOcean, Amazon Lightsail, Amazon EC2, Vultr, Microsoft Azure, Google Compute Engine, Scaleway, OpenStack, CloudStack, Hetzner Cloud, Linode, or [your own Ubuntu server (for advanced users)](docs/deploy-to-ubuntu.md)
+* Installs to DigitalOcean, Amazon EC2, Vultr, Google Compute Engine, Scaleway, OpenStack, CloudStack, Hetzner Cloud, Linode, or [your own Ubuntu server (for advanced users)](docs/deploy-to-ubuntu.md)
+* Azure and Lightsail adapters are unsupported and unverified in this release
 
 ## Anti-features
 
@@ -31,18 +32,18 @@ See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo
 
 The easiest way to get an Algo server running is to run it on your local system or from [Google Cloud Shell](docs/deploy-from-cloudshell.md) and let it set up a _new_ virtual machine in the cloud for you.
 
-1. **Setup an account on a cloud hosting provider.** Algo supports [DigitalOcean](https://m.do.co/c/4d7f4ff9cfe4) (most user friendly), [Amazon Lightsail](https://aws.amazon.com/lightsail/), [Amazon EC2](https://aws.amazon.com/), [Vultr](https://www.vultr.com/), [Microsoft Azure](https://azure.microsoft.com/), [Google Compute Engine](https://cloud.google.com/compute/), [Scaleway](https://www.scaleway.com/), [DreamCompute](https://www.dreamhost.com/cloud/computing/), [Linode](https://www.linode.com), other OpenStack-based cloud hosting, CloudStack-based cloud hosting, or [Hetzner Cloud](https://www.hetzner.com/).
+1. **Setup an account on a cloud hosting provider.** Algo supports [DigitalOcean](https://m.do.co/c/4d7f4ff9cfe4) (most user friendly), [Amazon EC2](https://aws.amazon.com/), [Vultr](https://www.vultr.com/), [Google Compute Engine](https://cloud.google.com/compute/), [Scaleway](https://www.scaleway.com/), [DreamCompute](https://www.dreamhost.com/cloud/computing/), [Linode](https://www.linode.com), other OpenStack-based cloud hosting, CloudStack-based cloud hosting, or [Hetzner Cloud](https://www.hetzner.com/).
 
 2. **Get a copy of Algo.** The Algo scripts will be run from your local system. There are two ways to get a copy:
 
-    - Download the [ZIP file](https://github.com/trailofbits/algo/archive/master.zip). Unzip the file to create a directory named `algo-master` containing the Algo scripts.
+    - Download the [ZIP file](https://github.com/trailofbits/algo/archive/refs/heads/main.zip). Unzip the file to create a directory named `algo-main` containing the Algo scripts.
 
     - Use `git clone` to create a directory named `algo` containing the Algo scripts:
         ```bash
         git clone https://github.com/trailofbits/algo.git
         ```
 
-3. **Set your configuration options.** Open `config.cfg` in your favorite text editor. Specify the users you want to create in the `users` list. Create a unique user for each device you plan to connect to your VPN. You should also review the other options before deployment, as changing your mind about them later [may require you to deploy a brand new server](https://github.com/trailofbits/algo/blob/master/docs/faq.md#i-deployed-an-algo-server-can-you-update-it-with-new-features).
+3. **Set your configuration options.** Open `config.cfg` in your favorite text editor. Specify the users you want to create in the `users` list. Create a unique user for each device you plan to connect to your VPN. You should also review the other options before deployment, as changing your mind about them later [may require you to deploy a brand new server](https://github.com/trailofbits/algo/blob/main/docs/faq.md#i-deployed-an-algo-server-can-you-update-it-with-new-features).
 
 4. **Start the deployment.** Return to your terminal. In the Algo directory, run the appropriate script for your platform:
 
@@ -210,7 +211,7 @@ For the highest level of privacy, treat your Algo servers as disposable. Spin up
 
 ### Setup Instructions for Specific Cloud Providers
 * Configure [Amazon EC2](docs/cloud-amazon-ec2.md)
-* Configure [Azure](docs/cloud-azure.md)
+
 * Configure [DigitalOcean](docs/cloud-do.md)
 * Configure [Google Cloud Platform](docs/cloud-gce.md)
 * Configure [Vultr](docs/cloud-vultr.md)

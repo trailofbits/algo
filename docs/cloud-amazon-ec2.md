@@ -32,7 +32,7 @@ ec2:
 
 The t4g.nano instance is often an inexpensive option without promotional requirements. Confirm current instance availability and pricing in the AWS console before deployment.
 
-For additional EC2 configuration options, see the [deploy from ansible guide](https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md#amazon-ec2).
+For additional EC2 configuration options, see the [deploy from ansible guide](https://github.com/trailofbits/algo/blob/main/docs/deploy-from-ansible.md#amazon-ec2).
 
 ## Set Up IAM Permissions
 
@@ -41,7 +41,7 @@ For additional EC2 configuration options, see the [deploy from ansible guide](ht
 1. In the AWS console, navigate to Services → IAM → Policies
 2. Click "Create Policy"
 3. Switch to the JSON tab
-4. Replace the default content with the [minimum required AWS policy for Algo deployment](https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md#minimum-required-iam-permissions-for-deployment)
+4. Replace the default content with the [minimum required AWS policy for Algo deployment](https://github.com/trailofbits/algo/blob/main/docs/deploy-from-ansible.md#minimum-required-iam-permissions-for-deployment)
 5. Name the policy `AlgoVPN_Provisioning`
 
 ![Creating a new permissions policy in the AWS console.](/docs/images/aws-ec2-new-policy.png)
@@ -110,7 +110,7 @@ If no credentials are found, you'll be prompted to enter them manually:
 
 ```
 Enter your aws_access_key (http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html)
-Note: Make sure to use an IAM user with an acceptable policy attached (see https://github.com/trailofbits/algo/blob/master/docs/deploy-from-ansible.md).
+Note: Make sure to use an IAM user with an acceptable policy attached (see https://github.com/trailofbits/algo/blob/main/docs/deploy-from-ansible.md).
 [pasted values will not be displayed]
 [AKIA...]:
 
