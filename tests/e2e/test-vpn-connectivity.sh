@@ -27,6 +27,13 @@ IPSEC_CLIENT_DIR=""
 IPSEC_CLIENT_PID=""
 IPSEC_VICI_URI=""
 PUBLIC_IP_URL="${PUBLIC_IP_URL:-https://api.ipify.org}"
+ORIGINAL_IP_FORWARD=""
+ORIGINAL_RP_FILTER_ALL=""
+ORIGINAL_RP_FILTER_VETH=""
+NAT_RULE_ADDED=false
+WG_RULE_ADDED=false
+IKE_RULE_ADDED=false
+NATT_RULE_ADDED=false
 
 # WireGuard network from config.cfg defaults
 WG_SERVER_IP="10.49.0.1"
@@ -54,6 +61,8 @@ log_step()  { echo -e "\n${GREEN}==>${NC} $*"; }
 # shellcheck disable=SC2317,SC2329  # Function is invoked indirectly via trap
 cleanup() {
     local exit_code=$?
+    trap - EXIT INT TERM
+    set +e
     log_step "Cleaning up test environment..."
 
     # Tear down WireGuard in namespace (if running)
@@ -70,11 +79,30 @@ cleanup() {
         IPSEC_CLIENT_PID=""
     fi
 
-    # Remove firewall rules we added
-    iptables -t nat -D POSTROUTING -s "${CLIENT_BRIDGE_IP}/32" ! -d 10.99.0.0/24 -j MASQUERADE 2>/dev/null || true
-    iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 51820 -j ACCEPT 2>/dev/null || true
-    iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 500 -j ACCEPT 2>/dev/null || true
-    iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 4500 -j ACCEPT 2>/dev/null || true
+    # Remove exactly the firewall rules this process successfully added.
+    if [[ "${NAT_RULE_ADDED}" == true ]]; then
+        iptables -t nat -D POSTROUTING -s "${CLIENT_BRIDGE_IP}/32" ! -d 10.99.0.0/24 -j MASQUERADE || exit_code=1
+    fi
+    if [[ "${WG_RULE_ADDED}" == true ]]; then
+        iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 51820 -j ACCEPT || exit_code=1
+    fi
+    if [[ "${IKE_RULE_ADDED}" == true ]]; then
+        iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 500 -j ACCEPT || exit_code=1
+    fi
+    if [[ "${NATT_RULE_ADDED}" == true ]]; then
+        iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 4500 -j ACCEPT || exit_code=1
+    fi
+
+    # Restore host kernel policy before removing the test interface.
+    if [[ -n "${ORIGINAL_RP_FILTER_VETH}" ]]; then
+        sysctl -w net.ipv4.conf."${VETH_SERVER}".rp_filter="${ORIGINAL_RP_FILTER_VETH}" >/dev/null || exit_code=1
+    fi
+    if [[ -n "${ORIGINAL_RP_FILTER_ALL}" ]]; then
+        sysctl -w net.ipv4.conf.all.rp_filter="${ORIGINAL_RP_FILTER_ALL}" >/dev/null || exit_code=1
+    fi
+    if [[ -n "${ORIGINAL_IP_FORWARD}" ]]; then
+        sysctl -w net.ipv4.ip_forward="${ORIGINAL_IP_FORWARD}" >/dev/null || exit_code=1
+    fi
 
     # Delete namespace (also removes veth pair)
     ip netns del "${NAMESPACE}" 2>/dev/null || true
@@ -94,7 +122,9 @@ cleanup() {
     exit "${exit_code}"
 }
 
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 # =============================================================================
 # Namespace Setup
@@ -123,6 +153,11 @@ setup_namespace() {
     ip addr add "${SERVER_BRIDGE_IP}/24" dev "${VETH_SERVER}"
     ip link set "${VETH_SERVER}" up
 
+    # Preserve host policy before this privileged test changes it.
+    ORIGINAL_IP_FORWARD=$(sysctl -n net.ipv4.ip_forward)
+    ORIGINAL_RP_FILTER_ALL=$(sysctl -n net.ipv4.conf.all.rp_filter)
+    ORIGINAL_RP_FILTER_VETH=$(sysctl -n net.ipv4.conf."${VETH_SERVER}".rp_filter)
+
     # Configure client side (in namespace)
     ip netns exec "${NAMESPACE}" ip addr add "${CLIENT_BRIDGE_IP}/24" dev "${VETH_CLIENT}"
     ip netns exec "${NAMESPACE}" ip link set "${VETH_CLIENT}" up
@@ -136,12 +171,16 @@ setup_namespace() {
 
     # Add MASQUERADE for the client namespace traffic going to external networks
     iptables -t nat -A POSTROUTING -s "${CLIENT_BRIDGE_IP}/32" ! -d 10.99.0.0/24 -j MASQUERADE
+    NAT_RULE_ADDED=true
 
     # Allow WireGuard and IPsec traffic on the veth interface
     # Use -I to insert at beginning of chain (before any DROP rules)
     iptables -I INPUT -i "${VETH_SERVER}" -p udp --dport 51820 -j ACCEPT
+    WG_RULE_ADDED=true
     iptables -I INPUT -i "${VETH_SERVER}" -p udp --dport 500 -j ACCEPT
+    IKE_RULE_ADDED=true
     iptables -I INPUT -i "${VETH_SERVER}" -p udp --dport 4500 -j ACCEPT
+    NATT_RULE_ADDED=true
 
     log_info "Namespace ${NAMESPACE} created with IP ${CLIENT_BRIDGE_IP}"
 
@@ -420,18 +459,18 @@ test_ipsec() {
 
     # Never make copied credentials group/world-readable or echo their contents.
     umask 077
-    IPSEC_CLIENT_DIR=$(mktemp -d /tmp/algo-ipsec-client.XXXXXX)
-    chmod 700 "${IPSEC_CLIENT_DIR}"
+    IPSEC_CLIENT_DIR=$(mktemp -d /tmp/algo-ipsec-client.XXXXXX) || return 1
+    chmod 700 "${IPSEC_CLIENT_DIR}" || return 1
     charon_log="${IPSEC_CLIENT_DIR}/charon.log"
     client_config="${IPSEC_CLIENT_DIR}/swanctl.conf"
     vici_socket="${IPSEC_CLIENT_DIR}/charon.vici"
     IPSEC_VICI_URI="unix://${vici_socket}"
 
-    install -m 600 "${cacert}" "${IPSEC_CLIENT_DIR}/cacert.pem"
-    install -m 600 "${user_cert}" "${IPSEC_CLIENT_DIR}/client.crt"
-    install -m 600 "${user_key}" "${IPSEC_CLIENT_DIR}/client.key"
+    install -m 600 "${cacert}" "${IPSEC_CLIENT_DIR}/cacert.pem" || return 1
+    install -m 600 "${user_cert}" "${IPSEC_CLIENT_DIR}/client.crt" || return 1
+    install -m 600 "${user_key}" "${IPSEC_CLIENT_DIR}/client.key" || return 1
 
-    cat > "${client_config}" <<EOF
+    if ! cat > "${client_config}" <<EOF
 connections {
     algovpn {
         version = 2
@@ -470,9 +509,12 @@ secrets {
     }
 }
 EOF
-    chmod 600 "${client_config}"
+    then
+        return 1
+    fi
+    chmod 600 "${client_config}" || return 1
 
-    cat > "${IPSEC_CLIENT_DIR}/strongswan.conf" <<EOF
+    if ! cat > "${IPSEC_CLIENT_DIR}/strongswan.conf" <<EOF
 charon {
     load_modular = yes
     install_routes = yes
@@ -493,7 +535,10 @@ charon {
     }
 }
 EOF
-    chmod 600 "${IPSEC_CLIENT_DIR}/strongswan.conf"
+    then
+        return 1
+    fi
+    chmod 600 "${IPSEC_CLIENT_DIR}/strongswan.conf" || return 1
 
     for candidate in /usr/lib/ipsec/charon /usr/libexec/ipsec/charon; do
         if [[ -x "${candidate}" ]]; then
@@ -524,7 +569,7 @@ EOF
                 "${IPSEC_CLIENT_DIR}/launcher.log" >&2 || true
             return 1
         fi
-        sleep 1
+        sleep 1 || return 1
         ((attempts += 1))
     done
     if [[ ! -S "${vici_socket}" ]]; then
@@ -547,7 +592,7 @@ EOF
     fi
 
     sa_status=$(ip netns exec "${NAMESPACE}" swanctl --list-sas \
-        --uri "${IPSEC_VICI_URI}" 2>&1)
+        --uri "${IPSEC_VICI_URI}" 2>&1) || return 1
     if ! grep -q "ESTABLISHED" <<<"${sa_status}"; then
         log_error "The client has no ESTABLISHED IKE SA"
         return 1
@@ -557,6 +602,10 @@ EOF
         return 1
     fi
     log_info "IKE SA is ESTABLISHED and CHILD SA is INSTALLED"
+
+    local xfrm_bytes_before xfrm_bytes_after
+    xfrm_bytes_before=$(ip netns exec "${NAMESPACE}" ip -s xfrm state |
+        awk -f "${SCRIPT_DIR}/xfrm-byte-count.awk") || return 1
 
     log_info "Resolving DNS explicitly through the VPN service"
     if ! ip netns exec "${NAMESPACE}" dig "@${DNS_SERVICE_IP}" google.com \
@@ -581,13 +630,21 @@ EOF
     fi
     log_info "Routed HTTPS fetch used the VPN server source IP"
 
+    xfrm_bytes_after=$(ip netns exec "${NAMESPACE}" ip -s xfrm state |
+        awk -f "${SCRIPT_DIR}/xfrm-byte-count.awk") || return 1
+    if ! ((xfrm_bytes_after > xfrm_bytes_before)); then
+        log_error "IPsec XFRM byte counters did not increase during DNS and HTTPS probes"
+        return 1
+    fi
+    log_info "IPsec XFRM counters prove the probes traversed the CHILD SA"
+
     ip netns exec "${NAMESPACE}" swanctl --terminate --ike algovpn \
-        --uri "${IPSEC_VICI_URI}" >/dev/null
+        --uri "${IPSEC_VICI_URI}" >/dev/null || return 1
     IPSEC_VICI_URI=""
-    kill "${IPSEC_CLIENT_PID}"
+    kill "${IPSEC_CLIENT_PID}" || return 1
     wait "${IPSEC_CLIENT_PID}" 2>/dev/null || true
     IPSEC_CLIENT_PID=""
-    rm -rf "${IPSEC_CLIENT_DIR}"
+    rm -rf "${IPSEC_CLIENT_DIR}" || return 1
     IPSEC_CLIENT_DIR=""
 
     log_info "IPsec genuine tunnel E2E tests PASSED"
@@ -678,8 +735,12 @@ main() {
     local exit_code=0
 
     # Run validation tests first (no namespace needed)
-    test_mobileconfig_validation || ((exit_code++))
-    test_ca_name_constraints || ((exit_code++))
+    if ! test_mobileconfig_validation; then
+        exit_code=$((exit_code + 1))
+    fi
+    if ! test_ca_name_constraints; then
+        exit_code=$((exit_code + 1))
+    fi
 
     # Setup namespace for connectivity tests
     setup_namespace
@@ -687,14 +748,22 @@ main() {
     # Run protocol-specific tests
     case "${VPN_TYPE}" in
         wireguard)
-            test_wireguard || ((exit_code++))
+            if ! test_wireguard; then
+                exit_code=$((exit_code + 1))
+            fi
             ;;
         ipsec)
-            test_ipsec || ((exit_code++))
+            if ! test_ipsec; then
+                exit_code=$((exit_code + 1))
+            fi
             ;;
         both)
-            test_wireguard || ((exit_code++))
-            test_ipsec || ((exit_code++))
+            if ! test_wireguard; then
+                exit_code=$((exit_code + 1))
+            fi
+            if ! test_ipsec; then
+                exit_code=$((exit_code + 1))
+            fi
             ;;
         *)
             log_error "Unknown VPN type: ${VPN_TYPE}"
