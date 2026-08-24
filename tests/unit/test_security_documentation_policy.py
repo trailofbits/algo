@@ -56,6 +56,20 @@ def test_threat_model_records_the_secure_core_policy():
         assert required_term in normalized
     assert "maintained provisioning scope" in normalized
     assert "credentialed provider canary" in normalized
+    for required_control in (
+        "macos 12",
+        "ios 15",
+        "windows 11",
+        "ubuntu 22.04",
+        "pinned and verifiable artifacts",
+        "dedicated unprivileged service",
+        "authentication and authorization",
+        "secret lifecycle",
+        "provider firewall",
+        "real end-to-end",
+        "independent security review",
+    ):
+        assert required_control in normalized
     assert "#14959" in threat_model and "#14916" in threat_model
     assert re.search(r"azure[^\n]*(excluded|unverified)", normalized)
     assert re.search(r"lightsail[^\n]*(excluded|unverified)", normalized)

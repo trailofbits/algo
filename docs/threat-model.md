@@ -57,8 +57,9 @@ Pins and the `uv` package-age delay reduce accidental drift and exposure to a ju
 The secure core is deliberately small:
 
 * the current Algo 2.x line;
-* deployment from a trusted controller using Python 3.12 or newer;
 * configuration of a fresh Ubuntu 22.04 LTS server with automatic security updates;
+* a controller using Python 3.12 or newer on a vendor-supported Linux or macOS release;
+* client platforms still receiving vendor security updates: macOS 12 or newer and iOS 15 or newer for generated Apple IKEv2 profiles, Windows 11 or newer for WireGuard, Ubuntu 22.04 LTS or newer supported Ubuntu LTS clients, and Android releases supported by the current official WireGuard app;
 * WireGuard and strongSwan IKEv2 using Algo's shipped cryptographic defaults;
 * key and client-profile generation, host firewalling, forwarding, and client isolation; and
 * key-only administrative SSH used by the deployment workflow.
@@ -89,11 +90,14 @@ A proposed feature must pass every gate below before entering the secure core:
 
 1. **Mission fit:** it directly improves a small personal WireGuard/IKEv2 VPN, its safe deployment, or its maintenance.
 2. **Threat-model benefit:** it names the protected asset and attacker, and does not make a non-goal appear supported.
-3. **Attack-surface discipline:** it avoids new public listeners, long-running privileged services, interpreters, dashboards, and credential stores. Any unavoidable surface must be disabled by default and justified.
-4. **Secure default and containment:** least privilege, client isolation, firewall policy, secret handling, update behavior, and failure mode remain at least as strong as before.
-5. **Supply-chain budget:** new dependencies are minimal, actively maintained, version-controlled, reviewable, and covered by dependency policy.
-6. **Verification:** tests exercise enable, disable, upgrade or reprovision, and failure paths; user and security documentation identify added trust and operational responsibilities.
-7. **Maintenance:** a maintainer accepts the ongoing review and compatibility cost. Features may be rejected when that cost dilutes work on the secure core.
+3. **Attack-surface discipline:** it avoids new public listeners, long-running privileged services, interpreters, dashboards, and credential stores. Any unavoidable daemon must be a dedicated unprivileged service with systemd containment, disabled by default, and justified.
+4. **Authentication and authorization:** every administrative action has explicit authentication and authorization; unauthenticated control planes and ambient administrative authority are rejected.
+5. **Secret lifecycle:** generation, storage, file mode, transport, rotation, revocation, logging, artifact retention, and destruction are documented and tested. Secrets must fail closed and never enter public CI output.
+6. **Secure default and containment:** least privilege, client isolation, provider firewall support, host firewall policy, update behavior, and failure mode remain at least as strong as before.
+7. **Supply-chain budget:** dependencies are minimal and actively maintained, and executable inputs use pinned and verifiable artifacts covered by dependency policy and review.
+8. **Verification:** real end-to-end tests exercise enable, disable, upgrade or reprovision, failure, cleanup, and routed tunnel behavior; unit tests or service-status probes alone are insufficient.
+9. **Independent review:** specification compliance and an independent security review must pass without unresolved blocking findings before merge or release.
+10. **Maintenance:** a maintainer accepts the ongoing review and compatibility cost. Features may be rejected when that cost dilutes work on the secure core.
 
 An optional flag is not by itself sufficient. Features failing the gate should live in a separate project or downstream integration rather than behind an Algo option.
 
