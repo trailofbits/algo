@@ -39,8 +39,7 @@ def test_support_and_promotion_claims_are_bounded_and_current():
     assert "Ubuntu and other distributions" not in readme
     assert "promotion offering free t4g.small instances until December 31, 2025" not in ec2
     assert "Ubuntu 22.04 LTS" in readme
-    assert "Amazon Lightsail" not in readme
-    assert "Microsoft Azure" not in readme
+    assert "Azure and Amazon Lightsail are currently excluded" in readme
 
 
 def test_excluded_provider_claims_are_consistent_repository_wide():
