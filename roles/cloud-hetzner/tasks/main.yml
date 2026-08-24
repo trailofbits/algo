@@ -15,7 +15,7 @@
     name: "{{ algo_server_name }}"
     location: "{{ algo_hcloud_region }}"
     server_type: "{{ cloud_providers.hetzner.server_type }}"
-    image: "{{ cloud_providers.hetzner.image }}"
+    image: "{{ cloud_providers.hetzner.image[ubuntu_version] }}"
     state: present
     api_token: "{{ algo_hcloud_token }}"
     ssh_keys: "{{ hcloud_ssh_key.hcloud_ssh_key.name }}"

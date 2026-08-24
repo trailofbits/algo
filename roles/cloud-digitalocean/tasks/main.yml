@@ -16,7 +16,7 @@
     oauth_token: "{{ algo_do_token }}"
     size: "{{ cloud_providers.digitalocean.size }}"
     region: "{{ algo_do_region }}"
-    image: "{{ cloud_providers.digitalocean.image }}"
+    image: "{{ cloud_providers.digitalocean.image[ubuntu_version] }}"
     wait_timeout: 300
     unique_name: true
     ipv6: true

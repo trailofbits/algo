@@ -59,7 +59,7 @@
       - auto_delete: true
         boot: true
         initialize_params:
-          source_image: projects/ubuntu-os-cloud/global/images/family/{{ cloud_providers.gce.image }}
+          source_image: projects/ubuntu-os-cloud/global/images/family/{{ cloud_providers.gce.image[ubuntu_version] }}
     metadata:
       ssh-keys: algo:{{ ssh_public_key_lookup }}
       user-data: "{{ lookup('template', 'files/cloud-init/base.yml') }}"

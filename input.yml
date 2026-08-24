@@ -56,6 +56,18 @@
           set_fact:
             algo_provider: "{{ provider | default(providers_map[_algo_provider.user_input | default(omit) | int - 1]['alias']) }}"
 
+        - name: Validate the requested Ubuntu release
+          assert:
+            that: ubuntu_version | string in supported_ubuntu_versions
+            fail_msg: "ubuntu_version must be one of: {{ supported_ubuntu_versions | join(', ') }}"
+
+        - name: Validate provider image support
+          assert:
+            that: ubuntu_version | string in cloud_provider_ubuntu_versions[algo_provider] | default([])
+            fail_msg: >-
+              Ubuntu 24.04 image selection is not verified for {{ algo_provider }};
+              choose a supported version or provide and validate a provider-native selector.
+
         - name: VPN server name prompt
           pause:
             prompt: |

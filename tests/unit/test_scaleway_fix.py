@@ -101,8 +101,9 @@ def test_scaleway_marketplace_api_usage():
     # Should use uri module to fetch from Marketplace API
     assert "uri:" in content, "Not using uri module for API calls"
 
-    # Should filter for Ubuntu 22.04 Jammy
-    assert "Ubuntu" in content and "22" in content, "Not filtering for Ubuntu 22.04 image"
+    # Should select a provider-native Marketplace label for ubuntu_version.
+    assert "cloud_providers.scaleway.image[ubuntu_version]" in content
+    assert "selectattr('label', 'equalto'" in content
 
     # Should set scaleway_image_id variable
     assert "scaleway_image_id" in content, "Missing scaleway_image_id variable for image UUID"

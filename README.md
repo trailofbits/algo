@@ -16,7 +16,7 @@ See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo
 * Blocks ads with a local DNS resolver (optional)
 * Sets up limited SSH users for tunneling traffic (optional)
 * Privacy-focused with minimal logging, automatic log rotation, and configurable privacy enhancements
-* Based on Ubuntu 22.04 LTS with automatic security updates
+* Supports Ubuntu 22.04 and 24.04 LTS with automatic security updates; 22.04 remains the cloud default pending credentialed 24.04 provider canaries
 * Installs to DigitalOcean, Amazon Lightsail, Amazon EC2, Vultr, Microsoft Azure, Google Compute Engine, Scaleway, OpenStack, CloudStack, Hetzner Cloud, Linode, or [your own Ubuntu server (for advanced users)](docs/deploy-to-ubuntu.md)
 
 ## Anti-features

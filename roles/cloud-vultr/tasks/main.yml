@@ -74,7 +74,7 @@
         name: "{{ algo_server_name }}"
         startup_script: algo-startup
         hostname: "{{ algo_server_name }}"
-        os: "{{ cloud_providers.vultr.os }}"
+        os: "{{ cloud_providers.vultr.os[ubuntu_version] }}"
         plan: "{{ cloud_providers.vultr.size }}"
         region: "{{ algo_vultr_region }}"
         firewall_group: "{{ algo_server_name }}"

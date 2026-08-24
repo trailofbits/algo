@@ -16,7 +16,7 @@
     state: present
     description: Environment:Algo
     images:
-      - "{{ cloud_providers.linode.image }}"
+      - "{{ cloud_providers.linode.image[ubuntu_version] }}"
     script: |
       {{ stackscript }}
   register: _linode_stackscript
@@ -42,7 +42,7 @@
     label: "{{ algo_server_name }}"
     state: present
     region: "{{ algo_linode_region }}"
-    image: "{{ cloud_providers.linode.image }}"
+    image: "{{ cloud_providers.linode.image[ubuntu_version] }}"
     type: "{{ cloud_providers.linode.type }}"
     authorized_keys: "{{ public_key }}"
     stackscript_id: "{{ _linode_stackscript.stackscript.id }}"

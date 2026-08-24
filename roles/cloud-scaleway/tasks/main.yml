@@ -5,18 +5,18 @@
 - environment:
     SCW_TOKEN: "{{ algo_scaleway_token }}"
   block:
-    - name: Get Ubuntu 22.04 image ID from Scaleway Marketplace API
+    - name: Get Ubuntu image ID from Scaleway Marketplace API
       uri:
         url: "https://api-marketplace.scaleway.com/images?arch={{ cloud_providers.scaleway.arch }}&include_eol=false"
         method: GET
         return_content: true
       register: marketplace_images
 
-    - name: Find Ubuntu 22.04 Jammy image
+    - name: Find selected Ubuntu image
       set_fact:
         scaleway_image_id: >-
           {{ (marketplace_images.json.images |
-              selectattr('name', 'match', '.*Ubuntu.*22\\.04.*Jammy.*') |
+              selectattr('label', 'equalto', cloud_providers.scaleway.image[ubuntu_version]) |
               first).versions[0].local_images |
               selectattr('zone', 'equalto', algo_region) |
               map(attribute='id') | first }}
