@@ -2,9 +2,15 @@
 
 [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/fold_left.svg?style=social&label=Follow%20%40AlgoVPN)](https://x.com/AlgoVPN)
 
-Algo VPN is a set of Ansible scripts that simplify the setup of a personal WireGuard and IPsec VPN. It uses the most secure defaults available and works with common cloud providers.
+Algo VPN is a set of Ansible scripts that simplify the setup of a personal WireGuard and IPsec VPN. It uses deliberately narrow, modern defaults and works with common cloud providers.
 
 See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo-the-vpn-that-works/) for more information.
+
+## Secure core
+
+Algo's secure core is a small personal VPN: a trusted controller configures a fresh Ubuntu 22.04 LTS server with WireGuard and/or strongSwan IKEv2, generated per-device credentials, restrictive firewall rules, client isolation, key-only administrative SSH, and automatic security updates. Cloud provisioning is a convenience boundary rather than part of the VPN protocols; a provider appearing in a prompt does not by itself mean that path is currently security-verified. Azure and Amazon Lightsail are currently excluded from the verified secure core.
+
+Read the [threat model and feature acceptance gate](docs/threat-model.md) before relying on Algo for a particular risk. The document defines protected assets, trust and supply-chain assumptions, supported versions and platforms, non-goals, and the standard applied to new features. Vulnerability reporting and release support are in the [security policy](SECURITY.md).
 
 ## Features
 
@@ -26,6 +32,8 @@ See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo
 * Does not install Tor, OpenVPN, or other risky servers
 * Does not depend on the security of [TLS](https://tools.ietf.org/html/rfc7457)
 * Does not claim to provide anonymity or censorship avoidance
+* Does not add proxy or censorship-circumvention stacks such as Xray ([#14959](https://github.com/trailofbits/algo/issues/14959))
+* Does not add a browser-based administrative web UI or public control plane ([#14916](https://github.com/trailofbits/algo/issues/14916))
 * Does not claim to protect you from the [FSB](https://en.wikipedia.org/wiki/Federal_Security_Service), [MSS](https://en.wikipedia.org/wiki/Ministry_of_State_Security_(China)), [DGSE](https://en.wikipedia.org/wiki/Directorate-General_for_External_Security), or [FSM](https://en.wikipedia.org/wiki/Flying_Spaghetti_Monster)
 
 ## Deploy the Algo Server
@@ -205,6 +213,8 @@ Perfect privacy is impossible with any VPN solution. Your cloud provider sees an
 For the highest level of privacy, treat your Algo servers as disposable. Spin up a new instance when you need it, use it for your specific purpose, then destroy it completely. The ephemeral nature of cloud infrastructure can be a privacy feature if you use it intentionally.
 
 ## Additional Documentation
+* [Threat model and secure-core policy](docs/threat-model.md)
+* [Security policy and supported versions](SECURITY.md)
 * [FAQ](docs/faq.md)
 * [Troubleshooting](docs/troubleshooting.md)
 * How Algo uses [Firewalls](docs/firewalls.md)
