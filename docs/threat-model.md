@@ -63,7 +63,9 @@ The secure core is deliberately small:
 * key and client-profile generation, host firewalling, forwarding, and client isolation; and
 * key-only administrative SSH used by the deployment workflow.
 
-Cloud provisioning adapters are convenience code outside the VPN protocol boundary. They are included in the secure core only while their create, configure, and destroy paths are maintained and verified against the provider API. **Microsoft Azure is currently excluded and unverified. Amazon Lightsail is currently excluded and unverified.** Their presence in deployment prompts is not a security-support claim. Treat any provider path without current automated and maintainer verification the same way; deploying to an existing, trusted Ubuntu server keeps provider provisioning outside Algo.
+The **maintained provisioning scope** is DigitalOcean, Amazon EC2, Google Compute Engine, Vultr, Scaleway, OpenStack, CloudStack, Hetzner Cloud, and Linode, plus deployment to an existing trusted Ubuntu server. “Maintained” means the adapter remains in the tested codebase; it does not by itself mean a live provider deployment passed for this release candidate. Each cloud adapter becomes security-verified for a release only after its credentialed provider canary and create, configure, transition, and destroy checks pass. Where that evidence is unavailable, release notes and support claims must say the adapter is unverified.
+
+**Microsoft Azure is currently excluded and unverified. Amazon Lightsail is currently excluded and unverified.** Their presence in historical documentation or deployment prompts is not a security-support claim. Deploying to an existing, trusted Ubuntu server keeps provider provisioning outside Algo's secure core.
 
 Optional DNS encryption, ad blocking, privacy cleanup, and restricted SSH tunneling enlarge the deployment and trust their respective upstream inputs. They are supported configuration options, not prerequisites for a secure VPN.
 

@@ -37,8 +37,25 @@ def test_threat_model_records_the_secure_core_policy():
     assert required_headings <= headings
 
     normalized = threat_model.casefold()
-    for required_term in ("wireguard", "ikev2", "ubuntu 22.04 lts", "azure", "lightsail"):
+    for required_term in (
+        "wireguard",
+        "ikev2",
+        "ubuntu 22.04 lts",
+        "digitalocean",
+        "amazon ec2",
+        "google compute engine",
+        "vultr",
+        "scaleway",
+        "openstack",
+        "cloudstack",
+        "hetzner",
+        "linode",
+        "azure",
+        "lightsail",
+    ):
         assert required_term in normalized
+    assert "maintained provisioning scope" in normalized
+    assert "credentialed provider canary" in normalized
     assert "#14959" in threat_model and "#14916" in threat_model
     assert re.search(r"azure[^\n]*(excluded|unverified)", normalized)
     assert re.search(r"lightsail[^\n]*(excluded|unverified)", normalized)
