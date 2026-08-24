@@ -85,6 +85,7 @@
           loop: "{{ wireguard_qr_temp_files.results }}"
           loop_control:
             loop_var: wireguard_qr_job
+            index_var: index
           vars:
             item: "{{ wireguard_qr_job.item }}"
           when: not wireguard_qr_job.skipped | default(false)

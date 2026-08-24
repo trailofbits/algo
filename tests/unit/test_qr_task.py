@@ -88,6 +88,7 @@ def test_qr_secret_configuration_is_supplied_via_stdin_not_process_arguments():
     argv = generate["command"]["argv"]
 
     assert "client.conf.j2" not in " ".join(argv)
+    assert generate["loop_control"]["index_var"] == "index"
     assert generate["command"]["stdin"] == "{{ lookup('template', 'client.conf.j2') }}"
     assert generate["command"]["stdin_add_newline"] is False
 

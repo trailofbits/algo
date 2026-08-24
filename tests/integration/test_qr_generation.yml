@@ -10,7 +10,8 @@
     wireguard_users:
       - "{{ qr_user }}"
     IP_subject_alt_name: 203.0.113.7
-    wireguard_client_ip: 10.49.0.2/32
+    wireguard_network_ipv4: 10.49.0.0/24
+    ipv6_support: false
     wireguard_dns_servers: 10.49.0.1
     wireguard_port: 51820
     wireguard_PersistentKeepalive: 0
