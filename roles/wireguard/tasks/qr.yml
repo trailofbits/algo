@@ -1,0 +1,76 @@
+---
+- name: Check for the Segno QR generator
+  stat:
+    path: "{{ ansible_playbook_python | dirname }}/segno"
+  register: wireguard_segno
+
+- name: Require the Segno QR generator
+  assert:
+    that:
+      - wireguard_segno.stat.exists
+      - wireguard_segno.stat.isreg
+      - wireguard_segno.stat.executable
+    fail_msg: >-
+      Segno is not installed as an executable next to ansible_playbook_python
+      ({{ ansible_playbook_python }}). Install Algo's Python dependencies in
+      that environment (for example: uv sync), then run the playbook again.
+
+- name: Inspect existing QR codes
+  stat:
+    path: "{{ wireguard_config_path }}/{{ item }}.png"
+  loop: "{{ wireguard_users }}"
+  register: wireguard_qr_files
+  when: item in users
+
+- name: Prepare secure QR output
+  file:
+    path: "{{ wireguard_config_path }}/.{{ item }}.tmp.png"
+    state: touch
+    mode: "0600"
+  loop: "{{ wireguard_users }}"
+  loop_control:
+    index_var: index
+  when:
+    - item in users
+    - not wireguard_qr_files.results[index].stat.exists
+
+- name: Generate QR codes
+  command:
+    argv:
+      - "{{ ansible_playbook_python | dirname }}/segno"
+      - "--scale=5"
+      - "--output={{ wireguard_config_path }}/.{{ item }}.tmp.png"
+      - "{{ lookup('template', 'client.conf.j2') }}"
+    creates: "{{ wireguard_config_path }}/{{ item }}.png"
+  loop: "{{ wireguard_users }}"
+  loop_control:
+    index_var: index
+  when: item in users
+  no_log: true
+
+- name: Install generated QR codes
+  copy:
+    src: "{{ wireguard_config_path }}/.{{ item }}.tmp.png"
+    dest: "{{ wireguard_config_path }}/{{ item }}.png"
+    remote_src: true
+    mode: "0600"
+  loop: "{{ wireguard_users }}"
+  loop_control:
+    index_var: index
+  when:
+    - item in users
+    - not wireguard_qr_files.results[index].stat.exists
+
+- name: Remove temporary QR files
+  file:
+    path: "{{ wireguard_config_path }}/.{{ item }}.tmp.png"
+    state: absent
+  loop: "{{ wireguard_users }}"
+  when: item in users
+
+- name: Restrict QR code permissions
+  file:
+    path: "{{ wireguard_config_path }}/{{ item }}.png"
+    mode: "0600"
+  loop: "{{ wireguard_users }}"
+  when: item in users

@@ -58,23 +58,8 @@
           loop_control:
             loop_var: system
 
-        - name: Generate QR codes
-          shell: >
-            umask 077;
-            which segno &&
-            segno --scale=5 --output={{ item }}.png \
-              "{{ lookup('template', 'client.conf.j2') }}" || true
-          changed_when: false
-          loop: "{{ wireguard_users }}"
-          loop_control:
-            index_var: index
-          when: item in users
-          vars:
-            ansible_python_interpreter: "{{ ansible_playbook_python }}"
-          args:
-            chdir: "{{ wireguard_config_path }}"
-            executable: bash
-          no_log: true
+        - name: Generate WireGuard QR codes
+          include_tasks: qr.yml
 
     - name: WireGuard configured
       template:

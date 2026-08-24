@@ -1,0 +1,102 @@
+---
+- name: Verify secure WireGuard QR generation
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    qr_user: "integration user"
+    users:
+      - "{{ qr_user }}"
+    wireguard_users:
+      - "{{ qr_user }}"
+    IP_subject_alt_name: 203.0.113.7
+    wireguard_client_ip: 10.49.0.2/32
+    wireguard_dns_servers: 10.49.0.1
+    wireguard_port: 51820
+    wireguard_PersistentKeepalive: 0
+    reduce_mtu: 0
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+  tasks:
+    - name: Create integration workspace
+      tempfile:
+        state: directory
+        suffix: " qr path with spaces"
+      register: qr_workspace
+
+    - name: Exercise QR tasks and verify their result
+      block:
+        - name: Set test paths
+          set_fact:
+            wireguard_config_path: "{{ qr_workspace.path }}/config path with spaces"
+            wireguard_pki_path: "{{ qr_workspace.path }}/pki path with spaces"
+
+        - name: Create test key directories
+          file:
+            path: "{{ item }}"
+            state: directory
+            mode: "0700"
+          loop:
+            - "{{ wireguard_config_path }}"
+            - "{{ wireguard_pki_path }}/private"
+            - "{{ wireguard_pki_path }}/public"
+            - "{{ wireguard_pki_path }}/preshared"
+
+        - name: Write test key material
+          copy:
+            content: "{{ item.content }}\n"
+            dest: "{{ item.dest }}"
+            mode: "0600"
+          loop:
+            - dest: "{{ wireguard_pki_path }}/private/{{ qr_user }}"
+              content: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+            - dest: "{{ wireguard_pki_path }}/public/{{ IP_subject_alt_name }}"
+              content: BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=
+            - dest: "{{ wireguard_pki_path }}/preshared/{{ qr_user }}"
+              content: CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC=
+
+        - name: Generate QR code through the role
+          include_role:
+            name: "{{ playbook_dir }}/../../roles/wireguard"
+            tasks_from: qr
+
+        - name: Inspect generated QR code
+          stat:
+            path: "{{ wireguard_config_path }}/{{ qr_user }}.png"
+            checksum_algorithm: sha256
+          register: qr_first
+
+        - name: Read generated QR header
+          slurp:
+            src: "{{ wireguard_config_path }}/{{ qr_user }}.png"
+          register: qr_png
+
+        - name: Verify PNG signature and secure mode
+          assert:
+            that:
+              - qr_first.stat.exists
+              - qr_first.stat.isreg
+              - qr_first.stat.mode == "0600"
+              - qr_png.content is match('^iVBORw0KGgo')
+
+        - name: Run QR generation a second time
+          include_role:
+            name: "{{ playbook_dir }}/../../roles/wireguard"
+            tasks_from: qr
+
+        - name: Inspect QR code after the second run
+          stat:
+            path: "{{ wireguard_config_path }}/{{ qr_user }}.png"
+            checksum_algorithm: sha256
+          register: qr_second
+
+        - name: Verify QR generation is idempotent
+          assert:
+            that:
+              - qr_second.stat.checksum == qr_first.stat.checksum
+              - qr_second.stat.mtime == qr_first.stat.mtime
+
+      always:
+        - name: Remove integration workspace
+          file:
+            path: "{{ qr_workspace.path }}"
+            state: absent
