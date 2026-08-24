@@ -26,6 +26,7 @@ VPN_TYPE="${1:-both}"
 IPSEC_CLIENT_DIR=""
 IPSEC_CLIENT_PID=""
 IPSEC_VICI_URI=""
+IPSEC_SWANCTL_BINARY=""
 PUBLIC_IP_URL="${PUBLIC_IP_URL:-https://api.ipify.org}"
 ORIGINAL_IP_FORWARD=""
 ORIGINAL_RP_FILTER_ALL=""
@@ -69,8 +70,8 @@ cleanup() {
     ip netns exec "${NAMESPACE}" wg-quick down /tmp/algo-test-wg.conf 2>/dev/null || true
 
     # Tear down the isolated swanctl/charon client without exposing credentials.
-    if [[ -n "${IPSEC_VICI_URI}" ]]; then
-        ip netns exec "${NAMESPACE}" swanctl --terminate --ike algovpn \
+    if [[ -n "${IPSEC_VICI_URI}" && -x "${IPSEC_SWANCTL_BINARY}" ]]; then
+        ip netns exec "${NAMESPACE}" "${IPSEC_SWANCTL_BINARY}" --terminate --ike algovpn \
             --uri "${IPSEC_VICI_URI}" >/dev/null 2>&1 || true
     fi
     if [[ -n "${IPSEC_CLIENT_PID}" ]]; then
@@ -115,6 +116,7 @@ cleanup() {
     if [[ -n "${IPSEC_CLIENT_DIR}" ]]; then
         rm -rf "${IPSEC_CLIENT_DIR}"
         IPSEC_CLIENT_DIR=""
+        IPSEC_SWANCTL_BINARY=""
     fi
     pkill -f "tcpdump.*port 51820" 2>/dev/null || true
 
@@ -440,7 +442,7 @@ test_ipsec() {
     local user_cert="${CONFIG_DIR}/ipsec/.pki/certs/${TEST_USER}.crt"
     local user_key="${CONFIG_DIR}/ipsec/.pki/private/${TEST_USER}.key"
     local server_id="127.0.0.1"
-    local charon_binary=""
+    local charon_binary="" swanctl_binary=""
     local candidate_owner candidate_mode
     local client_config vici_socket sa_status
     local server_source_ip vpn_source_ip
@@ -562,6 +564,25 @@ EOF
     install -m 0700 "${charon_binary}" "${IPSEC_CLIENT_DIR}/charon-client" || return 1
     charon_binary="${IPSEC_CLIENT_DIR}/charon-client"
 
+    for candidate in /usr/sbin/swanctl /usr/bin/swanctl; do
+        if [[ ! -x "${candidate}" || ! -f "${candidate}" || -L "${candidate}" ]]; then
+            continue
+        fi
+        candidate_owner=$(stat -c "%u" -- "${candidate}") || continue
+        candidate_mode=$(stat -c "%a" -- "${candidate}") || continue
+        if [[ "${candidate_owner}" != "0" ]] || (( (8#${candidate_mode} & 8#022) != 0 )); then
+            continue
+        fi
+        swanctl_binary="${candidate}"
+        break
+    done
+    if [[ -z "${swanctl_binary}" ]]; then
+        log_error "trusted swanctl executable not found; install strongswan-swanctl"
+        return 1
+    fi
+    install -m 0700 "${swanctl_binary}" "${IPSEC_CLIENT_DIR}/swanctl-client" || return 1
+    IPSEC_SWANCTL_BINARY="${IPSEC_CLIENT_DIR}/swanctl-client"
+
     log_info "Starting an isolated charon client in namespace ${NAMESPACE}"
     ip netns exec "${NAMESPACE}" unshare --mount --pid --fork --kill-child --mount-proc \
         sh -c 'mount --make-rprivate / && mount -t tmpfs -o mode=0755,nosuid,nodev tmpfs /run && exec "$@"' \
@@ -586,20 +607,20 @@ EOF
     fi
 
     log_info "Loading generated credentials and connection into the isolated client"
-    if ! ip netns exec "${NAMESPACE}" swanctl --load-all \
+    if ! ip netns exec "${NAMESPACE}" "${IPSEC_SWANCTL_BINARY}" --load-all \
         --file "${client_config}" --uri "${IPSEC_VICI_URI}" >/dev/null; then
         log_error "swanctl failed to load the isolated client configuration"
         return 1
     fi
 
     log_info "Initiating IKEv2 and CHILD SA from the client namespace"
-    if ! ip netns exec "${NAMESPACE}" swanctl --initiate --child algovpn \
+    if ! ip netns exec "${NAMESPACE}" "${IPSEC_SWANCTL_BINARY}" --initiate --child algovpn \
         --timeout 30 --uri "${IPSEC_VICI_URI}" >/dev/null; then
         log_error "swanctl failed to initiate the IPsec tunnel"
         return 1
     fi
 
-    sa_status=$(ip netns exec "${NAMESPACE}" swanctl --list-sas \
+    sa_status=$(ip netns exec "${NAMESPACE}" "${IPSEC_SWANCTL_BINARY}" --list-sas \
         --uri "${IPSEC_VICI_URI}" 2>&1) || return 1
     if ! grep -q "ESTABLISHED" <<<"${sa_status}"; then
         log_error "The client has no ESTABLISHED IKE SA"
@@ -646,7 +667,7 @@ EOF
     fi
     log_info "IPsec XFRM counters prove the probes traversed the CHILD SA"
 
-    ip netns exec "${NAMESPACE}" swanctl --terminate --ike algovpn \
+    ip netns exec "${NAMESPACE}" "${IPSEC_SWANCTL_BINARY}" --terminate --ike algovpn \
         --uri "${IPSEC_VICI_URI}" >/dev/null || return 1
     IPSEC_VICI_URI=""
     kill "${IPSEC_CLIENT_PID}" || return 1
@@ -654,6 +675,7 @@ EOF
     IPSEC_CLIENT_PID=""
     rm -rf "${IPSEC_CLIENT_DIR}" || return 1
     IPSEC_CLIENT_DIR=""
+    IPSEC_SWANCTL_BINARY=""
 
     log_info "IPsec genuine tunnel E2E tests PASSED"
 }

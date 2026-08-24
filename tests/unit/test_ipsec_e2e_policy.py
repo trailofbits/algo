@@ -24,9 +24,9 @@ def test_ipsec_e2e_runs_an_isolated_swanctl_client_and_requires_both_sas():
     assert "unshare --mount --pid --fork --kill-child --mount-proc" in script
     assert "mount -t tmpfs" in script and "tmpfs /run" in script
     assert "charon" in script
-    assert "swanctl --load-all" in script
-    assert "swanctl --initiate" in script
-    assert "swanctl --list-sas" in script
+    assert '"${IPSEC_SWANCTL_BINARY}" --load-all' in script
+    assert '"${IPSEC_SWANCTL_BINARY}" --initiate' in script
+    assert '"${IPSEC_SWANCTL_BINARY}" --list-sas' in script
     assert 'grep -q "ESTABLISHED"' in script
     assert 'grep -q "INSTALLED"' in script
     assert "Full tunnel test requires" not in script
@@ -41,6 +41,14 @@ def test_ipsec_client_uses_a_private_executable_path_outside_host_apparmor_attac
     assert 'stat -c "%u" -- "${candidate}"' in script
     assert 'stat -c "%a" -- "${candidate}"' in script
     assert '|| -L "${candidate}"' in script
+
+
+def test_ipsec_client_uses_a_private_swanctl_path_outside_host_apparmor_attachment():
+    script = _script()
+
+    assert 'install -m 0700 "${swanctl_binary}" "${IPSEC_CLIENT_DIR}/swanctl-client"' in script
+    assert 'IPSEC_SWANCTL_BINARY="${IPSEC_CLIENT_DIR}/swanctl-client"' in script
+    assert 'ip netns exec "${NAMESPACE}" swanctl --' not in script
 
 
 def test_ipsec_client_strongswan_config_uses_parser_safe_dynamic_values():
@@ -65,7 +73,7 @@ def test_ipsec_client_credentials_are_private_and_torn_down():
 
     assert "umask 077" in script
     assert 'chmod 700 "${IPSEC_CLIENT_DIR}"' in script
-    assert "swanctl --terminate" in script
+    assert '"${IPSEC_SWANCTL_BINARY}" --terminate' in script
     assert 'kill "${IPSEC_CLIENT_PID}"' in script
     assert 'rm -rf "${IPSEC_CLIENT_DIR}"' in script
     assert "set -x" not in script
