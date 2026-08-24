@@ -142,5 +142,6 @@ def test_swanctl_plugins_and_reload_commands_do_not_depend_on_stroke():
 
     assert "  - vici" in defaults
     assert "swanctl --load-all --noprompt" in handlers
-    assert "swanctl --load-authorities --noprompt" in handlers
+    assert 'reload_command="swanctl --load-authorities"' in handlers
+    assert "swanctl --load-authorities --noprompt" not in handlers
     assert "ipsec rereadcrls" in handlers  # starter remains supported on 22.04

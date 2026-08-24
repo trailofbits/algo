@@ -63,5 +63,6 @@ def test_backend_specific_reload_is_explicit_and_secret_safe():
     assert swanctl_reload["no_log"] is True
 
     crl_reload = names["rereadcrls"]
-    assert "swanctl --load-authorities --noprompt" in crl_reload["shell"]
+    assert 'reload_command="swanctl --load-authorities"' in crl_reload["shell"]
+    assert "swanctl --load-authorities --noprompt" not in crl_reload["shell"]
     assert "ipsec rereadcrls" in crl_reload["shell"]
