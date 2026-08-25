@@ -115,27 +115,18 @@ cleanup() {
     # Cleanup is armed before the first owned mutation, but only after all
     # pre-existing-resource checks pass.
     if [[ "${NETWORK_CLEANUP_ARMED}" == true ]]; then
-    # Discover and remove only rules carrying this run's unguessable ownership tag.
-    if iptables -t nat -C POSTROUTING -s "${CLIENT_BRIDGE_IP}/32" ! -d 10.99.0.0/24 \
-        -m comment --comment "${RULE_COMMENT}" -j MASQUERADE 2>/dev/null; then
-        iptables -t nat -D POSTROUTING -s "${CLIENT_BRIDGE_IP}/32" ! -d 10.99.0.0/24 \
-            -m comment --comment "${RULE_COMMENT}" -j MASQUERADE || exit_code=1
-    fi
-    if iptables -C INPUT -i "${VETH_SERVER}" -p udp --dport 51820 \
-        -m comment --comment "${RULE_COMMENT}" -j ACCEPT 2>/dev/null; then
-        iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 51820 \
-            -m comment --comment "${RULE_COMMENT}" -j ACCEPT || exit_code=1
-    fi
-    if iptables -C INPUT -i "${VETH_SERVER}" -p udp --dport 500 \
-        -m comment --comment "${RULE_COMMENT}" -j ACCEPT 2>/dev/null; then
-        iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 500 \
-            -m comment --comment "${RULE_COMMENT}" -j ACCEPT || exit_code=1
-    fi
-    if iptables -C INPUT -i "${VETH_SERVER}" -p udp --dport 4500 \
-        -m comment --comment "${RULE_COMMENT}" -j ACCEPT 2>/dev/null; then
-        iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 4500 \
-            -m comment --comment "${RULE_COMMENT}" -j ACCEPT || exit_code=1
-    fi
+    # Remove the exact rules carrying this run's unguessable ownership tag.
+    # Do not preflight with `iptables -C`: its nonzero statuses do not reliably
+    # distinguish absence from operational failure. A missing rule is therefore
+    # also a cleanup failure, which is fail-closed for partial setup.
+    iptables -t nat -D POSTROUTING -s "${CLIENT_BRIDGE_IP}/32" ! -d 10.99.0.0/24 \
+        -m comment --comment "${RULE_COMMENT}" -j MASQUERADE || exit_code=1
+    iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 51820 \
+        -m comment --comment "${RULE_COMMENT}" -j ACCEPT || exit_code=1
+    iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 500 \
+        -m comment --comment "${RULE_COMMENT}" -j ACCEPT || exit_code=1
+    iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 4500 \
+        -m comment --comment "${RULE_COMMENT}" -j ACCEPT || exit_code=1
 
     # Restore host kernel policy before removing the test interface.
     if [[ -n "${ORIGINAL_RP_FILTER_VETH}" ]]; then

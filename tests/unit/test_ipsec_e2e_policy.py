@@ -207,8 +207,10 @@ def test_cleanup_discovers_exact_owned_network_resources_without_racy_flags():
         "NATT_RULE_ADDED",
     )
     assert not [flag for flag in flags if flag in setup or flag in cleanup]
-    assert "iptables -t nat -C POSTROUTING" in cleanup
-    assert "iptables -C INPUT" in cleanup
+    assert "iptables -t nat -C POSTROUTING" not in cleanup
+    assert "iptables -C INPUT" not in cleanup
+    assert "iptables -t nat -D POSTROUTING" in cleanup
+    assert cleanup.count("iptables -D INPUT") == 3
     assert 'grep -q "^${NAMESPACE}\\b" <<< "${existing_namespaces}"' in cleanup
     assert '[[ -e "/sys/class/net/${VETH_SERVER}" ]]' in cleanup
 
@@ -263,17 +265,24 @@ def test_privileged_network_sysctls_are_restored_on_exit():
 
 def test_cleanup_discovers_and_removes_only_rules_with_the_run_ownership_tag():
     script = _script()
+    cleanup = script.split("cleanup() {", 1)[1].split("trap cleanup EXIT", 1)[0]
 
     assert "NAT_RULE_ADDED" not in script
     assert "WG_RULE_ADDED" not in script
     assert "IKE_RULE_ADDED" not in script
     assert "NATT_RULE_ADDED" not in script
-    assert "iptables -t nat -C POSTROUTING" in script
-    assert "iptables -C INPUT" in script
+    assert "iptables -t nat -C POSTROUTING" not in cleanup
+    assert "iptables -C INPUT" not in cleanup
     assert "iptables -t nat -D POSTROUTING" in script
     assert "iptables -D INPUT" in script
-    cleanup = script.split("cleanup() {", 1)[1].split("trap cleanup EXIT", 1)[0]
     assert not any("iptables" in line and "|| true" in line for line in cleanup.splitlines())
+
+
+def test_cleanup_deletes_exact_owned_firewall_rules_without_ambiguous_probes():
+    cleanup = _script().split("cleanup() {", 1)[1].split("trap cleanup EXIT", 1)[0]
+
+    assert "iptables_check_status" not in cleanup
+    assert cleanup.count("|| exit_code=1") >= 8
 
 
 def test_server_ipsec_cli_is_optional_for_swanctl_backend():
