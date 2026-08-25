@@ -56,8 +56,15 @@ def test_excluded_provider_claims_are_consistent_repository_wide():
             stale.append(str(path.relative_to(ROOT)))
     assert not stale, f"contradictory excluded-provider claims: {stale}"
     troubleshooting = (ROOT / "docs" / "troubleshooting.md").read_text(encoding="utf-8")
+    index = (ROOT / "docs" / "index.md").read_text(encoding="utf-8")
+    azure = (ROOT / "docs" / "cloud-azure.md").read_text(encoding="utf-8")
     assert "cloud-azure" not in troubleshooting
     assert "### Azure:" not in troubleshooting
+    assert "Configure [Azure]" not in index
+    assert "az login" not in azure
+    assert "able to deploy an AlgoVPN instance" not in azure
+    assert "excluded and unverified" in azure
+    assert "rejected before provisioning" in azure
 
 
 def test_ubuntu_support_and_ec2_selector_docs_match_the_bounded_contract():
@@ -78,6 +85,23 @@ def test_ubuntu_support_and_ec2_selector_docs_match_the_bounded_contract():
     assert "Ubuntu 22.04 LTS and Ubuntu 24.04 LTS" in troubleshooting
     assert "ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04" in ansible
     assert "Azure and Lightsail are excluded and unverified" in ansible
+
+
+def test_strongswan_diagnostics_cover_both_supported_backends():
+    troubleshooting = (ROOT / "docs" / "troubleshooting.md").read_text(encoding="utf-8")
+    command_lines = {line.strip() for line in troubleshooting.splitlines()}
+
+    assert "Ubuntu 22.04 (`starter` backend)" in troubleshooting
+    assert "systemctl status strongswan-starter" in command_lines
+    assert "ipsec statusall                  # Show all IKE_SA and CHILD_SA" in command_lines
+    assert "ipsec leases                     # Show assigned virtual IPs" in command_lines
+    assert "journalctl -u strongswan-starter -f" in command_lines
+    assert "Ubuntu 24.04 (`swanctl` backend)" in troubleshooting
+    assert "systemctl status strongswan" in command_lines
+    assert "swanctl --list-sas               # Show all IKE_SA and CHILD_SA" in command_lines
+    assert "swanctl --list-pools --leases    # Show address-pool usage and assigned leases" in command_lines
+    assert "journalctl -u strongswan -f" in command_lines
+    assert not [line for line in command_lines if line.startswith("journalctl -t charon")]
 
 
 def test_repository_documentation_uses_main_branch_links():

@@ -16,7 +16,6 @@
   - Setup Macs running macOS 10.13 or older to use [WireGuard](client-macos-wireguard.md)
 * Cloud provider setup
   - Configure [Amazon EC2](cloud-amazon-ec2.md)
-  - Configure [Azure](cloud-azure.md)
   - Configure [DigitalOcean](cloud-do.md)
   - Configure [Google Cloud Platform](cloud-gce.md)
   - Configure [Vultr](cloud-vultr.md)

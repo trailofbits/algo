@@ -393,10 +393,16 @@ privacy_enhancements_enabled: false  # Disable log rotation/clearing
 systemctl status wg-quick@wg0
 wg show                          # Show WireGuard interface and peers
 
-# IPsec/StrongSwan
-systemctl status strongswan
+# IPsec/strongSwan — use the commands for the server release
+# Ubuntu 22.04 (`starter` backend)
+systemctl status strongswan-starter
 ipsec statusall                  # Show all IKE_SA and CHILD_SA
 ipsec leases                     # Show assigned virtual IPs
+
+# Ubuntu 24.04 (`swanctl` backend)
+systemctl status strongswan
+swanctl --list-sas               # Show all IKE_SA and CHILD_SA
+swanctl --list-pools --leases    # Show address-pool usage and assigned leases
 
 # DNS
 systemctl status dnscrypt-proxy.socket dnscrypt-proxy.service
@@ -408,9 +414,14 @@ ss -lnup | grep :53              # Check what's listening on DNS port
 # WireGuard (kernel module, limited logging)
 dmesg | grep wireguard
 
-# IPsec/StrongSwan
-journalctl -u strongswan -f      # Follow strongswan logs
-journalctl -t charon -f          # Follow IKE daemon logs
+# IPsec/strongSwan
+# Ubuntu 22.04 (`starter` backend)
+journalctl -u strongswan-starter -f
+
+# Ubuntu 24.04 (`swanctl` backend)
+journalctl -u strongswan -f
+
+# The backend-specific service journals above contain the IKE daemon logs.
 
 # DNS
 journalctl -u dnscrypt-proxy -f
