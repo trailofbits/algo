@@ -5,16 +5,37 @@ import subprocess
 from pathlib import Path
 
 import yaml
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ec
 
 ROOT = Path(__file__).parents[2]
-APPROVED_SYNTHETIC_CONTENT_FILES = {
-    "docs/client-openwrt-router-wireguard.md",
-    "tests/unit/test_config_validation.py",
-    "tests/unit/test_docker_localhost_deployment.py",
-    "tests/unit/test_generated_configs.py",
-    "tests/unit/test_secret_artifact_policy.py",
-    "tests/unit/test_wireguard_key_generation.py",
+APPROVED_SYNTHETIC_VALUES = {
+    "docs/client-openwrt-router-wireguard.md": (b"<your_private_key>", b"<preshared_key>"),
+    "tests/unit/test_config_validation.py": (b"aGVsbG8gd29ybGQgdGhpcyBpcyBub3QgYSByZWFsIGtleQo=",),
+    "tests/unit/test_docker_localhost_deployment.py": (b"EEHcgpEB8JIlUZpYnt3PqJJgfwgRGDQNlGH7gYkMVGo=",),
+    "tests/unit/test_generated_configs.py": (b"SAMPLE_PRIVATE_KEY_BASE64==", b"SAMPLE_PRESHARED_KEY_BASE64=="),
+    "tests/unit/test_wireguard_key_generation.py": (b"{b64_key}",),
 }
+
+
+def _der_sequences(content: bytes):
+    """Yield bounded DER SEQUENCE objects, including objects embedded in larger files."""
+    for start, tag in enumerate(content):
+        if tag != 0x30 or start + 2 > len(content):
+            continue
+        first_length = content[start + 1]
+        if first_length < 0x80:
+            header_length = 2
+            value_length = first_length
+        else:
+            length_octets = first_length & 0x7F
+            if length_octets == 0 or length_octets > 4 or start + 2 + length_octets > len(content):
+                continue
+            header_length = 2 + length_octets
+            value_length = int.from_bytes(content[start + 2 : start + header_length], "big")
+        end = start + header_length + value_length
+        if end <= len(content):
+            yield content[start:end]
 
 
 def _looks_like_private_material(tracked: str, content: bytes) -> bool:
@@ -25,18 +46,31 @@ def _looks_like_private_material(tracked: str, content: bytes) -> bool:
         return True
     if "/wireguard/.pki/private/" in f"/{tracked}":
         return True
-    if tracked in APPROVED_SYNTHETIC_CONTENT_FILES:
-        return False
+    for value in APPROVED_SYNTHETIC_VALUES.get(tracked, ()):
+        content = content.replace(value, b"<approved-synthetic-value>")
     markers = (
-        b"BEGIN PRIVATE KEY",
-        b"BEGIN EC PRIVATE KEY",
-        b"BEGIN RSA PRIVATE KEY",
-        b"BEGIN OPENSSH PRIVATE KEY",
+        b"BEGIN " + kind + b"PRIVATE KEY" for kind in (b"", b"EC ", b"RSA ", b"OPENSSH ", b"ENCRYPTED ", b"DSA ")
     )
     if any(marker in content for marker in markers):
         return True
+    for candidate in _der_sequences(content):
+        for password in (None, b"algo-private-key-detector"):
+            try:
+                serialization.load_der_private_key(candidate, password=password)
+                return True
+            except TypeError as error:
+                if "private key is encrypted" in str(error) or "private key is not encrypted" in str(error):
+                    return True
+            except ValueError:
+                pass
     text = content.decode("utf-8", errors="ignore")
-    return re.search(r"(?m)^\s*PrivateKey\s*=\s*(?!\{\{)\S+", text) is not None
+    return (
+        re.search(
+            r"(?m)^\s*(?:PrivateKey|PresharedKey)\s*=\s*(?!\{\{)(?!<approved-synthetic-value>)\S+",
+            text,
+        )
+        is not None
+    )
 
 
 def _tracked_paths():
@@ -53,11 +87,10 @@ def test_generated_integration_credentials_are_never_tracked():
 
 
 def test_no_generated_private_material_is_tracked_anywhere():
-    approved_fixture_prefix = "tests/fixtures/synthetic/"
     offenders = []
 
     for tracked in _tracked_paths():
-        if not tracked or tracked.startswith(approved_fixture_prefix):
+        if not tracked:
             continue
         path = ROOT / tracked
         if not path.is_file():
@@ -76,12 +109,42 @@ def test_no_generated_private_material_is_tracked_anywhere():
 def test_private_material_detector_covers_wireguard_openssh_and_secret_files():
     cases = {
         "configs/client.conf": b"[Interface]\nPrivateKey = synthetic-value\n",
+        "configs/peer.conf": b"[Peer]\nPresharedKey = synthetic-value\n",
         "configs/id_ed25519": b"synthetic-extensionless-key",
         "configs/vpn.secrets": b"client : EAP synthetic-password\n",
-        "configs/key.txt": b"-----BEGIN OPENSSH PRIVATE KEY-----\nsynthetic\n",
-        "scripts/leak.sh": b"-----BEGIN OPENSSH PRIVATE KEY-----\nreal-material\n",
+        "configs/key.txt": b"-----BEGIN " + b"OPENSSH PRIVATE KEY-----\nsynthetic\n",
+        "configs/encrypted.pem": b"-----BEGIN " + b"ENCRYPTED PRIVATE KEY-----\nsynthetic\n",
+        "configs/dsa.pem": b"-----BEGIN " + b"DSA PRIVATE KEY-----\nsynthetic\n",
+        "scripts/leak.sh": b"-----BEGIN " + b"OPENSSH PRIVATE KEY-----\nreal-material\n",
+        "tests/fixtures/synthetic/leak.conf": b"[Interface]\nPrivateKey = real-material\n",
     }
     assert all(_looks_like_private_material(path, content) for path, content in cases.items())
+
+
+def test_approved_synthetic_files_do_not_hide_new_private_material():
+    for path in APPROVED_SYNTHETIC_VALUES:
+        material = b"-----BEGIN " + b"OPENSSH PRIVATE KEY-----\nnew-material\n"
+        assert _looks_like_private_material(path, material)
+
+
+def test_binary_der_private_key_is_detected_without_a_secret_extension():
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    unencrypted = private_key.private_bytes(
+        serialization.Encoding.DER,
+        serialization.PrivateFormat.PKCS8,
+        serialization.NoEncryption(),
+    )
+    encrypted = private_key.private_bytes(
+        serialization.Encoding.DER,
+        serialization.PrivateFormat.PKCS8,
+        serialization.BestAvailableEncryption(b"test-password"),
+    )
+
+    for material in (unencrypted, encrypted):
+        assert _looks_like_private_material("artifacts/opaque.bin", material)
+        assert _looks_like_private_material("artifacts/embedded.bin", b"benign-prefix" + material + b"benign-suffix")
+        for path, values in APPROVED_SYNTHETIC_VALUES.items():
+            assert _looks_like_private_material(path, values[0] + b"\n" + material + b"\n")
 
 
 def test_noninteractive_or_test_mode_never_prints_generated_completion_credentials():
