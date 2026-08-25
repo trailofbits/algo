@@ -4,6 +4,7 @@ import os
 import subprocess
 from pathlib import Path
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).parents[2]
@@ -23,6 +24,13 @@ def test_canary_is_manual_only_and_provider_limited():
     assert provider["options"] == ["ec2", "gce"]
     assert "azure" not in provider["options"]
     assert "lightsail" not in provider["options"]
+
+
+def test_canary_uses_run_attempt_specific_name_and_owner():
+    environment = _workflow()["jobs"]["canary"]["env"]
+
+    assert environment["CANARY_NAME"] == "algo-firewall-canary-${{ github.run_id }}-${{ github.run_attempt }}"
+    assert environment["CANARY_OWNER"] == "algo-${{ github.run_id }}-${{ github.run_attempt }}"
 
 
 def test_canary_uses_oidc_least_privilege_and_provider_lock():
@@ -50,6 +58,10 @@ def test_canary_verifies_every_transition_and_always_destroys():
     assert "GCE_FIREWALL_ID" in cleanup["run"]
     assert "GCE_NETWORK_ID" in cleanup["run"]
     assert "EC2_STACK_ID" in cleanup["run"]
+    assert "--output json" in cleanup["run"]
+    assert "jq -r '. // empty'" in cleanup["run"]
+    assert 'if [[ -z "${EC2_STACK_ID:-}"' not in cleanup["run"]
+    assert 'if [[ -z "${GCE_INSTANCE_ID:-}"' not in cleanup["run"]
     assert "GCE_FALLBACK_SAFE" not in cleanup["run"]
     assert "--all" not in cleanup["run"]
     preflight = next(step for step in steps if step.get("name") == "Preflight dedicated GCE project")
@@ -66,7 +78,8 @@ def test_gce_fallback_requires_discovered_immutable_ownership_ids():
         assert proof in cleanup["run"]
 
 
-def test_gce_fallback_after_discovery_deletes_only_exact_owned_resources(tmp_path):
+@pytest.mark.parametrize("record_ids", [True, False])
+def test_gce_fallback_discovers_and_deletes_only_exact_owned_resources(tmp_path, record_ids):
     steps = _workflow()["jobs"]["canary"]["steps"]
     cleanup = next(step for step in steps if step.get("name") == "Destroy canary")["run"]
     fake_bin = tmp_path / "bin"
@@ -93,13 +106,18 @@ def test_gce_fallback_after_discovery_deletes_only_exact_owned_resources(tmp_pat
         "GCE_PROJECT": "dedicated-canary-project",
         "CANARY_NAME": "algo-firewall-canary-123",
         "CANARY_OWNER": "algo-123-1",
-        "GCE_INSTANCE_ID": "instance-123",
-        "GCE_INSTANCE_ZONE": "us-central1-a",
-        "GCE_FIREWALL_ID": "firewall-123",
-        "GCE_NETWORK_ID": "network-123",
         "RUNNER_TEMP": str(tmp_path),
         "CALL_LOG": str(call_log),
     }
+    if record_ids:
+        environment.update(
+            {
+                "GCE_INSTANCE_ID": "instance-123",
+                "GCE_INSTANCE_ZONE": "us-central1-a",
+                "GCE_FIREWALL_ID": "firewall-123",
+                "GCE_NETWORK_ID": "network-123",
+            }
+        )
 
     result = subprocess.run(["bash", "-c", cleanup], env=environment, capture_output=True, text=True, check=False)
 
@@ -113,7 +131,44 @@ def test_gce_fallback_after_discovery_deletes_only_exact_owned_resources(tmp_pat
     assert "unknown" not in calls
 
 
-def test_gce_cleanup_without_preflight_ownership_refuses_all_deletes(tmp_path):
+def test_ec2_fallback_discovers_owned_partial_stack_before_deleting(tmp_path):
+    steps = _workflow()["jobs"]["canary"]["steps"]
+    cleanup = next(step for step in steps if step.get("name") == "Destroy canary")["run"]
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    call_log = tmp_path / "calls"
+    aws = fake_bin / "aws"
+    aws.write_text(
+        "#!/usr/bin/env bash\n"
+        'printf \'%s\\n\' "$*" >> "$CALL_LOG"\n'
+        "if [[ \"$*\" == *'list-stacks'* ]]; then\n"
+        "  printf '%s\\n' '\"arn:aws:cloudformation:us-east-1:123456789012:stack/algo-firewall-canary-123/stack-id\"'\n"
+        "elif [[ \"$*\" == *'describe-stacks'* ]]; then\n"
+        "  printf '%s\\t%s\\t%s\\n' "
+        "'arn:aws:cloudformation:us-east-1:123456789012:stack/algo-firewall-canary-123/stack-id' "
+        '"$CANARY_NAME" "$CANARY_OWNER"\n'
+        "fi\n",
+        encoding="utf-8",
+    )
+    aws.chmod(0o700)
+    environment = {
+        **os.environ,
+        "PATH": f"{fake_bin}:{os.environ['PATH']}",
+        "PROVIDER": "ec2",
+        "CANARY_NAME": "algo-firewall-canary-123",
+        "CANARY_OWNER": "algo-123-1",
+        "CALL_LOG": str(call_log),
+    }
+
+    result = subprocess.run(["bash", "-c", cleanup], env=environment, capture_output=True, text=True, check=False)
+
+    assert result.returncode == 0, result.stderr
+    calls = call_log.read_text(encoding="utf-8")
+    assert "list-stacks" in calls
+    assert "delete-stack --stack-name arn:aws:cloudformation:" in calls
+
+
+def test_gce_cleanup_lookup_failure_refuses_all_deletes(tmp_path):
     steps = _workflow()["jobs"]["canary"]["steps"]
     cleanup = next(step for step in steps if step.get("name") == "Destroy canary")["run"]
     fake_bin = tmp_path / "bin"
@@ -132,8 +187,7 @@ def test_gce_cleanup_without_preflight_ownership_refuses_all_deletes(tmp_path):
 
     result = subprocess.run(["bash", "-c", cleanup], env=environment, capture_output=True, text=True, check=False)
 
-    assert result.returncode == 1
-    assert "No GCE ownership proof" in result.stdout
+    assert result.returncode != 0
 
 
 def test_gce_preflight_api_failure_never_records_cleanup_ownership(tmp_path):
@@ -281,6 +335,7 @@ def test_gce_cleanup_fails_closed_on_lookup_errors_and_ownership_mismatch():
     assert "gcloud compute instances list" in cleanup
     assert "gcloud compute firewall-rules list" in cleanup
     assert "gcloud compute networks list" in cleanup
+    assert "Ambiguous GCE instance ownership" in cleanup
     assert "Refusing fallback cleanup" in cleanup
 
 

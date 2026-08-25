@@ -31,7 +31,7 @@ jobs:
     timeout-minutes: 60
     environment: cloud-firewall-canary
     env:
-      CANARY_NAME: algo-firewall-canary-${{ github.run_id }}
+      CANARY_NAME: algo-firewall-canary-${{ github.run_id }}-${{ github.run_attempt }}
       CANARY_OWNER: algo-${{ github.run_id }}-${{ github.run_attempt }}
       PROVIDER: ${{ inputs.provider }}
       AWS_REGION: ${{ vars.CANARY_AWS_REGION }}
@@ -317,27 +317,32 @@ jobs:
           NEED_FALLBACK=true
 
           if [[ "$NEED_FALLBACK" == "true" && "$PROVIDER" == "ec2" ]]; then
-            if [[ -z "${EC2_STACK_ID:-}" ]]; then
-              echo "::error::No EC2 ownership proof was recorded for safe destruction."
-              exit 1
+            DISCOVERED_STACK_ID="$(aws cloudformation list-stacks \
+              --stack-status-filter CREATE_IN_PROGRESS CREATE_FAILED CREATE_COMPLETE ROLLBACK_IN_PROGRESS \
+                ROLLBACK_FAILED ROLLBACK_COMPLETE DELETE_IN_PROGRESS DELETE_FAILED UPDATE_IN_PROGRESS \
+                UPDATE_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_COMPLETE UPDATE_FAILED UPDATE_ROLLBACK_IN_PROGRESS \
+                UPDATE_ROLLBACK_FAILED UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_ROLLBACK_COMPLETE \
+                REVIEW_IN_PROGRESS IMPORT_IN_PROGRESS IMPORT_COMPLETE IMPORT_ROLLBACK_IN_PROGRESS \
+                IMPORT_ROLLBACK_FAILED IMPORT_ROLLBACK_COMPLETE \
+              --query "StackSummaries[?StackName=='$CANARY_NAME'].StackId | [0]" --output json |
+                jq -r '. // empty')"
+            if [[ -z "$DISCOVERED_STACK_ID" || "$DISCOVERED_STACK_ID" == "None" ]]; then
+              echo "No run-owned EC2 stack exists; cleanup is complete."
+              exit 0
             fi
-            STACK_ROW="$(aws cloudformation describe-stacks --stack-name "$EC2_STACK_ID" \
+            STACK_ROW="$(aws cloudformation describe-stacks --stack-name "$DISCOVERED_STACK_ID" \
               --query "Stacks[0].[StackId,StackName,Tags[?Key=='AlgoCanaryOwner']|[0].Value]" \
               --output text)"
             read -r FOUND_STACK_ID FOUND_STACK_NAME FOUND_OWNER <<< "$STACK_ROW"
-            if [[ "$FOUND_STACK_ID" != "$EC2_STACK_ID" || "$FOUND_STACK_NAME" != "$CANARY_NAME" || \
-                  "$FOUND_OWNER" != "$CANARY_OWNER" ]]; then
+            if [[ "$FOUND_STACK_ID" != "$DISCOVERED_STACK_ID" || "$FOUND_STACK_NAME" != "$CANARY_NAME" || \
+                  "$FOUND_OWNER" != "$CANARY_OWNER" || \
+                  ( -n "${EC2_STACK_ID:-}" && "$FOUND_STACK_ID" != "$EC2_STACK_ID" ) ]]; then
               echo "::error::Refusing fallback cleanup of an unowned EC2 stack."
               exit 1
             fi
-            aws cloudformation delete-stack --stack-name "$EC2_STACK_ID"
-            aws cloudformation wait stack-delete-complete --stack-name "$EC2_STACK_ID"
+            aws cloudformation delete-stack --stack-name "$FOUND_STACK_ID"
+            aws cloudformation wait stack-delete-complete --stack-name "$FOUND_STACK_ID"
           elif [[ "$NEED_FALLBACK" == "true" && "$PROVIDER" == "gce" ]]; then
-            if [[ -z "${GCE_INSTANCE_ID:-}" || -z "${GCE_INSTANCE_ZONE:-}" || \
-                  -z "${GCE_FIREWALL_ID:-}" || -z "${GCE_NETWORK_ID:-}" ]]; then
-              echo "::error::No GCE ownership proof was recorded for safe destruction."
-              exit 1
-            fi
             INSTANCE_ROW="$(gcloud compute instances list --project="$GCE_PROJECT" \
               --filter="name=$CANARY_NAME" \
               --format='csv[no-heading](name,id,zone.basename(),labels.algo-canary-owner)' \
@@ -348,31 +353,38 @@ jobs:
             NETWORK_ROW="$(gcloud compute networks list --project="$GCE_PROJECT" \
               --filter='name=algovpn' --format='csv[no-heading](name,id,description)' \
               2> "$RUNNER_TEMP/gcloud-destroy.log")"
+            if [[ "$INSTANCE_ROW" == *$'\n'* ]]; then
+              echo "::error::Ambiguous GCE instance ownership; refusing all cleanup."
+              exit 1
+            fi
             if [[ -n "$INSTANCE_ROW" ]]; then
               IFS=, read -r FOUND_NAME FOUND_ID FOUND_ZONE FOUND_OWNER <<< "$INSTANCE_ROW"
-              if [[ "$FOUND_NAME" != "$CANARY_NAME" || "$FOUND_ID" != "$GCE_INSTANCE_ID" || \
-                    "$FOUND_ZONE" != "$GCE_INSTANCE_ZONE" || "$FOUND_OWNER" != "$CANARY_OWNER" ]]; then
+              if [[ "$FOUND_NAME" != "$CANARY_NAME" || "$FOUND_OWNER" != "$CANARY_OWNER" || \
+                    ( -n "${GCE_INSTANCE_ID:-}" && "$FOUND_ID" != "$GCE_INSTANCE_ID" ) || \
+                    ( -n "${GCE_INSTANCE_ZONE:-}" && "$FOUND_ZONE" != "$GCE_INSTANCE_ZONE" ) ]]; then
                 echo "::error::Refusing fallback cleanup of an unowned GCE instance."
                 exit 1
               fi
-
+              GCE_INSTANCE_ID="$FOUND_ID"
+              GCE_INSTANCE_ZONE="$FOUND_ZONE"
             fi
             if [[ -n "$FIREWALL_ROW" ]]; then
               IFS=, read -r FOUND_NAME FOUND_ID FOUND_OWNER <<< "$FIREWALL_ROW"
-              if [[ "$FOUND_NAME" != "algovpn" || "$FOUND_ID" != "$GCE_FIREWALL_ID" || \
-                    "$FOUND_OWNER" != "algo-canary-owner=$CANARY_OWNER" ]]; then
+              if [[ "$FOUND_NAME" != "algovpn" || "$FOUND_OWNER" != "algo-canary-owner=$CANARY_OWNER" || \
+                    ( -n "${GCE_FIREWALL_ID:-}" && "$FOUND_ID" != "$GCE_FIREWALL_ID" ) ]]; then
                 echo "::error::Refusing fallback cleanup of an unowned GCE firewall."
                 exit 1
               fi
-
+              GCE_FIREWALL_ID="$FOUND_ID"
             fi
             if [[ -n "$NETWORK_ROW" ]]; then
               IFS=, read -r FOUND_NAME FOUND_ID FOUND_OWNER <<< "$NETWORK_ROW"
-              if [[ "$FOUND_NAME" != "algovpn" || "$FOUND_ID" != "$GCE_NETWORK_ID" || \
-                    "$FOUND_OWNER" != "algo-canary-owner=$CANARY_OWNER" ]]; then
+              if [[ "$FOUND_NAME" != "algovpn" || "$FOUND_OWNER" != "algo-canary-owner=$CANARY_OWNER" || \
+                    ( -n "${GCE_NETWORK_ID:-}" && "$FOUND_ID" != "$GCE_NETWORK_ID" ) ]]; then
                 echo "::error::Refusing fallback cleanup of an unowned GCE network."
                 exit 1
               fi
+              GCE_NETWORK_ID="$FOUND_ID"
             fi
             # Validate every observed resource before performing the first
             # irreversible operation, so an ownership mismatch changes nothing.
