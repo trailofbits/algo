@@ -15,6 +15,10 @@ def _workflow() -> dict:
     return yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
 
 
+def _cleanup_step() -> dict:
+    return next(step for step in _workflow()["jobs"]["cleanup"]["steps"] if step.get("name") == "Destroy canary")
+
+
 def test_canary_is_manual_only_and_provider_limited():
     workflow = _workflow()
 
@@ -36,9 +40,36 @@ def test_canary_uses_run_attempt_specific_name_and_owner():
 def test_canary_uses_oidc_least_privilege_and_provider_lock():
     workflow = _workflow()
 
-    assert workflow["permissions"] == {"contents": "read", "id-token": "write"}
+    assert workflow["permissions"] == {}
+    assert workflow["jobs"]["canary"]["permissions"] == {"contents": "read", "id-token": "write"}
+    assert workflow["jobs"]["cleanup"]["permissions"] == {"contents": "read", "id-token": "write"}
     assert workflow["concurrency"]["group"] == "provider-firewall-canary-${{ inputs.provider }}"
     assert workflow["concurrency"]["cancel-in-progress"] is False
+
+
+def test_cleanup_runs_in_a_separate_job_after_canary_timeout_or_failure():
+    jobs = _workflow()["jobs"]
+
+    cleanup = jobs["cleanup"]
+    assert cleanup["needs"] == "canary"
+    assert cleanup["if"] == "${{ always() }}"
+    assert cleanup["environment"] == "cloud-firewall-canary-cleanup"
+    assert cleanup["environment"] != jobs["canary"]["environment"]
+    assert cleanup["timeout-minutes"] == 15
+    assert all(step.get("name") != "Destroy canary" for step in jobs["canary"]["steps"])
+    assert any(step.get("name") == "Destroy canary" for step in cleanup["steps"])
+    cleanup_steps = cleanup["steps"]
+    checkout_index = next(
+        index for index, step in enumerate(cleanup_steps) if step.get("uses", "").startswith("actions/checkout@")
+    )
+    google_auth_index = next(
+        index
+        for index, step in enumerate(cleanup_steps)
+        if step.get("uses", "").startswith("google-github-actions/auth@")
+    )
+    assert checkout_index < google_auth_index
+    assert cleanup_steps[checkout_index]["with"]["persist-credentials"] is False
+    assert _cleanup_step()["if"] == "${{ always() }}"
 
 
 def test_canary_verifies_every_transition_and_always_destroys():
@@ -49,8 +80,7 @@ def test_canary_verifies_every_transition_and_always_destroys():
     assert names.index("Verify both protocols") < names.index("Verify WireGuard only")
     assert names.index("Verify WireGuard only") < names.index("Verify IPsec only")
     assert any("./algo list-servers" in step.get("run", "") for step in steps)
-    cleanup = next(step for step in steps if step.get("name") == "Destroy canary")
-    assert cleanup["if"] == "${{ always() }}"
+    cleanup = _cleanup_step()
     assert "./algo destroy" not in cleanup["run"]
     assert "aws cloudformation delete-stack" in cleanup["run"]
     assert "gcloud compute instances delete" in cleanup["run"]
@@ -70,8 +100,7 @@ def test_canary_verifies_every_transition_and_always_destroys():
 
 
 def test_gce_fallback_requires_discovered_immutable_ownership_ids():
-    steps = _workflow()["jobs"]["canary"]["steps"]
-    cleanup = next(step for step in steps if step.get("name") == "Destroy canary")
+    cleanup = _cleanup_step()
 
     assert '"$NEED_FALLBACK" == "true" && "$PROVIDER" == "gce"' in cleanup["run"]
     for proof in ("GCE_INSTANCE_ID", "GCE_INSTANCE_ZONE", "GCE_FIREWALL_ID", "GCE_NETWORK_ID"):
@@ -80,8 +109,7 @@ def test_gce_fallback_requires_discovered_immutable_ownership_ids():
 
 @pytest.mark.parametrize("record_ids", [True, False])
 def test_gce_fallback_discovers_and_deletes_only_exact_owned_resources(tmp_path, record_ids):
-    steps = _workflow()["jobs"]["canary"]["steps"]
-    cleanup = next(step for step in steps if step.get("name") == "Destroy canary")["run"]
+    cleanup = _cleanup_step()["run"]
     fake_bin = tmp_path / "bin"
     fake_bin.mkdir()
     call_log = tmp_path / "calls"
@@ -132,8 +160,7 @@ def test_gce_fallback_discovers_and_deletes_only_exact_owned_resources(tmp_path,
 
 
 def test_ec2_fallback_discovers_owned_partial_stack_before_deleting(tmp_path):
-    steps = _workflow()["jobs"]["canary"]["steps"]
-    cleanup = next(step for step in steps if step.get("name") == "Destroy canary")["run"]
+    cleanup = _cleanup_step()["run"]
     fake_bin = tmp_path / "bin"
     fake_bin.mkdir()
     call_log = tmp_path / "calls"
@@ -169,8 +196,7 @@ def test_ec2_fallback_discovers_owned_partial_stack_before_deleting(tmp_path):
 
 
 def test_gce_cleanup_lookup_failure_refuses_all_deletes(tmp_path):
-    steps = _workflow()["jobs"]["canary"]["steps"]
-    cleanup = next(step for step in steps if step.get("name") == "Destroy canary")["run"]
+    cleanup = _cleanup_step()["run"]
     fake_bin = tmp_path / "bin"
     fake_bin.mkdir()
     gcloud = fake_bin / "gcloud"
@@ -218,8 +244,7 @@ def test_gce_preflight_api_failure_never_records_cleanup_ownership(tmp_path):
 
 
 def test_exact_provider_cleanup_does_not_use_managed_destroy_by_name(tmp_path):
-    steps = _workflow()["jobs"]["canary"]["steps"]
-    cleanup = next(step for step in steps if step.get("name") == "Destroy canary")["run"]
+    cleanup = _cleanup_step()["run"]
     fake_bin = tmp_path / "bin"
     fake_bin.mkdir()
     call_log = tmp_path / "calls"
@@ -297,7 +322,6 @@ def test_gce_oidc_is_refreshed_before_each_long_transition_and_cleanup():
         "Deploy both protocols",
         "Transition to WireGuard only",
         "Transition to IPsec only",
-        "Destroy canary",
     ):
         operation_index = names.index(operation)
         assert any(refresh < operation_index for refresh in refreshes)
@@ -313,8 +337,10 @@ def test_gce_oidc_is_refreshed_before_each_long_transition_and_cleanup():
             )
             assert any(prior_operation < refresh < operation_index for refresh in refreshes)
 
-    cleanup_refresh = steps[max(index for index in refreshes if index < names.index("Destroy canary"))]
-    assert cleanup_refresh["if"] == "${{ always() && inputs.provider == 'gce' }}"
+    cleanup_steps = _workflow()["jobs"]["cleanup"]["steps"]
+    cleanup_names = [step.get("name") for step in cleanup_steps]
+    cleanup_auth = cleanup_names.index("Authenticate cleanup to Google Cloud with OIDC")
+    assert cleanup_auth < cleanup_names.index("Destroy canary")
 
 
 def test_canary_records_and_verifies_run_specific_provider_ownership():
@@ -328,8 +354,7 @@ def test_canary_records_and_verifies_run_specific_provider_ownership():
 
 
 def test_gce_cleanup_fails_closed_on_lookup_errors_and_ownership_mismatch():
-    workflow_text = WORKFLOW_PATH.read_text(encoding="utf-8")
-    cleanup = workflow_text.split("- name: Destroy canary", 1)[1]
+    cleanup = _cleanup_step()["run"]
 
     assert "mapfile -t INSTANCE_ROWS < <(" not in cleanup
     assert "gcloud compute instances list" in cleanup
@@ -340,8 +365,7 @@ def test_gce_cleanup_fails_closed_on_lookup_errors_and_ownership_mismatch():
 
 
 def test_gce_cleanup_validates_every_owned_resource_before_first_delete():
-    workflow_text = WORKFLOW_PATH.read_text(encoding="utf-8")
-    cleanup = workflow_text.split("- name: Destroy canary", 1)[1]
+    cleanup = _cleanup_step()["run"]
 
     first_delete = min(
         cleanup.index("gcloud compute instances delete"),

@@ -16,9 +16,7 @@ name: Provider firewall canary
           - ec2
           - gce
 
-permissions:
-  contents: read
-  id-token: write
+permissions: {}
 
 concurrency:
   group: provider-firewall-canary-${{ inputs.provider }}
@@ -27,6 +25,9 @@ concurrency:
 jobs:
   canary:
     name: ${{ inputs.provider }} firewall transitions
+    permissions:
+      contents: read
+      id-token: write
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     environment: cloud-firewall-canary
@@ -298,14 +299,54 @@ jobs:
           --stage ipsec-only
           --state-file "$RUNNER_TEMP/firewall-states.json"
 
-      - name: Refresh Google Cloud OIDC before cleanup
-        if: ${{ always() && inputs.provider == 'gce' }}
+  cleanup:
+    name: ${{ inputs.provider }} canary cleanup
+    needs: canary
+    if: ${{ always() }}
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    # This environment must have no required reviewers, wait timer, or custom
+    # protection gate: cleanup has to start automatically after timeout/failure.
+    # Duplicate only the provider OIDC/region/project variables required below,
+    # and scope both provider trust policies to this cleanup environment.
+    environment: cloud-firewall-canary-cleanup
+    env:
+      CANARY_NAME: algo-firewall-canary-${{ github.run_id }}-${{ github.run_attempt }}
+      CANARY_OWNER: algo-${{ github.run_id }}-${{ github.run_attempt }}
+      PROVIDER: ${{ inputs.provider }}
+      AWS_REGION: ${{ vars.CANARY_AWS_REGION }}
+      GCE_PROJECT: ${{ vars.CANARY_GCE_PROJECT }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Authenticate cleanup to AWS with OIDC
+        if: inputs.provider == 'ec2'
+        uses: aws-actions/configure-aws-credentials@00943011d9042930efac3dcd3a170e4273319bc8  # v5.1.0
+        with:
+          role-to-assume: ${{ vars.CANARY_AWS_ROLE_ARN }}
+          aws-region: ${{ vars.CANARY_AWS_REGION }}
+          role-session-name: algo-firewall-canary-cleanup
+          mask-aws-account-id: true
+
+      - name: Authenticate cleanup to Google Cloud with OIDC
+        if: inputs.provider == 'gce'
         uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093  # v3.0.0
         with:
           workload_identity_provider: ${{ vars.CANARY_GCE_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.CANARY_GCE_SERVICE_ACCOUNT }}
           create_credentials_file: true
           export_environment_variables: true
+
+      - name: Set up gcloud for cleanup
+        if: inputs.provider == 'gce'
+        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db  # v3.0.1
+        with:
+          project_id: ${{ vars.CANARY_GCE_PROJECT }}
 
       - name: Destroy canary
         if: ${{ always() }}
