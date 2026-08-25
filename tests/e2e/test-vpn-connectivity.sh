@@ -60,6 +60,14 @@ log_step()  { echo -e "\n${GREEN}==>${NC} $*"; }
 # =============================================================================
 
 # shellcheck disable=SC2317,SC2329  # Functions are invoked directly and via trap
+print_ipsec_client_log() {
+    local log_file="${IPSEC_CLIENT_DIR}/launcher.log"
+    if [[ -n "${IPSEC_CLIENT_DIR}" && -f "${log_file}" ]]; then
+        sed -E "s#${IPSEC_CLIENT_DIR}#<redacted-client-dir>#g" "${log_file}" >&2 || true
+    fi
+}
+
+# shellcheck disable=SC2317,SC2329  # Functions are invoked directly and via trap
 stop_ipsec_client() {
     if [[ -z "${IPSEC_CLIENT_PID}" ]]; then
         return 0
@@ -611,8 +619,7 @@ EOF
     while [[ ! -S "${vici_socket}" && ${attempts} -lt 10 ]]; do
         if ! kill -0 "${IPSEC_CLIENT_PID}" 2>/dev/null; then
             log_error "Isolated charon client exited before opening its control socket"
-            sed -E "s#${IPSEC_CLIENT_DIR}#<redacted-client-dir>#g" \
-                "${IPSEC_CLIENT_DIR}/launcher.log" >&2 || true
+            print_ipsec_client_log
             return 1
         fi
         sleep 1 || return 1
@@ -634,6 +641,7 @@ EOF
     if ! ip netns exec "${NAMESPACE}" "${IPSEC_SWANCTL_BINARY}" --initiate --child algovpn \
         --timeout 30 --uri "${IPSEC_VICI_URI}" >/dev/null; then
         log_error "swanctl failed to initiate the IPsec tunnel"
+        print_ipsec_client_log
         return 1
     fi
 

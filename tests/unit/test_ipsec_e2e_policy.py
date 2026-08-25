@@ -90,6 +90,16 @@ def test_ipsec_client_credentials_are_private_and_torn_down():
     assert "set -x" not in script
 
 
+def test_ipsec_initiation_failure_prints_sanitized_client_diagnostics():
+    script = _script()
+    initiate_failure = script.split('log_error "swanctl failed to initiate the IPsec tunnel"', 1)[1].split(
+        "return 1", 1
+    )[0]
+
+    assert "print_ipsec_client_log" in initiate_failure
+    assert "<redacted-client-dir>" in script
+
+
 def test_ipsec_client_shutdown_is_bounded_and_escalates_if_needed():
     script = _script()
 
