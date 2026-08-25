@@ -676,11 +676,11 @@ EOF
     fi
 
     # Both values stay out of logs to avoid leaking runner/network metadata.
-    if ! server_source_ip=$(curl --fail --silent --show-error --max-time 15 "${PUBLIC_IP_URL}"); then
+    if ! server_source_ip=$(curl --ipv4 --fail --silent --show-error --max-time 15 "${PUBLIC_IP_URL}"); then
         log_error "Could not obtain the server source IP from the test endpoint"
         return 1
     fi
-    if ! vpn_source_ip=$(ip netns exec "${NAMESPACE}" curl --interface "${ipsec_virtual_ip}" --fail --silent \
+    if ! vpn_source_ip=$(ip netns exec "${NAMESPACE}" curl --ipv4 --interface "${ipsec_virtual_ip}" --fail --silent \
         --show-error --max-time 15 "${PUBLIC_IP_URL}"); then
         log_error "Routed HTTPS fetch through the IPsec tunnel failed"
         return 1
