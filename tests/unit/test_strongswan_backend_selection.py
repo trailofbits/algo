@@ -53,6 +53,15 @@ def test_backend_controls_service_and_packages_without_version_guessing():
     assert "strongswan_backend == 'starter'" in ubuntu
 
 
+def test_localhost_ci_selects_the_backend_specific_service_for_health_and_diagnostics():
+    workflow = Path(".github/workflows/integration-tests.yml").read_text(encoding="utf-8")
+
+    assert workflow.count('STRONGSWAN_SERVICE="strongswan"') >= 2
+    assert workflow.count('STRONGSWAN_SERVICE="strongswan-starter"') >= 2
+    assert workflow.count('systemctl is-active --quiet "${STRONGSWAN_SERVICE}"') >= 1
+    assert 'systemctl is-active "${STRONGSWAN_SERVICE}"' in workflow
+
+
 def test_backend_specific_reload_is_explicit_and_secret_safe():
     handlers = yaml.safe_load(Path("roles/strongswan/handlers/main.yml").read_text(encoding="utf-8"))
     names = {handler["name"]: handler for handler in handlers}

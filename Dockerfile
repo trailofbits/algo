@@ -48,6 +48,7 @@ RUN printf "Built on: %s\nTarget: %s\n" "${BUILDPLATFORM}" "${TARGETPLATFORM}" >
 # Note: Running as root for bind mount compatibility with algo-docker.sh
 # The script handles /data volume permissions and needs root access
 # This is a Docker limitation with bind-mounted volumes
+# nosemgrep: dockerfile.security.last-user-is-root.last-user-is-root
 USER root
 
 # Health check to ensure container is functional

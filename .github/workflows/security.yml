@@ -24,10 +24,7 @@ jobs:
           persist-credentials: false
 
       - name: Run semgrep
-        run: >
-          semgrep --config auto
-          --exclude-rule dockerfile.security.last-user-is-root.last-user-is-root
-          --error --quiet .
+        run: semgrep --config auto --error --quiet .
 
   dependency-audit:
     name: Retained-provider dependency audit

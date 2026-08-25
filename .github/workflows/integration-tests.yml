@@ -138,10 +138,14 @@ jobs:
             echo "✓ WireGuard is running"
           fi
 
-          # Check StrongSwan (service name is strongswan-starter on Ubuntu 20.04+)
+          # Check the backend-specific StrongSwan service.
           if [[ "${{ matrix.vpn_type }}" == "ipsec" || "${{ matrix.vpn_type }}" == "both" ]]; then
             echo "Checking StrongSwan..."
-            if ! sudo systemctl is-active --quiet strongswan-starter; then
+            STRONGSWAN_SERVICE="strongswan-starter"
+            if [[ "${{ matrix.os }}" == "ubuntu-24.04" ]]; then
+              STRONGSWAN_SERVICE="strongswan"
+            fi
+            if ! sudo systemctl is-active --quiet "${STRONGSWAN_SERVICE}"; then
               echo "✗ StrongSwan service not running"
               exit 1
             fi
@@ -231,10 +235,14 @@ jobs:
       - name: Create sanitized diagnostics on failure
         if: failure()
         run: |
+          STRONGSWAN_SERVICE="strongswan-starter"
+          if [[ "${{ matrix.os }}" == "ubuntu-24.04" ]]; then
+            STRONGSWAN_SERVICE="strongswan"
+          fi
           {
             echo "vpn_type=${{ matrix.vpn_type }}"
             echo "wireguard_service=$(sudo systemctl is-active wg-quick@wg0 2>/dev/null || printf unavailable)"
-            echo "strongswan_service=$(sudo systemctl is-active strongswan-starter 2>/dev/null || printf unavailable)"
+            echo "strongswan_service=$(sudo systemctl is-active "${STRONGSWAN_SERVICE}" 2>/dev/null || printf unavailable)"
             echo "dnsmasq_service=$(sudo systemctl is-active dnsmasq 2>/dev/null || printf unavailable)"
           } > "${RUNNER_TEMP}/algo-diagnostics.txt"
 

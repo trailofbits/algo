@@ -110,6 +110,20 @@ The following decisions are examples of the gate in action and are intentional p
 
 Reconsidering either class of feature requires an explicit threat-model revision, not only an implementation pull request.
 
+## Temporary security waivers
+
+### Root runtime user in the Docker image
+
+- Rule ID: `dockerfile.security.last-user-is-root.last-user-is-root`
+- Status: accepted temporary risk
+- Owner: Trail of Bits Algo maintainers
+- Expires: 2026-11-30
+- Reachability: `algo-docker.sh` and both rsync operations execute as UID 0 so they can read and replace files on bind-mounted `/data` regardless of host-side UID mapping. UID 0 is therefore directly reachable inside the container; the documented `--cap-drop=all` runtime option reduces capabilities but is a caller-controlled mitigation and does not make this finding unreachable.
+- Scope: the waiver applies only to the final `USER root` declaration in `Dockerfile`; it does not waive container build, SBOM, vulnerability, capability, mount, or runtime checks.
+- Remediation: redesign bind-mount initialization around a short privileged entrypoint that permanently drops to the existing `algo` user, then remove the Semgrep exclusion and verify rootless image behavior in CI before this expiry.
+
+This is a risk acceptance, not a false-positive classification. Release evidence must continue to identify any unavailable container runtime validation.
+
 ## Reporting model gaps
 
 Report exploitable implementation failures privately as described in [SECURITY.md](../SECURITY.md). Public design discussions may propose corrections to assumptions, assets, or boundaries, but should not include vulnerability details or live credentials.

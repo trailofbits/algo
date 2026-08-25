@@ -96,6 +96,22 @@ def test_threat_model_records_the_secure_core_policy():
     ) in normalized
 
 
+def test_root_container_semgrep_exception_has_a_time_bounded_owned_waiver():
+    threat_model = THREAT_MODEL.read_text(encoding="utf-8")
+    workflow = _read(".github/workflows/security.yml")
+    dockerfile = _read("Dockerfile")
+    rule_id = "dockerfile.security.last-user-is-root.last-user-is-root"
+
+    assert "--exclude-rule" not in workflow
+    assert f"# nosemgrep: {rule_id}" in dockerfile
+    assert rule_id in threat_model
+    assert "Status: accepted temporary risk" in threat_model
+    assert "Owner: Trail of Bits Algo maintainers" in threat_model
+    assert "Expires: 2026-11-30" in threat_model
+    assert "Reachability:" in threat_model
+    assert "Remediation:" in threat_model
+
+
 def test_security_policy_links_to_the_threat_model_and_states_supported_versions():
     security = _read("SECURITY.md")
 
