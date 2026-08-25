@@ -5,9 +5,27 @@ import subprocess
 import tomllib
 from pathlib import Path
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).parents[2]
+AZURE_EXCLUSION_PAGE = """# Microsoft Azure (excluded)
+
+Microsoft Azure is **excluded and unverified** in this release. The Azure provider is rejected before provisioning, so this page intentionally provides no setup, authentication, or deployment instructions.
+
+Use one of the retained providers listed in the [documentation index](index.md), or deploy to an [existing supported Ubuntu server](deploy-to-ubuntu.md). Historical Azure role code or prompts are not a support or security-validation claim.
+"""
+
+
+def _assert_azure_page_is_exclusion_only(text):
+    assert text == AZURE_EXCLUSION_PAGE
+
+
+def test_azure_exclusion_policy_rejects_alternate_onboarding_wording():
+    azure = (ROOT / "docs" / "cloud-azure.md").read_text(encoding="utf-8")
+
+    with pytest.raises(AssertionError):
+        _assert_azure_page_is_exclusion_only(azure + "\n```bash\naz account show\n```\n")
 
 
 def test_release_version_and_python_support_are_consistent():
@@ -61,10 +79,10 @@ def test_excluded_provider_claims_are_consistent_repository_wide():
     assert "cloud-azure" not in troubleshooting
     assert "### Azure:" not in troubleshooting
     assert "Configure [Azure]" not in index
-    assert "az login" not in azure
-    assert "able to deploy an AlgoVPN instance" not in azure
-    assert "excluded and unverified" in azure
-    assert "rejected before provisioning" in azure
+    _assert_azure_page_is_exclusion_only(azure)
+    installer_guide = (ROOT / "docs" / "deploy-from-script-or-cloud-init-to-localhost.md").read_text(encoding="utf-8")
+    endpoint_guidance = next(line for line in installer_guide.splitlines() if line.startswith("- `ENDPOINT`:"))
+    assert "Azure" not in endpoint_guidance
 
 
 def test_ubuntu_support_and_ec2_selector_docs_match_the_bounded_contract():

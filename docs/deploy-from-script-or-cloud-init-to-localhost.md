@@ -31,7 +31,7 @@ The command will prepare the environment and install AlgoVPN with the default pa
 
 - `SSH_TUNNELING`: Enable SSH tunneling for each user. Default: false.
 
-- `ENDPOINT`: The public IP address or domain name of your server: (IMPORTANT! This is used to verify the certificate). It will be gathered automatically for DigitalOcean, AWS, GCE, Azure or Vultr if the `METHOD` is cloud. Otherwise, you need to define this variable according to your public IP address.
+- `ENDPOINT`: The public IP address or domain name of your server: (IMPORTANT! This is used to verify the certificate). It will be gathered automatically for DigitalOcean, AWS, GCE, or Vultr if the `METHOD` is cloud. Otherwise, you need to define this variable according to your public IP address.
 
 - `USERS`: list of VPN users. Comma-separated list. Default: user1.
 
