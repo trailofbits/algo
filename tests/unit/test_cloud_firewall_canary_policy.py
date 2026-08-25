@@ -30,11 +30,17 @@ def test_canary_is_manual_only_and_provider_limited():
     assert "lightsail" not in provider["options"]
 
 
-def test_canary_uses_run_attempt_specific_name_and_owner():
-    environment = _workflow()["jobs"]["canary"]["env"]
+def test_canary_uses_rerun_stable_name_and_owner():
+    workflow = _workflow()
+    canary_environment = workflow["jobs"]["canary"]["env"]
+    cleanup_environment = workflow["jobs"]["cleanup"]["env"]
 
-    assert environment["CANARY_NAME"] == "algo-firewall-canary-${{ github.run_id }}-${{ github.run_attempt }}"
-    assert environment["CANARY_OWNER"] == "algo-${{ github.run_id }}-${{ github.run_attempt }}"
+    assert canary_environment["CANARY_NAME"] == "algo-firewall-canary-${{ github.run_id }}"
+    assert canary_environment["CANARY_OWNER"] == "algo-${{ github.run_id }}"
+    assert cleanup_environment["CANARY_NAME"] == canary_environment["CANARY_NAME"]
+    assert cleanup_environment["CANARY_OWNER"] == canary_environment["CANARY_OWNER"]
+    assert "run_attempt" not in str(canary_environment)
+    assert "run_attempt" not in str(cleanup_environment)
 
 
 def test_canary_uses_oidc_least_privilege_and_provider_lock():

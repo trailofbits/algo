@@ -32,8 +32,8 @@ jobs:
     timeout-minutes: 60
     environment: cloud-firewall-canary
     env:
-      CANARY_NAME: algo-firewall-canary-${{ github.run_id }}-${{ github.run_attempt }}
-      CANARY_OWNER: algo-${{ github.run_id }}-${{ github.run_attempt }}
+      CANARY_NAME: algo-firewall-canary-${{ github.run_id }}
+      CANARY_OWNER: algo-${{ github.run_id }}
       PROVIDER: ${{ inputs.provider }}
       AWS_REGION: ${{ vars.CANARY_AWS_REGION }}
       GCE_REGION: ${{ vars.CANARY_GCE_REGION }}
@@ -314,8 +314,8 @@ jobs:
     # and scope both provider trust policies to this cleanup environment.
     environment: cloud-firewall-canary-cleanup
     env:
-      CANARY_NAME: algo-firewall-canary-${{ github.run_id }}-${{ github.run_attempt }}
-      CANARY_OWNER: algo-${{ github.run_id }}-${{ github.run_attempt }}
+      CANARY_NAME: algo-firewall-canary-${{ github.run_id }}
+      CANARY_OWNER: algo-${{ github.run_id }}
       PROVIDER: ${{ inputs.provider }}
       AWS_REGION: ${{ vars.CANARY_AWS_REGION }}
       GCE_PROJECT: ${{ vars.CANARY_GCE_PROJECT }}
