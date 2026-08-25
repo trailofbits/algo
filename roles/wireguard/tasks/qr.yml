@@ -19,7 +19,7 @@
   assert:
     that:
       - item is string
-      - item is regex('^[A-Za-z0-9][A-Za-z0-9_.@ -]*$')
+      - item is regex('^[A-Za-z0-9][A-Za-z0-9_.@ -]*\Z')
     fail_msg: WireGuard usernames used for QR output must be safe filename components
   loop: "{{ wireguard_users }}"
   when: item in users

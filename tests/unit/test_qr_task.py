@@ -1,6 +1,7 @@
 """Security and reliability contract for WireGuard QR generation."""
 
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -117,7 +118,12 @@ def test_qr_usernames_are_safe_single_path_components():
     assert validation["loop"] == "{{ wireguard_users }}"
     conditions = validation["assert"]["that"]
     assert "item is string" in conditions
-    assert "item is regex('^[A-Za-z0-9][A-Za-z0-9_.@ -]*$')" in conditions
+    regex_condition = next(condition for condition in conditions if condition.startswith("item is regex("))
+    pattern = regex_condition.removeprefix("item is regex('").removesuffix("')")
+    assert pattern.endswith(r"\Z")
+    assert re.search(pattern, "alice")
+    for unsafe in ("alice\n", "../alice", "alice/bob", "alice\x00"):
+        assert not re.search(pattern, unsafe)
 
 
 def test_existing_qr_outputs_must_be_regular_non_symlink_files():
