@@ -14,10 +14,14 @@ IFS=$'\n\t'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ALGO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-# Configuration
-NAMESPACE="algo-client"
-VETH_SERVER="veth-algo-srv"
-VETH_CLIENT="veth-algo-cli"
+# Configuration. Randomized names/comments make cleanup ownership unique even
+# across overlapping runs and PID reuse.
+read -r RULE_UUID < /proc/sys/kernel/random/uuid
+RUN_TOKEN=${RULE_UUID//-/}
+RUN_TOKEN=${RUN_TOKEN:0:8}
+NAMESPACE="algo-${RUN_TOKEN}"
+VETH_SERVER="ae-s-${RUN_TOKEN}"
+VETH_CLIENT="ae-c-${RUN_TOKEN}"
 SERVER_BRIDGE_IP="10.99.0.1"
 CLIENT_BRIDGE_IP="10.99.0.2"
 CONFIG_DIR="${ALGO_ROOT}/configs/localhost"
@@ -31,10 +35,13 @@ PUBLIC_IP_URL="${PUBLIC_IP_URL:-https://api.ipify.org}"
 ORIGINAL_IP_FORWARD=""
 ORIGINAL_RP_FILTER_ALL=""
 ORIGINAL_RP_FILTER_VETH=""
-NAT_RULE_ADDED=false
-WG_RULE_ADDED=false
-IKE_RULE_ADDED=false
-NATT_RULE_ADDED=false
+WG_CONFIG_FILE=""
+TCPDUMP_LOG=""
+TCPDUMP_PID=""
+RULE_COMMENT="algo-e2e-${RULE_UUID}"
+NETWORK_CLEANUP_ARMED=false
+HOST_STATE_LOCK="/run/algo-e2e-host-state.lock"
+HOST_STATE_LOCK_FD=""
 
 # WireGuard network from config.cfg defaults
 WG_SERVER_IP="10.49.0.1"
@@ -94,7 +101,9 @@ cleanup() {
     log_step "Cleaning up test environment..."
 
     # Tear down WireGuard in namespace (if running)
-    ip netns exec "${NAMESPACE}" wg-quick down /tmp/algo-test-wg.conf 2>/dev/null || true
+    if [[ -n "${WG_CONFIG_FILE}" ]]; then
+        ip netns exec "${NAMESPACE}" wg-quick down "${WG_CONFIG_FILE}" 2>/dev/null || true
+    fi
 
     # Tear down the isolated swanctl/charon client without exposing credentials.
     if [[ -n "${IPSEC_VICI_URI}" && -x "${IPSEC_SWANCTL_BINARY}" ]]; then
@@ -103,18 +112,29 @@ cleanup() {
     fi
     stop_ipsec_client
 
-    # Remove exactly the firewall rules this process successfully added.
-    if [[ "${NAT_RULE_ADDED}" == true ]]; then
-        iptables -t nat -D POSTROUTING -s "${CLIENT_BRIDGE_IP}/32" ! -d 10.99.0.0/24 -j MASQUERADE || exit_code=1
+    # Cleanup is armed before the first owned mutation, but only after all
+    # pre-existing-resource checks pass.
+    if [[ "${NETWORK_CLEANUP_ARMED}" == true ]]; then
+    # Discover and remove only rules carrying this run's unguessable ownership tag.
+    if iptables -t nat -C POSTROUTING -s "${CLIENT_BRIDGE_IP}/32" ! -d 10.99.0.0/24 \
+        -m comment --comment "${RULE_COMMENT}" -j MASQUERADE 2>/dev/null; then
+        iptables -t nat -D POSTROUTING -s "${CLIENT_BRIDGE_IP}/32" ! -d 10.99.0.0/24 \
+            -m comment --comment "${RULE_COMMENT}" -j MASQUERADE || exit_code=1
     fi
-    if [[ "${WG_RULE_ADDED}" == true ]]; then
-        iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 51820 -j ACCEPT || exit_code=1
+    if iptables -C INPUT -i "${VETH_SERVER}" -p udp --dport 51820 \
+        -m comment --comment "${RULE_COMMENT}" -j ACCEPT 2>/dev/null; then
+        iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 51820 \
+            -m comment --comment "${RULE_COMMENT}" -j ACCEPT || exit_code=1
     fi
-    if [[ "${IKE_RULE_ADDED}" == true ]]; then
-        iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 500 -j ACCEPT || exit_code=1
+    if iptables -C INPUT -i "${VETH_SERVER}" -p udp --dport 500 \
+        -m comment --comment "${RULE_COMMENT}" -j ACCEPT 2>/dev/null; then
+        iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 500 \
+            -m comment --comment "${RULE_COMMENT}" -j ACCEPT || exit_code=1
     fi
-    if [[ "${NATT_RULE_ADDED}" == true ]]; then
-        iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 4500 -j ACCEPT || exit_code=1
+    if iptables -C INPUT -i "${VETH_SERVER}" -p udp --dport 4500 \
+        -m comment --comment "${RULE_COMMENT}" -j ACCEPT 2>/dev/null; then
+        iptables -D INPUT -i "${VETH_SERVER}" -p udp --dport 4500 \
+            -m comment --comment "${RULE_COMMENT}" -j ACCEPT || exit_code=1
     fi
 
     # Restore host kernel policy before removing the test interface.
@@ -128,20 +148,45 @@ cleanup() {
         sysctl -w net.ipv4.ip_forward="${ORIGINAL_IP_FORWARD}" >/dev/null || exit_code=1
     fi
 
-    # Delete namespace (also removes veth pair)
-    ip netns del "${NAMESPACE}" 2>/dev/null || true
+    # Random names are unique ownership handles; discovery closes signal-sized
+    # windows between successful creation and shell-state assignment.
+    if [[ -e "/sys/class/net/${VETH_SERVER}" ]]; then
+        ip link del "${VETH_SERVER}" 2>/dev/null || exit_code=1
+    fi
+    if ! existing_namespaces=$(ip netns list); then
+        exit_code=1
+    elif grep -q "^${NAMESPACE}\b" <<< "${existing_namespaces}"; then
+        ip netns del "${NAMESPACE}" 2>/dev/null || exit_code=1
+    fi
+    NETWORK_CLEANUP_ARMED=false
+    fi
 
-    # Clean up server-side veth if orphaned
-    ip link del "${VETH_SERVER}" 2>/dev/null || true
+    # Release host-policy serialization only after sysctls and owned resources
+    # have been restored/removed.
+    if [[ -n "${HOST_STATE_LOCK_FD}" ]]; then
+        flock -u "${HOST_STATE_LOCK_FD}" || exit_code=1
+        exec {HOST_STATE_LOCK_FD}>&-
+    fi
 
     # Clean up temp files and the credential-bearing client directory.
-    rm -f /tmp/algo-test-wg.conf /tmp/algo-tcpdump.log 2>/dev/null || true
-    if [[ -n "${IPSEC_CLIENT_DIR}" ]]; then
-        rm -rf "${IPSEC_CLIENT_DIR}"
-        IPSEC_CLIENT_DIR=""
-        IPSEC_SWANCTL_BINARY=""
+    if [[ -n "${WG_CONFIG_FILE}" || -n "${TCPDUMP_LOG}" ]]; then
+        rm -f "${WG_CONFIG_FILE}" "${TCPDUMP_LOG}" || exit_code=1
+        WG_CONFIG_FILE=""
+        TCPDUMP_LOG=""
     fi
-    pkill -f "tcpdump.*port 51820" 2>/dev/null || true
+    if [[ -n "${IPSEC_CLIENT_DIR}" ]]; then
+        if rm -rf "${IPSEC_CLIENT_DIR}"; then
+            IPSEC_CLIENT_DIR=""
+            IPSEC_SWANCTL_BINARY=""
+        else
+            exit_code=1
+        fi
+    fi
+    if [[ -n "${TCPDUMP_PID}" ]]; then
+        kill "${TCPDUMP_PID}" 2>/dev/null || true
+        wait "${TCPDUMP_PID}" 2>/dev/null || true
+        TCPDUMP_PID=""
+    fi
 
     log_info "Cleanup complete"
     exit "${exit_code}"
@@ -158,12 +203,22 @@ trap 'exit 143' TERM
 setup_namespace() {
     log_step "Setting up network namespace..."
 
-    # Clean up any existing namespace first
-    if ip netns list | grep -q "^${NAMESPACE}"; then
-        log_warn "Namespace ${NAMESPACE} already exists, cleaning up first..."
-        ip netns del "${NAMESPACE}" 2>/dev/null || true
-        ip link del "${VETH_SERVER}" 2>/dev/null || true
+    # Refuse to mutate a namespace or interface not created by this process.
+    local existing_namespaces
+    if ! existing_namespaces=$(ip netns list); then
+        log_error "Unable to inspect existing network namespaces"
+        return 1
     fi
+    if grep -q "^${NAMESPACE}\b" <<< "${existing_namespaces}"; then
+        log_error "Refusing to delete pre-existing namespace ${NAMESPACE}"
+        return 1
+    fi
+    if [[ -e "/sys/class/net/${VETH_SERVER}" ]]; then
+        log_error "Refusing to delete pre-existing interface ${VETH_SERVER}"
+        return 1
+    fi
+
+    NETWORK_CLEANUP_ARMED=true
 
     # Create namespace
     ip netns add "${NAMESPACE}"
@@ -195,17 +250,17 @@ setup_namespace() {
     sysctl -w net.ipv4.ip_forward=1 > /dev/null
 
     # Add MASQUERADE for the client namespace traffic going to external networks
-    iptables -t nat -A POSTROUTING -s "${CLIENT_BRIDGE_IP}/32" ! -d 10.99.0.0/24 -j MASQUERADE
-    NAT_RULE_ADDED=true
+    iptables -t nat -A POSTROUTING -s "${CLIENT_BRIDGE_IP}/32" ! -d 10.99.0.0/24 \
+        -m comment --comment "${RULE_COMMENT}" -j MASQUERADE
 
     # Allow WireGuard and IPsec traffic on the veth interface
     # Use -I to insert at beginning of chain (before any DROP rules)
-    iptables -I INPUT -i "${VETH_SERVER}" -p udp --dport 51820 -j ACCEPT
-    WG_RULE_ADDED=true
-    iptables -I INPUT -i "${VETH_SERVER}" -p udp --dport 500 -j ACCEPT
-    IKE_RULE_ADDED=true
-    iptables -I INPUT -i "${VETH_SERVER}" -p udp --dport 4500 -j ACCEPT
-    NATT_RULE_ADDED=true
+    iptables -I INPUT -i "${VETH_SERVER}" -p udp --dport 51820 \
+        -m comment --comment "${RULE_COMMENT}" -j ACCEPT
+    iptables -I INPUT -i "${VETH_SERVER}" -p udp --dport 500 \
+        -m comment --comment "${RULE_COMMENT}" -j ACCEPT
+    iptables -I INPUT -i "${VETH_SERVER}" -p udp --dport 4500 \
+        -m comment --comment "${RULE_COMMENT}" -j ACCEPT
 
     log_info "Namespace ${NAMESPACE} created with IP ${CLIENT_BRIDGE_IP}"
 
@@ -242,7 +297,7 @@ test_mobileconfig_validation() {
                 log_info "Valid XML: $(basename "${f}")"
             else
                 log_error "Invalid XML: ${f}"
-                ((failed++))
+                ((failed += 1))
             fi
         done < <(find "${CONFIG_DIR}/wireguard/apple" -name "*.mobileconfig" -print0 2>/dev/null)
     fi
@@ -254,7 +309,7 @@ test_mobileconfig_validation() {
                 log_info "Valid XML: $(basename "${f}")"
             else
                 log_error "Invalid XML: ${f}"
-                ((failed++))
+                ((failed += 1))
             fi
         done < <(find "${CONFIG_DIR}/ipsec/apple" -name "*.mobileconfig" -print0 2>/dev/null)
     fi
@@ -319,8 +374,11 @@ test_wireguard() {
     fi
 
     # Copy and modify config for namespace use
-    local ns_config="/tmp/algo-test-wg.conf"
-    cp "${wg_config}" "${ns_config}"
+    WG_CONFIG_FILE=$(mktemp /tmp/algo-test-wg.XXXXXX.conf) || return 1
+    TCPDUMP_LOG=$(mktemp /tmp/algo-tcpdump.XXXXXX.log) || return 1
+    chmod 600 "${WG_CONFIG_FILE}" "${TCPDUMP_LOG}" || return 1
+    local ns_config="${WG_CONFIG_FILE}"
+    cp "${wg_config}" "${ns_config}" || return 1
 
     # Modify config:
     # - Change Endpoint to use bridge IP (client namespace routes through veth)
@@ -363,15 +421,14 @@ test_wireguard() {
     sysctl -w net.ipv4.conf."${VETH_SERVER}".rp_filter=0 > /dev/null 2>&1 || true
 
     # Start packet capture in background for failure diagnosis
-    local tcpdump_log="/tmp/algo-tcpdump.log"
-    timeout 20 tcpdump -i any -n port 51820 -c 20 > "${tcpdump_log}" 2>&1 &
-    local tcpdump_pid=$!
+    timeout 20 tcpdump -i any -n port 51820 -c 20 > "${TCPDUMP_LOG}" 2>&1 &
+    TCPDUMP_PID=$!
 
     # Start WireGuard in the namespace
     log_info "Starting WireGuard in namespace..."
     if ! ip netns exec "${NAMESPACE}" wg-quick up "${ns_config}" 2>&1; then
         log_error "Failed to start WireGuard in namespace"
-        kill "${tcpdump_pid}" 2>/dev/null || true
+        kill "${TCPDUMP_PID}" 2>/dev/null || true
         return 1
     fi
 
@@ -399,7 +456,7 @@ test_wireguard() {
             break
         fi
         sleep 1
-        ((attempts++))
+        ((attempts += 1))
     done
 
     if [[ ${attempts} -ge ${max_attempts} ]]; then
@@ -411,9 +468,9 @@ test_wireguard() {
         log_error "Debug - iptables INPUT chain (first 15 rules):"
         iptables -L INPUT -n -v --line-numbers 2>&1 | head -20 || true
         log_error "Debug - packet capture (tcpdump):"
-        kill "${tcpdump_pid}" 2>/dev/null || true
+        kill "${TCPDUMP_PID}" 2>/dev/null || true
         sleep 1
-        cat "${tcpdump_log}" 2>/dev/null || echo "No capture available"
+        cat "${TCPDUMP_LOG}" 2>/dev/null || echo "No capture available"
         log_error "Debug - host route to 10.99.0.0/24:"
         ip route get 10.99.0.2 2>&1 || true
         log_error "Debug - namespace route to server:"
@@ -422,7 +479,9 @@ test_wireguard() {
     fi
 
     # Stop packet capture
-    kill "${tcpdump_pid}" 2>/dev/null || true
+    kill "${TCPDUMP_PID}" 2>/dev/null || true
+    wait "${TCPDUMP_PID}" 2>/dev/null || true
+    TCPDUMP_PID=""
 
     # Show WireGuard status
     ip netns exec "${NAMESPACE}" wg show
@@ -447,8 +506,11 @@ test_wireguard() {
     fi
 
     # Cleanup WireGuard
-    ip netns exec "${NAMESPACE}" wg-quick down "${ns_config}" 2>/dev/null || true
-    rm -f "${ns_config}"
+    ip netns exec "${NAMESPACE}" wg-quick down "${ns_config}" 2>/dev/null || return 1
+    rm -f "${ns_config}" || return 1
+    WG_CONFIG_FILE=""
+    rm -f "${TCPDUMP_LOG}" || return 1
+    TCPDUMP_LOG=""
 
     log_info "WireGuard E2E tests PASSED"
     return 0
@@ -698,14 +760,14 @@ EOF
     # Both values stay out of logs to avoid leaking runner/network metadata.
     if ! server_source_ip=$(curl --ipv4 --noproxy '*' \
         --resolve "${public_ip_host}:443:${public_endpoint_ipv4}" \
-        --fail --silent --show-error --max-time 15 "${PUBLIC_IP_URL}"); then
+        --fail --silent --show-error --max-time 15 -- "${PUBLIC_IP_URL}"); then
         log_error "Could not obtain the server source IP from the test endpoint"
         return 1
     fi
     if ! vpn_source_ip=$(ip netns exec "${NAMESPACE}" curl --ipv4 --noproxy '*' \
         --interface "${ipsec_virtual_ip}" \
         --resolve "${public_ip_host}:443:${public_endpoint_ipv4}" --fail --silent \
-        --show-error --max-time 15 "${PUBLIC_IP_URL}"); then
+        --show-error --max-time 15 -- "${PUBLIC_IP_URL}"); then
         log_error "Routed HTTPS fetch through the IPsec tunnel failed"
         return 1
     fi
@@ -797,7 +859,7 @@ main() {
 
     # Check required commands
     local missing_cmds=()
-    for cmd in ip wg wg-quick swanctl xmllint openssl host dig curl unshare mount; do
+    for cmd in ip wg wg-quick swanctl xmllint openssl host dig curl unshare mount flock; do
         if ! command -v "${cmd}" &> /dev/null; then
             missing_cmds+=("${cmd}")
         fi
@@ -816,15 +878,13 @@ main() {
         exit 1
     fi
 
-    local exit_code=0
-
     # Run validation tests first (no namespace needed)
-    if ! test_mobileconfig_validation; then
-        exit_code=$((exit_code + 1))
-    fi
-    if ! test_ca_name_constraints; then
-        exit_code=$((exit_code + 1))
-    fi
+    test_mobileconfig_validation
+    test_ca_name_constraints
+
+    # Serialize host-wide sysctl snapshots/mutations/restoration across runs.
+    exec {HOST_STATE_LOCK_FD}>"${HOST_STATE_LOCK}"
+    flock "${HOST_STATE_LOCK_FD}"
 
     # Setup namespace for connectivity tests
     setup_namespace
@@ -832,22 +892,14 @@ main() {
     # Run protocol-specific tests
     case "${VPN_TYPE}" in
         wireguard)
-            if ! test_wireguard; then
-                exit_code=$((exit_code + 1))
-            fi
+            test_wireguard
             ;;
         ipsec)
-            if ! test_ipsec; then
-                exit_code=$((exit_code + 1))
-            fi
+            test_ipsec
             ;;
         both)
-            if ! test_wireguard; then
-                exit_code=$((exit_code + 1))
-            fi
-            if ! test_ipsec; then
-                exit_code=$((exit_code + 1))
-            fi
+            test_wireguard
+            test_ipsec
             ;;
         *)
             log_error "Unknown VPN type: ${VPN_TYPE}"
@@ -858,14 +910,7 @@ main() {
 
     # Summary
     log_step "Test Summary"
-    if [[ ${exit_code} -eq 0 ]]; then
-        log_info "All E2E tests PASSED"
-    else
-        log_error "${exit_code} test(s) FAILED"
-        collect_debug_info
-    fi
-
-    exit ${exit_code}
+    log_info "All E2E tests PASSED"
 }
 
 main "$@"

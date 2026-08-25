@@ -156,7 +156,100 @@ def test_security_sensitive_tests_are_not_called_in_errexit_disabling_or_lists()
 
     assert "test_ipsec ||" not in script
     assert "test_wireguard ||" not in script
+    assert "if ! test_ipsec" not in script
+    assert "if ! test_wireguard" not in script
     assert 'rm -rf "${IPSEC_CLIENT_DIR}" || return 1' in script
+    assert "((failed++))" not in script
+    assert "((attempts++))" not in script
+
+
+def test_public_ip_url_is_https_only_and_ends_curl_option_parsing():
+    script = _script()
+
+    assert 'if [[ "${PUBLIC_IP_URL}" != https://* ]]' in script
+    assert script.count('-- "${PUBLIC_IP_URL}"') == 2
+
+
+def test_privileged_temporary_files_are_unique_private_and_pid_tracked():
+    script = _script()
+
+    assert "WG_CONFIG_FILE=$(mktemp /tmp/algo-test-wg.XXXXXX.conf)" in script
+    assert "TCPDUMP_LOG=$(mktemp /tmp/algo-tcpdump.XXXXXX.log)" in script
+    assert 'chmod 600 "${WG_CONFIG_FILE}" "${TCPDUMP_LOG}"' in script
+    assert "TCPDUMP_PID=$!" in script
+    assert 'pkill -f "tcpdump.*port 51820"' not in script
+    assert "algo-test-wg.conf" not in script
+    assert "algo-tcpdump.log" not in script
+
+
+def test_harness_refuses_preexisting_namespace_and_tags_its_firewall_rules():
+    script = _script()
+
+    setup = script.split("setup_namespace() {", 1)[1].split("# Create namespace", 1)[0]
+    assert "Refusing to delete pre-existing namespace" in setup
+    assert 'ip netns del "${NAMESPACE}"' not in setup
+    assert "/proc/sys/kernel/random/uuid" in script
+    assert 'RULE_COMMENT="algo-e2e-${RULE_UUID}"' in script
+    assert script.count('-m comment --comment "${RULE_COMMENT}"') >= 8
+
+
+def test_cleanup_discovers_exact_owned_network_resources_without_racy_flags():
+    script = _script()
+    setup = script.split("setup_namespace() {", 1)[1].split("# Mobileconfig Validation", 1)[0]
+    cleanup = script.split("cleanup() {", 1)[1].split("trap cleanup EXIT", 1)[0]
+
+    flags = (
+        "NAMESPACE_CREATED",
+        "VETH_CREATED",
+        "NAT_RULE_ADDED",
+        "WG_RULE_ADDED",
+        "IKE_RULE_ADDED",
+        "NATT_RULE_ADDED",
+    )
+    assert not [flag for flag in flags if flag in setup or flag in cleanup]
+    assert "iptables -t nat -C POSTROUTING" in cleanup
+    assert "iptables -C INPUT" in cleanup
+    assert 'grep -q "^${NAMESPACE}\\b" <<< "${existing_namespaces}"' in cleanup
+    assert '[[ -e "/sys/class/net/${VETH_SERVER}" ]]' in cleanup
+
+
+def test_cleanup_is_armed_only_after_preexisting_resources_are_rejected():
+    script = _script()
+    setup = script.split("setup_namespace() {", 1)[1].split("# Mobileconfig Validation", 1)[0]
+    cleanup = script.split("cleanup() {", 1)[1].split("trap cleanup EXIT", 1)[0]
+
+    refusal = setup.index('if [[ -e "/sys/class/net/${VETH_SERVER}" ]]')
+    armed = setup.index("NETWORK_CLEANUP_ARMED=true")
+    mutation = setup.index('ip netns add "${NAMESPACE}"')
+    assert refusal < armed < mutation
+    assert 'if [[ "${NETWORK_CLEANUP_ARMED}" == true ]]' in cleanup
+    assert "if ! existing_namespaces=$(ip netns list); then" in setup
+    assert '[[ -e "/sys/class/net/${VETH_SERVER}" ]]' in setup
+
+
+def test_host_wide_sysctl_mutations_are_serialized_until_restoration():
+    script = _script()
+    main = script.split("main() {", 1)[1].split('main "$@"', 1)[0]
+    cleanup = script.split("cleanup() {", 1)[1].split("trap cleanup EXIT", 1)[0]
+
+    assert 'HOST_STATE_LOCK="/run/algo-e2e-host-state.lock"' in script
+    assert "/run/lock/algo-e2e-host-state.lock" not in script
+    assert 'flock "${HOST_STATE_LOCK_FD}"' in main
+    assert main.index('flock "${HOST_STATE_LOCK_FD}"') < main.index("setup_namespace")
+    assert cleanup.index('sysctl -w net.ipv4.ip_forward="${ORIGINAL_IP_FORWARD}"') < cleanup.index(
+        'flock -u "${HOST_STATE_LOCK_FD}"'
+    )
+
+
+def test_cleanup_failures_for_secret_files_and_owned_namespace_propagate():
+    script = _script()
+    cleanup = script.split("cleanup() {", 1)[1].split("trap cleanup EXIT", 1)[0]
+
+    assert 'rm -f "${WG_CONFIG_FILE}" "${TCPDUMP_LOG}" || exit_code=1' in cleanup
+    assert 'if rm -rf "${IPSEC_CLIENT_DIR}"; then' in cleanup
+    assert "else\n            exit_code=1" in cleanup
+    assert 'grep -q "^${NAMESPACE}\\b" <<< "${existing_namespaces}"' in cleanup
+    assert 'ip netns del "${NAMESPACE}" 2>/dev/null || exit_code=1' in cleanup
 
 
 def test_privileged_network_sysctls_are_restored_on_exit():
@@ -168,11 +261,15 @@ def test_privileged_network_sysctls_are_restored_on_exit():
     assert 'sysctl -w net.ipv4.conf.all.rp_filter="${ORIGINAL_RP_FILTER_ALL}"' in script
 
 
-def test_cleanup_tracks_and_removes_only_rules_the_harness_added():
+def test_cleanup_discovers_and_removes_only_rules_with_the_run_ownership_tag():
     script = _script()
 
-    for marker in ("NAT_RULE_ADDED", "WG_RULE_ADDED", "IKE_RULE_ADDED", "NATT_RULE_ADDED"):
-        assert marker in script
+    assert "NAT_RULE_ADDED" not in script
+    assert "WG_RULE_ADDED" not in script
+    assert "IKE_RULE_ADDED" not in script
+    assert "NATT_RULE_ADDED" not in script
+    assert "iptables -t nat -C POSTROUTING" in script
+    assert "iptables -C INPUT" in script
     assert "iptables -t nat -D POSTROUTING" in script
     assert "iptables -D INPUT" in script
     cleanup = script.split("cleanup() {", 1)[1].split("trap cleanup EXIT", 1)[0]
