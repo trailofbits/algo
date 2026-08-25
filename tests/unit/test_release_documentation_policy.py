@@ -105,21 +105,46 @@ def test_ubuntu_support_and_ec2_selector_docs_match_the_bounded_contract():
     assert "Azure and Lightsail are excluded and unverified" in ansible
 
 
+def _assert_strongswan_diagnostics_match_backends(troubleshooting):
+    starter_status = """# Ubuntu 22.04 (`starter` backend)
+systemctl status strongswan-starter
+ipsec statusall                  # Show all IKE_SA and CHILD_SA
+ipsec leases                     # Show assigned virtual IPs"""
+    swanctl_status = """# Ubuntu 24.04 (`swanctl` backend)
+systemctl status strongswan
+swanctl --list-sas               # Show all IKE_SA and CHILD_SA
+swanctl --list-pools --leases    # Show address-pool usage and assigned leases"""
+    starter_journal = """# Ubuntu 22.04 (`starter` backend)
+journalctl -u strongswan-starter -f"""
+    swanctl_journal = """# Ubuntu 24.04 (`swanctl` backend)
+journalctl -u strongswan -f"""
+
+    assert starter_status in troubleshooting
+    assert swanctl_status in troubleshooting
+    assert starter_journal in troubleshooting
+    assert swanctl_journal in troubleshooting
+    assert not [line for line in troubleshooting.splitlines() if line.strip().startswith("journalctl -t charon")]
+
+
 def test_strongswan_diagnostics_cover_both_supported_backends():
     troubleshooting = (ROOT / "docs" / "troubleshooting.md").read_text(encoding="utf-8")
-    command_lines = {line.strip() for line in troubleshooting.splitlines()}
+    _assert_strongswan_diagnostics_match_backends(troubleshooting)
 
-    assert "Ubuntu 22.04 (`starter` backend)" in troubleshooting
-    assert "systemctl status strongswan-starter" in command_lines
-    assert "ipsec statusall                  # Show all IKE_SA and CHILD_SA" in command_lines
-    assert "ipsec leases                     # Show assigned virtual IPs" in command_lines
-    assert "journalctl -u strongswan-starter -f" in command_lines
-    assert "Ubuntu 24.04 (`swanctl` backend)" in troubleshooting
-    assert "systemctl status strongswan" in command_lines
-    assert "swanctl --list-sas               # Show all IKE_SA and CHILD_SA" in command_lines
-    assert "swanctl --list-pools --leases    # Show address-pool usage and assigned leases" in command_lines
-    assert "journalctl -u strongswan -f" in command_lines
-    assert not [line for line in command_lines if line.startswith("journalctl -t charon")]
+
+def test_strongswan_diagnostics_reject_commands_swapped_between_backends():
+    troubleshooting = (ROOT / "docs" / "troubleshooting.md").read_text(encoding="utf-8")
+    starter_commands = """systemctl status strongswan-starter
+ipsec statusall                  # Show all IKE_SA and CHILD_SA
+ipsec leases                     # Show assigned virtual IPs"""
+    swanctl_commands = """systemctl status strongswan
+swanctl --list-sas               # Show all IKE_SA and CHILD_SA
+swanctl --list-pools --leases    # Show address-pool usage and assigned leases"""
+    swapped = troubleshooting.replace(starter_commands, "__SWANCTL_COMMANDS__")
+    swapped = swapped.replace(swanctl_commands, starter_commands)
+    swapped = swapped.replace("__SWANCTL_COMMANDS__", swanctl_commands)
+
+    with pytest.raises(AssertionError):
+        _assert_strongswan_diagnostics_match_backends(swapped)
 
 
 def test_repository_documentation_uses_main_branch_links():
