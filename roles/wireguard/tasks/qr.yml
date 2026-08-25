@@ -15,6 +15,16 @@
       ({{ ansible_playbook_python }}). Install Algo's Python dependencies in
       that environment (for example: uv sync), then run the playbook again.
 
+- name: Validate WireGuard QR usernames
+  assert:
+    that:
+      - item is string
+      - item is regex('^[A-Za-z0-9][A-Za-z0-9_.@ -]*$')
+    fail_msg: WireGuard usernames used for QR output must be safe filename components
+  loop: "{{ wireguard_users }}"
+  when: item in users
+  no_log: true
+
 - name: Acquire QR generation lock atomically
   ansible.builtin.command:
     argv:
@@ -49,9 +59,19 @@
     - name: Inspect existing QR codes
       stat:
         path: "{{ wireguard_config_path }}/{{ item }}.png"
+        follow: false
       loop: "{{ wireguard_users }}"
       register: wireguard_qr_files
       when: item in users
+
+    - name: Validate existing QR code files
+      assert:
+        that:
+          - not item.stat.exists or (item.stat.isreg and not item.stat.islnk)
+        fail_msg: Existing QR output must be a regular non-symlink file
+      loop: "{{ wireguard_qr_files.results }}"
+      when: not item.skipped | default(false)
+      no_log: true
 
     - name: Allocate secure QR output files
       ansible.builtin.tempfile:
@@ -91,15 +111,24 @@
           when: not wireguard_qr_job.skipped | default(false)
           no_log: true
 
-        - name: Install generated QR codes
-          copy:
-            src: "{{ wireguard_qr_job.path }}"
-            dest: "{{ wireguard_config_path }}/{{ wireguard_qr_job.item }}.png"
-            remote_src: true
-            force: false
-            follow: false
-            unsafe_writes: false
-            mode: "0600"
+        - name: Install generated QR codes atomically
+          ansible.builtin.command:
+            argv:
+              - "{{ ansible_playbook_python }}"
+              - -c
+              - |
+                import os
+                import sys
+                source, destination = sys.argv[1], sys.argv[2]
+                os.link(source, destination, follow_symlinks=False)
+                directory_fd = os.open(os.path.dirname(destination), os.O_RDONLY | os.O_DIRECTORY)
+                try:
+                    os.fsync(directory_fd)
+                finally:
+                    os.close(directory_fd)
+              - "{{ wireguard_qr_job.path }}"
+              - "{{ wireguard_config_path }}/{{ wireguard_qr_job.item }}.png"
+          changed_when: true
           loop: "{{ wireguard_qr_temp_files.results }}"
           loop_control:
             loop_var: wireguard_qr_job

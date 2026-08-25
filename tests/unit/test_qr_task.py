@@ -1,5 +1,7 @@
 """Security and reliability contract for WireGuard QR generation."""
 
+import subprocess
+import sys
 from pathlib import Path
 
 import yaml
@@ -107,22 +109,45 @@ def test_qr_output_is_allocated_securely_before_segno_writes_secrets():
     assert generate["command"]["argv"][3] == "{{ wireguard_qr_job.path }}"
 
 
+def test_qr_usernames_are_safe_single_path_components():
+    tasks = load_tasks(QR_TASKS)
+    validation = task_named(tasks, "Validate WireGuard QR usernames")
+
+    assert validation["loop"] == "{{ wireguard_users }}"
+    conditions = validation["assert"]["that"]
+    assert "item is string" in conditions
+    assert "item is regex('^[A-Za-z0-9][A-Za-z0-9_.@ -]*$')" in conditions
+
+
+def test_existing_qr_outputs_must_be_regular_non_symlink_files():
+    tasks = load_tasks(QR_TASKS)
+    inspect = task_named(tasks, "Inspect existing QR codes")
+    validation = task_named(tasks, "Validate existing QR code files")
+
+    assert inspect["stat"]["follow"] is False
+    conditions = validation["assert"]["that"]
+    assert "not item.stat.exists or (item.stat.isreg and not item.stat.islnk)" in conditions
+
+
 def test_qr_integration_play_covers_failure_paths():
     playbook = (ROOT / "tests/integration/test_qr_generation.yml").read_text(encoding="utf-8")
     assert "Verify invalid QR output path fails closed" in playbook
     assert "qr_invalid_path_rejected" in playbook
+    assert "qr_symlink_rejected" in playbook
+    assert "Verify existing QR symlink fails closed" in playbook
     assert "no_log: true" in playbook
+    assert "Reject an unexpected invalid-path success" not in playbook
 
 
 def test_qr_uses_secure_unique_temporary_files_and_atomic_install():
     tasks = load_tasks(QR_TASKS)
     serialized = yaml.safe_dump(tasks)
+    install = task_named(tasks, "Install generated QR codes atomically")
 
     assert "ansible.builtin.tempfile" in serialized
     assert "state: touch" not in serialized
     assert "wireguard_qr_job.path" in serialized
-    assert "follow: false" in serialized
-    assert "unsafe_writes: false" in serialized
+    assert "os.link" in install["ansible.builtin.command"]["argv"][2]
 
 
 def test_temporary_qr_files_are_removed_even_when_generation_fails():
@@ -134,14 +159,40 @@ def test_temporary_qr_files_are_removed_even_when_generation_fails():
     assert any(task.get("name") == "Remove temporary QR files" for task in generation_block["always"])
 
 
-def test_concurrent_qr_generation_never_installs_an_unwritten_tempfile():
+def test_concurrent_qr_generation_installs_with_atomic_no_replace():
     tasks = load_tasks(QR_TASKS)
     generate = task_named(tasks, "Generate QR codes")
-    install = task_named(tasks, "Install generated QR codes")
+    install = task_named(tasks, "Install generated QR codes atomically")
 
     assert "creates" not in generate["command"]
     assert generate["changed_when"] is True
-    assert install["copy"]["force"] is False
+    argv = install["ansible.builtin.command"]["argv"]
+    assert argv[0] == "{{ ansible_playbook_python }}"
+    assert "os.link" in argv[2]
+    assert "follow_symlinks=False" in argv[2]
+    assert argv[3:] == [
+        "{{ wireguard_qr_job.path }}",
+        "{{ wireguard_config_path }}/{{ wireguard_qr_job.item }}.png",
+    ]
+
+
+def test_atomic_qr_installer_never_replaces_an_existing_destination(tmp_path):
+    tasks = load_tasks(QR_TASKS)
+    install = task_named(tasks, "Install generated QR codes atomically")
+    code = install["ansible.builtin.command"]["argv"][2]
+    first = tmp_path / "first.png"
+    second = tmp_path / "second.png"
+    destination = tmp_path / "client.png"
+    first.write_bytes(b"first")
+    second.write_bytes(b"second")
+
+    subprocess.run([sys.executable, "-c", code, str(first), str(destination)], check=True)
+    collision = subprocess.run(
+        [sys.executable, "-c", code, str(second), str(destination)], capture_output=True, check=False
+    )
+
+    assert collision.returncode != 0
+    assert destination.read_bytes() == b"first"
 
 
 def test_qr_generation_is_serialized_by_an_atomic_lock_directory():

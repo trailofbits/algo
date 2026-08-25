@@ -97,6 +97,40 @@
               - qr_second.stat.checksum == qr_first.stat.checksum
               - qr_second.stat.mtime == qr_first.stat.mtime
 
+        - name: Replace QR output with a symlink attack fixture
+          block:
+            - name: Remove the generated QR output
+              file:
+                path: "{{ wireguard_config_path }}/{{ qr_user }}.png"
+                state: absent
+
+            - name: Create the symlink target
+              copy:
+                content: unchanged
+                dest: "{{ qr_workspace.path }}/symlink-target"
+                mode: "0600"
+
+            - name: Point the QR output path at the target
+              file:
+                src: "{{ qr_workspace.path }}/symlink-target"
+                dest: "{{ wireguard_config_path }}/{{ qr_user }}.png"
+                state: link
+
+        - name: Verify existing QR symlink fails closed
+          block:
+            - name: Attempt QR generation over an existing symlink
+              include_role:
+                name: "{{ playbook_dir }}/../../roles/wireguard"
+                tasks_from: qr
+          rescue:
+            - name: Record QR symlink rejection
+              set_fact:
+                qr_symlink_rejected: true
+
+        - name: Confirm QR symlink rejection
+          assert:
+            that: qr_symlink_rejected | default(false) | bool
+
         - name: Verify invalid QR output path fails closed
           block:
             - name: Select an invalid QR output path
@@ -107,10 +141,6 @@
               include_role:
                 name: "{{ playbook_dir }}/../../roles/wireguard"
                 tasks_from: qr
-
-            - name: Reject an unexpected invalid-path success
-              fail:
-                msg: QR generation unexpectedly accepted an invalid output path
           rescue:
             - name: Record invalid output rejection
               set_fact:
