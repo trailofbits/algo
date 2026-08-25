@@ -86,7 +86,11 @@
           ] + (
             ['IP:fc00::/7', 'IP:fe80::/10', 'IP:2001:db8::/32'] if ipv6_support | bool else ['IP:::/0']
           ) }}
-        name_constraints_critical: true
+        # StrongSwan 5.9 (Ubuntu 22.04 starter backend) rejects the otherwise
+        # valid CA entirely when this unsupported extension is critical. Keep
+        # the constraints present for clients that understand them, while the
+        # modern swanctl backend continues to require critical enforcement.
+        name_constraints_critical: "{{ strongswan_backend != 'starter' }}"
       register: ca_csr
 
     - name: Create self-signed CA certificate from CSR

@@ -143,6 +143,18 @@ def test_backend_file_contract_keeps_crls_and_private_keys_secure():
     assert swanctl_crl["when"] == "strongswan_backend == 'swanctl'"
 
 
+def test_ca_name_constraints_stay_critical_except_for_legacy_starter_parser():
+    tasks = yaml.safe_load(Path("roles/strongswan/tasks/openssl.yml").read_text(encoding="utf-8"))
+    csr = next(
+        task
+        for task in _walk_tasks(tasks)
+        if task.get("name") == "Create certificate signing request (CSR) for CA certificate with security constraints"
+    )["community.crypto.openssl_csr_pipe"]
+
+    critical = csr["name_constraints_critical"]
+    assert critical == "{{ strongswan_backend != 'starter' }}"
+
+
 def test_crl_generation_uses_aki_aware_module_for_strict_revocation_lookup():
     tasks = yaml.safe_load(Path("roles/strongswan/tasks/openssl.yml").read_text(encoding="utf-8"))
     generate = next(task for task in _walk_tasks(tasks) if task.get("name") == "Generate a CRL")
