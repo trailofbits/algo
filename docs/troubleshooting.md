@@ -1,6 +1,6 @@
 # Troubleshooting
 
-First of all, check [this](https://github.com/trailofbits/algo#features) and ensure that you are deploying to Ubuntu 22.04 LTS, the only supported server platform.
+First, check the [supported features](https://github.com/trailofbits/algo#features) and ensure that the target is Ubuntu 22.04 LTS or Ubuntu 24.04 LTS. Both releases are supported for existing/local servers; cloud provisioning remains on Ubuntu 22.04 until credentialed Ubuntu 24.04 provider canaries pass.
 
   * [Installation Problems](#installation-problems)
      * General Setup
@@ -258,7 +258,7 @@ TASK [wireguard : Generate public keys] ****************************************
 
 fatal: [localhost]: FAILED! => {"msg": "An unhandled exception occurred while running the lookup plugin 'file'. Error was a <class 'ansible.errors.AnsibleError'>, original message: could not locate file in lookup: configs/xxx.xxx.xxx.xxx/wireguard//private/dan"}
 ```
-This error is usually hit when using the local install option on an unsupported server. Algo requires Ubuntu 22.04 LTS. You should upgrade your server to Ubuntu 22.04 LTS. If this doesn't work, try removing files in /etc/wireguard/ and the configs directories as follows:
+This error is usually hit when using the local install option on an unsupported server. Algo supports Ubuntu 22.04 LTS and Ubuntu 24.04 LTS for existing/local servers. Upgrade the server to one of those releases. If this doesn't work, try removing files in /etc/wireguard/ and the configs directories as follows:
 
 ```ssh
 sudo rm -rf /etc/wireguard/*

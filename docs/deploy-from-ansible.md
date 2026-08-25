@@ -45,13 +45,13 @@ Cloud roles:
 - role: cloud-ec2,          [provider: ec2](#amazon-ec2)
 - role: cloud-gce,          [provider: gce](#google-compute-engine)
 - role: cloud-vultr,        [provider: vultr](#vultr)
-- role: cloud-azure,        [provider: azure](#azure)
-- role: cloud-lightsail,    [provider: lightsail](#lightsail)
 - role: cloud-scaleway,     [provider: scaleway](#scaleway)
 - role: cloud-openstack,    [provider: openstack](#openstack)
 - role: cloud-cloudstack,   [provider: cloudstack](#cloudstack)
 - role: cloud-hetzner,      [provider: hetzner](#hetzner)
 - role: cloud-linode,       [provider: linode](#linode)
+
+Azure and Lightsail are excluded and unverified in this release. Their legacy role documentation is retained below only as historical migration context; selecting either provider is rejected before provisioning.
 
 Server roles:
 
@@ -116,12 +116,16 @@ Additional variables:
 
    ```
    # Example of equivalent cli command
-   aws ec2 describe-images --owners "099720109477" --filters "Name=architecture,Values=arm64" "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-jammy-22.04*"
+   # Ubuntu 22.04
+   aws ec2 describe-images --owners "099720109477" --filters "Name=architecture,Values=x86_64" "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"
+
+   # Ubuntu 24.04 (selector only; cloud support remains gated by credentialed canaries)
+   aws ec2 describe-images --owners "099720109477" --filters "Name=architecture,Values=x86_64" "Name=name,Values=ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"
    ```
 
   - [owners] - The operating system owner id. Default is [Canonical](https://help.ubuntu.com/community/EC2StartersGuide#Official_Ubuntu_Cloud_Guest_Amazon_Machine_Images_.28AMIs.29) (Default: 099720109477)
   - [arch] - The architecture (Default: x86_64, Optional: arm64)
-  - [name] - The wildcard string to filter available ami names. Algo appends this name with the string "-\*64-server-\*", and prepends with "ubuntu/images/hvm-ssd/" (Default: Ubuntu latest LTS)
+  - [name] - A release-indexed map selected by `ubuntu_version`. Algo appends `-*64-server-*` to the configured full prefix. The transition default is Ubuntu 22.04 (`ubuntu/images/hvm-ssd/ubuntu-jammy-22.04`); the staged Ubuntu 24.04 selector is `ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04` and must not be advertised as cloud-verified until credentialed canaries pass.
 - [instance_market_type](https://aws.amazon.com/ec2/pricing/) - Two pricing models are supported: on-demand and spot. String (Default: on-demand)
   - If using spot instance types, one additional IAM permission along with the below minimum is required for deployment:
 
@@ -215,7 +219,7 @@ Required variables:
 - [vultr_config](https://trailofbits.github.io/algo/cloud-vultr.html): /path/to/.vultr.ini
 - [region](https://api.vultr.com/v1/regions/list): e.g. `Chicago`, `'New Jersey'`
 
-### Azure
+### Azure (excluded and unverified)
 
 Required variables:
 
@@ -225,7 +229,7 @@ Required variables:
 - azure_subscription_id
 - [region](https://azure.microsoft.com/en-us/global-infrastructure/regions/)
 
-### Lightsail
+### Lightsail (excluded and unverified)
 
 Required variables:
 

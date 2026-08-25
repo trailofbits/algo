@@ -56,6 +56,26 @@ def test_excluded_provider_claims_are_consistent_repository_wide():
     assert not stale, f"contradictory excluded-provider claims: {stale}"
 
 
+def test_ubuntu_support_and_ec2_selector_docs_match_the_bounded_contract():
+    unsupported_cloud = (ROOT / "docs" / "deploy-to-unsupported-cloud.md").read_text(encoding="utf-8")
+    troubleshooting = (ROOT / "docs" / "troubleshooting.md").read_text(encoding="utf-8")
+    ansible = (ROOT / "docs" / "deploy-from-ansible.md").read_text(encoding="utf-8")
+
+    stale_claims = (
+        "Algo exclusively supports Ubuntu 22.04 LTS",
+        "Ubuntu 22.04 LTS, the only supported server platform",
+        "Algo requires Ubuntu 22.04 LTS",
+        'prepends with "ubuntu/images/hvm-ssd/"',
+        "Default: Ubuntu latest LTS",
+    )
+    combined = "\n".join((unsupported_cloud, troubleshooting, ansible))
+    assert not [claim for claim in stale_claims if claim in combined]
+    assert "Ubuntu 22.04 LTS or Ubuntu 24.04 LTS" in unsupported_cloud
+    assert "Ubuntu 22.04 LTS and Ubuntu 24.04 LTS" in troubleshooting
+    assert "ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04" in ansible
+    assert "Azure and Lightsail are excluded and unverified" in ansible
+
+
 def test_repository_documentation_uses_main_branch_links():
     stale = []
     for path in [ROOT / "README.md", *sorted((ROOT / "docs").rglob("*.md"))]:

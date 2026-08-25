@@ -6,7 +6,7 @@ Algo officially supports the [cloud providers listed in the README](https://gith
 
 Your cloud provider must support:
 
-1. **Ubuntu 22.04 LTS** - Algo exclusively supports Ubuntu 22.04 LTS as the base operating system
+1. **Ubuntu 22.04 LTS or Ubuntu 24.04 LTS** - Algo accepts exactly these server releases. For an unsupported provider, treat either release as an existing/local-server deployment; Ubuntu 24.04 cloud provisioning must not be advertised as verified until that provider's credentialed canary passes.
 2. **Required kernel modules** - Specific modules needed for strongSwan IPsec and WireGuard VPN functionality
 3. **Network capabilities** - Full networking stack access, not containerized environments
 
@@ -14,7 +14,7 @@ Your cloud provider must support:
 
 Before attempting to deploy Algo on an unsupported provider, test compatibility using strongSwan's kernel module checker:
 
-1. Deploy a basic Ubuntu 22.04 LTS instance on your target provider
+1. Deploy a basic Ubuntu 22.04 LTS or Ubuntu 24.04 LTS instance on your target provider
 2. Run the [kernel module compatibility script](https://wiki.strongswan.org/projects/strongswan/wiki/KernelModules) from strongSwan
 3. Verify all required modules are available and loadable
 
@@ -26,7 +26,7 @@ For Algo to officially support a new cloud provider, the provider must have:
 
 - An available Ansible [cloud module](https://docs.ansible.com/ansible/list_of_cloud_modules.html)
 - Reliable API for programmatic instance management
-- Consistent Ubuntu 22.04 LTS image availability
+- Consistent image availability for every advertised Ubuntu release, with credentialed create/configure/destroy canaries for each advertised release
 
 If no Ansible module exists for your provider:
 
