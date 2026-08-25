@@ -468,7 +468,7 @@ test_ipsec() {
     local charon_binary="" swanctl_binary=""
     local candidate_owner candidate_mode
     local client_config vici_socket sa_status
-    local server_source_ip vpn_source_ip ipsec_virtual_ip
+    local server_source_ip vpn_source_ip ipsec_virtual_ip public_ip_host public_endpoint_ipv4
 
     for f in "${cacert}" "${user_cert}" "${user_key}"; do
         if [[ ! -f "${f}" ]]; then
@@ -675,12 +675,36 @@ EOF
         return 1
     fi
 
+    # Resolve the HTTPS endpoint on the server because the isolated namespace
+    # deliberately has no local stub resolver; DNS through the tunnel was
+    # already proven explicitly above.
+    if [[ "${PUBLIC_IP_URL}" != https://* ]]; then
+        log_error "The public IP test endpoint must use HTTPS"
+        return 1
+    fi
+    public_ip_host=${PUBLIC_IP_URL#https://}
+    public_ip_host=${public_ip_host%%/*}
+    if [[ -z "${public_ip_host}" || "${public_ip_host}" == *:* ]]; then
+        log_error "The public IP test endpoint must use the default HTTPS port"
+        return 1
+    fi
+    public_endpoint_ipv4=$(dig +short A "${public_ip_host}" |
+        awk '/^([0-9]{1,3}\.){3}[0-9]{1,3}$/ { print; exit }') || return 1
+    if [[ -z "${public_endpoint_ipv4}" ]]; then
+        log_error "Could not resolve an IPv4 address for the public IP test endpoint"
+        return 1
+    fi
+
     # Both values stay out of logs to avoid leaking runner/network metadata.
-    if ! server_source_ip=$(curl --ipv4 --fail --silent --show-error --max-time 15 "${PUBLIC_IP_URL}"); then
+    if ! server_source_ip=$(curl --ipv4 --noproxy '*' \
+        --resolve "${public_ip_host}:443:${public_endpoint_ipv4}" \
+        --fail --silent --show-error --max-time 15 "${PUBLIC_IP_URL}"); then
         log_error "Could not obtain the server source IP from the test endpoint"
         return 1
     fi
-    if ! vpn_source_ip=$(ip netns exec "${NAMESPACE}" curl --ipv4 --interface "${ipsec_virtual_ip}" --fail --silent \
+    if ! vpn_source_ip=$(ip netns exec "${NAMESPACE}" curl --ipv4 --noproxy '*' \
+        --interface "${ipsec_virtual_ip}" \
+        --resolve "${public_ip_host}:443:${public_endpoint_ipv4}" --fail --silent \
         --show-error --max-time 15 "${PUBLIC_IP_URL}"); then
         log_error "Routed HTTPS fetch through the IPsec tunnel failed"
         return 1

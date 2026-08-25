@@ -64,7 +64,10 @@ def test_ipsec_e2e_proves_dns_and_routed_source_ip_through_the_tunnel():
 
     assert 'ip netns exec "${NAMESPACE}" dig' in script
     assert 'dig -b "${ipsec_virtual_ip}"' in script
-    assert 'curl --ipv4 --interface "${ipsec_virtual_ip}"' in script
+    assert "curl --ipv4 --noproxy '*'" in script
+    assert '--interface "${ipsec_virtual_ip}"' in script
+    assert '--resolve "${public_ip_host}:443:${public_endpoint_ipv4}"' in script
+    assert script.count("--noproxy '*'") >= 2
     assert script.count("--ipv4") >= 2
     assert 'ip netns exec "${NAMESPACE}" curl' in script
     assert "VPN source IP does not match server source IP" in script
