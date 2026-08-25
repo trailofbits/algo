@@ -1,5 +1,6 @@
 """Security and reliability contract for WireGuard QR generation."""
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -210,7 +211,59 @@ def test_qr_generation_is_serialized_by_an_atomic_lock_directory():
         "{{ wireguard_config_path }}/.algo-qr-recovery.lock",
         "900",
     ]
-    assert any(task.get("name") == "Release QR generation lock" for task in locked["always"])
+    assert any(task.get("name") == "Release QR generation lock safely" for task in locked["always"])
+
+
+def test_qr_lock_release_is_guarded_and_bound_to_the_acquired_instance():
+    tasks = load_tasks(QR_TASKS)
+    acquire = task_named(tasks, "Acquire QR generation lock atomically")
+    release = task_named(tasks, "Release QR generation lock safely")
+    acquire_argv = acquire["ansible.builtin.command"]["argv"]
+    release_argv = release["ansible.builtin.command"]["argv"]
+
+    assert acquire["register"] == "wireguard_qr_lock"
+    assert "secrets.token_hex" in acquire_argv[2]
+    assert "st_ino" in acquire_argv[2]
+    assert release_argv[0:2] == ["{{ ansible_playbook_python }}", "-c"]
+    assert "fcntl.flock" in release_argv[2]
+    assert "st_ino" in release_argv[2]
+    assert "owner" in release_argv[2]
+    assert release_argv[3:] == [
+        "{{ wireguard_config_path }}/.algo-qr.lock",
+        "{{ wireguard_config_path }}/.algo-qr-recovery.lock",
+        "{{ wireguard_qr_lock.stdout }}",
+    ]
+    assert release["no_log"] is True
+
+
+def test_stale_owner_cannot_release_a_successor_lock(tmp_path):
+    tasks = load_tasks(QR_TASKS)
+    acquire = task_named(tasks, "Acquire QR generation lock atomically")
+    release = task_named(tasks, "Release QR generation lock safely")
+    acquire_code = acquire["ansible.builtin.command"]["argv"][2]
+    release_code = release["ansible.builtin.command"]["argv"][2]
+    primary = tmp_path / "primary.lock"
+    guard = tmp_path / "guard.lock"
+
+    first = subprocess.run(
+        [sys.executable, "-c", acquire_code, str(primary), str(guard), "1"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    old = primary.stat().st_mtime - 2
+    os.utime(primary, (old, old))
+    second = subprocess.run(
+        [sys.executable, "-c", acquire_code, str(primary), str(guard), "1"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+    subprocess.run([sys.executable, "-c", release_code, str(primary), str(guard), first], check=True)
+    assert primary.is_dir()
+    subprocess.run([sys.executable, "-c", release_code, str(primary), str(guard), second], check=True)
+    assert not primary.exists()
 
 
 def test_qr_lock_recovers_stale_state_inside_the_same_flock_critical_section():

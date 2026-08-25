@@ -33,26 +33,65 @@
       - |
         import fcntl
         import os
+        import secrets
+        import stat
         import sys
         import time
         primary, guard, ttl = sys.argv[1], sys.argv[2], int(sys.argv[3])
+        owner_path = os.path.join(primary, "owner")
+        token = secrets.token_hex(32)
+
+        def create_lock():
+            os.mkdir(primary, 0o700)
+            try:
+                owner_fd = os.open(owner_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY | os.O_NOFOLLOW, 0o600)
+                with os.fdopen(owner_fd, "w") as owner:
+                    owner.write(token)
+                    owner.flush()
+                    os.fsync(owner.fileno())
+            except BaseException:
+                try:
+                    os.unlink(owner_path)
+                except FileNotFoundError:
+                    pass
+                os.rmdir(primary)
+                raise
+
+        def remove_stale_lock():
+            entries = os.listdir(primary)
+            if entries == ["owner"]:
+                owner_stat = os.stat(owner_path, follow_symlinks=False)
+                if not stat.S_ISREG(owner_stat.st_mode):
+                    raise RuntimeError("stale QR lock owner is not a regular file")
+                os.unlink(owner_path)
+            elif entries:
+                raise RuntimeError("stale QR lock contains unexpected entries")
+            os.rmdir(primary)
+
         guard_fd = os.open(guard, os.O_CREAT | os.O_RDWR, 0o600)
         try:
             fcntl.flock(guard_fd, fcntl.LOCK_EX)
             try:
-                os.mkdir(primary, 0o700)
+                create_lock()
             except FileExistsError:
-                age = time.time() - os.stat(primary, follow_symlinks=False).st_mtime
+                primary_stat = os.stat(primary, follow_symlinks=False)
+                if not stat.S_ISDIR(primary_stat.st_mode):
+                    raise RuntimeError("QR lock path is not a directory")
+                age = time.time() - primary_stat.st_mtime
                 if age <= ttl:
                     raise
-                os.rmdir(primary)
-                os.mkdir(primary, 0o700)
+                remove_stale_lock()
+                create_lock()
+            lock_inode = os.stat(primary, follow_symlinks=False).st_ino
+            print(f"{token}:{lock_inode}")
         finally:
             os.close(guard_fd)
       - "{{ wireguard_config_path }}/.algo-qr.lock"
       - "{{ wireguard_config_path }}/.algo-qr-recovery.lock"
       - "900"
   changed_when: true
+  register: wireguard_qr_lock
+  no_log: true
 
 - name: Generate QR codes under lock
   block:
@@ -152,7 +191,48 @@
       loop: "{{ wireguard_users }}"
       when: item in users
   always:
-    - name: Release QR generation lock
-      ansible.builtin.file:
-        path: "{{ wireguard_config_path }}/.algo-qr.lock"
-        state: absent
+    - name: Release QR generation lock safely
+      ansible.builtin.command:
+        argv:
+          - "{{ ansible_playbook_python }}"
+          - -c
+          - |
+            import fcntl
+            import os
+            import stat
+            import sys
+            primary, guard, identity = sys.argv[1], sys.argv[2], sys.argv[3]
+            token, inode_text = identity.rsplit(":", 1)
+            expected_inode = int(inode_text)
+            owner_path = os.path.join(primary, "owner")
+            guard_fd = os.open(guard, os.O_CREAT | os.O_RDWR, 0o600)
+            try:
+                fcntl.flock(guard_fd, fcntl.LOCK_EX)
+                try:
+                    primary_stat = os.stat(primary, follow_symlinks=False)
+                except FileNotFoundError:
+                    print("not-owner")
+                    sys.exit(0)
+                if not stat.S_ISDIR(primary_stat.st_mode) or primary_stat.st_ino != expected_inode:
+                    print("not-owner")
+                    sys.exit(0)
+                owner_fd = os.open(owner_path, os.O_RDONLY | os.O_NOFOLLOW)
+                try:
+                    owner_stat = os.fstat(owner_fd)
+                    owner = os.read(owner_fd, 129).decode("ascii")
+                finally:
+                    os.close(owner_fd)
+                if not stat.S_ISREG(owner_stat.st_mode) or owner != token:
+                    print("not-owner")
+                    sys.exit(0)
+                os.unlink(owner_path)
+                os.rmdir(primary)
+                print("released")
+            finally:
+                os.close(guard_fd)
+          - "{{ wireguard_config_path }}/.algo-qr.lock"
+          - "{{ wireguard_config_path }}/.algo-qr-recovery.lock"
+          - "{{ wireguard_qr_lock.stdout }}"
+      register: wireguard_qr_release
+      changed_when: wireguard_qr_release.stdout == 'released'
+      no_log: true
