@@ -84,11 +84,11 @@ def test_private_material_detector_covers_wireguard_openssh_and_secret_files():
     assert all(_looks_like_private_material(path, content) for path, content in cases.items())
 
 
-def test_test_mode_never_prints_generated_completion_credentials():
+def test_noninteractive_or_test_mode_never_prints_generated_completion_credentials():
     server = (ROOT / "server.yml").read_text(encoding="utf-8")
     completion = server.rsplit("- debug:", 1)[1].split("rescue:", 1)[0]
 
-    assert 'no_log: "{{ tests | default(false) | bool }}"' in completion
+    assert 'no_log: "{{ (tests | default(false) | bool) or (algo_no_log | default(false) | bool) }}"' in completion
 
 
 def test_generated_integration_credentials_are_ignored():

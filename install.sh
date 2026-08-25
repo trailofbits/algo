@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-set -ex
+set -eu
 
 UV_VERSION="0.12.3"
 UV_INSTALLER_SHA256="a7e3924ea1cd06bf1518c577d635c624ae2e2db030e0fc8ff8cf426224384e17"
@@ -171,8 +171,8 @@ deployAlgo() {
     -e server=localhost \
     -e ssh_user=root \
     -e "${EXTRA_VARS}" \
-    --skip-tags debug ${ANSIBLE_EXTRA_ARGS} |
-      tee /var/log/algo.log
+    --skip-tags debug ${ANSIBLE_EXTRA_ARGS} \
+    -e algo_no_log=true
 }
 
 if test "$METHOD" = "cloud"; then

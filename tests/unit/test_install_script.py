@@ -61,7 +61,14 @@ if [ "${1:-}" = clone ]; then
   mkdir -p "$destination"
 fi""",
     )
-    _write_stub(stub_bin, "uv", log_arguments)
+    _write_stub(
+        stub_bin,
+        "uv",
+        f"""{log_arguments}
+case " $* " in
+  *" ansible-playbook "*) exit "${{TEST_ANSIBLE_EXIT:-0}}" ;;
+esac""",
+    )
     _write_stub(stub_bin, "jq", f"{log_arguments}\nprintf '[\"user1\"]\\n'")
     checksum_exit = "" if checksum_succeeds else "\nexit 1"
     _write_stub(stub_bin, "sha256sum", f"{log_arguments}\n/bin/cat >/dev/null{checksum_exit}")
@@ -142,6 +149,32 @@ def test_installer_rejects_invalid_method_before_side_effects(tmp_path):
     assert result.returncode == 2
     assert "METHOD must be 'cloud' or 'local'" in result.stderr
     assert commands == []
+
+
+def test_installer_does_not_trace_or_persist_secret_bearing_deployment_output(tmp_path):
+    secret = "installer-regression-secret-value"  # noqa: S105 - synthetic leak sentinel
+    result, commands = _run_installer(
+        tmp_path,
+        environment_overrides={"EXTRA_VARS": f"provider_secret={secret}"},
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert secret not in result.stdout
+    assert secret not in result.stderr
+    assert "set -ex" not in INSTALLER.read_text(encoding="utf-8")
+    assert "/var/log/algo.log" not in INSTALLER.read_text(encoding="utf-8")
+    assert not any(command[0] == "tee" for command in commands)
+    ansible_command = next(command for command in commands if command[:3] == ["uv", "run", "ansible-playbook"])
+    assert "algo_no_log=true" in ansible_command
+    assert ansible_command.index("algo_no_log=true") > ansible_command.index(f"provider_secret={secret}")
+    assert ansible_command[-2:] == ["-e", "algo_no_log=true"]
+
+
+def test_installer_propagates_ansible_failure(tmp_path):
+    result, commands = _run_installer(tmp_path, environment_overrides={"TEST_ANSIBLE_EXIT": "23"})
+
+    assert result.returncode == 23
+    assert not any(command[0] == "tee" for command in commands)
 
 
 def test_installer_checksum_mismatch_prevents_execution_and_cleans_download(tmp_path):
