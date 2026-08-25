@@ -19,16 +19,23 @@ def test_swanctl_native_harness_recreates_role_runtime_prerequisites():
 
 
 def test_parallel_package_batch_never_installs_starter_for_swanctl():
-    common_packages = Path("roles/common/tasks/packages.yml").read_text(encoding="utf-8")
+    common_tasks = yaml.safe_load(Path("roles/common/tasks/packages.yml").read_text(encoding="utf-8"))
     ubuntu_tasks = yaml.safe_load(Path("roles/strongswan/tasks/ubuntu.yml").read_text(encoding="utf-8"))
 
     common_main = Path("roles/common/tasks/main.yml").read_text(encoding="utf-8")
     assert common_main.index("ansible.builtin.setup:") < common_main.index("include_tasks: facts.yml")
     assert common_main.index("include_tasks: facts.yml") < common_main.index("include_tasks: ubuntu.yml")
-    assert "strongswan_backend == 'starter'" in common_packages
+    addition = next(task for task in common_tasks if task.get("name") == "Add StrongSwan packages")
+    assert "['strongswan']" in addition["set_fact"]["algo_packages"]
+    assert addition["when"] == [
+        "performance_parallel_packages | default(true)",
+        "ipsec_enabled | default(false)",
+        "strongswan_backend == 'starter'",
+    ]
     removal = next(task for task in ubuntu_tasks if task.get("name") == "Remove starter backend packages for swanctl")
     assert set(removal["apt"]["name"]) == {"strongswan", "strongswan-starter"}
     assert removal["apt"]["state"] == "absent"
+    assert removal["when"] == "strongswan_backend == 'swanctl'"
 
 
 def test_supported_ubuntu_facts_select_starter_for_2204_and_swanctl_for_2404():

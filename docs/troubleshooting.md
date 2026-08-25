@@ -13,11 +13,8 @@ First, check the [supported features](https://github.com/trailofbits/algo#featur
         * [AWS: SSH permission denied with an ECDSA key](#aws-ssh-permission-denied-with-an-ecdsa-key)
         * [AWS: "Deploy the template" fails with CREATE_FAILED](#aws-deploy-the-template-fails-with-create_failed)
         * [AWS: not authorized to perform: cloudformation:UpdateStack](#aws-not-authorized-to-perform-cloudformationupdatestack)
-        * [Azure: No such file or directory .azure/azureProfile.json](#azure-no-such-file-or-directory-homeusernameazureazureprofilejson)
-        * [Azure: Deployment Permissions Error](#azure-deployment-permissions-error)
         * [Linode: Stackscript error](#linode-error-unable-to-query-the-linode-api-saw-400-the-requested-distribution-is-not-supported-by-this-stackscript)
      * Windows
-        * [Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid](#windows-the-value-of-parameter-linuxconfigurationsshpublickeyskeydata-is-invalid)
         * [Windows: "The parameter is incorrect" error when connecting](#windows-the-parameter-is-incorrect-error-when-connecting)
      * Local Deployment
         * [Error: Failed to create symlinks for deploying to localhost](#error-failed-to-create-symlinks-for-deploying-to-localhost)
@@ -75,9 +72,7 @@ You need to reset the permissions on your `.ssh` directory. Run `chmod 700 /home
 
 ### The region you want is not available
 
-Algo downloads the regions from the supported cloud providers (other than Microsoft Azure) listed in the first menu using APIs. If the region you want isn't available, the cloud provider has probably taken it offline for some reason. You should investigate further with your cloud provider.
-
-If there's a specific region you want to install to in Microsoft Azure that isn't available, you should [file an issue](https://github.com/trailofbits/algo/issues/new), give us information about what region is missing, and we'll add it.
+Algo downloads regions from the retained cloud providers listed in the first menu using their APIs. If the region you want is unavailable, the provider has probably taken it offline or does not offer the required services there. Investigate further with that provider. Azure and Lightsail are excluded and unverified; region requests do not change that support boundary.
 
 ### AWS: SSH permission denied with an ECDSA key
 
@@ -124,57 +119,9 @@ fatal: [localhost]: FAILED! => {"changed": false, "failed": true, "msg": "User: 
 
 This error indicates you already have Algo deployed to CloudFormation. [Delete the existing stack](cloud-amazon-ec2.md#resource-cleanup) first, then re-deploy.
 
-### Azure: No such file or directory: '/home/username/.azure/azureProfile.json'
-
- ```
- TASK [cloud-azure : Create AlgoVPN Server] *****************************************************************************************************************************************************************
-An exception occurred during task execution. To see the full traceback, use -vvv.
-The error was: FileNotFoundError: [Errno 2] No such file or directory: '/home/ubuntu/.azure/azureProfile.json'
-fatal: [localhost]: FAILED! => {"changed": false, "module_stderr": "Traceback (most recent call last):
-File \"/usr/local/lib/python3.11/dist-packages/azure/cli/core/_session.py\", line 39, in load
-with codecs_open(self.filename, 'r', encoding=self._encoding) as f:
-File \"/usr/lib/python3.11/codecs.py\", line 897, in open\n    file = builtins.open(filename, mode, buffering)
-FileNotFoundError: [Errno 2] No such file or directory: '/home/ubuntu/.azure/azureProfile.json'
-", "module_stdout": "", "msg": "MODULE FAILURE
-See stdout/stderr for the exact error", "rc": 1}
-```
-
-It happens when your machine is not authenticated in the azure cloud, follow this [guide](https://trailofbits.github.io/algo/cloud-azure.html) to configure your environment
-
-### Azure: Deployment Permissions Error
-
-The AAD Application Registration (aka, the 'Service Principal', where you got the ClientId) needs permission to create the resources for the subscription. Otherwise, you will get the following error when you run the Ansible deploy script:
-
-```
-fatal: [localhost]: FAILED! => {"changed": false, "msg": "Resource group create_or_update failed with status code: 403 and message: The client 'xxxxx' with object id 'THE_OBJECT_ID' does not have authorization to perform action 'Microsoft.Resources/subscriptions/resourcegroups/write' over scope '/subscriptions/THE_SUBSCRIPTION_ID/resourcegroups/algo' or the scope is invalid. If access was recently granted, please refresh your credentials."}
-```
-
-The solution for this is to open the Azure CLI and run the following command to grant contributor role to the Service Principal:
-
-```
-az role assignment create --assignee-object-id THE_OBJECT_ID --scope subscriptions/THE_SUBSCRIPTION_ID --role contributor
-```
-
-After this is applied, the Service Principal has permissions to create the resources and you can re-run `ansible-playbook main.yml` to complete the deployment.
-
 ### Linode Error: "Unable to query the Linode API. Saw: 400: The requested distribution is not supported by this stackscript.; "
 
 StackScript is a custom deployment script that defines a set of configurations for a Linode instance (e.g. which distribution, specs, etc.). if you used algo with default values in the past deployments, a stackscript that would've been created is 're-used' in the deployment process (in fact, go see 'create Linodes' and under 'StackScripts' tab). Thus, there's a little chance that your deployment process will generate this 'unsupported stackscript' error due to a pre-existing StackScript that doesn't support a particular configuration setting or value due to an 'old' stackscript. The quickest solution is just to change the name of your deployment from the default value of 'algo' (or any other name that you've used before, again see the dashboard) and re-run the deployment.
-
-### Windows: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid
-
-You tried to deploy Algo from Windows and you received an error like this one:
-
-```
-TASK [cloud-azure : Create an instance].
-fatal: [localhost]: FAILED! => {"changed": false,
-"msg": "Error creating or updating virtual machine AlgoVPN - Azure Error:
-InvalidParameter\n
-Message: The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid.\n
-Target: linuxConfiguration.ssh.publicKeys.keyData"}
-```
-
-This is related to [the chmod issue](https://github.com/Microsoft/WSL/issues/81) inside /mnt directory which is NTFS. The fix is to place Algo outside of /mnt directory.
 
 ### Windows: "The parameter is incorrect" error when connecting
 

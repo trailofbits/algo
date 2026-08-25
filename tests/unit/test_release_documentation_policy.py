@@ -47,6 +47,7 @@ def test_excluded_provider_claims_are_consistent_repository_wide():
         "Supported cloud providers: DigitalOcean, AWS, Azure",
         "Deploy on AWS, DigitalOcean, Azure, GCP",
         "Amazon [EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) and [Lightsail]",
+        "specific region you want to install to in Microsoft Azure",
     )
     stale = []
     for path in [ROOT / "CONTRIBUTING.md", *sorted((ROOT / "docs").rglob("*.md"))]:
@@ -54,6 +55,9 @@ def test_excluded_provider_claims_are_consistent_repository_wide():
         if any(claim in text for claim in forbidden):
             stale.append(str(path.relative_to(ROOT)))
     assert not stale, f"contradictory excluded-provider claims: {stale}"
+    troubleshooting = (ROOT / "docs" / "troubleshooting.md").read_text(encoding="utf-8")
+    assert "cloud-azure" not in troubleshooting
+    assert "### Azure:" not in troubleshooting
 
 
 def test_ubuntu_support_and_ec2_selector_docs_match_the_bounded_contract():
