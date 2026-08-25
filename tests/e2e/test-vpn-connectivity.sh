@@ -468,7 +468,7 @@ test_ipsec() {
     local charon_binary="" swanctl_binary=""
     local candidate_owner candidate_mode
     local client_config vici_socket sa_status
-    local server_source_ip vpn_source_ip
+    local server_source_ip vpn_source_ip ipsec_virtual_ip
 
     for f in "${cacert}" "${user_cert}" "${user_key}"; do
         if [[ ! -f "${f}" ]]; then
@@ -657,12 +657,19 @@ EOF
     fi
     log_info "IKE SA is ESTABLISHED and CHILD SA is INSTALLED"
 
+    ipsec_virtual_ip=$(ip netns exec "${NAMESPACE}" ip -4 -o addr show dev "${VETH_CLIENT}" scope global |
+        awk -v bridge="${CLIENT_BRIDGE_IP}" '{ split($4, addr, "/"); if (addr[1] != bridge) { print addr[1]; exit } }') || return 1
+    if [[ -z "${ipsec_virtual_ip}" ]]; then
+        log_error "The IPsec client did not install its assigned virtual IPv4 address"
+        return 1
+    fi
+
     local xfrm_bytes_before xfrm_bytes_after
     xfrm_bytes_before=$(ip netns exec "${NAMESPACE}" ip -s xfrm state |
         awk -f "${SCRIPT_DIR}/xfrm-byte-count.awk") || return 1
 
     log_info "Resolving DNS explicitly through the VPN service"
-    if ! ip netns exec "${NAMESPACE}" dig "@${DNS_SERVICE_IP}" google.com \
+    if ! ip netns exec "${NAMESPACE}" dig -b "${ipsec_virtual_ip}" "@${DNS_SERVICE_IP}" google.com \
         +short +time=5 +tries=1 | grep -q .; then
         log_error "DNS resolution through the IPsec tunnel failed"
         return 1
@@ -673,7 +680,7 @@ EOF
         log_error "Could not obtain the server source IP from the test endpoint"
         return 1
     fi
-    if ! vpn_source_ip=$(ip netns exec "${NAMESPACE}" curl --fail --silent \
+    if ! vpn_source_ip=$(ip netns exec "${NAMESPACE}" curl --interface "${ipsec_virtual_ip}" --fail --silent \
         --show-error --max-time 15 "${PUBLIC_IP_URL}"); then
         log_error "Routed HTTPS fetch through the IPsec tunnel failed"
         return 1
