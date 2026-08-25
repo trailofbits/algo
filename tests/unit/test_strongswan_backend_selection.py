@@ -9,6 +9,8 @@ def test_swanctl_native_harness_recreates_role_runtime_prerequisites():
     harness = Path("tests/integration/test-strongswan-swanctl.sh").read_text(encoding="utf-8")
 
     assert "install -d -m 0755 /var/lib/strongswan" in harness
+    assert harness.index("systemctl stop strongswan") < harness.index("systemctl reset-failed strongswan")
+    assert harness.index("systemctl reset-failed strongswan") < harness.index("systemctl restart strongswan")
     assert harness.index("install -d -m 0755 /var/lib/strongswan") < harness.index("systemctl restart strongswan")
     assert "journalctl -b --no-pager -u strongswan.service" in harness
     assert "systemctl show strongswan --property=ProtectSystem --value | grep -Fx strict" in harness

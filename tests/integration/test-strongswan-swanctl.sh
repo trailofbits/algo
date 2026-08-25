@@ -77,6 +77,10 @@ lxc exec "${INSTANCE}" -- env DEBIAN_FRONTEND=noninteractive apt-get update
 lxc exec "${INSTANCE}" -- env DEBIAN_FRONTEND=noninteractive apt-get install -y \
   charon-systemd strongswan-swanctl strongswan-pki
 lxc exec "${INSTANCE}" -- systemctl stop strongswan
+# Package configuration may have started charon before all plugin packages were
+# ready, consuming systemd's start-rate budget. Clear that transient state before
+# the harness performs its single authoritative configured start.
+lxc exec "${INSTANCE}" -- systemctl reset-failed strongswan
 lxc exec "${INSTANCE}" -- install -d -m 0755 \
   /etc/swanctl/x509ca /etc/swanctl/x509 /etc/swanctl/private /etc/swanctl/x509crl \
   /etc/systemd/system/strongswan.service.d
