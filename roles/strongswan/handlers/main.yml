@@ -27,7 +27,7 @@
     sleep 2
     for attempt in 1 2 3; do
       if [[ "{{ strongswan_backend }}" == "swanctl" ]]; then
-        reload_command="swanctl --load-authorities"
+        reload_command="swanctl --load-creds --noprompt"
       else
         reload_command="ipsec rereadcrls && ipsec purgecrls"
       fi

@@ -256,16 +256,15 @@
              '{"path": "' + ipsec_pki_path + '/certs/\1.crt", "revocation_date": "' + crl_timestamp + '"}') | list }}
 
     - name: Generate a CRL
-      community.crypto.x509_crl:
+      x509_crl_aki:
         path: "{{ ipsec_pki_path }}/crl.pem"
+        ca_certificate_path: "{{ ipsec_pki_path }}/cacert.pem"
         privatekey_path: "{{ ipsec_pki_path }}/private/cakey.pem"
         privatekey_passphrase: "{{ CA_password }}"
         last_update: "{{ '%Y%m%d%H%M%SZ' | strftime(ansible_date_time.epoch | int) }}"
         next_update: "{{ '%Y%m%d%H%M%SZ' | strftime((ansible_date_time.epoch | int) + (10 * 365 * 24 * 60 * 60)) }}"
-        crl_mode: generate
-        issuer:
-          CN: "{{ IP_subject_alt_name }}"
         revoked_certificates: "{{ revoked_certificates }}"
+        mode: "0644"
       no_log: true
 
     - name: Set CRL file permissions

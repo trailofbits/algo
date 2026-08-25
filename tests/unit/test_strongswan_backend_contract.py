@@ -47,6 +47,13 @@ def assert_secure_crypto(config: str) -> None:
     assert match is None, f"weak algorithm in configuration: {match.group(0) if match else ''}"
 
 
+def _walk_tasks(tasks):
+    for task in tasks:
+        yield task
+        for section in ("block", "rescue", "always"):
+            yield from _walk_tasks(task.get(section, []))
+
+
 def test_starter_and_swanctl_share_secure_crypto_and_authentication_contract():
     starter = render("ipsec.conf.j2")
     swanctl = render("swanctl.conf.j2")
@@ -136,12 +143,23 @@ def test_backend_file_contract_keeps_crls_and_private_keys_secure():
     assert swanctl_crl["when"] == "strongswan_backend == 'swanctl'"
 
 
+def test_crl_generation_uses_aki_aware_module_for_strict_revocation_lookup():
+    tasks = yaml.safe_load(Path("roles/strongswan/tasks/openssl.yml").read_text(encoding="utf-8"))
+    generate = next(task for task in _walk_tasks(tasks) if task.get("name") == "Generate a CRL")
+    args = generate["x509_crl_aki"]
+
+    assert args["ca_certificate_path"] == "{{ ipsec_pki_path }}/cacert.pem"
+    assert args["privatekey_path"] == "{{ ipsec_pki_path }}/private/cakey.pem"
+    assert args["mode"] == "0644"
+    assert generate["no_log"] is True
+
+
 def test_swanctl_plugins_and_reload_commands_do_not_depend_on_stroke():
     defaults = (ROLE_DIR / "defaults/main.yml").read_text(encoding="utf-8")
     handlers = (ROLE_DIR / "handlers/main.yml").read_text(encoding="utf-8")
 
     assert "  - vici" in defaults
     assert "swanctl --load-all --noprompt" in handlers
-    assert 'reload_command="swanctl --load-authorities"' in handlers
-    assert "swanctl --load-authorities --noprompt" not in handlers
+    assert 'reload_command="swanctl --load-creds --noprompt"' in handlers
+    assert "swanctl --load-authorities" not in handlers
     assert "ipsec rereadcrls" in handlers  # starter remains supported on 22.04

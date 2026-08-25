@@ -110,7 +110,7 @@ if ! systemctl restart strongswan; then
 fi
 sleep 2
 swanctl --load-all --noprompt
-swanctl --load-authorities
+swanctl --load-creds --noprompt
 swanctl --list-conns | grep -q ikev2-pubkey
 systemctl is-active --quiet strongswan
 systemctl show strongswan --property=ProtectSystem --value | grep -Fx strict
