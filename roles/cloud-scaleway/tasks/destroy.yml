@@ -1,4 +1,13 @@
 ---
+# The scaleway_compute module only accepts legacy short aliases (par1,
+# ams1, ...) in its region parameter, so map any full zone name the
+# user may have passed for deploy back to its alias. Role defaults are
+# not loaded here (this file is included directly by destroy.yml), so
+# fall back to the raw region when the map is unavailable.
+- name: Map the Scaleway zone to the legacy compute alias
+  set_fact:
+    algo_scaleway_compute_alias: "{{ (scaleway_compute_alias_map | default({})).get(algo_region, algo_region) }}"
+
 - environment:
     SCW_TOKEN: "{{ algo_scaleway_token }}"
   block:
@@ -6,4 +15,4 @@
       scaleway_compute:
         name: "{{ algo_server_name }}"
         state: absent
-        region: "{{ algo_region }}"
+        region: "{{ algo_scaleway_compute_alias }}"

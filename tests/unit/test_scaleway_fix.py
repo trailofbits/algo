@@ -1,136 +1,131 @@
-#!/usr/bin/env python3
-"""
-Test Scaleway role fixes for issue #14846
+"""Tests for the Scaleway provider fixes (Marketplace API v2 migration).
 
-This test validates that:
-1. The Scaleway role uses the modern 'project' parameter instead of deprecated 'organization'
-2. The Marketplace API is used for image lookup instead of the broken scaleway_image_info module
-3. The prompts include organization/project ID collection
+This test suite validates that:
+1. Image lookup uses Marketplace API v2 (api.scaleway.com/marketplace/v2/local-images)
+2. scaleway_compute uses the 'organization' parameter required by the
+   vendored library module (it does not support 'project')
+3. Zone/alias maps cover every offered region and are consistent
+4. The cloud-init patch uses the Instance API user-data endpoint rather
+   than the legacy cp-<alias>.scaleway.com hosts (which only resolve
+   for par1/ams1)
+5. destroy.yml maps full zone names back to legacy aliases
 """
 
-import sys
 from pathlib import Path
 
 import yaml
 
-
-def load_yaml_file(file_path):
-    """Load and parse a YAML file"""
-    with open(file_path) as f:
-        return yaml.safe_load(f)
+ROLE_DIR = Path("roles/cloud-scaleway")
 
 
-def test_scaleway_main_uses_project_parameter():
-    """Test that main.yml uses 'project' instead of deprecated 'organization' parameter"""
-    main_yml = Path("roles/cloud-scaleway/tasks/main.yml")
-    assert main_yml.exists(), "Scaleway main.yml not found"
+def _read(*parts: str) -> str:
+    return (ROLE_DIR.joinpath(*parts)).read_text()
 
-    with open(main_yml) as f:
-        content = f.read()
 
-    # Should NOT use the broken scaleway_organization_info module
-    assert "scaleway_organization_info" not in content, (
-        "Still using broken scaleway_organization_info module (issue #14846)"
+def test_scaleway_uses_marketplace_v2_api():
+    """Image lookup must use Marketplace API v2 local-images endpoint."""
+    content = _read("tasks", "main.yml")
+
+    assert "api.scaleway.com/marketplace/v2/local-images" in content, (
+        "Not using Marketplace API v2 local-images endpoint"
+    )
+    assert "api-marketplace.scaleway.com" not in content, (
+        "Still using the retired api-marketplace.scaleway.com host"
+    )
+    assert "scaleway_image_info" not in content, "Still using broken scaleway_image_info module"
+    assert "scaleway_organization_info" not in content, "Still using broken scaleway_organization_info module"
+    assert "X-Auth-Token" in content, (
+        "Marketplace API call must pass an explicit X-Auth-Token header "
+        "(the uri module ignores the SCW_TOKEN environment variable)"
     )
 
-    # Should NOT use the broken scaleway_image_info module
-    assert "scaleway_image_info" not in content, "Still using broken scaleway_image_info module"
 
-    # Should use project parameter (modern approach)
-    assert "project:" in content, "Missing 'project:' parameter in scaleway_compute calls"
-    assert "algo_scaleway_org_id" in content, "Missing algo_scaleway_org_id variable reference"
+def test_scaleway_compute_uses_organization_parameter():
+    """scaleway_compute must receive 'organization', not 'project'."""
+    content = _read("tasks", "main.yml")
 
-    # Should NOT use deprecated organization parameter
-    assert 'organization: "{{' not in content, "Still using deprecated 'organization' parameter"
+    assert 'organization: "{{ algo_scaleway_org_id }}"' in content, (
+        "scaleway_compute calls must pass organization (the vendored module has no project param)"
+    )
+    assert "project:" not in content, (
+        "'project:' is not a valid scaleway_compute parameter in the vendored library module"
+    )
 
-    # Should use Marketplace API for image lookup
-    assert "api-marketplace.scaleway.com" in content, "Not using Scaleway Marketplace API for image lookup"
 
-    print("✓ Scaleway main.yml uses modern 'project' parameter")
+def test_scaleway_zone_maps_are_consistent():
+    """Every offered region must have a zone and a matching reverse alias."""
+    defaults = yaml.safe_load((ROLE_DIR / "defaults" / "main.yml").read_text())
+
+    regions = {r["alias"] for r in defaults["scaleway_regions"]}
+    zone_map = defaults["scaleway_zone_map"]
+    alias_map = defaults["scaleway_compute_alias_map"]
+
+    assert regions, "scaleway_regions must not be empty"
+    assert set(zone_map.keys()) == regions, "zone_map must cover exactly the offered regions"
+    assert set(alias_map.values()) == regions, "alias_map must cover exactly the offered regions"
+    assert set(zone_map.values()) == set(alias_map.keys()), "zone and alias names must match"
+    assert zone_map == {v: k for k, v in alias_map.items()}, (
+        "scaleway_zone_map and scaleway_compute_alias_map must be exact inverses"
+    )
+
+
+def test_scaleway_image_selection_filters():
+    """Image fact must filter v2 results by arch, commercial type and image type."""
+    content = _read("tasks", "main.yml")
+
+    assert "local_images" in content, "Image lookup must read local_images from the v2 response"
+    assert "selectattr('arch', 'equalto', cloud_providers.scaleway.arch)" in content, "Missing arch filter"
+    assert "selectattr('compatible_commercial_types', 'contains', cloud_providers.scaleway.size)" in content, (
+        "Missing commercial type filter"
+    )
+    assert "selectattr('type', 'equalto', 'instance_sbs')" in content, "Missing instance_sbs image type filter"
+
+
+def test_scaleway_cloudinit_uses_instance_api():
+    """Cloud-init patch must target the Instance API, not legacy cp- hosts."""
+    tasks = yaml.safe_load(_read("tasks", "main.yml"))
+    block = next(t["block"] for t in tasks if "block" in t)
+    patch = next(t for t in block if t.get("name") == "Patch the cloud-init")
+
+    url = patch["uri"]["url"]
+    assert "instance/v1/zones/{{ algo_scaleway_zone }}/servers/" in url, (
+        "Cloud-init patch must use the Instance API user-data endpoint (works in all zones)"
+    )
+    assert "user_data/cloud-init" in url, "Cloud-init patch must target the cloud-init user data key"
+    assert "cp-" not in url, (
+        "Legacy cp-<alias>.scaleway.com hosts only resolve for par1/ams1 and break other zones"
+    )
+
+
+def test_scaleway_destroy_maps_zone_to_alias():
+    """destroy.yml must map full zone names to module-supported aliases."""
+    content = _read("tasks", "destroy.yml")
+
+    assert "algo_scaleway_compute_alias" in content, "destroy.yml must resolve the legacy compute alias"
+    assert "scaleway_compute_alias_map | default({})" in content, (
+        "destroy.yml is included without role defaults, so the alias map lookup must be guarded"
+    )
+    assert 'region: "{{ algo_scaleway_compute_alias }}"' in content, (
+        "scaleway_compute must be called with the mapped alias, not the raw region"
+    )
 
 
 def test_scaleway_prompts_collect_org_id():
-    """Test that prompts.yml collects organization/project ID from user"""
-    prompts_yml = Path("roles/cloud-scaleway/tasks/prompts.yml")
-    assert prompts_yml.exists(), "Scaleway prompts.yml not found"
+    """Prompts must collect organization/project ID and support env fallback."""
+    content = _read("tasks", "prompts.yml")
 
-    with open(prompts_yml) as f:
-        content = f.read()
-
-    # Should prompt for organization ID
     assert "Organization ID" in content, "Missing prompt for Scaleway Organization ID"
-
-    # Should set algo_scaleway_org_id fact
     assert "algo_scaleway_org_id:" in content, "Missing algo_scaleway_org_id fact definition"
-
-    # Should support SCW_DEFAULT_ORGANIZATION_ID env var
     assert "SCW_DEFAULT_ORGANIZATION_ID" in content, (
         "Missing support for SCW_DEFAULT_ORGANIZATION_ID environment variable"
     )
-
-    # Should mention console.scaleway.com for finding the ID
     assert "console.scaleway.com" in content, "Missing instructions on where to find Organization ID"
-
-    print("✓ Scaleway prompts.yml collects organization/project ID")
 
 
 def test_scaleway_config_has_valid_settings():
-    """Test that config.cfg has valid Scaleway settings"""
-    config_file = Path("config.cfg")
-    assert config_file.exists(), "config.cfg not found"
+    """config.cfg must define scaleway size and arch used by the v2 filters."""
+    content = Path("config.cfg").read_text()
 
-    with open(config_file) as f:
-        content = f.read()
-
-    # Should have scaleway section
     assert "scaleway:" in content, "Missing Scaleway configuration section"
-
-    # Should specify Ubuntu 22.04
-    assert "Ubuntu 22.04" in content or "ubuntu" in content.lower(), "Missing Ubuntu image specification"
-
-    print("✓ config.cfg has valid Scaleway settings")
-
-
-def test_scaleway_marketplace_api_usage():
-    """Test that the role correctly uses Scaleway Marketplace API"""
-    main_yml = Path("roles/cloud-scaleway/tasks/main.yml")
-
-    with open(main_yml) as f:
-        content = f.read()
-
-    # Should use uri module to fetch from Marketplace API
-    assert "uri:" in content, "Not using uri module for API calls"
-
-    # Should filter for Ubuntu 22.04 Jammy
-    assert "Ubuntu" in content and "22" in content, "Not filtering for Ubuntu 22.04 image"
-
-    # Should set scaleway_image_id variable
-    assert "scaleway_image_id" in content, "Missing scaleway_image_id variable for image UUID"
-
-    print("✓ Scaleway role uses Marketplace API correctly")
-
-
-if __name__ == "__main__":
-    tests = [
-        test_scaleway_main_uses_project_parameter,
-        test_scaleway_prompts_collect_org_id,
-        test_scaleway_config_has_valid_settings,
-        test_scaleway_marketplace_api_usage,
-    ]
-
-    failed = 0
-    for test in tests:
-        try:
-            test()
-        except AssertionError as e:
-            print(f"✗ {test.__name__} failed: {e}")
-            failed += 1
-        except Exception as e:
-            print(f"✗ {test.__name__} error: {e}")
-            failed += 1
-
-    if failed > 0:
-        print(f"\n{failed} tests failed")
-        sys.exit(1)
-    else:
-        print(f"\nAll {len(tests)} tests passed!")
+    assert "DEV1-S" in content, "Missing Scaleway instance size (used by compatible_commercial_types filter)"
+    assert "arch: x86_64" in content, "Missing Scaleway arch (used by the image arch filter)"

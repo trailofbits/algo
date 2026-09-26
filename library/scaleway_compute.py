@@ -168,16 +168,14 @@ SCALEWAY_TRANSITIONS_STATES = ("stopping", "starting", "pending")
 
 
 def check_image_id(compute_api, image_id):
-    response = compute_api.get(path="images")
+    # Fetch the image directly instead of scanning the paginated
+    # GET /images list, which only returns the first page by default.
+    response = compute_api.get(path="images/%s" % image_id)
 
-    if response.ok and response.json:
-        image_ids = [image["id"] for image in response.json["images"]]
-        if image_id not in image_ids:
-            compute_api.module.fail_json(
-                msg="Error in getting image %s on %s" % (image_id, compute_api.module.params.get("api_url"))
-            )
-    else:
-        compute_api.module.fail_json(msg="Error in getting images from: %s" % compute_api.module.params.get("api_url"))
+    if not response.ok or not response.json.get("image"):
+        compute_api.module.fail_json(
+            msg="Error in getting image %s on %s" % (image_id, compute_api.module.params.get("api_url"))
+        )
 
 
 def fetch_state(compute_api, server):

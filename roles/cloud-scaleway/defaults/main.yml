@@ -1,4 +1,38 @@
 ---
+# Aliases supported by the scaleway_compute module (community.general
+# SCALEWAY_LOCATION) and by the Scaleway console. Each has a verified
+# Ubuntu 22.04 (ubuntu_jammy) image in Marketplace API v2.
 scaleway_regions:
   - alias: par1
+  - alias: par2
   - alias: ams1
+  - alias: ams2
+  - alias: ams3
+  - alias: waw1
+  - alias: waw2
+  - alias: waw3
+
+# Map short region aliases to the full zone names required by the
+# Marketplace API v2 (api.scaleway.com/marketplace/v2) and the
+# Instance API user-data endpoint
+scaleway_zone_map:
+  par1: fr-par-1
+  par2: fr-par-2
+  ams1: nl-ams-1
+  ams2: nl-ams-2
+  ams3: nl-ams-3
+  waw1: pl-waw-1
+  waw2: pl-waw-2
+  waw3: pl-waw-3
+
+# Reverse map: the scaleway_compute module expects the legacy short
+# aliases in its region parameter
+scaleway_compute_alias_map:
+  fr-par-1: par1
+  fr-par-2: par2
+  nl-ams-1: ams1
+  nl-ams-2: ams2
+  nl-ams-3: ams3
+  pl-waw-1: waw1
+  pl-waw-2: waw2
+  pl-waw-3: waw3
