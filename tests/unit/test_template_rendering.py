@@ -244,6 +244,27 @@ def test_wireguard_ipv6_endpoints():
         print("✓ WireGuard IPv6 endpoint test passed (4 test cases)")
 
 
+def test_dns_ip_blacklist_covers_ipv6():
+    """Test that the dnscrypt-proxy IP blacklist blocks the IPv6 twins of the addresses it blocks over IPv4"""
+    template_path = "roles/dns/templates/ip-blacklist.txt.j2"
+    if not os.path.exists(template_path):
+        print(f"⚠ Skipping DNS blacklist test - {template_path} not found")
+        return
+
+    env = Environment(loader=FileSystemLoader("roles/dns/templates"), undefined=StrictUndefined)
+    rendered = env.get_template("ip-blacklist.txt.j2").render(get_test_variables())
+    entries = {line.strip() for line in rendered.splitlines() if line.strip()}
+
+    # The unspecified address, loopback, and the VPN client networks, all of which
+    # the list already blocks in their IPv4 form
+    required = ["::", "::1", "2001:db8:*"]
+
+    missing = [entry for entry in required if entry not in entries]
+    assert not missing, f"IP blacklist is missing IPv6 entries: {missing}"
+
+    print("✓ DNS IP blacklist covers the IPv6 rebinding targets")
+
+
 def test_template_conditionals():
     """Test templates with different conditional states"""
     test_cases = [
@@ -327,6 +348,7 @@ if __name__ == "__main__":
         test_critical_templates,
         test_variable_consistency,
         test_wireguard_ipv6_endpoints,
+        test_dns_ip_blacklist_covers_ipv6,
         test_template_conditionals,
     ]
 
