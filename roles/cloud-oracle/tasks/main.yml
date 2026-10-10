@@ -1,0 +1,199 @@
+---
+- name: Include Oracle Cloud configuration
+  import_tasks: prompts.yml
+
+- name: Create Oracle Virtual Cloud Network
+  oracle.oci.oci_network_vcn:
+    config_file_location: "{{ algo_oci_config_file }}"
+    config_profile_name: "{{ algo_oci_config_profile }}"
+    region: "{{ algo_region }}"
+    compartment_id: "{{ algo_oci_compartment_id }}"
+    display_name: "{{ algo_server_name }}-vcn"
+    cidr_blocks:
+      - 10.0.0.0/16
+    dns_label: algovpn
+    state: present
+    key_by:
+      - compartment_id
+      - display_name
+  register: _oracle_vcn
+
+- name: Create Oracle Internet Gateway
+  oracle.oci.oci_network_internet_gateway:
+    config_file_location: "{{ algo_oci_config_file }}"
+    config_profile_name: "{{ algo_oci_config_profile }}"
+    region: "{{ algo_region }}"
+    compartment_id: "{{ algo_oci_compartment_id }}"
+    vcn_id: "{{ _oracle_vcn.vcn.id }}"
+    display_name: "{{ algo_server_name }}-internet-gateway"
+    is_enabled: true
+    state: present
+    key_by:
+      - compartment_id
+      - vcn_id
+      - display_name
+  register: _oracle_internet_gateway
+
+- name: Create Oracle route table
+  oracle.oci.oci_network_route_table:
+    config_file_location: "{{ algo_oci_config_file }}"
+    config_profile_name: "{{ algo_oci_config_profile }}"
+    region: "{{ algo_region }}"
+    compartment_id: "{{ algo_oci_compartment_id }}"
+    vcn_id: "{{ _oracle_vcn.vcn.id }}"
+    display_name: "{{ algo_server_name }}-route-table"
+    route_rules:
+      - destination: 0.0.0.0/0
+        destination_type: CIDR_BLOCK
+        network_entity_id: "{{ _oracle_internet_gateway.internet_gateway.id }}"
+        description: Route public traffic through the internet gateway
+    state: present
+    key_by:
+      - compartment_id
+      - vcn_id
+      - display_name
+  register: _oracle_route_table
+
+- name: Create Oracle security list
+  oracle.oci.oci_network_security_list:
+    config_file_location: "{{ algo_oci_config_file }}"
+    config_profile_name: "{{ algo_oci_config_profile }}"
+    region: "{{ algo_region }}"
+    compartment_id: "{{ algo_oci_compartment_id }}"
+    vcn_id: "{{ _oracle_vcn.vcn.id }}"
+    display_name: "{{ algo_server_name }}-security-list"
+    ingress_security_rules:
+      - protocol: "6"
+        source: 0.0.0.0/0
+        source_type: CIDR_BLOCK
+        tcp_options:
+          destination_port_range:
+            min: "{{ ssh_port | int }}"
+            max: "{{ ssh_port | int }}"
+        description: Allow SSH
+      - protocol: "17"
+        source: 0.0.0.0/0
+        source_type: CIDR_BLOCK
+        udp_options:
+          destination_port_range:
+            min: 500
+            max: 500
+        description: Allow IPsec IKE
+      - protocol: "17"
+        source: 0.0.0.0/0
+        source_type: CIDR_BLOCK
+        udp_options:
+          destination_port_range:
+            min: 4500
+            max: 4500
+        description: Allow IPsec NAT traversal
+      - protocol: "17"
+        source: 0.0.0.0/0
+        source_type: CIDR_BLOCK
+        udp_options:
+          destination_port_range:
+            min: "{{ wireguard_port | int }}"
+            max: "{{ wireguard_port | int }}"
+        description: Allow WireGuard
+    egress_security_rules:
+      - destination: 0.0.0.0/0
+        destination_type: CIDR_BLOCK
+        protocol: all
+        description: Allow outbound traffic
+    state: present
+    key_by:
+      - compartment_id
+      - vcn_id
+      - display_name
+  register: _oracle_security_list
+
+- name: Create Oracle public subnet
+  oracle.oci.oci_network_subnet:
+    config_file_location: "{{ algo_oci_config_file }}"
+    config_profile_name: "{{ algo_oci_config_profile }}"
+    region: "{{ algo_region }}"
+    compartment_id: "{{ algo_oci_compartment_id }}"
+    vcn_id: "{{ _oracle_vcn.vcn.id }}"
+    display_name: "{{ algo_server_name }}-subnet"
+    cidr_block: 10.0.1.0/24
+    dns_label: vpn
+    route_table_id: "{{ _oracle_route_table.route_table.id }}"
+    security_list_ids:
+      - "{{ _oracle_security_list.security_list.id }}"
+    prohibit_public_ip_on_vnic: false
+    state: present
+    key_by:
+      - compartment_id
+      - vcn_id
+      - display_name
+  register: _oracle_subnet
+
+- name: Get Oracle availability domains
+  oracle.oci.oci_identity_availability_domain_facts:
+    config_file_location: "{{ algo_oci_config_file }}"
+    config_profile_name: "{{ algo_oci_config_profile }}"
+    region: "{{ algo_region }}"
+    compartment_id: "{{ algo_oci_tenancy_id }}"
+  register: _oracle_availability_domains
+
+- name: Require an Oracle availability domain
+  assert:
+    that: _oracle_availability_domains.availability_domains | length > 0
+    fail_msg: No availability domains were found in Oracle region {{ algo_region }}.
+
+- name: Find a compatible Ubuntu image
+  oracle.oci.oci_compute_image_facts:
+    config_file_location: "{{ algo_oci_config_file }}"
+    config_profile_name: "{{ algo_oci_config_profile }}"
+    region: "{{ algo_region }}"
+    compartment_id: "{{ algo_oci_compartment_id }}"
+    operating_system: "{{ cloud_providers.oracle.image.operating_system }}"
+    operating_system_version: "{{ cloud_providers.oracle.image.operating_system_version }}"
+    shape: "{{ cloud_providers.oracle.shape }}"
+    lifecycle_state: AVAILABLE
+    sort_by: TIMECREATED
+    sort_order: DESC
+  register: _oracle_images
+
+- name: Require a compatible Ubuntu image
+  assert:
+    that: _oracle_images.images | length > 0
+    fail_msg: >-
+      Oracle has no {{ cloud_providers.oracle.image.operating_system }}
+      {{ cloud_providers.oracle.image.operating_system_version }} image for shape
+      {{ cloud_providers.oracle.shape }} in {{ algo_region }}.
+
+- name: Create Oracle VM
+  oracle.oci.oci_compute_instance:
+    config_file_location: "{{ algo_oci_config_file }}"
+    config_profile_name: "{{ algo_oci_config_profile }}"
+    region: "{{ algo_region }}"
+    compartment_id: "{{ algo_oci_compartment_id }}"
+    availability_domain: "{{ (_oracle_availability_domains.availability_domains | sort(attribute='name') | first).name }}"
+    display_name: "{{ algo_server_name }}"
+    shape: "{{ cloud_providers.oracle.shape }}"
+    shape_config: "{{ cloud_providers.oracle.shape_config | default(omit) }}"
+    source_details:
+      source_type: image
+      image_id: "{{ _oracle_images.images[0].id }}"
+    create_vnic_details:
+      subnet_id: "{{ _oracle_subnet.subnet.id }}"
+      assign_public_ip: true
+    metadata:
+      ssh_authorized_keys: "{{ lookup('file', SSH_keys.public) }}"
+      user_data: "{{ lookup('template', 'files/cloud-init/base.yml') | b64encode }}"
+    state: present
+    key_by:
+      - compartment_id
+      - availability_domain
+      - display_name
+  register: _oracle_instance
+
+- name: Set Oracle VM connection details
+  set_fact:
+    cloud_instance_ip: "{{ _oracle_instance.instance.primary_public_ip }}"
+    ansible_ssh_user: algo
+    ansible_ssh_port: "{{ ssh_port }}"
+    # OCI Ubuntu package upgrades delayed SSH startup by about 15 minutes in testing.
+    cloud_init_ssh_timeout: 1200
+    cloudinit: true

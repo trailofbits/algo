@@ -1,0 +1,114 @@
+---
+- name: Find Oracle VM
+  oracle.oci.oci_compute_instance_facts:
+    config_file_location: "{{ algo_oci_config_file }}"
+    config_profile_name: "{{ algo_oci_config_profile }}"
+    region: "{{ algo_region }}"
+    compartment_id: "{{ algo_oci_compartment_id }}"
+    display_name: "{{ algo_server_name }}"
+  register: _oracle_instances
+
+- name: Destroy Oracle VM
+  oracle.oci.oci_compute_instance:
+    config_file_location: "{{ algo_oci_config_file }}"
+    config_profile_name: "{{ algo_oci_config_profile }}"
+    region: "{{ algo_region }}"
+    instance_id: "{{ (_oracle_instances.instances | first).id }}"
+    state: absent
+  when: _oracle_instances.instances | length > 0
+
+- name: Find Oracle VCN
+  oracle.oci.oci_network_vcn_facts:
+    config_file_location: "{{ algo_oci_config_file }}"
+    config_profile_name: "{{ algo_oci_config_profile }}"
+    region: "{{ algo_region }}"
+    compartment_id: "{{ algo_oci_compartment_id }}"
+    display_name: "{{ algo_server_name }}-vcn"
+  register: _oracle_vcns
+
+- name: Destroy Oracle network
+  when: _oracle_vcns.vcns | length > 0
+  block:
+    - name: Find Oracle subnet
+      oracle.oci.oci_network_subnet_facts:
+        config_file_location: "{{ algo_oci_config_file }}"
+        config_profile_name: "{{ algo_oci_config_profile }}"
+        region: "{{ algo_region }}"
+        compartment_id: "{{ algo_oci_compartment_id }}"
+        vcn_id: "{{ (_oracle_vcns.vcns | first).id }}"
+        display_name: "{{ algo_server_name }}-subnet"
+      register: _oracle_subnets
+
+    - name: Remove Oracle subnet
+      oracle.oci.oci_network_subnet:
+        config_file_location: "{{ algo_oci_config_file }}"
+        config_profile_name: "{{ algo_oci_config_profile }}"
+        region: "{{ algo_region }}"
+        subnet_id: "{{ (_oracle_subnets.subnets | first).id }}"
+        state: absent
+      when: _oracle_subnets.subnets | length > 0
+
+    - name: Find Oracle route table
+      oracle.oci.oci_network_route_table_facts:
+        config_file_location: "{{ algo_oci_config_file }}"
+        config_profile_name: "{{ algo_oci_config_profile }}"
+        region: "{{ algo_region }}"
+        compartment_id: "{{ algo_oci_compartment_id }}"
+        vcn_id: "{{ (_oracle_vcns.vcns | first).id }}"
+        display_name: "{{ algo_server_name }}-route-table"
+      register: _oracle_route_tables
+
+    - name: Remove Oracle route table
+      oracle.oci.oci_network_route_table:
+        config_file_location: "{{ algo_oci_config_file }}"
+        config_profile_name: "{{ algo_oci_config_profile }}"
+        region: "{{ algo_region }}"
+        rt_id: "{{ (_oracle_route_tables.route_tables | first).id }}"
+        state: absent
+      when: _oracle_route_tables.route_tables | length > 0
+
+    - name: Find Oracle Internet Gateway
+      oracle.oci.oci_network_internet_gateway_facts:
+        config_file_location: "{{ algo_oci_config_file }}"
+        config_profile_name: "{{ algo_oci_config_profile }}"
+        region: "{{ algo_region }}"
+        compartment_id: "{{ algo_oci_compartment_id }}"
+        vcn_id: "{{ (_oracle_vcns.vcns | first).id }}"
+        display_name: "{{ algo_server_name }}-internet-gateway"
+      register: _oracle_internet_gateways
+
+    - name: Remove Oracle Internet Gateway
+      oracle.oci.oci_network_internet_gateway:
+        config_file_location: "{{ algo_oci_config_file }}"
+        config_profile_name: "{{ algo_oci_config_profile }}"
+        region: "{{ algo_region }}"
+        ig_id: "{{ (_oracle_internet_gateways.internet_gateways | first).id }}"
+        state: absent
+      when: _oracle_internet_gateways.internet_gateways | length > 0
+
+    - name: Find Oracle security list
+      oracle.oci.oci_network_security_list_facts:
+        config_file_location: "{{ algo_oci_config_file }}"
+        config_profile_name: "{{ algo_oci_config_profile }}"
+        region: "{{ algo_region }}"
+        compartment_id: "{{ algo_oci_compartment_id }}"
+        vcn_id: "{{ (_oracle_vcns.vcns | first).id }}"
+        display_name: "{{ algo_server_name }}-security-list"
+      register: _oracle_security_lists
+
+    - name: Remove Oracle security list
+      oracle.oci.oci_network_security_list:
+        config_file_location: "{{ algo_oci_config_file }}"
+        config_profile_name: "{{ algo_oci_config_profile }}"
+        region: "{{ algo_region }}"
+        security_list_id: "{{ (_oracle_security_lists.security_lists | first).id }}"
+        state: absent
+      when: _oracle_security_lists.security_lists | length > 0
+
+    - name: Remove Oracle VCN
+      oracle.oci.oci_network_vcn:
+        config_file_location: "{{ algo_oci_config_file }}"
+        config_profile_name: "{{ algo_oci_config_profile }}"
+        region: "{{ algo_region }}"
+        vcn_id: "{{ (_oracle_vcns.vcns | first).id }}"
+        state: absent

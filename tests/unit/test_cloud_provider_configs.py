@@ -36,6 +36,7 @@ REQUIRED_FIELDS = {
     "azure": ["size"],
     "lightsail": ["size", "image"],
     "scaleway": ["size", "image"],
+    "oracle": ["shape"],
 }
 
 

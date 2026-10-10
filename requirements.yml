@@ -26,3 +26,5 @@ collections:
     version: "==6.9.0"
   - name: ngine_io.cloudstack
     version: "==3.0.0"
+  - name: oracle.oci
+    version: "==5.5.0"

@@ -39,6 +39,13 @@ write_files:
 
 runcmd:
   - set -x
+{% if algo_provider | default('') == 'oracle' %}
+  # OCI images reject custom SSH ports before Algo can configure the firewall.
+  # Preserve their InstanceServices rules protecting metadata and iSCSI storage.
+  - iptables -C INPUT -p tcp --dport {{ ssh_port | int }} -j ACCEPT || iptables -I INPUT 1 -p tcp --dport {{ ssh_port | int }} -j ACCEPT
+  - iptables-save > /etc/iptables/rules.v4
+{% else %}
   - ufw --force reset
+{% endif %}
   - sudo apt-get remove -y --purge sshguard || true
   - systemctl restart sshd.service

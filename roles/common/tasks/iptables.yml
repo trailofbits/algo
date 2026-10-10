@@ -1,4 +1,16 @@
 ---
+- name: Read Oracle instance service firewall rules
+  # Preserve the image's storage access restrictions using its active backend.
+  command:
+    argv:
+      - iptables-save
+      - -t
+      - filter
+  register: _oracle_iptables_filter
+  changed_when: false
+  check_mode: false
+  when: algo_provider == 'oracle'
+
 - name: Iptables configured
   template:
     src: "{{ item.src }}"
