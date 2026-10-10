@@ -162,7 +162,10 @@
   when: alternative_ingress_ip | bool
 
 - name: Ubuntu 22.04+ | Use iptables-legacy for compatibility
-  when: is_ubuntu_22_plus
+  # Switching OCI's backend would leave the image's original firewall active too.
+  when:
+    - is_ubuntu_22_plus
+    - algo_provider != 'oracle'
   tags: iptables
   block:
     - name: Install iptables packages

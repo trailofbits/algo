@@ -23,6 +23,7 @@
   - Configure [Vultr](cloud-vultr.md)
   - Configure [CloudStack](cloud-cloudstack.md)
   - Configure [Hetzner Cloud](cloud-hetzner.md)
+  - Configure [Oracle Cloud Infrastructure](cloud-oracle.md)
 * Advanced Deployment
   - Deploy to your own [Ubuntu](deploy-to-ubuntu.md) server, and road warrior setup
   - Deploy to an [unsupported cloud provider](deploy-to-unsupported-cloud.md)

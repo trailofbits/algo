@@ -1,0 +1,64 @@
+---
+- name: Install the Oracle Cloud Infrastructure Python SDK
+  command:
+    argv:
+      - uv
+      - pip
+      - install
+      - 'oci>=2.152.1'
+  args:
+    chdir: "{{ playbook_dir }}"
+  changed_when: false
+
+- name: Set Oracle Cloud configuration defaults
+  set_fact:
+    algo_oci_config_file: >-
+      {{ oci_config_file | default(lookup('env', 'OCI_CONFIG_FILE') |
+         default(lookup('env', 'HOME') + '/.oci/config', true), true) |
+         regex_replace('^~/', lookup('env', 'HOME') + '/') }}
+    algo_oci_config_profile: >-
+      {{ oci_config_profile | default(lookup('env', 'OCI_CONFIG_PROFILE') |
+         default('DEFAULT', true), true) }}
+  no_log: true
+
+- name: Check the Oracle Cloud configuration file
+  stat:
+    path: "{{ algo_oci_config_file }}"
+  register: _oracle_config_file
+
+- name: Require an Oracle Cloud configuration file
+  assert:
+    that:
+      - _oracle_config_file.stat.exists
+      - _oracle_config_file.stat.isreg
+    fail_msg: >-
+      Oracle Cloud configuration file {{ algo_oci_config_file }} was not found.
+      Create it with the OCI CLI setup flow or set oci_config_file.
+      See https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdkconfig.htm.
+
+- name: Read Oracle Cloud tenancy and region
+  set_fact:
+    algo_oci_tenancy_id: >-
+      {{ lookup('env', 'OCI_TENANCY') |
+         default(lookup('ini', 'tenancy section=' ~ algo_oci_config_profile ~
+         ' file=' ~ algo_oci_config_file), true) }}
+    algo_region: >-
+      {{ region | default(lookup('env', 'OCI_REGION') |
+         default(lookup('ini', 'region section=' ~ algo_oci_config_profile ~
+         ' file=' ~ algo_oci_config_file), true), true) }}
+  no_log: true
+
+- name: Select the Oracle Cloud deployment compartment
+  set_fact:
+    algo_oci_compartment_id: "{{ oci_compartment_id | default(algo_oci_tenancy_id, true) }}"
+  no_log: true
+
+- name: Require an Oracle Cloud tenancy and region
+  assert:
+    that:
+      - algo_oci_tenancy_id | length > 0
+      - algo_region | length > 0
+      - algo_oci_compartment_id | length > 0
+    fail_msg: >-
+      Oracle Cloud tenancy and region are required. Add tenancy and region to
+      the selected OCI profile, or pass oci_compartment_id and region.

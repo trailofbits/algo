@@ -64,7 +64,9 @@
               linode: linode
               openstack: openstack
               cloudstack: cloudstack
-          when: algo_provider != "local"
+          when:
+            - algo_provider != "local"
+            - algo_provider != "oracle"
           changed_when: false
 
         - name: Set region from stored config
@@ -75,6 +77,13 @@
             - _server_cfg.algo_region is defined
             - _server_cfg.algo_region | length > 0
 
+        - name: Restore Oracle deployment settings from stored config
+          set_fact:
+            oci_config_file: "{{ _server_cfg.oci_config_file }}"
+            oci_config_profile: "{{ _server_cfg.oci_config_profile }}"
+            oci_compartment_id: "{{ _server_cfg.algo_oci_compartment_id }}"
+          when: algo_provider == "oracle"
+
         - name: Validate region for providers that require it
           fail:
             msg: |
@@ -84,7 +93,7 @@
               Example:
                 ./algo destroy {{ server_ip }} -e "region=us-east-1"
           when:
-            - algo_provider in ['ec2', 'lightsail', 'gce', 'scaleway', 'vultr']
+            - algo_provider in ['ec2', 'lightsail', 'gce', 'scaleway', 'vultr', 'oracle']
             - region is not defined
 
         - name: Set dummy region for providers that do not need it
@@ -92,7 +101,7 @@
             region: "unused"
           when:
             - region is not defined
-            - algo_provider not in ['ec2', 'lightsail', 'gce', 'scaleway', 'vultr']
+            - algo_provider not in ['ec2', 'lightsail', 'gce', 'scaleway', 'vultr', 'oracle']
 
         - name: Gather provider credentials
           include_tasks: "roles/cloud-{{ algo_provider }}/tasks/prompts.yml"

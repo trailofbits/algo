@@ -17,9 +17,10 @@ PROVIDERS = [
     "openstack",
     "cloudstack",
     "linode",
+    "oracle",
 ]
 
-REGION_REQUIRED_PROVIDERS = ["ec2", "lightsail", "gce", "scaleway", "vultr"]
+REGION_REQUIRED_PROVIDERS = ["ec2", "lightsail", "gce", "scaleway", "vultr", "oracle"]
 
 
 def test_destroy_playbook_exists():

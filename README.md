@@ -17,7 +17,7 @@ See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo
 * Sets up limited SSH users for tunneling traffic (optional)
 * Privacy-focused with minimal logging, automatic log rotation, and configurable privacy enhancements
 * Based on Ubuntu 22.04 LTS with automatic security updates
-* Installs to DigitalOcean, Amazon Lightsail, Amazon EC2, Vultr, Microsoft Azure, Google Compute Engine, Scaleway, OpenStack, CloudStack, Hetzner Cloud, Linode, or [your own Ubuntu server (for advanced users)](docs/deploy-to-ubuntu.md)
+* Installs to DigitalOcean, Amazon Lightsail, Amazon EC2, Vultr, Microsoft Azure, Google Compute Engine, Scaleway, OpenStack, CloudStack, Hetzner Cloud, Linode, [Oracle Cloud Infrastructure](https://www.oracle.com/cloud/), or [your own Ubuntu server (for advanced users)](docs/deploy-to-ubuntu.md)
 
 ## Anti-features
 
@@ -31,7 +31,7 @@ See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo
 
 The easiest way to get an Algo server running is to run it on your local system or from [Google Cloud Shell](docs/deploy-from-cloudshell.md) and let it set up a _new_ virtual machine in the cloud for you.
 
-1. **Setup an account on a cloud hosting provider.** Algo supports [DigitalOcean](https://m.do.co/c/4d7f4ff9cfe4) (most user friendly), [Amazon Lightsail](https://aws.amazon.com/lightsail/), [Amazon EC2](https://aws.amazon.com/), [Vultr](https://www.vultr.com/), [Microsoft Azure](https://azure.microsoft.com/), [Google Compute Engine](https://cloud.google.com/compute/), [Scaleway](https://www.scaleway.com/), [DreamCompute](https://www.dreamhost.com/cloud/computing/), [Linode](https://www.linode.com), other OpenStack-based cloud hosting, CloudStack-based cloud hosting, or [Hetzner Cloud](https://www.hetzner.com/).
+1. **Setup an account on a cloud hosting provider.** Algo supports [DigitalOcean](https://m.do.co/c/4d7f4ff9cfe4) (most user friendly), [Amazon Lightsail](https://aws.amazon.com/lightsail/), [Amazon EC2](https://aws.amazon.com/), [Vultr](https://www.vultr.com/), [Microsoft Azure](https://azure.microsoft.com/), [Google Compute Engine](https://cloud.google.com/compute/), [Scaleway](https://www.scaleway.com/), [DreamCompute](https://www.dreamhost.com/cloud/computing/), [Linode](https://www.linode.com), other OpenStack-based cloud hosting, CloudStack-based cloud hosting, [Oracle Cloud Infrastructure](https://www.oracle.com/cloud/), or [Hetzner Cloud](https://www.hetzner.com/).
 
 2. **Get a copy of Algo.** The Algo scripts will be run from your local system. There are two ways to get a copy:
 
@@ -216,6 +216,7 @@ For the highest level of privacy, treat your Algo servers as disposable. Spin up
 * Configure [Vultr](docs/cloud-vultr.md)
 * Configure [CloudStack](docs/cloud-cloudstack.md)
 * Configure [Hetzner Cloud](docs/cloud-hetzner.md)
+* Configure [Oracle Cloud Infrastructure](docs/cloud-oracle.md)
 
 ### Install and Deploy from Common Platforms
 * Deploy from [macOS](docs/deploy-from-macos.md)

@@ -35,7 +35,7 @@
     host: "{{ cloud_instance_ip }}"
     search_regex: OpenSSH
     delay: 10
-    timeout: 320
+    timeout: "{{ cloud_init_ssh_timeout | default(320) }}"
     state: present
   when: cloud_instance_ip != "localhost"
 

@@ -30,7 +30,9 @@
           {%- elif algo_provider == 'cloudstack' -%}cloudstack
           {%- else -%}{{ algo_provider }}
           {%- endif -%}
-      when: algo_provider != "local"
+      when:
+        - algo_provider != "local"
+        - algo_provider != "oracle"
       changed_when: false
 
   # Note: pyOpenSSL and segno are now included in pyproject.toml dependencies

@@ -61,6 +61,13 @@ COMMIT
 # By default, accept any packets originating from this server
 :OUTPUT ACCEPT [0:0]
 
+{% if algo_provider | default('') == 'oracle' %}
+# Retain OCI's service chain, including root-only access to boot and block volumes.
+{% for rule in _oracle_iptables_filter.stdout_lines if rule.startswith(':InstanceServices ') %}
+{{ rule }}
+{% endfor %}
+{% endif %}
+
 # Accept packets destined for localhost
 -A INPUT -i lo -j ACCEPT
 # Accept any packet from an open TCP connection
@@ -97,6 +104,16 @@ COMMIT
 -A FORWARD -s {{ subnets | join(',') }} -d 169.254.0.0/16 -j DROP
 # Drop traffic to the link-local network from SSH tunnels
 -A OUTPUT -d 169.254.0.0/16 -m owner --gid-owner 15000 -j DROP
+
+{% if algo_provider | default('') == 'oracle' %}
+# Apply OCI service exceptions only after denying link-local access to SSH tunnels.
+{% for rule in _oracle_iptables_filter.stdout_lines if rule.startswith('-A OUTPUT ') and rule.endswith(' -j InstanceServices') %}
+{{ rule }}
+{% endfor %}
+{% for rule in _oracle_iptables_filter.stdout_lines if rule.startswith('-A InstanceServices ') %}
+{{ rule }}
+{% endfor %}
+{% endif %}
 
 # Forward any packet that's part of an established connection
 -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT

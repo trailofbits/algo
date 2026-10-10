@@ -52,6 +52,7 @@ Cloud roles:
 - role: cloud-cloudstack,   [provider: cloudstack](#cloudstack)
 - role: cloud-hetzner,      [provider: hetzner](#hetzner)
 - role: cloud-linode,       [provider: linode](#linode)
+- role: cloud-oracle,       [provider: oracle](#oracle-cloud-infrastructure)
 
 Server roles:
 
@@ -314,6 +315,27 @@ Required variables:
 
 - linode_token: Your [API token](https://trailofbits.github.io/algo/cloud-linode.html#api-token) - can also be defined in the environment as LINODE_TOKEN
 - region: e.g. `us-east`
+
+### Oracle Cloud Infrastructure
+
+Create an OCI API signing key and configuration profile as described in the [OCI SDK configuration guide](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdkconfig.htm). Algo reads the selected profile's region and tenancy OCID from the config file.
+
+Optional variables:
+
+- `oci_config_file` - Path to the OCI config file. Defaults to `~/.oci/config` or `OCI_CONFIG_FILE`.
+- `oci_config_profile` - Profile name. Defaults to `DEFAULT` or `OCI_CONFIG_PROFILE`.
+- `oci_compartment_id` - Compartment OCID for the VM and its network. Defaults to the tenancy's root compartment.
+- `region` - OCI region override. Defaults to the selected profile's region or `OCI_REGION`.
+
+For example:
+
+```shell
+./algo -e "provider=oracle oci_config_profile=DEFAULT oci_compartment_id=ocid1.compartment.oc1..example"
+```
+
+The default VM shape is `VM.Standard.A1.Flex` with 2 OCPUs and 12 GB of memory, Oracle's current Always Free allocation for Ampere ARM instances. Ubuntu 22.04 ARM64 is selected automatically. The Always Free A1 allowance is shared across the tenancy, and the region must have capacity. To choose another shape, update `cloud_providers.oracle.shape` in `config.cfg`; flexible shapes also require `cloud_providers.oracle.shape_config`.
+
+See [Oracle Cloud setup](cloud-oracle.md) for IAM policies and setup details.
 
 ### Update users
 
