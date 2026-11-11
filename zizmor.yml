@@ -1,0 +1,12 @@
+---
+# actionlint 1.7.12 rejects GitHub's $/ self-repository syntax (rhysd/actionlint#732).
+# These local actions run after checkout at the workflow commit. Remove this
+# exception when actionlint supports $/ references.
+rules:
+  self-repository:
+    ignore:
+      - action.yml
+      - lint.yml
+      - main.yml
+      - security.yml
+      - smart-tests.yml

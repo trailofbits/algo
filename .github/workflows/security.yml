@@ -26,7 +26,7 @@ jobs:
           --exclude-rule dockerfile.security.last-user-is-root.last-user-is-root
           --error --quiet .
 
-  pip-audit:
+  dependency-audit:
     name: Python dependency audit
     runs-on: ubuntu-22.04
     steps:
@@ -37,5 +37,5 @@ jobs:
       - name: Setup Algo environment
         uses: ./.github/actions/setup-algo
 
-      - name: Run pip-audit
-        run: uv run --with pip-audit pip-audit
+      - name: Audit locked dependencies
+        run: uv audit --locked

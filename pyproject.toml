@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=83.0.0"]
+requires = ["setuptools==84.1.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -107,20 +107,24 @@ python-version = "3.11"
 exclude = ["library/**", "tests/**"]
 
 [tool.ty.rules]
-# Ignore import warnings - ty doesn't see the venv when run via uv --with
-# These are checked by Python's import system at runtime
-unresolved-import = "ignore"
+# Optional cloud SDKs are not installed in the base environment.
+import-not-found = "ignore"
 unknown-argument = "warn"
 
 [tool.uv]
-# Centralized uv version management
-dev-dependencies = [
+exclude-newer = "7 days"
+preview-features = ["audit-command"]
+
+[dependency-groups]
+dev = [
     "pytest>=8.0.0",
     "pytest-xdist>=3.0.0",  # Parallel test execution
     "ruff>=0.8.0",         # Python linter and formatter
     "yamllint>=1.35.0",    # YAML linter
     "ansible-lint>=24.0.0", # Ansible linter
     "j2lint>=1.2.0",       # Jinja2 template linter
+    "setuptools==84.1.0", # Audit the installed build tool
+    "ty==0.0.97",         # Keep type checks stable across CI runs
 ]
 
 [tool.pytest.ini_options]

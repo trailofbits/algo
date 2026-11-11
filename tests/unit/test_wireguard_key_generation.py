@@ -10,12 +10,14 @@ import subprocess
 import sys
 import tempfile
 
+import pytest
+
 # Add library directory to path to import our custom module
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "library"))
 
 
-def test_wireguard_tools_available():
-    """Test that WireGuard tools are available for validation"""
+def wireguard_tools_available():
+    """Return whether the WireGuard tools can run."""
     try:
         result = subprocess.run(["wg", "--version"], capture_output=True, text=True)
         assert result.returncode == 0, "WireGuard tools not available"
@@ -26,13 +28,18 @@ def test_wireguard_tools_available():
         return False
 
 
+def test_wireguard_tools_available():
+    """Check that WireGuard tools can run when they are installed."""
+    if not wireguard_tools_available():
+        pytest.skip("WireGuard tools are not installed")
+
+
 def test_x25519_module_import():
     """Test that our custom x25519_pubkey module can be imported and used"""
     try:
         import x25519_pubkey  # noqa: F401
 
         print("✓ x25519_pubkey module imports successfully")
-        return True
     except ImportError as e:
         assert False, f"Cannot import x25519_pubkey module: {e}"
 
@@ -124,8 +131,6 @@ def test_x25519_pubkey_from_raw_file():
 
                 print(f"✓ Derived public key from raw file: {derived_pubkey[:12]}...")
 
-                return derived_pubkey
-
             finally:
                 x25519_pubkey.AnsibleModule = original_AnsibleModule
 
@@ -181,8 +186,6 @@ def test_x25519_pubkey_from_b64_string():
 
             print(f"✓ Derived public key from base64 string: {derived_pubkey[:12]}...")
 
-            return derived_pubkey
-
         finally:
             x25519_pubkey.AnsibleModule = original_AnsibleModule
 
@@ -193,8 +196,8 @@ def test_x25519_pubkey_from_b64_string():
 
 def test_wireguard_validation():
     """Test that our derived keys work with actual WireGuard tools"""
-    if not test_wireguard_tools_available():
-        return
+    if not wireguard_tools_available():
+        pytest.skip("WireGuard tools are not installed")
 
     # Generate keys using our method
     raw_key_path, b64_key = generate_test_private_key()

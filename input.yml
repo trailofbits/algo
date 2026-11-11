@@ -114,7 +114,7 @@
               set _server = _algo_server_name.user_input -%}{%-
               else -%}{% set _server = defaults['server_name'] %}{%-
               endif -%}
-              {{ _server | regex_replace('(?!\.)(\W|_)', '-') }}
+              {{ _server | regex_replace('(?!\\.)(\\W|_)', '-') }}
             algo_ondemand_cellular: >-
               {%- if ondemand_cellular is defined -%}{{ ondemand_cellular | bool }}{%-
               elif _ondemand_cellular.user_input is defined -%}{{ booleans_map[_ondemand_cellular.user_input] | default(defaults['ondemand_cellular']) }}{%-

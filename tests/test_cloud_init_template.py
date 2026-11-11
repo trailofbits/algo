@@ -79,8 +79,8 @@ runcmd:
 class TestCloudInitTemplate:
     """Test class for cloud-init template validation."""
 
-    def test_yaml_validity(self):
-        """Test that the expected cloud-init YAML is valid."""
+    def parse_expected_cloud_init(self):
+        """Parse the expected cloud-init YAML for validation."""
         print("🧪 Testing YAML validity...")
 
         cloud_init_content = create_expected_cloud_init()
@@ -94,11 +94,15 @@ class TestCloudInitTemplate:
             print(f"❌ YAML parsing failed: {e}")
             assert False, f"YAML parsing failed: {e}"
 
+    def test_yaml_validity(self):
+        """Test that the expected cloud-init YAML is valid."""
+        assert isinstance(self.parse_expected_cloud_init(), dict)
+
     def test_required_sections(self):
         """Test that all required cloud-init sections are present."""
         print("🧪 Testing required sections...")
 
-        parsed = self.test_yaml_validity()
+        parsed = self.parse_expected_cloud_init()
 
         required_sections = ["package_update", "package_upgrade", "packages", "users", "write_files", "runcmd"]
 
@@ -111,7 +115,7 @@ class TestCloudInitTemplate:
         """Test that SSH configuration is correct."""
         print("🧪 Testing SSH configuration...")
 
-        parsed = self.test_yaml_validity()
+        parsed = self.parse_expected_cloud_init()
 
         write_files = parsed.get("write_files", [])
         assert write_files, "write_files section should be present"
@@ -144,7 +148,7 @@ class TestCloudInitTemplate:
         """Test that algo user will be created correctly."""
         print("🧪 Testing user creation...")
 
-        parsed = self.test_yaml_validity()
+        parsed = self.parse_expected_cloud_init()
 
         users = parsed.get("users", [])
         assert users, "users section should be present"
@@ -173,7 +177,7 @@ class TestCloudInitTemplate:
         """Test that runcmd section will restart SSH correctly."""
         print("🧪 Testing runcmd section...")
 
-        parsed = self.test_yaml_validity()
+        parsed = self.parse_expected_cloud_init()
 
         runcmd = parsed.get("runcmd", [])
         assert runcmd, "runcmd section should be present"
