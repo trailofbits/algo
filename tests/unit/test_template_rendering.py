@@ -4,7 +4,9 @@ Test that Ansible templates render correctly
 This catches undefined variables, syntax errors, and logic bugs
 """
 
+import itertools
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -184,6 +186,13 @@ def test_variable_consistency():
     print("✓ Variable consistency check completed")
 
 
+def render_wireguard_client(test_vars):
+    """Render client.conf.j2 like Ansible's template module and template lookup do (trim_blocks=True)"""
+    env = Environment(loader=FileSystemLoader("roles/wireguard/templates"), undefined=StrictUndefined, trim_blocks=True)
+    env.globals["lookup"] = mock_lookup
+    return env.get_template("client.conf.j2").render(**test_vars)
+
+
 def test_wireguard_ipv6_endpoints():
     """Test that WireGuard client configs properly format IPv6 endpoints"""
     test_cases = [
@@ -215,15 +224,10 @@ def test_wireguard_ipv6_endpoints():
             # With modern loop syntax, item is the username string directly
             test_vars["item"] = "test-user"
 
-            # Render template
-            env = Environment(loader=FileSystemLoader("roles/wireguard/templates"), undefined=StrictUndefined)
-            env.globals["lookup"] = mock_lookup
+            output = render_wireguard_client(test_vars)
 
-            template = env.get_template("client.conf.j2")
-            output = template.render(**test_vars)
-
-            # Check if the expected endpoint format is in the output
-            if test_case["expected_endpoint"] not in output:
+            # Compare whole lines so text glued onto the Endpoint line is caught
+            if test_case["expected_endpoint"] not in output.splitlines():
                 errors.append(
                     f"Expected '{test_case['expected_endpoint']}' for IP '{test_case['IP_subject_alt_name']}' but not found in output"
                 )
@@ -242,6 +246,57 @@ def test_wireguard_ipv6_endpoints():
         assert False, "IPv6 endpoint formatting errors"
     else:
         print("✓ WireGuard IPv6 endpoint test passed (4 test cases)")
+
+
+def test_wireguard_client_config_line_structure():
+    """Every client.conf variant must be one `Key = value` per line.
+
+    Regression: Endpoint and PersistentKeepalive were rendered on one line, breaking the
+    .conf file, the QR code and the Apple profile whenever PersistentKeepalive was enabled.
+    """
+    hosts = {
+        "192.168.1.100": "192.168.1.100:51820",
+        "2600:3c01::f03c:91ff:fedf:3b2a": "[2600:3c01::f03c:91ff:fedf:3b2a]:51820",
+        "vpn.example.com": "vpn.example.com:51820",
+    }
+    dns_options = ["1.1.1.1,1.0.0.1", "172.16.0.1,fd00::1"]
+    allowed = {
+        "Interface": {"PrivateKey", "Address", "DNS", "MTU"},
+        "Peer": {"PublicKey", "PresharedKey", "AllowedIPs", "Endpoint", "PersistentKeepalive"},
+    }
+    base_vars = get_test_variables()
+
+    for host, keepalive, reduce_mtu, dns in itertools.product(hosts, [0, 25], [0, 80], dns_options):
+        case = f"host={host} keepalive={keepalive} reduce_mtu={reduce_mtu} dns={dns}"
+        test_vars = {
+            **base_vars,
+            "item": "test-user",
+            "IP_subject_alt_name": host,
+            "wireguard_PersistentKeepalive": keepalive,
+            "reduce_mtu": reduce_mtu,
+            "wireguard_dns_servers": dns,
+        }
+        output = render_wireguard_client(test_vars)
+
+        section, keys = None, {}
+        for line in output.splitlines():
+            if not line.strip():
+                continue
+            header = re.fullmatch(r"\[(\w+)\]", line)
+            if header:
+                section = header.group(1)
+                continue
+            match = re.fullmatch(r"(\w+) = (\S+)", line)
+            assert match, f"{case}: malformed line {line!r}"
+            key, value = match.groups()
+            assert key in allowed.get(section, set()), f"{case}: unexpected key {key!r} in [{section}]"
+            assert key not in keys, f"{case}: duplicate key {key!r}"
+            keys[key] = value
+
+        assert keys["Endpoint"] == hosts[host], f"{case}: Endpoint is {keys['Endpoint']!r}"
+        assert keys["DNS"] == dns, case
+        assert keys.get("PersistentKeepalive") == (str(keepalive) if keepalive else None), case
+        assert keys.get("MTU") == (str(1420 - reduce_mtu) if reduce_mtu else None), case
 
 
 def test_template_conditionals():
@@ -327,6 +382,7 @@ if __name__ == "__main__":
         test_critical_templates,
         test_variable_consistency,
         test_wireguard_ipv6_endpoints,
+        test_wireguard_client_config_line_structure,
         test_template_conditionals,
     ]
 
