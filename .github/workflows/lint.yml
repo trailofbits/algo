@@ -25,7 +25,7 @@ jobs:
 
       - name: Run ansible-lint
         run: |
-          uv run ansible-lint .
+          uv run ansible-lint
 
       - name: Run playbook dry-run check (catch runtime issues)
         run: |
