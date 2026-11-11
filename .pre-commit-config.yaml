@@ -22,7 +22,7 @@ repos:
 
   # Python linting with ruff (fast, replaces many tools)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.14
+    rev: v0.17.3
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -38,7 +38,7 @@ repos:
 
   # Shell script linting
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.11.0.1
+    rev: v0.11.0.1-1
     hooks:
       - id: shellcheck
         exclude: '.git/.*'
@@ -48,21 +48,21 @@ repos:
     hooks:
       - id: ty-check
         name: Python type check
-        entry: bash -c 'uv run --with ty ty check'
+        entry: uv run ty check --error-on-warning
         language: system
         types: [python]
         pass_filenames: false
 
       - id: j2lint
         name: Jinja2 template lint
-        entry: bash -c 'uv run j2lint roles/ --ignore S3 S5 S6 S7 V1'
+        entry: uv run j2lint roles/ --ignore S3 S5 S6 S7 V1
         language: system
         files: '\.j2$'
         pass_filenames: false
 
       - id: ansible-lint
         name: Ansible-lint
-        entry: bash -c 'uv run ansible-lint --force-color || echo "Ansible-lint had issues - check output"'
+        entry: uv run ansible-lint
         language: system
         types: [yaml]
         files: \.(yml|yaml)$
@@ -71,7 +71,7 @@ repos:
 
       - id: ansible-syntax
         name: Ansible syntax check
-        entry: bash -c 'uv run ansible-playbook main.yml --syntax-check'
+        entry: uv run ansible-playbook main.yml --syntax-check
         language: system
         files: 'main\.yml|server\.yml|users\.yml'
         pass_filenames: false
@@ -79,27 +79,23 @@ repos:
       - id: semgrep
         name: Semgrep security scan
         entry: >
-          bash -c '
-          command -v semgrep >/dev/null &&
           semgrep --config auto
           --exclude-rule dockerfile.security.last-user-is-root.last-user-is-root
           --error --quiet --skip-unknown-extensions .
-          || echo "semgrep not installed - skipping"'
         language: system
         pass_filenames: false
 
       - id: actionlint
         name: GitHub Actions lint
-        entry: bash -c 'command -v actionlint >/dev/null && actionlint .github/workflows/ || echo "actionlint not installed - skipping"'
+        entry: actionlint
         language: system
         files: '^\.github/workflows/.*\.yml$'
-        pass_filenames: false
 
       - id: zizmor
         name: GitHub Actions security audit
-        entry: bash -c 'command -v zizmor >/dev/null && zizmor .github/workflows/ || echo "zizmor not installed - skipping"'
+        entry: zizmor --offline .github/
         language: system
-        files: '^\.github/workflows/.*\.yml$'
+        files: '^\.github/(workflows|actions)/.*\.yml$'
         pass_filenames: false
 
 # Configuration for prek

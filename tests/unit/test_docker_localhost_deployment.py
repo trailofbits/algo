@@ -36,17 +36,12 @@ AllowedIPs = 10.19.49.2/32,fd9d:bc11:4020::2/128
     required_fields = ["PrivateKey", "Address", "PublicKey", "AllowedIPs"]
 
     for section in required_sections:
-        if section not in config:
-            print(f"✗ Missing {section} section")
-            return False
+        assert section in config, f"Missing {section} section"
 
     for field in required_fields:
-        if field not in config:
-            print(f"✗ Missing {field} field")
-            return False
+        assert field in config, f"Missing {field} field"
 
     print("✓ WireGuard config format is valid")
-    return True
 
 
 def test_strongswan_config_validation():
@@ -69,28 +64,17 @@ conn ikev2-pubkey
 """
 
     # Validate format
-    if "config setup" not in config:
-        print("✗ Missing 'config setup' section")
-        return False
-
-    if "conn %default" not in config:
-        print("✗ Missing 'conn %default' section")
-        return False
-
-    if "keyexchange=ikev2" not in config:
-        print("✗ Missing IKEv2 configuration")
-        return False
+    assert "config setup" in config, "Missing 'config setup' section"
+    assert "conn %default" in config, "Missing 'conn %default' section"
+    assert "keyexchange=ikev2" in config, "Missing IKEv2 configuration"
 
     print("✓ StrongSwan config format is valid")
-    return True
 
 
 def test_docker_algo_image():
     """Test that the Algo Docker image can be built"""
     # Check if Dockerfile exists
-    if not os.path.exists("Dockerfile"):
-        print("✗ Dockerfile not found")
-        return False
+    assert os.path.exists("Dockerfile"), "Dockerfile not found"
 
     # Read Dockerfile and validate basic structure
     with open("Dockerfile") as f:
@@ -108,12 +92,9 @@ def test_docker_algo_image():
         if element not in dockerfile_content:
             missing.append(element)
 
-    if missing:
-        print(f"✗ Dockerfile missing elements: {', '.join(missing)}")
-        return False
+    assert not missing, f"Dockerfile missing elements: {', '.join(missing)}"
 
     print("✓ Dockerfile structure is valid")
-    return True
 
 
 def test_localhost_deployment_requirements():
@@ -134,7 +115,7 @@ def test_localhost_deployment_requirements():
             print(f"✗ {req}")
             all_met = False
 
-    return all_met
+    assert all_met, "Localhost deployment requirements are missing"
 
 
 if __name__ == "__main__":
@@ -157,8 +138,7 @@ if __name__ == "__main__":
     for test in tests:
         print(f"\n{test.__name__}:")
         try:
-            if not test():
-                failed += 1
+            test()
         except Exception as e:
             print(f"✗ {test.__name__} error: {e}")
             failed += 1
