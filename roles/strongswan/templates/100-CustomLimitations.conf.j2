@@ -16,7 +16,8 @@ RestrictAddressFamilies=AF_INET AF_INET6 AF_NETLINK AF_PACKET AF_UNIX
 
 # Allow access to IPsec configuration, state, and kernel interfaces
 ReadWritePaths=/etc/ipsec.d /var/lib/strongswan
-ReadOnlyPaths=/proc/net/pfkey
+# "-": /proc/net/pfkey only exists while af_key is loaded; a missing path must not fail the unit
+ReadOnlyPaths=-/proc/net/pfkey
 
 # System call filtering (complements AppArmor restrictions)
 # Allow crypto operations, remove cpu-emulation restriction for crypto algorithms
