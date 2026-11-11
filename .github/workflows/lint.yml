@@ -25,7 +25,7 @@ jobs:
 
       - name: Run ansible-lint
         run: |
-          uv run --with ansible-lint ansible-lint .
+          uv run ansible-lint
 
       - name: Run playbook dry-run check (catch runtime issues)
         run: |
@@ -49,7 +49,7 @@ jobs:
         uses: ./.github/actions/setup-uv
 
       - name: Run yamllint
-        run: uv run --with yamllint yamllint -c .yamllint .
+        run: uv run yamllint -c .yamllint .
 
   jinja2-lint:
     name: Jinja2 template linting
@@ -71,7 +71,7 @@ jobs:
           #   S6: whitespace-control delimiters ({%- -%} are standard Ansible)
           #   S7: single-statement-per-line (inline Jinja in config output)
           #   V1: lowercase variables (existing names like IP_subject_alt_name)
-          uv run --with j2lint j2lint roles/ --ignore S3 S5 S6 S7 V1
+          uv run j2lint roles/ --ignore S3 S5 S6 S7 V1
 
   python-lint:
     name: Python linting
@@ -87,12 +87,12 @@ jobs:
       - name: Run ruff check
         run: |
           # Fast Python linter
-          uv run --with ruff ruff check .
+          uv run ruff check .
 
       - name: Run ruff format check
         run: |
           # Verify consistent Python formatting
-          uv run --with ruff ruff format --check .
+          uv run ruff format --check .
 
   python-types:
     name: Python type checking
@@ -108,7 +108,7 @@ jobs:
       - name: Run ty check
         run: |
           # Type checking with ty
-          uv run --with ty ty check
+          uv run ty check --error-on-warning
 
   shellcheck:
     name: Shell script linting
@@ -203,4 +203,4 @@ jobs:
 
       - name: Run zizmor
         run: |
-          zizmor .github/workflows/
+          zizmor --offline .github/

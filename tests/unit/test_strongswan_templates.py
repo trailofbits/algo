@@ -116,9 +116,7 @@ def test_strongswan_templates():
     tested = 0
 
     for template_path in templates:
-        if not os.path.exists(template_path):
-            print(f"  ⚠️  Skipping {template_path} (not found)")
-            continue
+        assert os.path.exists(template_path), f"Template not found: {template_path}"
 
         template_dir = os.path.dirname(template_path)
         template_name = os.path.basename(template_path)
@@ -169,10 +167,8 @@ def test_strongswan_templates():
         print(f"\n❌ StrongSwan template tests failed with {len(errors)} errors")
         for error in errors[:5]:
             print(f"    {error}")
-        return False
-    else:
-        print(f"\n✅ All StrongSwan template tests passed ({tested} tests)")
-        return True
+    assert not errors, f"StrongSwan template rendering failed: {errors}"
+    print(f"\n✅ All StrongSwan template tests passed ({tested} tests)")
 
 
 def test_openssl_template_constraints():
@@ -181,9 +177,7 @@ def test_openssl_template_constraints():
     import yaml
 
     openssl_path = "roles/strongswan/tasks/openssl.yml"
-    if not os.path.exists(openssl_path):
-        print("⚠️  OpenSSL tasks file not found")
-        return True
+    assert os.path.exists(openssl_path), "OpenSSL tasks file not found"
 
     try:
         with open(openssl_path) as f:
@@ -209,122 +203,23 @@ def test_openssl_template_constraints():
                 jinja_blocks = re.findall(r"\{\{.*?\}\}", str(constraints), re.DOTALL)
                 for block in jinja_blocks:
                     if "#" in block:
-                        print("❌ Found inline comment in Jinja2 expression")
-                        return False
+                        raise AssertionError("Found inline comment in Jinja2 expression")
 
         print("✅ OpenSSL template constraints validated")
-        return True
 
     except Exception as e:
-        print(f"⚠️  Error checking OpenSSL tasks: {e}")
-        return True  # Don't fail the test for this
-
-
-def test_mobileconfig_template():
-    """Test the mobileconfig template with various scenarios."""
-    template_path = "roles/strongswan/templates/mobileconfig.j2"
-
-    if not os.path.exists(template_path):
-        print("⚠️  Mobileconfig template not found")
-        return True
-
-    # Skip this test - mobileconfig.j2 is too tightly coupled to Ansible runtime
-    # It requires complex mock objects (item.1.stdout) and many dynamic variables
-    # that are generated during playbook execution
-    print("⚠️  Skipping mobileconfig template test (requires Ansible runtime context)")
-    return True
-
-    test_cases = [
-        {
-            "name": "iPhone with cellular on-demand",
-            "algo_ondemand_cellular": "true",
-            "algo_ondemand_wifi": "false",
-        },
-        {
-            "name": "iPad with WiFi on-demand",
-            "algo_ondemand_cellular": "false",
-            "algo_ondemand_wifi": "true",
-            "algo_ondemand_wifi_exclude": "MyHomeNetwork,OfficeWiFi",
-        },
-        {
-            "name": "Mac without on-demand",
-            "algo_ondemand_cellular": "false",
-            "algo_ondemand_wifi": "false",
-        },
-    ]
-
-    errors = []
-    for test_case in test_cases:
-        test_vars = get_strongswan_test_variables()
-        test_vars.update(test_case)
-
-        # Mock Ansible task result format for item
-        class MockTaskResult:
-            def __init__(self, content):
-                self.stdout = content
-
-        test_vars["item"] = ("testuser", MockTaskResult("TU9DS19QS0NTMTJfQ09OVEVOVA=="))  # Tuple with mock result
-        test_vars["PayloadContentCA_base64"] = "TU9DS19DQV9DRVJUX0JBU0U2NA=="  # Valid base64
-        test_vars["PayloadContentUser_base64"] = "TU9DS19VU0VSX0NFUlRfQkFTRTY0"  # Valid base64
-        test_vars["pkcs12_PayloadCertificateUUID"] = str(uuid.uuid4())
-        test_vars["PayloadContent"] = "TU9DS19QS0NTMTJfQ09OVEVOVA=="  # Valid base64 for PKCS12
-        test_vars["algo_server_name"] = "test-algo-vpn"
-        test_vars["VPN_PayloadIdentifier"] = str(uuid.uuid4())
-        test_vars["CA_PayloadIdentifier"] = str(uuid.uuid4())
-        test_vars["PayloadContentCA"] = "TU9DS19DQV9DRVJUX0NPTlRFTlQ="  # Valid base64
-
-        try:
-            env = Environment(loader=FileSystemLoader("roles/strongswan/templates"), undefined=StrictUndefined)
-
-            # Add mock filters
-            env.filters["to_uuid"] = mock_to_uuid
-            env.filters["b64encode"] = mock_b64encode
-            env.filters["b64decode"] = mock_b64decode
-
-            template = env.get_template("mobileconfig.j2")
-            output = template.render(**test_vars)
-
-            # Validate output
-            assert "<?xml" in output, "Missing XML declaration"
-            assert "<plist" in output, "Missing plist element"
-            assert "PayloadType" in output, "Missing PayloadType"
-
-            # Check on-demand configuration
-            if test_case.get("algo_ondemand_cellular") == "true" or test_case.get("algo_ondemand_wifi") == "true":
-                assert "OnDemandEnabled" in output, f"Missing OnDemand config for {test_case['name']}"
-
-            print(f"  ✅ Mobileconfig: {test_case['name']}")
-
-        except Exception as e:
-            errors.append(f"Mobileconfig ({test_case['name']}): {e!s}")
-            print(f"  ❌ Mobileconfig ({test_case['name']}): {e!s}")
-
-    if errors:
-        return False
-
-    print("✅ All mobileconfig tests passed")
-    return True
+        raise AssertionError(f"Error checking OpenSSL tasks: {e}") from e
 
 
 if __name__ == "__main__":
     print("🔍 Testing StrongSwan templates...\n")
 
-    all_passed = True
-
-    # Run tests
     tests = [
         test_strongswan_templates,
         test_openssl_template_constraints,
-        test_mobileconfig_template,
     ]
 
     for test in tests:
-        if not test():
-            all_passed = False
+        test()
 
-    if all_passed:
-        print("\n✅ All StrongSwan template tests passed!")
-        sys.exit(0)
-    else:
-        print("\n❌ Some tests failed")
-        sys.exit(1)
+    print("\n✅ All StrongSwan template tests passed!")
