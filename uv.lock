@@ -359,7 +359,7 @@ provides-extras = ["aws", "azure", "gcp", "hetzner", "linode", "openstack", "clo
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "ansible-lint", specifier = "==26.10.1" },
+    { name = "ansible-lint", specifier = "==26.11.0" },
     { name = "hypothesis", specifier = "==6.170.14" },
     { name = "j2lint", specifier = "==1.3.0" },
     { name = "prek", specifier = "==0.5.10" },
@@ -401,7 +401,7 @@ wheels = [
 
 [[package]]
 name = "ansible-core"
-version = "2.19.11rc1"
+version = "2.19.15"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
@@ -410,14 +410,14 @@ dependencies = [
     { name = "pyyaml" },
     { name = "resolvelib" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/24/f3/43f03f2a89f1dce857ec12b33b66d47c44987ddb31c850d356cbc2a96520/ansible_core-2.19.11rc1.tar.gz", hash = "sha256:5549e50993fde013dcbb8b37bed6987edc345beee9e22701fafb4861acf5c2b5", size = 3434622, upload-time = "2026-06-11T19:32:16.172Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cd/ed/919710271c8e4f6ecf0760f3994aee36be2668b29df0214a44ecdeb14075/ansible_core-2.19.15.tar.gz", hash = "sha256:05fa7f0730199b8e0dd9204f258075992143bd51dae71f68965b832a50d422fe", size = 3434021, upload-time = "2026-11-02T17:12:02.49Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f4/f7/8c7c18786082eba44c07127c55ab590efcb48f541572894a8b5ca57b5f57/ansible_core-2.19.11rc1-py3-none-any.whl", hash = "sha256:58223671c46c63d28e33bd538767d0975a1d2d63623752c26a264bcfb1494484", size = 2426272, upload-time = "2026-06-11T19:32:14.398Z" },
+    { url = "https://files.pythonhosted.org/packages/21/2d/3ac042e1220d85aca4c8db87793131689abf12c7ac7a5b8ee44418e03baf/ansible_core-2.19.15-py3-none-any.whl", hash = "sha256:076385c72c2a9f721b9f293e9c3cfac8106d7e130d17aadce6952634db50ffff", size = 2427065, upload-time = "2026-11-02T17:12:00.252Z" },
 ]
 
 [[package]]
 name = "ansible-lint"
-version = "26.10.1"
+version = "26.11.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ansible-compat" },
@@ -437,9 +437,9 @@ dependencies = [
     { name = "wcmatch" },
     { name = "yamllint" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fe/55/94814bfe335b58e1f65c0b2e6c8d0676737eadd7cc1466d8fe7213345a13/ansible_lint-26.10.1.tar.gz", hash = "sha256:a746c6f3cb5719d1c202bc14e956ef3b0eca704025d1aa92707a27fc73ed73ea", size = 829069, upload-time = "2026-10-13T12:45:06.196Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/bc/22/4db7a3ab031c7f08f6b1340df9fbc7b730a2ee25ec21047c1a3da445af0a/ansible_lint-26.11.0.tar.gz", hash = "sha256:74813203aa5450d720c3d86b9d0d4ddc51d30e36ac69e1f0d9f7650f5a3b5dd3", size = 876436, upload-time = "2026-11-05T08:50:53.758Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f3/c7/80a6ac01d970257979f8f18e34e5a1a4c1ad356ea8507425fe74ea9178bc/ansible_lint-26.10.1-py3-none-any.whl", hash = "sha256:cc26d405ee38c3390e80ec18c4137b5685c36d03ce7d4d8233b0470d9a0e21e9", size = 342245, upload-time = "2026-10-13T12:45:04.243Z" },
+    { url = "https://files.pythonhosted.org/packages/92/74/15896e47ad1087c1549f7d863631d05d661df0123747622e4cdab88c1428/ansible_lint-26.11.0-py3-none-any.whl", hash = "sha256:b778ea87fa873384b373e8c3fe53a06b3acc7b72ac283e2d2070f76fdf9f8358", size = 349253, upload-time = "2026-11-05T08:50:51.623Z" },
 ]
 
 [[package]]

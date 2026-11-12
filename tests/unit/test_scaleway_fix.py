@@ -9,9 +9,7 @@ from urllib.parse import parse_qs, urlsplit
 
 import pytest
 from ansible.parsing.dataloader import DataLoader
-from ansible.plugins.loader import init_plugin_loader
 from ansible.template import Templar, trust_as_template
-from ansible.utils.collection_loader import AnsibleCollectionConfig
 
 ROOT = Path(__file__).resolve().parents[2]
 ROLE = ROOT / "roles/cloud-scaleway"
@@ -19,8 +17,6 @@ ROLE = ROOT / "roles/cloud-scaleway"
 
 @pytest.fixture(scope="module")
 def cloud_modules():
-    if not AnsibleCollectionConfig.collection_finder:
-        init_plugin_loader()
     module_name = "ansible_collections.community.general.plugins.module_utils.scaleway"
     scaleway = importlib.import_module(module_name)
     manifest = Path(scaleway.__file__).parents[2] / "MANIFEST.json"
