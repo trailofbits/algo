@@ -6,7 +6,8 @@ from pathlib import Path
 import pytest
 from jinja2 import Environment, StrictUndefined
 
-TEMPLATE = Path(__file__).resolve().parents[2] / "roles" / "common" / "templates" / "50unattended-upgrades.j2"
+ROOT = Path(__file__).resolve().parents[2]
+TEMPLATE = ROOT / "roles/common/templates/50unattended-upgrades.j2"
 
 
 @pytest.mark.parametrize("codename", ["focal", "jammy", "noble"])

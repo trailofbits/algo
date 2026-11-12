@@ -57,7 +57,8 @@
               Check configs/{{ server_ip }}/.config.yml
 
         - name: Install cloud provider dependencies
-          shell: "uv pip install '.[{{ _provider_extras[algo_provider] | default(algo_provider) }}]'"
+          command:
+            argv: [uv, sync, --locked, --inexact, --extra, '{{ _provider_extras[algo_provider] }}']
           vars:
             _provider_extras:
               ec2: aws
@@ -68,7 +69,7 @@
               linode: linode
               openstack: openstack
               cloudstack: cloudstack
-          when: algo_provider != "local"
+          when: algo_provider in _provider_extras
           changed_when: false
 
         - name: Set region from stored config
@@ -96,10 +97,13 @@
             region: "unused"
           when:
             - region is not defined
-            - algo_provider not in ['ec2', 'lightsail', 'gce', 'scaleway', 'vultr']
+            - algo_provider not in ['ec2', 'lightsail', 'gce', 'scaleway', 'vultr', 'azure']
 
         - name: Gather provider credentials
-          include_tasks: "roles/cloud-{{ algo_provider }}/tasks/prompts.yml"
+          include_tasks:
+            file: "roles/cloud-{{ algo_provider }}/tasks/{{ provider_credentials_file }}.yml"
+          vars:
+            provider_credentials_file: "{{ 'auth' if algo_provider == 'azure' else 'prompts' }}"
           when: algo_provider != "local"
 
         - name: Display destroy plan

@@ -8,6 +8,7 @@
     state: restarted
     daemon_reload: yes
   become: yes
+  when: privacy_rsyslog.stat.exists
 
 - name: restart systemd-journald
   systemd:

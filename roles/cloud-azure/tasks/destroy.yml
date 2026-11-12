@@ -4,7 +4,7 @@
     name: "{{ algo_server_name }}"
     state: absent
     force_delete_nonempty: true
-    secret: "{{ secret }}"
-    tenant: "{{ tenant }}"
-    client_id: "{{ client_id }}"
+    secret: "{{ secret | default(omit, true) }}"
+    tenant: "{{ tenant | default(omit, true) }}"
+    client_id: "{{ client_id | default(omit, true) }}"
     subscription_id: "{{ subscription_id }}"

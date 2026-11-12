@@ -57,4 +57,24 @@ az login
 There are ways to sign in non-interactively, which are covered in detail in [Sign in with Azure CLI](https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli?view=azure-cli-latest).
 
 
-**Now you are able to deploy an AlgoVPN instance without hassle**
+## Select a subscription and region
+
+Algo uses `azure_subscription_id` when supplied, then `AZURE_SUBSCRIPTION_ID`,
+then the active Azure CLI subscription. To choose the CLI subscription, run:
+
+```bash
+az account set --subscription SUBSCRIPTION_ID
+```
+
+For service principal authentication, set `azure_client_id`, `azure_secret`,
+`azure_tenant`, and `azure_subscription_id`, or their `AZURE_*` environment variables.
+The subscription must allow reading its locations and creating the deployment's resources.
+
+Algo loads the subscription's current physical regions and excludes staging and preview regions.
+The menu defaults to East US when available, otherwise its first listed region. A region can
+also be supplied with `region`. VM size availability and quotas still vary by subscription and
+region; adjust `cloud_providers.azure.size` in `config.cfg` if Azure rejects the selected size.
+
+Algo installs the Azure Python dependencies from `uv.lock`. Their versions match the Azure
+Ansible collection pinned in `requirements.yml`; upgrading individual Azure SDK packages can
+break collection imports. Update and test the collection and SDK versions together.

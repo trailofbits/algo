@@ -60,6 +60,7 @@
     owner: root
     group: root
   notify: restart rsyslog
+  when: privacy_rsyslog.stat.exists
 
 - name: Set up privacy monitoring script
   template:

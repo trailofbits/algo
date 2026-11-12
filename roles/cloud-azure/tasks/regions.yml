@@ -1,0 +1,21 @@
+---
+- name: Select physical Azure regions
+  set_fact:
+    azure_regions: >-
+      {{ azure_locations.response | selectattr('metadata', 'defined')
+         | selectattr('metadata.regionType', 'defined')
+         | selectattr('metadata.regionType', 'equalto', 'Physical')
+         | rejectattr('name', 'search', '(stage|stg|euap)$') | sort(attribute='name') }}
+
+- name: Require an available Azure region
+  assert:
+    that: azure_regions | length > 0
+    fail_msg: >-
+      Azure returned no physical regions for subscription {{ subscription_id }}.
+      Check that this subscription can deploy virtual machines.
+
+- name: Set the default Azure region
+  set_fact:
+    default_region: >-
+      {{ (azure_regions | map(attribute='name') | list).index('eastus') + 1
+         if 'eastus' in (azure_regions | map(attribute='name') | list) else 1 }}
