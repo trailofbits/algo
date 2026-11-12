@@ -140,7 +140,26 @@ jobs:
               echo "✗ StrongSwan service not running"
               exit 1
             fi
-            echo "✓ StrongSwan is running"
+            main_pid=$(sudo systemctl show strongswan-starter --property=MainPID --value)
+            if [[ ! "$main_pid" =~ ^[1-9][0-9]*$ ]]; then
+              echo "✗ StrongSwan has no systemd-managed process"
+              exit 1
+            fi
+            if ! sudo grep -Eq '^NoNewPrivs:[[:space:]]+1$' "/proc/$main_pid/status"; then
+              echo "✗ StrongSwan is running without its NoNewPrivileges sandbox"
+              exit 1
+            fi
+            ca_certificates=$(sudo ipsec listcacerts)
+            if ! grep -Eq 'subject:.*"CN=127\.0\.0\.1"' <<< "$ca_certificates"; then
+              echo "✗ StrongSwan did not load the deployed CA certificate"
+              exit 1
+            fi
+            connections=$(sudo ipsec statusall)
+            if ! grep -Eq 'ikev2-pubkey:.*IKEv2' <<< "$connections"; then
+              echo "✗ StrongSwan did not load the IKEv2 public-key connection"
+              exit 1
+            fi
+            echo "✓ StrongSwan is running under systemd with hardening, CA, and connection loaded"
           fi
 
           # Check dnsmasq

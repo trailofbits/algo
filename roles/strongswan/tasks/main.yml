@@ -24,10 +24,11 @@
   tags: update-users
 
 - name: strongSwan started
-  service:
+  systemd:
     name: "{{ strongswan_service }}"
     state: started
     enabled: true
+    daemon_reload: true
 
 - meta: flush_handlers
 
