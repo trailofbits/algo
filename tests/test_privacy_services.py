@@ -36,7 +36,12 @@ class ActionModule(ActionBase):
 '''
 
 
-def run_privacy(tmp_path: Path, installed: bool, invalid: bool = False):
+def run_privacy(
+    tmp_path: Path,
+    installed: bool,
+    invalid: bool = False,
+    options: tuple[str, ...] = (),
+):
     """Execute production role conditions and handlers against recorded OS boundaries."""
     plugins = tmp_path / "plugins"
     plugins.mkdir()
@@ -82,6 +87,7 @@ def run_privacy(tmp_path: Path, installed: bool, invalid: bool = False):
             "localhost,",
             "-c",
             "local",
+            *options,
         ],
         cwd=ROOT,
         env={
@@ -98,7 +104,8 @@ def run_privacy(tmp_path: Path, installed: bool, invalid: bool = False):
         timeout=45,
         check=False,
     )
-    return result, [json.loads(line) for line in operations.read_text().splitlines()]
+    recorded = operations.read_text() if operations.exists() else ""
+    return result, [json.loads(line) for line in recorded.splitlines()]
 
 
 @pytest.mark.parametrize("installed", [False, True])
@@ -131,3 +138,43 @@ def test_invalid_rsyslog_configuration_stops_deployment(tmp_path):
     assert result.returncode != 0
     assert "Test rsyslog configuration" in result.stdout
     assert not any(item["args"].get("name") == "rsyslog" for item in operations)
+
+
+@pytest.mark.parametrize("category", ["privacy-logs", "privacy-filtering", "privacy-advanced"])
+@pytest.mark.parametrize("option", ["--tags", "--skip-tags"])
+@pytest.mark.parametrize("installed", [False, True])
+def test_privacy_tags_keep_shared_prerequisite(tmp_path, category, option, installed):
+    """Keep rsyslog detection available when categories are selected or skipped."""
+    result, operations = run_privacy(tmp_path, installed, options=(option, category))
+    assert result.returncode == 0, result.stdout + result.stderr
+    detections = [
+        operation
+        for operation in operations
+        if operation["action"] == "stat" and operation["args"].get("path") == "/usr/sbin/rsyslogd"
+    ]
+    assert len(detections) == 1
+    writes = [operation["args"] for operation in operations if operation["action"] != "stat"]
+    if not installed:
+        assert not any("rsyslog" in json.dumps(args) for args in writes)
+    if option == "--tags":
+        assert "Display privacy enhancements status" not in result.stdout
+    elif category == "privacy-logs":
+        cleanup_script = "/usr/local/bin/privacy-log-cleanup.sh"
+        assert not any(args.get("dest") == cleanup_script for args in writes)
+        assert any(args.get("line") == "Storage=volatile" for args in writes)
+    elif category == "privacy-filtering":
+        assert not any(args.get("_raw_params") == "rsyslogd -N1" for args in writes)
+        assert any(args.get("line") == "Storage=volatile" for args in writes)
+    else:
+        assert not any(args.get("line") == "Storage=volatile" for args in writes)
+
+
+def test_disabled_privacy_skips_shared_prerequisite(tmp_path):
+    """The always tag must still respect the role's privacy-enabled condition."""
+    result, operations = run_privacy(
+        tmp_path,
+        True,
+        options=("--extra-vars", '{"privacy_enhancements_enabled": false}'),
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert operations == []

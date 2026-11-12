@@ -14,7 +14,7 @@
       stat:
         path: /usr/sbin/rsyslogd
       register: privacy_rsyslog
-      tags: [privacy-logs, privacy-filtering, privacy-advanced]
+      tags: [always]
 
     - name: Include log rotation tasks
       include_tasks: log_rotation.yml
