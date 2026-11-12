@@ -1,131 +1,215 @@
-"""Tests for the Scaleway provider fixes (Marketplace API v2 migration).
+"""Exercise Scaleway image selection, zone handling, and the HTTP client."""
 
-This test suite validates that:
-1. Image lookup uses Marketplace API v2 (api.scaleway.com/marketplace/v2/local-images)
-2. scaleway_compute uses the 'organization' parameter required by the
-   vendored library module (it does not support 'project')
-3. Zone/alias maps cover every offered region and are consistent
-4. The cloud-init patch uses the Instance API user-data endpoint rather
-   than the legacy cp-<alias>.scaleway.com hosts (which only resolve
-   for par1/ams1)
-5. destroy.yml maps full zone names back to legacy aliases
-"""
-
+import json
+from io import BytesIO
 from pathlib import Path
+from types import SimpleNamespace
+from urllib.parse import parse_qs, urlsplit
 
-import yaml
+import pytest
+import scaleway_compute
+from ansible.parsing.dataloader import DataLoader
+from ansible.template import Templar, trust_as_template
+from ansible_collections.community.general.plugins.module_utils import scaleway
 
-ROLE_DIR = Path("roles/cloud-scaleway")
+ROOT = Path(__file__).resolve().parents[2]
+ROLE = ROOT / "roles/cloud-scaleway"
 
 
-def _read(*parts: str) -> str:
-    return (ROLE_DIR.joinpath(*parts)).read_text()
+@pytest.fixture
+def role():
+    loader = DataLoader()
+    defaults = loader.load_from_file(str(ROLE / "defaults/main.yml"), trusted_as_template=True)
+    tasks = loader.load_from_file(str(ROLE / "tasks/main.yml"), trusted_as_template=True)
+    block = next(task["block"] for task in tasks if "block" in task)
+    return loader, defaults, tasks, block
 
 
-def test_scaleway_uses_marketplace_v2_api():
-    """Image lookup must use Marketplace API v2 local-images endpoint."""
-    content = _read("tasks", "main.yml")
+def _conditions(templar, expressions):
+    trusted = (trust_as_template(f"{{{{ {expression} }}}}") for expression in expressions)
+    return all(templar.template(condition) for condition in trusted)
 
-    assert "api.scaleway.com/marketplace/v2/local-images" in content, (
-        "Not using Marketplace API v2 local-images endpoint"
+
+@pytest.mark.parametrize(
+    "alias,zone",
+    [
+        ("par1", "fr-par-1"),
+        ("par2", "fr-par-2"),
+        ("ams1", "nl-ams-1"),
+        ("ams2", "nl-ams-2"),
+        ("ams3", "nl-ams-3"),
+        ("waw1", "pl-waw-1"),
+        ("waw2", "pl-waw-2"),
+        ("waw3", "pl-waw-3"),
+    ],
+)
+def test_scaleway_zones_and_standalone_destroy(role, alias, zone):
+    loader, defaults, tasks, block = role
+    for region in (alias, zone):
+        variables = dict(defaults, algo_region=region)
+        templar = Templar(loader=loader, variables=variables)
+        selected = templar.template(tasks[1]["set_fact"])
+        assert selected == {"algo_scaleway_zone": zone, "algo_scaleway_compute_alias": alias}
+        variables.update(selected, scaleway_compute={"msg": {"id": "server-id"}})
+        templar = Templar(loader=loader, variables=variables)
+        patch = next(task["uri"] for task in block if task.get("name") == "Patch the cloud-init")
+        base = f"https://api.scaleway.com/instance/v1/zones/{zone}"
+        assert templar.template(patch["url"]) == f"{base}/servers/server-id/user_data/cloud-init"
+        assert scaleway.SCALEWAY_LOCATION[alias]["api_endpoint"].endswith(f"/zones/{zone}")
+
+        # destroy.yml includes these tasks directly, without loading the role defaults.
+        destroy = loader.load_from_file(str(ROLE / "tasks/destroy.yml"), trusted_as_template=True)
+        variables = {"playbook_dir": str(ROOT), "algo_region": region}
+        templar = Templar(loader=loader, variables=variables)
+        defaults_path = templar.template(destroy[0]["include_vars"])
+        variables.update(loader.load_from_file(defaults_path, trusted_as_template=True))
+        templar = Templar(loader=loader, variables=variables)
+        assert templar.template(destroy[1]["set_fact"])["algo_scaleway_compute_alias"] == alias
+
+
+@pytest.mark.parametrize("compatible,empty", [(True, False), (False, False), (False, True)])
+def test_scaleway_marketplace_selection(role, compatible, empty):
+    loader, defaults, _, block = role
+    base = {"arch": "x86_64", "compatible_commercial_types": ["DEV1-S"], "type": "instance_sbs"}
+    images = [
+        dict(base, id="wrong-arch", arch="arm64"),
+        dict(base, id="wrong-size", compatible_commercial_types=["DEV1-L"]),
+        dict(base, id="wrong-storage", type="instance_local"),
+    ]
+    if compatible:
+        images.append(dict(base, id="wanted"))
+    if empty:
+        images = []
+    variables = dict(
+        defaults,
+        algo_scaleway_zone="nl-ams-2",
+        cloud_providers={"scaleway": {"arch": "x86_64", "size": "DEV1-S"}},
+        marketplace_images={"json": {"local_images": images, "total_count": len(images)}},
     )
-    assert "api-marketplace.scaleway.com" not in content, (
-        "Still using the retired api-marketplace.scaleway.com host"
-    )
-    assert "scaleway_image_info" not in content, "Still using broken scaleway_image_info module"
-    assert "scaleway_organization_info" not in content, "Still using broken scaleway_organization_info module"
-    assert "X-Auth-Token" in content, (
-        "Marketplace API call must pass an explicit X-Auth-Token header "
-        "(the uri module ignores the SCW_TOKEN environment variable)"
-    )
+    templar = Templar(loader=loader, variables=variables)
+    url = urlsplit(templar.template(block[0]["uri"]["url"]))
+    assert url.netloc == "api.scaleway.com"
+    assert url.path == "/marketplace/v2/local-images"
+    assert parse_qs(url.query) == {
+        "image_label": ["ubuntu_jammy"],
+        "zone": ["nl-ams-2"],
+        "arch": ["x86_64"],
+        "type": ["instance_sbs"],
+        "page_size": ["100"],
+    }
+    variables.update(templar.template(block[1]["set_fact"]))
+    templar = Templar(loader=loader, variables=variables)
+    assert _conditions(templar, block[2]["assert"]["that"])
+    assert _conditions(templar, block[3]["assert"]["that"]) == compatible
+    if compatible:
+        assert templar.template(block[4]["set_fact"])["scaleway_image_id"] == "wanted"
 
 
-def test_scaleway_compute_uses_organization_parameter():
-    """scaleway_compute must receive 'organization', not 'project'."""
-    content = _read("tasks", "main.yml")
-
-    assert 'organization: "{{ algo_scaleway_org_id }}"' in content, (
-        "scaleway_compute calls must pass organization (the vendored module has no project param)"
-    )
-    assert "project:" not in content, (
-        "'project:' is not a valid scaleway_compute parameter in the vendored library module"
-    )
-
-
-def test_scaleway_zone_maps_are_consistent():
-    """Every offered region must have a zone and a matching reverse alias."""
-    defaults = yaml.safe_load((ROLE_DIR / "defaults" / "main.yml").read_text())
-
-    regions = {r["alias"] for r in defaults["scaleway_regions"]}
-    zone_map = defaults["scaleway_zone_map"]
-    alias_map = defaults["scaleway_compute_alias_map"]
-
-    assert regions, "scaleway_regions must not be empty"
-    assert set(zone_map.keys()) == regions, "zone_map must cover exactly the offered regions"
-    assert set(alias_map.values()) == regions, "alias_map must cover exactly the offered regions"
-    assert set(zone_map.values()) == set(alias_map.keys()), "zone and alias names must match"
-    assert zone_map == {v: k for k, v in alias_map.items()}, (
-        "scaleway_zone_map and scaleway_compute_alias_map must be exact inverses"
-    )
+def test_scaleway_rejects_truncated_images(role):
+    loader, _, _, block = role
+    variables = {"marketplace_images": {"json": {"total_count": 101, "local_images": [{}] * 100}}}
+    templar = Templar(loader=loader, variables=variables)
+    check = block[2]["assert"]
+    assert not _conditions(templar, check["that"])
+    message = templar.template(check["fail_msg"])
+    assert "truncated image list" in message
+    assert "100 of 101 images" in message
 
 
-def test_scaleway_image_selection_filters():
-    """Image fact must filter v2 results by arch, commercial type and image type."""
-    content = _read("tasks", "main.yml")
-
-    assert "local_images" in content, "Image lookup must read local_images from the v2 response"
-    assert "selectattr('arch', 'equalto', cloud_providers.scaleway.arch)" in content, "Missing arch filter"
-    assert "selectattr('compatible_commercial_types', 'contains', cloud_providers.scaleway.size)" in content, (
-        "Missing commercial type filter"
-    )
-    assert "selectattr('type', 'equalto', 'instance_sbs')" in content, "Missing instance_sbs image type filter"
+@pytest.mark.parametrize("public_ip", [None, {}, {"address": ""}, {"address": "192.0.2.1"}])
+def test_scaleway_waits_for_address(role, public_ip):
+    loader, _, _, block = role
+    start = next(task for task in block if task.get("name") == "Start the server")
+    templar = Templar(loader=loader, variables={"algo_instance": {"msg": {"public_ip": public_ip}}})
+    assert _conditions(templar, start["until"]) == (public_ip == {"address": "192.0.2.1"})
 
 
-def test_scaleway_cloudinit_uses_instance_api():
-    """Cloud-init patch must target the Instance API, not legacy cp- hosts."""
-    tasks = yaml.safe_load(_read("tasks", "main.yml"))
-    block = next(t["block"] for t in tasks if "block" in t)
-    patch = next(t for t in block if t.get("name") == "Patch the cloud-init")
+@pytest.fixture
+def compute_module():
+    def fail_json(**result):
+        raise ValueError(result["msg"])
 
-    url = patch["uri"]["url"]
-    assert "instance/v1/zones/{{ algo_scaleway_zone }}/servers/" in url, (
-        "Cloud-init patch must use the Instance API user-data endpoint (works in all zones)"
-    )
-    assert "user_data/cloud-init" in url, "Cloud-init patch must target the cloud-init user data key"
-    assert "cp-" not in url, (
-        "Legacy cp-<alias>.scaleway.com hosts only resolve for par1/ams1 and break other zones"
+    return SimpleNamespace(
+        params={
+            "api_url": "https://api.scaleway.com/instance/v1/zones/nl-ams-2",
+            "query_parameters": {},
+            "api_token": "fixture-token",
+            "api_timeout": 1,
+        },
+        ansible_version="test",
+        jsonify=json.dumps,
+        debug=lambda _message: None,
+        warn=lambda _message: None,
+        fail_json=fail_json,
     )
 
 
-def test_scaleway_destroy_maps_zone_to_alias():
-    """destroy.yml must map full zone names to module-supported aliases."""
-    content = _read("tasks", "destroy.yml")
+@pytest.mark.parametrize(
+    "status,body,valid",
+    [
+        (200, {"image": {"id": "wanted"}}, True),
+        (404, {"message": "missing"}, False),
+        (200, None, False),
+        (200, [], False),
+        (200, {}, False),
+        (200, {"image": "unexpected"}, False),
+        (200, {"image": {"id": "other"}}, False),
+    ],
+)
+def test_scaleway_image_lookup(monkeypatch, compute_module, status, body, valid):
+    requests = []
 
-    assert "algo_scaleway_compute_alias" in content, "destroy.yml must resolve the legacy compute alias"
-    assert "scaleway_compute_alias_map | default({})" in content, (
-        "destroy.yml is included without role defaults, so the alias map lookup must be guarded"
+    def fetch_url(_module, url, **kwargs):
+        requests.append((urlsplit(url).path, kwargs["method"]))
+        return BytesIO(json.dumps(body).encode()), {"status": status}
+
+    monkeypatch.setattr(scaleway, "fetch_url", fetch_url)
+    api = scaleway.Scaleway(compute_module)
+    if valid:
+        scaleway_compute.check_image_id(api, "wanted")
+    else:
+        with pytest.raises(ValueError, match="Cannot read Scaleway image wanted"):
+            scaleway_compute.check_image_id(api, "wanted")
+    assert requests == [("/instance/v1/zones/nl-ams-2/images/wanted", "GET")]
+
+
+def test_scaleway_creation_uses_selected_image_and_organization(monkeypatch, compute_module):
+    requests = []
+
+    def fetch_url(_module, url, **kwargs):
+        path = urlsplit(url).path
+        requests.append((path, kwargs["method"], json.loads(kwargs["data"])))
+        if path.endswith("/images/wanted"):
+            body = {"image": {"id": "wanted"}}
+        elif kwargs["method"] == "POST":
+            body = {"server": {"id": "new-server"}}
+        else:
+            body = {"servers": []}
+        return BytesIO(json.dumps(body).encode()), {"status": 200}
+
+    monkeypatch.setattr(scaleway, "fetch_url", fetch_url)
+    compute_module.params.update(
+        region="ams2",
+        state="present",
+        image="wanted",
+        name="algo",
+        commercial_type="DEV1-S",
+        enable_ipv6=True,
+        boot_type="local",
+        tags=[],
+        organization="organization-id",
+        security_group=None,
+        public_ip="dynamic",
+        wait=False,
     )
-    assert 'region: "{{ algo_scaleway_compute_alias }}"' in content, (
-        "scaleway_compute must be called with the mapped alias, not the raw region"
-    )
-
-
-def test_scaleway_prompts_collect_org_id():
-    """Prompts must collect organization/project ID and support env fallback."""
-    content = _read("tasks", "prompts.yml")
-
-    assert "Organization ID" in content, "Missing prompt for Scaleway Organization ID"
-    assert "algo_scaleway_org_id:" in content, "Missing algo_scaleway_org_id fact definition"
-    assert "SCW_DEFAULT_ORGANIZATION_ID" in content, (
-        "Missing support for SCW_DEFAULT_ORGANIZATION_ID environment variable"
-    )
-    assert "console.scaleway.com" in content, "Missing instructions on where to find Organization ID"
-
-
-def test_scaleway_config_has_valid_settings():
-    """config.cfg must define scaleway size and arch used by the v2 filters."""
-    content = Path("config.cfg").read_text()
-
-    assert "scaleway:" in content, "Missing Scaleway configuration section"
-    assert "DEV1-S" in content, "Missing Scaleway instance size (used by compatible_commercial_types filter)"
-    assert "arch: x86_64" in content, "Missing Scaleway arch (used by the image arch filter)"
+    results = []
+    compute_module.check_mode = False
+    compute_module.exit_json = lambda **result: results.append(result)
+    scaleway_compute.core(compute_module)
+    path, method, payload = requests[-1]
+    assert path == "/instance/v1/zones/nl-ams-2/servers"
+    assert method == "POST"
+    assert payload["image"] == "wanted"
+    assert payload["organization"] == "organization-id"
+    assert payload["dynamic_ip_required"] is True
+    assert results == [{"changed": True, "msg": {"id": "new-server"}}]

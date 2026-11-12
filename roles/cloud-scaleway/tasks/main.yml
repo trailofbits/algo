@@ -12,21 +12,46 @@
   block:
     - name: Get Ubuntu 22.04 image ID from Scaleway Marketplace API v2
       uri:
-        url: "https://api.scaleway.com/marketplace/v2/local-images?image_label=ubuntu_jammy&zone={{ algo_scaleway_zone }}"
+        url: >-
+          https://api.scaleway.com/marketplace/v2/local-images?{{
+            {'image_label': 'ubuntu_jammy', 'zone': algo_scaleway_zone,
+             'arch': cloud_providers.scaleway.arch, 'type': 'instance_sbs',
+             'page_size': 100} | urlencode }}
         method: GET
         return_content: true
-        headers:
-          X-Auth-Token: "{{ algo_scaleway_token }}"
       register: marketplace_images
 
-    - name: Find Ubuntu 22.04 Jammy image
+    - name: Find compatible Ubuntu 22.04 Jammy images
       set_fact:
-        scaleway_image_id: >-
-          {{ (marketplace_images.json.local_images |
+        scaleway_images: >-
+          {{ marketplace_images.json.local_images |
               selectattr('arch', 'equalto', cloud_providers.scaleway.arch) |
               selectattr('compatible_commercial_types', 'contains', cloud_providers.scaleway.size) |
               selectattr('type', 'equalto', 'instance_sbs') |
-              first).id }}
+              list }}
+
+    - name: Check that Marketplace returned all matching images
+      assert:
+        that:
+          - marketplace_images.json.total_count <= marketplace_images.json.local_images | length
+        fail_msg: >-
+          Scaleway Marketplace returned a truncated image list
+          ({{ marketplace_images.json.local_images | length }} of
+          {{ marketplace_images.json.total_count }} images).
+          Report this response before deploying so image pagination can be updated.
+
+    - name: Check that a compatible image is available
+      assert:
+        that:
+          - scaleway_images | length > 0
+        fail_msg: >-
+          Cannot select an Ubuntu 22.04 image for {{ cloud_providers.scaleway.size }}
+          ({{ cloud_providers.scaleway.arch }}) in {{ algo_scaleway_zone }}.
+          Choose a zone and instance type with an available Marketplace image.
+
+    - name: Select the Ubuntu image
+      set_fact:
+        scaleway_image_id: "{{ scaleway_images[0].id }}"
 
     - name: Create a server
       scaleway_compute:
@@ -50,7 +75,8 @@
       # hosts, which only resolve in par1/ams1 and block other zones.
       uri:
         url: >-
-          https://api.scaleway.com/instance/v1/zones/{{ algo_scaleway_zone }}/servers/{{ scaleway_compute.msg.id }}/user_data/cloud-init
+          {{ 'https://api.scaleway.com/instance/v1/zones/' ~ algo_scaleway_zone ~
+             '/servers/' ~ scaleway_compute.msg.id ~ '/user_data/cloud-init' }}
         method: PATCH
         body: "{{ lookup('template', 'files/cloud-init/base.yml') }}"
         status_code: 204
@@ -77,6 +103,7 @@
       until:
         - algo_instance.msg.public_ip is defined
         - algo_instance.msg.public_ip is not none
+        - algo_instance.msg.public_ip.address | default('') | length > 0
       retries: 3
       delay: 3
 
