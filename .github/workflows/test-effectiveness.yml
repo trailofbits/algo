@@ -7,8 +7,7 @@ name: Test Effectiveness Tracking
   workflow_dispatch:  # Allow manual runs
 
 permissions:
-  contents: write
-  issues: write
+  contents: read
   pull-requests: read
   actions: read
 
@@ -19,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
-          persist-credentials: true
+          persist-credentials: false
 
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
@@ -37,33 +36,6 @@ jobs:
           name: test-effectiveness-metrics
           path: .metrics/
 
-      - name: Create issue if tests are ineffective
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Publish report in the workflow summary
         run: |
-          # Check if we need to create an issue
-          if grep -q "⚠️" .metrics/test-effectiveness-report.md; then
-            # Check if issue already exists
-            existing=$(gh issue list --label "test-effectiveness" --state open --json number --jq '.[0].number')
-
-            if [ -z "$existing" ]; then
-              gh issue create \
-                --title "Test Effectiveness Review Needed" \
-                --body-file .metrics/test-effectiveness-report.md \
-                --label "test-effectiveness,maintenance"
-            else
-              # Update existing issue
-              gh issue comment "$existing" --body-file .metrics/test-effectiveness-report.md
-            fi
-          fi
-
-      - name: Commit metrics if changed
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-
-          if [[ -n $(git status -s .metrics/) ]]; then
-            git add .metrics/
-            git commit -m "chore: Update test effectiveness metrics [skip ci]"
-            git push
-          fi
+          cat .metrics/test-effectiveness-report.md >> "$GITHUB_STEP_SUMMARY"

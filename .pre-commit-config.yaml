@@ -1,12 +1,11 @@
-# See https://prek.j178.dev for more information
 ---
-# Apply to all files without committing:
-#   prek run --all-files
-# Update this file:
-#   prek auto-update
+# Run the same checks locally and in CI: ./scripts/lint.sh
+# Update managed hooks: prek update --cooldown-days 7 --freeze
+minimum_prek_version: '0.5.10'
+default_language_version:
+  python: python3.11
 
 repos:
-  # Use prek built-in hooks (faster, Rust-native)
   - repo: builtin
     hooks:
       - id: check-yaml
@@ -20,92 +19,103 @@ repos:
       - id: mixed-line-ending
         args: [--fix=lf]
 
-  # Python linting with ruff (fast, replaces many tools)
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.17.3
-    hooks:
-      - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
-      - id: ruff-format
-
-  # YAML linting
-  - repo: https://github.com/adrienverge/yamllint
-    rev: v1.38.0
-    hooks:
-      - id: yamllint
-        args: [-c=.yamllint]
-        exclude: '.git/.*'
-
-  # Shell script linting
-  - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.11.0.1-1
-    hooks:
-      - id: shellcheck
-        exclude: '.git/.*'
-
-  # Local hooks that use the project's installed tools
+  # These tools share the project's uv.lock with CI.
   - repo: local
     hooks:
+      - id: dependency-audit
+        name: Python dependency audit
+        entry: uv audit --locked
+        language: system
+        files: '^(pyproject\.toml|uv\.lock)$'
+        pass_filenames: false
+
+      - id: ruff-check
+        name: Python lint
+        entry: uv run --locked ruff check --fix --exit-non-zero-on-fix .
+        language: system
+        files: '(\.py$|^pyproject\.toml$|^uv\.lock$)'
+        pass_filenames: false
+
+      - id: ruff-format
+        name: Python format
+        entry: uv run --locked ruff format .
+        language: system
+        files: '(\.py$|^pyproject\.toml$|^uv\.lock$)'
+        pass_filenames: false
+
       - id: ty-check
         name: Python type check
-        entry: uv run ty check --error-on-warning
+        entry: uv run --locked ty check --error-on-warning
         language: system
-        types: [python]
+        files: '(\.py$|^pyproject\.toml$|^uv\.lock$)'
+        pass_filenames: false
+
+      - id: yamllint
+        name: YAML lint
+        entry: uv run --locked yamllint --strict -c .yamllint .
+        language: system
+        files: '(\.ya?ml$|^\.yamllint$|^pyproject\.toml$|^uv\.lock$)'
         pass_filenames: false
 
       - id: j2lint
         name: Jinja2 template lint
-        entry: uv run j2lint roles/ --ignore S3 S5 S6 S7 V1
+        # Config-file output dictates indentation, tabs, whitespace and variable names.
+        entry: uv run --locked j2lint roles/ --ignore S3 S5 S6 S7 V1
         language: system
-        files: '\.j2$'
+        files: '(\.j2$|^pyproject\.toml$|^uv\.lock$)'
         pass_filenames: false
 
       - id: ansible-lint
-        name: Ansible-lint
-        entry: uv run ansible-lint
+        name: Ansible lint
+        entry: uv run --locked ansible-lint
         language: system
-        types: [yaml]
-        files: \.(yml|yaml)$
-        exclude: '^(.git/|.github/|requirements\.yml)'
+        files: '(\.ya?ml$|\.j2$|\.cfg$|^\.ansible-lint$|^pyproject\.toml$|^uv\.lock$)'
+        exclude: '^\.github/'
         pass_filenames: false
 
       - id: ansible-syntax
         name: Ansible syntax check
-        entry: uv run ansible-playbook main.yml --syntax-check
-        language: system
-        files: 'main\.yml|server\.yml|users\.yml'
-        pass_filenames: false
-
-      - id: semgrep
-        name: Semgrep security scan
         entry: >
-          semgrep --config auto
-          --exclude-rule dockerfile.security.last-user-is-root.last-user-is-root
-          --error --quiet --skip-unknown-extensions .
+          uv run --locked ansible-playbook --syntax-check
+          main.yml users.yml deploy_client.yml destroy.yml
         language: system
+        files: '(\.ya?ml$|\.cfg$|^pyproject\.toml$|^uv\.lock$)'
+        exclude: '^\.github/'
         pass_filenames: false
 
+  # prek installs these tools in isolated environments.
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: a6564f5d57444e123433a5c9af733e3975c77229  # frozen: v0.11.0.1-1
+    hooks:
+      - id: shellcheck
+
+  - repo: https://github.com/semgrep/semgrep
+    rev: 4fe07d805dd2a4b64fed486e95136923f08648d0  # frozen: v1.183.0
+    hooks:
+      - id: semgrep
+        args:
+          - --config=auto
+          - --exclude-rule=dockerfile.security.last-user-is-root.last-user-is-root
+          - --error
+          - --quiet
+          - --disable-version-check
+          - --skip-unknown-extensions
+          - .
+        files: '(\.py$|\.ya?ml$|\.sh$|^Dockerfile$|^\.pre-commit-config\.yaml$)'
+        pass_filenames: false
+
+  - repo: https://github.com/rhysd/actionlint
+    rev: 914e7df21a07ef503a81201c76d2b11c789d3fca  # frozen: v1.7.12
+    hooks:
       - id: actionlint
-        name: GitHub Actions lint
-        entry: actionlint
-        language: system
-        files: '^\.github/workflows/.*\.yml$'
+        files: '^\.github/workflows/.*\.ya?ml$'
 
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: 06a39750ec31860bb44f2acf67182c40016cd1e7  # frozen: v1.32.0
+    hooks:
       - id: zizmor
-        name: GitHub Actions security audit
-        entry: zizmor --offline .github/
-        language: system
-        files: '^\.github/(workflows|actions)/.*\.yml$'
+        args: [--offline, .github/, .pre-commit-config.yaml]
+        files: '^(\.github/.*\.ya?ml|zizmor\.yml|\.pre-commit-config\.yaml)$'
         pass_filenames: false
 
-# Configuration for prek
-
-# Files to exclude globally
-exclude: |
-  (?x)^(
-    .env/.*|
-    .venv/.*|
-    .git/.*|
-    __pycache__/.*|
-    .*\.egg-info/.*
-  )$
+exclude: '^((\.env|\.venv|\.git|__pycache__|.*\.egg-info)/)'

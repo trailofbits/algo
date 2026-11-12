@@ -117,12 +117,13 @@ preview-features = ["audit-command"]
 
 [dependency-groups]
 dev = [
-    "pytest>=8.0.0",
-    "pytest-xdist>=3.0.0",  # Parallel test execution
-    "ruff>=0.8.0",         # Python linter and formatter
-    "yamllint>=1.35.0",    # YAML linter
-    "ansible-lint>=24.0.0", # Ansible linter
-    "j2lint>=1.2.0",       # Jinja2 template linter
+    "pytest==9.0.3",
+    "pytest-xdist==3.8.0",  # Parallel test execution
+    "ruff==0.17.3",        # Python linter and formatter
+    "yamllint==1.38.0",    # YAML linter
+    "ansible-lint==25.8.2", # Compatible with the pinned Ansible version
+    "j2lint==1.2.0",       # Jinja2 template linter
+    "prek==0.5.10",        # Same hook runner locally and in CI
     "setuptools==84.1.0", # Audit the installed build tool
     "ty==0.0.97",         # Keep type checks stable across CI runs
 ]
