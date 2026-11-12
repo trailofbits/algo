@@ -3,12 +3,6 @@
   set_fact:
     strongswan_additional_plugins: []
 
-- name: Ubuntu | Ensure af_key kernel module is loaded
-  modprobe:
-    name: af_key
-    state: present
-    persistent: present
-
 - name: Ubuntu | Install strongSwan (individual)
   apt:
     name: strongswan
@@ -59,5 +53,4 @@
     dest: /etc/systemd/system/{{ strongswan_service }}.service.d/100-CustomLimitations.conf
     mode: '0644'
   notify:
-    - daemon-reload
     - restart strongswan
