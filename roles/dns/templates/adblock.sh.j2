@@ -1,45 +1,54 @@
-#!/bin/sh
-# Block ads, malware, etc..
+#!/usr/bin/env bash
+set -euo pipefail
 
-TEMP="$(mktemp)"
-TEMP_SORTED="$(mktemp)"
-WHITELIST="/etc/dnscrypt-proxy/white.list"
-BLACKLIST="/etc/dnscrypt-proxy/black.list"
-BLOCKHOSTS="{{ config_prefix | default('/') }}etc/dnscrypt-proxy/blacklist.txt"
-BLOCKLIST_URLS="{% for url in adblock_lists %}{{ url }} {% endfor %}"
+CONFIG_DIR={{ ((config_prefix | default('/')) ~ 'etc/dnscrypt-proxy') | quote }}
+WHITELIST="$CONFIG_DIR/white.list"
+BLACKLIST="$CONFIG_DIR/black.list"
+BLOCKHOSTS="$CONFIG_DIR/blacklist.txt"
+WORK_DIR="$(mktemp -d "$CONFIG_DIR/.adblock.XXXXXX")"
+trap 'find "$WORK_DIR" -depth -delete' EXIT
 
-#Delete the old block.hosts to make room for the updates
-rm -f $BLOCKHOSTS
+BLOCKLIST_URLS=(
+{% for url in adblock_lists %}
+  {{ url | quote }}
+{% endfor %}
+)
 
+: >"$WORK_DIR/hosts"
 echo 'Downloading hosts lists...'
-#Download and process the files needed to make the lists (enable/add more, if you want)
-for url in $BLOCKLIST_URLS; do
-  wget --timeout=2 --tries=3 -qO- "$url" | grep -Ev "(localhost)" | grep -Ev "#" | sed -E "s/(0.0.0.0 |127.0.0.1 |255.255.255.255 )//" >> "$TEMP"
+for url in "${BLOCKLIST_URLS[@]}"; do
+  if ! wget --timeout=2 --tries=3 -qO- "$url" >"$WORK_DIR/download"; then
+    echo "Failed to download blocklist $url; keeping $BLOCKHOSTS. Retry the refresh." >&2
+    exit 1
+  fi
+  awk '
+    !/localhost|#/ {
+      sub(/^(0\.0\.0\.0|127\.0\.0\.1|255\.255\.255\.255)[[:space:]]+/, "")
+      if (NF) print $1
+    }
+  ' "$WORK_DIR/download" >>"$WORK_DIR/hosts"
 done
 
-#Add black list, if non-empty
-if [ -s "$BLACKLIST" ]
-then
-    echo 'Adding blacklist...'
-    cat $BLACKLIST >> "$TEMP"
+if [ -s "$BLACKLIST" ]; then
+  awk '/^[^#]/ && NF {print $1}' "$BLACKLIST" >>"$WORK_DIR/hosts"
 fi
+sort -u "$WORK_DIR/hosts" >"$WORK_DIR/sorted"
 
-#Sort the download/black lists
-awk '/^[^#]/ { print $1 }' "$TEMP" | sort -u > "$TEMP_SORTED"
-
-#Filter (if applicable)
-if [ -s "$WHITELIST" ]
-then
-    #Filter the blacklist, suppressing whitelist matches
-    #  This is relatively slow =-(
-    echo 'Filtering white list...'
-    grep -v -E "^[[:space:]]*$" $WHITELIST | awk '/^[^#]/ {sub(/\r$/,"");print $1}' | grep -vf - "$TEMP_SORTED" > $BLOCKHOSTS
+if [ -s "$WHITELIST" ]; then
+  awk '/^[^#]/ && NF {sub(/\r$/, ""); print $1}' "$WHITELIST" >"$WORK_DIR/whitelist"
+  # grep returns 1 when the whitelist removes every entry, which is valid.
+  grep -vf "$WORK_DIR/whitelist" "$WORK_DIR/sorted" >"$WORK_DIR/blocklist" || {
+    status=$?
+    if [ "$status" -ne 1 ]; then
+      echo "Failed to filter $WHITELIST; keeping $BLOCKHOSTS. Check the expressions." >&2
+      exit "$status"
+    fi
+  }
 else
-    cat "$TEMP_SORTED" > $BLOCKHOSTS
+  cp "$WORK_DIR/sorted" "$WORK_DIR/blocklist"
 fi
 
+chmod 0644 "$WORK_DIR/blocklist"
+mv "$WORK_DIR/blocklist" "$BLOCKHOSTS"
 echo 'Restarting dns service...'
-#Restart the dns service
 systemctl restart dnscrypt-proxy.service
-
-exit 0
