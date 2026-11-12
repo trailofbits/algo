@@ -1,25 +1,32 @@
 ---
-- set_fact:
-    secret: "{{ azure_secret | default(lookup('env', 'AZURE_SECRET'), true) }}"
-    tenant: "{{ azure_tenant | default(lookup('env', 'AZURE_TENANT'), true) }}"
-    client_id: "{{ azure_client_id | default(lookup('env', 'AZURE_CLIENT_ID'), true) }}"
-    subscription_id: "{{ azure_subscription_id | default(lookup('env', 'AZURE_SUBSCRIPTION_ID'), true) }}"
-  no_log: true
+- name: Read Azure authentication settings
+  import_tasks: auth.yml
 
-- when: region is undefined
-  block:
-    - name: Set the default region
-      set_fact:
-        default_region: >-
-          {% for r in azure_regions %}{%- if r['name'] == "eastus" %}{{ loop.index }}{% endif %}{%- endfor %}
+- name: List regions for the Azure subscription
+  azure.azcollection.azure_rm_resource_info:
+    url: "/subscriptions/{{ subscription_id }}/locations"
+    api_version: '2022-12-01'
+    secret: "{{ secret | default(omit, true) }}"
+    tenant: "{{ tenant | default(omit, true) }}"
+    client_id: "{{ client_id | default(omit, true) }}"
+    subscription_id: "{{ subscription_id }}"
+  register: azure_locations
 
-    - pause:
-        prompt: |
-          What region should the server be located in?
-            {% for r in azure_regions %}
-            {{ loop.index }}. {{ r['regionalDisplayName'] }}
-            {% endfor %}
+- name: Prepare the Azure region choices
+  import_tasks: regions.yml
 
-          Enter the number of your desired region
-          [{{ default_region }}]
-      register: _algo_region
+- name: Choose an Azure region
+  pause:
+    prompt: |
+      What region should the server be located in?
+        {% for r in azure_regions %}
+        {{ loop.index }}. {{ r['regionalDisplayName'] }}
+        {% endfor %}
+
+      Enter the number of your desired region
+      [{{ default_region }}]
+  register: _algo_region
+  when: region is undefined
+
+- name: Validate and select the Azure region
+  import_tasks: select_region.yml

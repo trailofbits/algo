@@ -25,12 +25,52 @@ py-modules = []
 aws = [
     "boto3==1.43.124",
 ]
+# Keep these SDK pins aligned with azure.azcollection in requirements.yml.
+# The collection imports all of these from azure_rm_common, even for ARM deployments.
 azure = [
-    "azure-identity>=1.15.0",
-    "azure-mgmt-compute>=38.2.0",
-    "azure-mgmt-network>=31.0.1",
-    "azure-mgmt-resource>=26.0.0",
-    "msrestazure>=0.6.4",
+    "azure-cli-core==2.91.0",
+    "azure-identity==1.25.2",
+    "azure-mgmt-authorization==4.0.0",
+    "azure-mgmt-automation==1.1.0b4",
+    "azure-mgmt-batch==17.3.0",
+    "azure-mgmt-cdn==13.1.1",
+    "azure-mgmt-cognitiveservices==13.7.0",
+    "azure-mgmt-compute==33.0.0",
+    "azure-mgmt-appcontainers==5.0.0",
+    "azure-mgmt-containerinstance==10.1.0",
+    "azure-mgmt-containerregistry==10.3.0",
+    "azure-mgmt-containerservice==32.1.0",
+    "azure-mgmt-core==1.6.0",
+    "azure-mgmt-datafactory==9.0.0",
+    "azure-mgmt-databricks==2.0.0",
+    "azure-mgmt-dataprotection==2.2.0",
+    "azure-mgmt-dns==8.1.0",
+    "azure-mgmt-eventhub==11.1.0",
+    "azure-mgmt-iothub==3.0.0",
+    "azure-mgmt-loganalytics==13.0.0b7",
+    "azure-mgmt-hybridcompute==9.0.0",
+    "azure-mgmt-managementgroups==1.1.0b2",
+    "azure-mgmt-marketplaceordering==1.2.0b2",
+    "azure-mgmt-monitor==6.0.2",
+    "azure-mgmt-msi==7.1.0",
+    "azure-mgmt-mysqlflexibleservers==1.0.0",
+    "azure-mgmt-network==28.0.0",
+    "azure-mgmt-notificationhubs==8.1.0b1",
+    "azure-mgmt-postgresqlflexibleservers==2.0.0",
+    "azure-mgmt-privatedns==1.2.0",
+    "azure-mgmt-recoveryservices==4.2.0",
+    "azure-mgmt-recoveryservicesbackup==9.1.0",
+    "azure-mgmt-resource==23.2.0",
+    "azure-mgmt-resourcehealth==1.0.0b6",
+    "azure-mgmt-search==9.2.0b2",
+    "azure-mgmt-servicebus==8.2.1",
+    "azure-mgmt-sql==4.0.0b19",
+    "azure-mgmt-storage==25.0.0",
+    "azure-mgmt-trafficmanager==1.1.0",
+    "azure-mgmt-web==7.3.1",
+    "azure-storage-blob==12.23.0b1",
+    "azure-storage-file-share==12.24.0",
+    "msgraph-sdk==1.6.0",
 ]
 gcp = [
     "google-auth==2.62.1",
@@ -40,6 +80,8 @@ hetzner = [
     "hcloud==2.27.0",
 ]
 linode = [
+    "ansible-specdoc==0.0.20",
+    "polling==0.3.2",
     "linode-api4==5.49.0",
 ]
 openstack = [
@@ -137,6 +179,7 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = [
+    "-p", "no:anyio",       # Cloud SDKs bring this plugin; Algo has no async tests.
     "-v",                   # Verbose output
     "--strict-markers",     # Strict marker validation
     "--strict-config",      # Strict config validation

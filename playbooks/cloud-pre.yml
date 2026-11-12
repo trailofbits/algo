@@ -18,7 +18,8 @@
 
     # Install cloud provider specific dependencies
     - name: Install cloud provider dependencies
-      shell: uv pip install '.[{{ cloud_provider_extra }}]'
+      command:
+        argv: [uv, sync, --locked, --inexact, --extra, '{{ cloud_provider_extra }}']
       vars:
         cloud_provider_extra: >-
           {%- if algo_provider in ['ec2', 'lightsail'] -%}aws
@@ -30,7 +31,7 @@
           {%- elif algo_provider == 'cloudstack' -%}cloudstack
           {%- else -%}{{ algo_provider }}
           {%- endif -%}
-      when: algo_provider != "local"
+      when: algo_provider in ['ec2', 'lightsail', 'azure', 'gce', 'hetzner', 'linode', 'openstack', 'cloudstack']
       changed_when: false
 
   # Note: pyOpenSSL and segno are now included in pyproject.toml dependencies

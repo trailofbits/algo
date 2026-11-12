@@ -11,11 +11,11 @@ collections:
   - name: openstack.cloud
     version: "==2.4.1"
   - name: linode.cloud
-    version: ">=0.41.0"
+    version: "==0.52.0"
   - name: community.digitalocean
     version: ">=1.26.0"
   - name: azure.azcollection
-    version: ">=3.0.0"
+    version: "4.2.0"
   - name: vultr.cloud
     version: "==1.14.0"
   - name: amazon.aws

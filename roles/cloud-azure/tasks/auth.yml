@@ -1,0 +1,34 @@
+---
+- name: Read Azure credentials
+  set_fact:
+    secret: "{{ azure_secret | default(lookup('env', 'AZURE_SECRET'), true) }}"
+    tenant: "{{ azure_tenant | default(lookup('env', 'AZURE_TENANT'), true) }}"
+    client_id: "{{ azure_client_id | default(lookup('env', 'AZURE_CLIENT_ID'), true) }}"
+    subscription_id: >-
+      {{ azure_subscription_id | default(lookup('env', 'AZURE_SUBSCRIPTION_ID'), true) | trim }}
+  no_log: true
+
+- name: Read the active Azure CLI subscription
+  command:
+    argv: [az, account, show, --query, id, --output, tsv]
+  register: azure_cli_subscription
+  when: subscription_id | length == 0
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Require an Azure subscription
+  assert:
+    that:
+      - azure_cli_subscription.rc | default(1) == 0
+      - azure_cli_subscription.stdout | default('') | trim | length > 0
+    fail_msg: >-
+      Unable to read the active Azure subscription. Run 'az login' and
+      'az account set --subscription SUBSCRIPTION_ID', or set azure_subscription_id
+      or AZURE_SUBSCRIPTION_ID before deploying.
+  when: subscription_id | length == 0
+
+- name: Use the active Azure CLI subscription
+  set_fact:
+    subscription_id: "{{ azure_cli_subscription.stdout | trim }}"
+  when: subscription_id | length == 0
