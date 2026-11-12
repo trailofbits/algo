@@ -8,6 +8,7 @@ import os
 import sys
 from pathlib import Path
 
+from ansible.plugins.filter.core import FilterModule
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, TemplateSyntaxError, UndefinedError
 
 # Add parent directory to path for fixtures
@@ -78,6 +79,7 @@ def test_template_syntax():
         try:
             template_dir = template_path.parent
             env = Environment(loader=FileSystemLoader(template_dir), undefined=StrictUndefined)
+            env.filters.update(FilterModule().filters())
 
             # Just try to load the template - this checks syntax
             env.get_template(template_path.name)
@@ -122,6 +124,7 @@ def test_critical_templates():
             template_name = os.path.basename(template_path)
 
             env = Environment(loader=FileSystemLoader(template_dir), undefined=StrictUndefined)
+            env.filters.update(FilterModule().filters())
 
             # Add mock functions
             env.globals["lookup"] = mock_lookup
