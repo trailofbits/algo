@@ -1,4 +1,6 @@
 # PowerShell script for Windows users to run Algo VPN
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '',
+    Justification = 'This interactive CLI uses colored host messages for setup instructions.')]
 param(
     [Parameter(ValueFromRemainingArguments)]
     [string[]]$Arguments
@@ -41,7 +43,7 @@ function Invoke-AlgoInWSL {
 
     # Check if any WSL distributions are installed and running
     Write-Host "Checking for WSL Linux distributions..."
-    $wslList = wsl -l -v 2>$null
+    $null = wsl -l -v 2>$null
     if ($LASTEXITCODE -ne 0) {
         Write-Host "ERROR: WSL is installed but no Linux distributions are available." -ForegroundColor Red
         Write-Host ""

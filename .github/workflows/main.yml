@@ -60,7 +60,10 @@ jobs:
       - name: Check PowerShell with PSScriptAnalyzer
         shell: pwsh
         run: |
-          Install-Module PSScriptAnalyzer -RequiredVersion 1.25.0 -Force -Scope CurrentUser
+          if (-not (Get-Module -ListAvailable PSScriptAnalyzer |
+              Where-Object Version -EQ '1.25.0')) {
+            Install-Module PSScriptAnalyzer -RequiredVersion 1.25.0 -Force -Scope CurrentUser
+          }
           Import-Module PSScriptAnalyzer -RequiredVersion 1.25.0
           $results = Invoke-ScriptAnalyzer -Path ./algo.ps1 -Severity Warning,Error
           if ($results.Count -gt 0) {
