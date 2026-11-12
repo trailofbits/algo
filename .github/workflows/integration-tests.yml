@@ -86,6 +86,8 @@ jobs:
           dns_adblocking: true
           ssh_tunneling: false
           store_pki: true
+          ondemand_cellular: false
+          ondemand_wifi: false
           algo_provider: local
           algo_server_name: github-ci-test
           server: localhost
@@ -93,8 +95,9 @@ jobs:
           CA_password: "test-ca-password-${{ github.run_id }}"
           p12_export_password: "test-p12-password-${{ github.run_id }}"
           tests: true
-          no_log: false
+          algo_no_log: true
           ansible_connection: local
+          ansible_python_interpreter: "{{ ansible_playbook_python }}"
           dns_encryption: true
           algo_dns_adblocking: true
           algo_ssh_tunneling: false
