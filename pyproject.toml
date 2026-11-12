@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools==84.1.0"]
+requires = ["setuptools==84.2.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,7 +9,7 @@ version = "2.0.0-beta"
 requires-python = ">=3.11"
 dependencies = [
     "ansible==12.3.0",
-    "cryptography>=50.0.0",
+    "cryptography>=50.0.2",
     "jinja2>=3.1.6",
     "netaddr==1.3.0",
     "pyyaml>=6.0.2",
@@ -23,30 +23,30 @@ py-modules = []
 [project.optional-dependencies]
 # Cloud provider dependencies (installed automatically based on provider selection)
 aws = [
-    "boto3>=1.43.64",
+    "boto3>=1.43.124",
 ]
 azure = [
-    "azure-identity>=1.15.0",
-    "azure-mgmt-compute>=38.2.0",
-    "azure-mgmt-network>=31.0.1",
+    "azure-identity>=1.27.0",
+    "azure-mgmt-compute>=39.0.0",
+    "azure-mgmt-network>=33.1.0",
     "azure-mgmt-resource>=26.0.0",
     "msrestazure>=0.6.4",
 ]
 gcp = [
-    "google-auth>=2.56.2",
+    "google-auth>=2.62.1",
     "requests>=2.34.2",
 ]
 hetzner = [
-    "hcloud>=2.23.0",
+    "hcloud>=2.27.0",
 ]
 linode = [
-    "linode-api4>=5.46.0",
+    "linode-api4>=5.49.0",
 ]
 openstack = [
-    "openstacksdk>=4.18.0",
+    "openstacksdk>=4.22.0",
 ]
 cloudstack = [
-    "cs>=4.0.1",
+    "cs>=5.2.0",
 ]
 
 [tool.ruff]
@@ -117,13 +117,13 @@ preview-features = ["audit-command"]
 
 [dependency-groups]
 dev = [
-    "pytest>=8.0.0",
+    "pytest>=9.2.0",
     "pytest-xdist>=3.0.0",  # Parallel test execution
-    "ruff>=0.8.0",         # Python linter and formatter
-    "yamllint>=1.35.0",    # YAML linter
-    "ansible-lint>=24.0.0", # Ansible linter
-    "j2lint>=1.2.0",       # Jinja2 template linter
-    "setuptools==84.1.0", # Audit the installed build tool
+    "ruff>=0.17.3",         # Python linter and formatter
+    "yamllint>=1.38.0",    # YAML linter
+    "ansible-lint>=26.10.1", # Ansible linter
+    "j2lint>=1.3.0",       # Jinja2 template linter
+    "setuptools==84.2.1", # Audit the installed build tool
     "ty==0.0.97",         # Keep type checks stable across CI runs
 ]
 
