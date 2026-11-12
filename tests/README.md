@@ -24,6 +24,7 @@ install VPN services or change the host network. Ansible failures and invalid ou
 | `e2e/` | Deployed WireGuard connectivity, plus IPsec certificate and service checks |
 
 Cloud ingress tests render the actual provider requests without creating cloud resources.
+Google Cloud retains both VPN protocols because its firewall is shared across deployments.
 The smoke test parses generated Apple profiles and checks that they contain the same client keys
 and connection settings as the generated WireGuard configuration.
 
