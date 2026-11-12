@@ -30,7 +30,9 @@
 
 - name: Add kernel headers to optional packages
   set_fact:
-    algo_packages_optional: "{{ algo_packages_optional + ['linux-headers-generic', 'linux-headers-' + ansible_kernel] }}"
+    algo_packages_optional: >-
+      {{ algo_packages_optional +
+         ['linux-headers-generic', 'linux-headers-' + ansible_facts['kernel']] }}
   when:
     - performance_parallel_packages | default(true)
     - install_headers | default(false)

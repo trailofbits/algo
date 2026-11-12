@@ -1,12 +1,12 @@
 ---
 - include_tasks: Debian.yml
-  when: ansible_distribution == 'Debian'
+  when: ansible_facts['distribution'] == 'Debian'
 
 - include_tasks: Ubuntu.yml
-  when: ansible_distribution == 'Ubuntu'
+  when: ansible_facts['distribution'] == 'Ubuntu'
 
 - include_tasks: CentOS.yml
-  when: ansible_distribution == 'CentOS'
+  when: ansible_facts['distribution'] == 'CentOS'
 
 - include_tasks: Fedora.yml
-  when: ansible_distribution == 'Fedora'
+  when: ansible_facts['distribution'] == 'Fedora'

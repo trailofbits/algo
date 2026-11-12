@@ -39,7 +39,7 @@ def test_user_preflight(tmp_path: Path, scenario: str):
         "ansible_python_interpreter": sys.executable,
     }
     if scenario == "wrong-owner":
-        variables["ansible_user_id"] = "different-user"
+        variables["ansible_facts"] = {"user_id": "different-user"}
     # Hold a local port open without listening so no other process can claim it.
     with socket.socket() as port:
         port.bind(("127.0.0.1", 0))

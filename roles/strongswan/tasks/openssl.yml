@@ -73,7 +73,8 @@
             'DNS:' + openssl_constraint_random_id,
             'email:' + openssl_constraint_random_id
           ] + (
-            ['IP:' + ansible_default_ipv6['address'] + '/128'] if ipv6_support | bool else []
+            ['IP:' + ansible_facts['default_ipv6']['address'] + '/128']
+            if ipv6_support | bool else []
           ) }}
         # Block public domains/networks to prevent certificate abuse for impersonation attacks
         # Public TLD exclusion, Email domain exclusion, RFC 1918: prevents lateral movement
@@ -244,7 +245,7 @@
     # Certificate Revocation List (CRL) for removed users
     - name: Calculate current timestamp for CRL
       set_fact:
-        crl_timestamp: "{{ '%Y%m%d%H%M%SZ' | strftime(ansible_date_time.epoch | int) }}"
+        crl_timestamp: "{{ '%Y%m%d%H%M%SZ' | strftime(ansible_facts['date_time'].epoch | int) }}"
 
     - name: Identify users whose certificates need revocation
       set_fact:
@@ -261,8 +262,10 @@
         path: "{{ ipsec_pki_path }}/crl.pem"
         privatekey_path: "{{ ipsec_pki_path }}/private/cakey.pem"
         privatekey_passphrase: "{{ CA_password }}"
-        last_update: "{{ '%Y%m%d%H%M%SZ' | strftime(ansible_date_time.epoch | int) }}"
-        next_update: "{{ '%Y%m%d%H%M%SZ' | strftime((ansible_date_time.epoch | int) + (10 * 365 * 24 * 60 * 60)) }}"
+        last_update: "{{ '%Y%m%d%H%M%SZ' | strftime(ansible_facts['date_time'].epoch | int) }}"
+        next_update: >-
+          {{ '%Y%m%d%H%M%SZ' | strftime(
+             (ansible_facts['date_time'].epoch | int) + (10 * 365 * 24 * 60 * 60)) }}
         crl_mode: generate
         issuer:
           CN: "{{ IP_subject_alt_name }}"

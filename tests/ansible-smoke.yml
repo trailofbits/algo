@@ -143,8 +143,10 @@
         mode: '0600'
       vars:
         snat_aipv4: 192.0.2.2
-        ansible_default_ipv4:
-          interface: eth0
+        ansible_facts:
+          fqdn: smoke-test
+          default_ipv4:
+            interface: eth0
         ansible_ssh_port: 4160
         wireguard_port_actual: 51820
         reduce_mtu: 0

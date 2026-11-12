@@ -17,7 +17,7 @@
 
 * Clone the repository: `git clone https://github.com/trailofbits/algo.git`
 * Run Algo: `./algo` (dependencies installed automatically via uv)
-* Audit and install development dependencies: `uv audit --locked && uv sync --locked --python 3.11`
+* Audit and install development dependencies: `uv audit --locked && uv sync --locked --python 3.12`
 * Install git hooks: `uv run --locked prek install`
 * Run the same hooks as CI: `./scripts/lint.sh`. Hook tools are installed automatically.
 * Run the full Python test suite: `uv run --locked pytest -q`

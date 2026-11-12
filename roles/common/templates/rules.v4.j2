@@ -33,16 +33,22 @@ COMMIT
 # Handle the special case of allowing access to WireGuard over an already used
 # port like 53
 -A PREROUTING -s {{ subnets | join(',') }} -p udp --dport {{ wireguard_port_avoid }} -j RETURN
--A PREROUTING --in-interface {{ ansible_default_ipv4['interface'] }} -p udp --dport {{ wireguard_port_avoid }} -j REDIRECT --to-port {{ wireguard_port_actual }}
+-A PREROUTING --in-interface {{
+    ansible_facts['default_ipv4']['interface'] }} -p udp --dport {{
+    wireguard_port_avoid }} -j REDIRECT --to-port {{ wireguard_port_actual }}
 {% endif %}
 # Allow traffic from the VPN network to the outside world, and replies
 {% if ipsec_enabled | bool %}
 # For IPsec traffic - NAT the decrypted packets from the VPN subnet
--A POSTROUTING -s {{ strongswan_network }} -o {{ ansible_default_ipv4['interface'] }} {{ '-j SNAT --to ' + snat_aipv4 if snat_aipv4 else '-j MASQUERADE' }}
+-A POSTROUTING -s {{ strongswan_network }} -o {{
+    ansible_facts['default_ipv4']['interface'] }} {{
+    '-j SNAT --to ' + snat_aipv4 if snat_aipv4 else '-j MASQUERADE' }}
 {% endif %}
 {% if wireguard_enabled | bool %}
 # For WireGuard traffic - NAT packets from the VPN subnet
--A POSTROUTING -s {{ wireguard_network_ipv4 }} -o {{ ansible_default_ipv4['interface'] }} {{ '-j SNAT --to ' + snat_aipv4 if snat_aipv4 else '-j MASQUERADE' }}
+-A POSTROUTING -s {{ wireguard_network_ipv4 }} -o {{
+    ansible_facts['default_ipv4']['interface'] }} {{
+    '-j SNAT --to ' + snat_aipv4 if snat_aipv4 else '-j MASQUERADE' }}
 {% endif %}
 
 

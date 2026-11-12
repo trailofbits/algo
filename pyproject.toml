@@ -6,9 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "algo"
 description = "Set up a personal IPSEC VPN in the cloud"
 version = "2.0.0-beta"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
-    "ansible==12.3.0",
+    "ansible==14.6.0",
     "cryptography==50.0.2",
     "jinja2>=3.1.6",
     "netaddr==1.3.0",
@@ -93,7 +93,7 @@ cloudstack = [
 
 [tool.ruff]
 # Ruff configuration
-target-version = "py311"
+target-version = "py312"
 line-length = 120
 
 [tool.ruff.lint]
@@ -144,7 +144,7 @@ ignore = [
 
 [tool.ty.environment]
 # Type checking configuration
-python-version = "3.11"
+python-version = "3.12"
 
 [tool.ty.src]
 # Exclude Ansible library modules and tests (test code has looser typing)

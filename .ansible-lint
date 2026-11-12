@@ -1,4 +1,7 @@
 # Ansible-lint configuration
+# requirements.yml pins provider APIs separately from Ansible's bundled collections.
+# ansible-compat may report both versions; the pinned copy takes precedence.
+# Keep these overrides until each provider's newer API has been tested.
 exclude_paths:
   - .cache/
   - .github/

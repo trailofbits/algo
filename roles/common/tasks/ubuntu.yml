@@ -151,7 +151,7 @@
   apt:
     name:
       - linux-headers-generic
-      - linux-headers-{{ ansible_kernel }}
+      - linux-headers-{{ ansible_facts['kernel'] }}
     state: present
   when:
     - not performance_parallel_packages | default(true)

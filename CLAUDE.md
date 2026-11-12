@@ -12,7 +12,7 @@ Algo is an Ansible-based tool that sets up a personal VPN in the cloud. It's des
 
 ### Core Technologies
 - **VPN Protocols**: WireGuard (preferred) and IPsec/IKEv2
-- **Configuration Management**: Ansible (v12+)
+- **Configuration Management**: Ansible (v14)
 - **Languages**: Python, YAML, Shell, Jinja2 templates
 - **Supported Providers**: AWS, Azure, DigitalOcean, GCP, Vultr, Hetzner, local deployment
 
@@ -98,7 +98,7 @@ When adding or modifying features, verify these before requesting review:
 |------|--------|-----------|
 | `ansible-lint` | YAML tasks | Handle expected failures explicitly, add `mode:` to files |
 | `yamllint` | All YAML | Document start `---`, quote `'on':` in workflows |
-| `ruff` | Python | Line length 120, target Python 3.11 |
+| `ruff` | Python | Line length 120, target Python 3.12 |
 | `shellcheck` | Shell scripts | Quote variables, use `set -euo pipefail` |
 | `semgrep` | All code | SAST scanner, `--config auto`, suppress with `# nosemgrep: rule-id` |
 
@@ -284,7 +284,7 @@ Ubuntu 22.04+ defaults to iptables-nft which reorders rules unpredictably. Algo 
 Servers with both public and private IPs on the same interface need explicit output interface for NAT:
 
 ```yaml
--o {{ ansible_default_ipv4['interface'] }}
+-o {{ ansible_facts['default_ipv4']['interface'] }}
 ```
 
 Don't overengineer with SNAT - MASQUERADE with interface specification works fine.

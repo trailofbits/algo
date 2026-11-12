@@ -3,7 +3,7 @@
 # Update managed hooks: prek update --cooldown-days 7 --freeze
 minimum_prek_version: '0.5.10'
 default_language_version:
-  python: python3.11
+  python: python3.12
 
 repos:
   - repo: builtin
