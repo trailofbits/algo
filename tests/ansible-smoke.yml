@@ -52,6 +52,27 @@
         ssh_tunnels_config_path: "{{ smoke_dir }}/tunnel keys"
         ansible_ssh_port: 4160
 
+    - name: Render the WireGuard server configuration
+      ansible.builtin.template:
+        src: "{{ algo_root }}/roles/wireguard/templates/server.conf.j2"
+        dest: "{{ smoke_dir }}/server.conf"
+        mode: '0600'
+      vars:
+        wireguard_users: [smoke-user, removed-user]
+
+    - name: Render WireGuard Apple profiles
+      ansible.builtin.template:
+        src: "{{ algo_root }}/roles/wireguard/templates/mobileconfig.j2"
+        dest: "{{ smoke_dir }}/{{ system }}.mobileconfig"
+        mode: '0600'
+      vars:
+        item: smoke-user
+        index: 0
+        ansible_search_path: ["{{ algo_root }}/roles/wireguard/templates"]
+      loop: [ios, macos]
+      loop_control:
+        loop_var: system
+
     - name: Parse the SSH tunnel configuration without connecting
       ansible.builtin.command:
         argv: [ssh, -G, -F, "{{ smoke_dir }}/ssh_config", algo]
@@ -86,15 +107,33 @@
       ansible.builtin.assert:
         that:
           - content.startswith('#cloud-config\n')
+          - config.package_update and config.package_upgrade
+          - config.users[0] == 'default'
+          - config.users[1].name == 'algo'
+          - config.users[1].homedir == '/home/algo'
+          - config.users[1].groups == 'adm,netdev'
+          - config.users[1].shell == '/bin/bash'
+          - config.users[1].lock_passwd
           - config.users[1].ssh_authorized_keys == ['ssh-ed25519 AAAA smoke-user']
           - config.users[1].sudo == 'ALL=(ALL) NOPASSWD:ALL'
           - "'Port 4160' in config.write_files[0].content.splitlines()"
           - "'PasswordAuthentication no' in config.write_files[0].content.splitlines()"
+          - config.write_files[0].path == '/etc/ssh/sshd_config'
+          - "'PermitRootLogin no' in config.write_files[0].content.splitlines()"
+          - "'AllowGroups algo' in config.write_files[0].content.splitlines()"
           - "'systemctl restart sshd.service' in config.runcmd"
-          - "('git' in config.packages) == item"
+          - config.packages == (['sudo'] + extra_packages if item else ['sudo'])
       vars:
         content: "{{ lookup('file', smoke_dir ~ '/cloud-init-' ~ item ~ '.yml') }}"
         config: "{{ content | from_yaml }}"
+        extra_packages:
+          - git
+          - screen
+          - apparmor-utils
+          - uuid-runtime
+          - coreutils
+          - iptables-persistent
+          - cgroup-tools
       loop: [false, true]
 
     - name: Render firewall rules with an alternate egress address

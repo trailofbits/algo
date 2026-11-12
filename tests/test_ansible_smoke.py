@@ -4,6 +4,7 @@ import base64
 import configparser
 import json
 import os
+import plistlib
 import shutil
 import subprocess
 import sys
@@ -78,7 +79,11 @@ def test_ansible_smoke(tmp_path: Path, endpoint: str, keepalive: int) -> None:
         check=False,
     )
     assert result.returncode == 0, f"Ansible smoke test failed:\n{result.stdout}\n{result.stderr}"
+    verify_wireguard_configs(tmp_path, endpoint, keepalive)
 
+
+def verify_wireguard_configs(tmp_path: Path, endpoint: str, keepalive: int) -> None:
+    """Check generated client, server, and Apple profiles against the real keys."""
     config = configparser.ConfigParser(interpolation=None)
     config.read_string((tmp_path / "client.conf").read_text())
     assert config.sections() == ["Interface", "Peer"]
@@ -102,3 +107,23 @@ def test_ansible_smoke(tmp_path: Path, endpoint: str, keepalive: int) -> None:
     private_key = X25519PrivateKey.from_private_bytes(server_key)
     expected_public = private_key.public_key().public_bytes_raw()
     assert base64.b64decode(config["Peer"]["PublicKey"], validate=True) == expected_public
+
+    server = configparser.ConfigParser(interpolation=None)
+    server.read_string((tmp_path / "server.conf").read_text())
+    assert server["Interface"].getint("ListenPort") == 51820
+    assert base64.b64decode(server["Interface"]["PrivateKey"], validate=True) == server_key
+    assert server["Peer"]["AllowedIPs"] == "10.49.0.2/32"
+    client_key = X25519PrivateKey.from_private_bytes(
+        base64.b64decode(config["Interface"]["PrivateKey"], validate=True),
+    )
+    expected_client_public = client_key.public_key().public_bytes_raw()
+    assert base64.b64decode(server["Peer"]["PublicKey"], validate=True) == expected_client_public
+    for system in ("ios", "macos"):
+        profile = plistlib.loads((tmp_path / f"{system}.mobileconfig").read_bytes())
+        assert profile["PayloadType"] == "Configuration"
+        vpn = profile["PayloadContent"][0]
+        assert vpn["VPNSubType"] == f"com.wireguard.{system}"
+        apple_config = configparser.ConfigParser(interpolation=None)
+        apple_config.read_string(vpn["VendorConfig"]["WgQuickConfig"])
+        assert dict(apple_config["Peer"]) == dict(config["Peer"])
+        assert dict(apple_config["Interface"]) == dict(config["Interface"])
