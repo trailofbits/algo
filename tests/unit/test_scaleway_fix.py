@@ -1,5 +1,6 @@
 """Exercise Scaleway image selection, zone handling, and the HTTP client."""
 
+import importlib
 import json
 from io import BytesIO
 from pathlib import Path
@@ -7,13 +8,31 @@ from types import SimpleNamespace
 from urllib.parse import parse_qs, urlsplit
 
 import pytest
-import scaleway_compute
 from ansible.parsing.dataloader import DataLoader
+from ansible.plugins.loader import init_plugin_loader
 from ansible.template import Templar, trust_as_template
-from ansible_collections.community.general.plugins.module_utils import scaleway
+from ansible.utils.collection_loader import AnsibleCollectionConfig
 
 ROOT = Path(__file__).resolve().parents[2]
 ROLE = ROOT / "roles/cloud-scaleway"
+
+
+@pytest.fixture(scope="module")
+def cloud_modules():
+    if not AnsibleCollectionConfig.collection_finder:
+        init_plugin_loader()
+    module_name = "ansible_collections.community.general.plugins.module_utils.scaleway"
+    scaleway = importlib.import_module(module_name)
+    manifest = Path(scaleway.__file__).parents[2] / "MANIFEST.json"
+    version = json.loads(manifest.read_text())["collection_info"]["version"]
+    requirements = DataLoader().load_from_file(str(ROOT / "requirements.yml"))
+    expected = next(
+        item["version"].removeprefix("==")
+        for item in requirements["collections"]
+        if item["name"] == "community.general"
+    )
+    assert version == expected, "Install the collections pinned in requirements.yml before testing"
+    return scaleway, importlib.import_module("scaleway_compute")
 
 
 @pytest.fixture
@@ -43,7 +62,8 @@ def _conditions(templar, expressions):
         ("waw3", "pl-waw-3"),
     ],
 )
-def test_scaleway_zones_and_standalone_destroy(role, alias, zone):
+def test_scaleway_zones_and_standalone_destroy(role, cloud_modules, alias, zone):
+    scaleway, _ = cloud_modules
     loader, defaults, tasks, block = role
     for region in (alias, zone):
         variables = dict(defaults, algo_region=region)
@@ -145,7 +165,7 @@ def compute_module():
 
 
 @pytest.mark.parametrize(
-    "status,body,valid",
+    "response",
     [
         (200, {"image": {"id": "wanted"}}, True),
         (404, {"message": "missing"}, False),
@@ -156,7 +176,9 @@ def compute_module():
         (200, {"image": {"id": "other"}}, False),
     ],
 )
-def test_scaleway_image_lookup(monkeypatch, compute_module, status, body, valid):
+def test_scaleway_image_lookup(monkeypatch, compute_module, cloud_modules, response):
+    scaleway, scaleway_compute = cloud_modules
+    status, body, valid = response
     requests = []
 
     def fetch_url(_module, url, **kwargs):
@@ -173,7 +195,8 @@ def test_scaleway_image_lookup(monkeypatch, compute_module, status, body, valid)
     assert requests == [("/instance/v1/zones/nl-ams-2/images/wanted", "GET")]
 
 
-def test_scaleway_creation_uses_selected_image_and_organization(monkeypatch, compute_module):
+def test_scaleway_creates_selected_image(monkeypatch, compute_module, cloud_modules):
+    scaleway, scaleway_compute = cloud_modules
     requests = []
 
     def fetch_url(_module, url, **kwargs):
