@@ -9,6 +9,9 @@
 # Run the full Python test suite
 uv run --locked pytest -q
 
+# Run the Ansible runtime smoke test on its own
+uv run --locked pytest -q tests/test_ansible_smoke.py
+
 # Run E2E connectivity tests (requires deployed Algo on localhost)
 sudo tests/e2e/test-vpn-connectivity.sh both
 ```
@@ -40,6 +43,7 @@ tests/
 | Templates | `test_template_rendering.py` | Jinja2 template syntax, filter compatibility |
 | Certificates | `test_certificate_validation.py` | OpenSSL compatibility, PKCS#12 export |
 | Cloud Providers | `test_cloud_provider_configs.py` | Region formats, instance types, OS images |
+| Ansible runtime | `test_ansible_smoke.py` | Input handling, inventory, real keys, client rendering |
 | E2E | `test-vpn-connectivity.sh` | WireGuard handshake, IPsec connection, DNS through VPN |
 
 ## CI Workflows
@@ -52,6 +56,10 @@ tests/
 
 CI runs every hook in `.pre-commit-config.yaml`. Python tools and the hook runner use `uv.lock`;
 prek installs the remaining pinned hook tools. The final CI job requires every check to succeed.
+
+The Python suite runs the Ansible smoke playbook on every PR, including dependency updates. It
+executes production tasks and renders a client configuration in a temporary directory without
+installing services or changing the host network. Ansible errors and invalid output fail the test.
 
 ## Writing Tests
 

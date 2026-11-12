@@ -46,7 +46,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --no-install-recommends -y shellcheck wireguard-tools
-      - name: Run the full Python suite
+      - name: Run the full Python suite and Ansible smoke test
         run: uv run --locked pytest -q
 
   powershell-lint:
