@@ -12,12 +12,12 @@ def check_config_persistence(
     *,
     read_only: bool = False,
 ) -> None:
-    """Check that deployment failures preserve configs and copy failures fail.
+    """Check that deployment failures preserve configs and read-only mounts fail.
 
     Args:
         image: Locally built Algo image to test.
         deployment_status: Exit status returned by the deployment stub.
-        read_only: Make the data mount read-only to simulate a copy failure.
+        read_only: Make the data mount read-only to reject unwritable output.
     """
     root = Path(__file__).resolve().parents[1]
     with TemporaryDirectory(prefix=".docker-wrapper-", dir=root.parent) as directory:
@@ -127,7 +127,56 @@ def check_bootstrap_failure(image: str, *, existing_log: bool) -> None:
         assert (logs / "algo.log").stat().st_mode & 0o077 == 0
 
 
+def check_unwritable_data(image: str, data_path: str) -> None:
+    """Reject an inaccessible Linux data mount before starting a deployment.
+
+    Args:
+        image: Locally built Algo image to test.
+        data_path: Output directory to mount with a different owner's UID.
+    """
+    root = Path(__file__).resolve().parents[1]
+    with TemporaryDirectory(prefix=".docker-permissions-", dir=root.parent) as directory:
+        temporary = Path(directory)
+        config = temporary / "config.cfg"
+        config.write_text("users: [test-user]\n")
+        config.chmod(0o644)
+        launcher = temporary / "algo"
+        launcher.write_text("#!/usr/bin/env bash\nset -euo pipefail\necho deployment-started\n")
+        launcher.chmod(0o755)
+        result = subprocess.run(
+            [
+                "docker",
+                "run",
+                "--rm",
+                "-t",
+                "--cap-drop=all",
+                "--tmpfs",
+                f"{data_path}:mode=0755,uid=1001,gid=1001",
+                "--entrypoint",
+                "/bin/bash",
+                "--mount",
+                f"type=bind,source={config},target=/data/config.cfg,readonly",
+                "--mount",
+                f"type=bind,source={launcher},target=/algo/algo,readonly",
+                "--mount",
+                f"type=bind,source={root / 'algo-docker.sh'},target=/algo/algo-docker.sh,readonly",
+                image,
+                "/algo/algo-docker.sh",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+        )
+        assert result.returncode != 0, result.stdout + result.stderr
+        message = f"Cannot write generated configurations to {data_path}"
+        assert message in result.stdout + result.stderr
+        assert "deployment-started" not in result.stdout
+
+
 if __name__ == "__main__":
+    check_unwritable_data(sys.argv[1], "/data")
+    check_unwritable_data(sys.argv[1], "/data/configs")
     check_config_persistence(sys.argv[1], 0)
     check_config_persistence(sys.argv[1], 23)
     check_config_persistence(sys.argv[1], 0, read_only=True)

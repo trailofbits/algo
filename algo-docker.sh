@@ -30,6 +30,15 @@ if [ ! -e /dev/console ]; then
   usage -1
 fi
 
+for directory in "${DATA_DIR}" "${DATA_DIR}/configs"; do
+  if [[ -d "${directory}" && ! -w "${directory}" ]]; then
+    echo "Cannot write generated configurations to ${directory}." >&2
+    echo "Grant container UID $(id -u) write access to the host directory before deploying." >&2
+    echo "See docs/deploy-from-docker.md for Linux bind-mount permissions." >&2
+    exit 1
+  fi
+done
+
 # To work around problems with bind-mounting Windows volumes, we need to
 # copy files out of ${DATA_DIR}, ensure appropriate line endings and permissions,
 # then copy the algo-generated files into ${DATA_DIR}.

@@ -38,8 +38,7 @@ RUN uv run --locked --no-dev ansible-galaxy collection install -r requirements.y
 # Note: /algo must remain root-owned for --cap-drop=all compatibility
 # (root without CAP_DAC_OVERRIDE cannot write to files owned by others)
 RUN chmod 0755 /algo/algo-docker.sh && \
-    mkdir -p /data && \
-    chown algo:algo /data
+    mkdir -p /data
 
 # Multi-arch support metadata
 ARG TARGETPLATFORM
@@ -47,7 +46,7 @@ ARG BUILDPLATFORM
 RUN printf "Built on: %s\nTarget: %s\n" "${BUILDPLATFORM}" "${TARGETPLATFORM}" > /algo/build-info
 
 # Note: Running as root for bind mount compatibility with algo-docker.sh
-# The script handles /data volume permissions and needs root access
+# Bind mounts must allow UID 0 to read and write the configuration directory.
 # This is a Docker limitation with bind-mounted volumes
 USER root
 
