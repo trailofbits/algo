@@ -2,6 +2,9 @@
 
 Install strongSwan, then copy the included ipsec_user.conf, ipsec_user.secrets, user.crt (user certificate), and user.key (private key) files to your client device. These will require customization based on your exact use case. These files were originally generated with a point-to-point OpenWRT-based VPN in mind.
 
+Use a client with IP address name-constraint support, such as strongSwan 5.9.13 in
+Ubuntu 24.04. Ubuntu 22.04's strongSwan 5.9.5 rejects Algo's certificate authority.
+
 ## Ubuntu Server example
 
 1. `sudo apt install strongswan libstrongswan-standard-plugins`: install strongSwan

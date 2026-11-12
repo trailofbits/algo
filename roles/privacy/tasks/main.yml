@@ -24,6 +24,27 @@
       include_tasks: clear_history.yml
       tags: privacy-history
 
+    - name: Create rsyslog privacy configuration directory
+      file:
+        path: /etc/rsyslog.d
+        state: directory
+        mode: '0755'
+        owner: root
+        group: root
+      when: privacy_rsyslog.stat.exists
+      tags: [privacy-filtering, privacy-advanced]
+
+    - name: Configure rsyslog for minimal logging
+      template:
+        src: privacy-rsyslog.conf.j2
+        dest: /etc/rsyslog.d/45-privacy-minimal.conf
+        mode: '0644'
+        owner: root
+        group: root
+      notify: restart rsyslog
+      when: privacy_rsyslog.stat.exists
+      tags: [privacy-filtering, privacy-advanced]
+
     - name: Include log filtering tasks
       include_tasks: log_filtering.yml
       when: privacy_rsyslog.stat.exists

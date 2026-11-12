@@ -52,16 +52,6 @@
     backup: yes
   notify: restart systemd-journald
 
-- name: Configure rsyslog for minimal logging
-  template:
-    src: privacy-rsyslog.conf.j2
-    dest: /etc/rsyslog.d/45-privacy-minimal.conf
-    mode: '0644'
-    owner: root
-    group: root
-  notify: restart rsyslog
-  when: privacy_rsyslog.stat.exists
-
 - name: Set up privacy monitoring script
   template:
     src: privacy-monitor.sh.j2

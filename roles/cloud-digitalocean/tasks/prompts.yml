@@ -1,7 +1,7 @@
 ---
 - pause:
     prompt: |
-      Enter your API token. The token must have read and write permissions (https://cloud.digitalocean.com/settings/api/tokens):
+      Enter your API token. The token must have read and write permissions (https://cloud.digitalocean.com/account/api/tokens):
     echo: false
   register: _do_token
   when:
@@ -33,7 +33,7 @@
       DigitalOcean API authentication failed (401 Unauthorized)
 
       Your API token is invalid or expired. Please:
-      1. Go to https://cloud.digitalocean.com/settings/api/tokens
+      1. Go to https://cloud.digitalocean.com/account/api/tokens
       2. Create a new token with 'Read' and 'Write' scopes
       3. Run the deployment again with the new token
 
@@ -41,7 +41,7 @@
       DigitalOcean API access denied (403 Forbidden)
 
       Your API token lacks required permissions. Please:
-      1. Go to https://cloud.digitalocean.com/settings/api/tokens
+      1. Go to https://cloud.digitalocean.com/account/api/tokens
       2. Ensure your token has both 'Read' and 'Write' scopes
       3. Consider creating a new token with full access
 
@@ -71,7 +71,7 @@
       DigitalOcean API error (HTTP {{ _do_regions.status }})
 
       An unexpected error occurred. Please:
-      1. Verify your API token at https://cloud.digitalocean.com/settings/api/tokens
+      1. Verify your API token at https://cloud.digitalocean.com/account/api/tokens
       2. Check https://status.digitalocean.com for service issues
       {% endif %}
 
