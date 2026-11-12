@@ -63,7 +63,7 @@ Name the vpn server:
 After several prompts related to Algo features you will be asked for the API Token value. Paste the API Token value you copied when following the steps in [API Token creation](#api-token-creation) (you won't see any output as the key is not echoed by Algo):
 
 ```
-Enter your API token. The token must have read and write permissions (https://cloud.digitalocean.com/settings/api/tokens):
+Enter your API token. The token must have read and write permissions (https://cloud.digitalocean.com/account/api/tokens):
  (output is hidden):
 ```
 
