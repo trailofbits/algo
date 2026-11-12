@@ -125,7 +125,9 @@ class ScalewayInstance:
         matches = []
         page = 1
         deadline = time.monotonic() + self.params["wait_timeout"]
-        while time.monotonic() < deadline:
+        while True:
+            if time.monotonic() >= deadline:
+                self.fail("listing servers timed out; check API availability and retry.")
             query = urlencode({"name": self.params["name"], "per_page": 100, "page": page})
             data = self.request("GET", f"servers?{query}")
             servers = data.get("servers")
@@ -137,7 +139,6 @@ class ScalewayInstance:
             if len(servers) < 100:
                 return self.server({"server": matches[0]}) if matches else None
             page += 1
-        self.fail("listing servers timed out; check API availability and retry.")
 
     def wait(self, server: dict, expected: str | None = None) -> dict:
         """Wait for a stable state, returning the latest addresses and server attributes."""
