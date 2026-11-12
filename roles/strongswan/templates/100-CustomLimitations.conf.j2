@@ -11,12 +11,12 @@ ProtectKernelTunables=yes
 ProtectControlGroups=yes
 
 # Network restrictions - include IPsec kernel communication requirements
-# AF_UNIX required for VICI socket communication (swanctl/modern StrongSwan interface)
+# AF_UNIX is required for the stroke control socket used by ipsec and starter.
 RestrictAddressFamilies=AF_INET AF_INET6 AF_NETLINK AF_PACKET AF_UNIX
 
-# Allow access to IPsec configuration, state, and kernel interfaces
+# Allow access to IPsec configuration and state.
+# The kernel-netlink plugin uses AF_NETLINK for kernel communication.
 ReadWritePaths=/etc/ipsec.d /var/lib/strongswan
-ReadOnlyPaths=/proc/net/pfkey
 
 # System call filtering (complements AppArmor restrictions)
 # Allow crypto operations, remove cpu-emulation restriction for crypto algorithms
