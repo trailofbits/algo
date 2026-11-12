@@ -16,10 +16,11 @@ ROOT = Path(__file__).resolve().parents[1]
     ("provider", "extra"),
     [("azure", "azure"), ("linode", "linode"), ("ec2", "aws"), ("scaleway", None), ("local", None)],
 )
-def test_destroy_installs_only_locked_provider_extras(tmp_path: Path, provider: str, extra: str | None):
+def test_destroy_uses_locked_extras(tmp_path: Path, provider: str, extra: str | None):
     """Run the production install task with the uv process boundary recorded."""
     tasks = yaml.safe_load((ROOT / "destroy.yml").read_text())[0]["tasks"][0]["block"]
-    install = next(task for task in tasks if task.get("name") == "Install cloud provider dependencies")
+    task_name = "Install cloud provider dependencies"
+    install = next(task for task in tasks if task.get("name") == task_name)
     recorded = tmp_path / "arguments.json"
     binary = tmp_path / "uv"
     binary.write_text(
@@ -61,4 +62,5 @@ def test_destroy_installs_only_locked_provider_extras(tmp_path: Path, provider: 
     if extra is None:
         assert not recorded.exists()
     else:
-        assert json.loads(recorded.read_text()) == ["sync", "--locked", "--inexact", "--extra", extra]
+        expected = ["sync", "--locked", "--inexact", "--extra", extra]
+        assert json.loads(recorded.read_text()) == expected

@@ -31,7 +31,9 @@
           {%- elif algo_provider == 'cloudstack' -%}cloudstack
           {%- else -%}{{ algo_provider }}
           {%- endif -%}
-      when: algo_provider in ['ec2', 'lightsail', 'azure', 'gce', 'hetzner', 'linode', 'openstack', 'cloudstack']
+      when: >-
+        algo_provider in ['ec2', 'lightsail', 'azure', 'gce', 'hetzner',
+                          'linode', 'openstack', 'cloudstack']
       changed_when: false
 
   # Note: pyOpenSSL and segno are now included in pyproject.toml dependencies

@@ -9,7 +9,9 @@
       Invalid Azure region selection '{{ azure_region_choice }}'.
       Enter a number from 1 to {{ azure_regions | length }}.
   vars:
-    azure_region_choice: "{{ _algo_region.user_input | default('') | trim or default_region | string }}"
+    azure_region_choice: >-
+      {{ _algo_region.user_input | default('') | trim
+         or default_region | string }}
   when: region is undefined
 
 - name: Select the Azure region
@@ -18,7 +20,9 @@
       {{ region if region is defined else
          azure_regions[(azure_region_choice | int) - 1]['name'] }}
   vars:
-    azure_region_choice: "{{ _algo_region.user_input | default('') | trim or default_region | string }}"
+    azure_region_choice: >-
+      {{ _algo_region.user_input | default('') | trim
+         or default_region | string }}
 
 - name: Validate the requested Azure region
   assert:

@@ -128,7 +128,8 @@ def test_hetzner_location_discovery(tmp_path: Path, hetzner_api, scenario: str):
     output = result.stdout + result.stderr
     if scenario in {"empty", "unauthorized"}:
         assert result.returncode != 0
-        expected_error = "Hetzner returned no locations" if scenario == "empty" else "Invalid API token"
+        errors_by_scenario = {"empty": "Hetzner returned no locations"}
+        expected_error = errors_by_scenario.get(scenario, "Invalid API token")
         assert expected_error in output
     else:
         assert result.returncode == 0, output
