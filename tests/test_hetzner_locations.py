@@ -25,7 +25,10 @@ def hetzner_api():
         if os.environ.get("ALGO_CLOUD_SMOKE") == "1":
             importlib.import_module(dependency)
         else:
-            pytest.importorskip(dependency, reason="Run with the hetzner extra for API integration tests")
+            pytest.importorskip(
+                dependency,
+                reason="Run with the hetzner extra for API integration tests",
+            )
     requests = []
     pages = [[{"name": "nbg1", "description": "Nuremberg"}]]
     errors = []
@@ -95,7 +98,8 @@ def test_hetzner_location_discovery(tmp_path: Path, hetzner_api, scenario: str):
         {"ansible.builtin.assert": {"that": f"algo_hcloud_region == '{expected}'"}},
     ]
     playbook = tmp_path / "locations.yml"
-    playbook.write_text(yaml.safe_dump([{"hosts": "localhost", "gather_facts": False, "tasks": tasks}]))
+    plays = [{"hosts": "localhost", "gather_facts": False, "tasks": tasks}]
+    playbook.write_text(yaml.safe_dump(plays))
     result = subprocess.run(
         [
             sys.executable,
@@ -131,7 +135,10 @@ def test_hetzner_location_discovery(tmp_path: Path, hetzner_api, scenario: str):
     assert requests == ["/v1/locations"] * len(pages)
 
 
-@pytest.mark.parametrize("choice,valid", [("1", True), ("2", True), ("0", False), ("3", False), ("x", False)])
+@pytest.mark.parametrize(
+    "choice,valid",
+    [("1", True), ("2", True), ("0", False), ("3", False), ("x", False)],
+)
 def test_hetzner_location_selection(choice: str, valid: bool):
     loader = DataLoader()
     tasks = loader.load_from_file(str(PROMPTS), trusted_as_template=True)
@@ -142,8 +149,8 @@ def test_hetzner_location_selection(choice: str, valid: bool):
     }
     templar = Templar(loader=loader, variables=variables)
     validation = next(task["assert"] for task in tasks if "Validate" in task.get("name", ""))
-    accepted = all(templar.template(trust_as_template("{{ " + condition + " }}")) for condition in validation["that"])
-    assert accepted == valid
+    conditions = (trust_as_template(f"{{{{ {condition} }}}}") for condition in validation["that"])
+    assert all(templar.template(condition) for condition in conditions) == valid
     if valid:
         selected = templar.template(tasks[-1]["set_fact"]["algo_hcloud_region"])
         assert selected == {"1": "hel1", "2": "nbg1"}[choice]
