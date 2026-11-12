@@ -108,6 +108,7 @@ def dns_proxy(network_runtime, ansible_templar, tmp_path):
     cert_file, key_file = write_certificate(tmp_path)
     with HTTPServer(("127.0.0.1", 0), Resolver) as upstream:
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.minimum_version = ssl.TLSVersion.TLSv1_2
         context.load_cert_chain(cert_file, key_file)
         upstream.socket = context.wrap_socket(upstream.socket, server_side=True)
         upstream_port = upstream.server_address[1]
