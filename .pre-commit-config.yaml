@@ -10,7 +10,7 @@ repos:
     hooks:
       - id: check-yaml
         args: [--allow-multiple-documents]
-        exclude: '(files/cloud-init/base\.yml|roles/cloud-.*/files/stack\.yaml)'
+        exclude: '^files/cloud-init/base\.yml$'
       - id: end-of-file-fixer
       - id: trailing-whitespace
       - id: check-added-large-files

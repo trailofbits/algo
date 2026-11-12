@@ -15,12 +15,19 @@
 
     - name: Creating firewall rules
       vultr.cloud.firewall_rule:
+        state: >-
+          {{ 'present'
+             if item.protocol != 'udp' or item.port | int in vpn_ports else 'absent' }}
         group: "{{ algo_server_name }}"
         protocol: "{{ item.protocol }}"
         port: "{{ item.port }}"
         ip_type: "{{ item.ip }}"
         subnet: "{{ item.cidr.split('/')[0] }}"
         subnet_size: "{{ item.cidr.split('/')[1] }}"
+      vars:
+        vpn_ports: >-
+          {{ ([wireguard_port | int] if wireguard_enabled | bool else []) +
+             ([500, 4500] if ipsec_enabled | bool else []) }}
       loop:
         - { protocol: tcp, port: "{{ ssh_port }}", ip: v4, cidr: 0.0.0.0/0 }
         - { protocol: tcp, port: "{{ ssh_port }}", ip: v6, cidr: "::/0" }

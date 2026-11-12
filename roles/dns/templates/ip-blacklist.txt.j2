@@ -1,44 +1,23 @@
-0.0.0.0
-10.*
-127.*
-169.254.*
-172.16.*
-172.17.*
-172.18.*
-172.19.*
-172.20.*
-172.21.*
-172.22.*
-172.23.*
-172.24.*
-172.25.*
-172.26.*
-172.27.*
-172.28.*
-172.29.*
-172.30.*
-172.31.*
-192.168.*
-::ffff:0.0.0.0
-::ffff:10.*
-::ffff:127.*
-::ffff:169.254.*
-::ffff:172.16.*
-::ffff:172.17.*
-::ffff:172.18.*
-::ffff:172.19.*
-::ffff:172.20.*
-::ffff:172.21.*
-::ffff:172.22.*
-::ffff:172.23.*
-::ffff:172.24.*
-::ffff:172.25.*
-::ffff:172.26.*
-::ffff:172.27.*
-::ffff:172.28.*
-::ffff:172.29.*
-::ffff:172.30.*
-::ffff:172.31.*
-::ffff:192.168.*
-fd00::*
-fe80::*
+# Older releases normalize mapped addresses to IPv4; newer releases preserve the IPv6 form.
+{% for mapped in ['', '::ffff:'] %}
+{{ mapped }}0.0.0.0
+{{ mapped }}10.*
+{{ mapped }}127.*
+{{ mapped }}169.254.*
+{% for subnet in range(16, 32) %}
+{{ mapped }}172.{{ subnet }}.*
+{% endfor %}
+{{ mapped }}192.168.*
+{% endfor %}
+
+# The parser trims one trailing colon; this prefix matches only the canonical "::".
+:::*
+::1
+# dnscrypt-proxy 2.0.x requires complete hextet prefixes; CIDR needs a newer release.
+{% for prefix in range(0xfc00, 0xfe00) %}
+{{ '%x' | format(prefix) }}:*
+{% endfor %}
+{% for prefix in range(0xfe80, 0xfec0) %}
+{{ '%x' | format(prefix) }}:*
+{% endfor %}
+2001:db8:*

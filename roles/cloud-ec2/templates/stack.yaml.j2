@@ -120,12 +120,13 @@ Resources:
       - Subnet
     Properties:
       VpcId: !Ref VPC
-      GroupDescription: Enable SSH and IPsec
+      GroupDescription: Enable SSH and configured VPN protocols
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: !Ref SshPort
           ToPort: !Ref SshPort
           CidrIp: 0.0.0.0/0
+{% if ipsec_enabled | bool %}
         - IpProtocol: udp
           FromPort: '500'
           ToPort: '500'
@@ -134,10 +135,13 @@ Resources:
           FromPort: '4500'
           ToPort: '4500'
           CidrIp: 0.0.0.0/0
+{% endif %}
+{% if wireguard_enabled | bool %}
         - IpProtocol: udp
           FromPort: !Ref WireGuardPort
           ToPort: !Ref WireGuardPort
           CidrIp: 0.0.0.0/0
+{% endif %}
       Tags:
         - Key: Name
           Value: !Ref AWS::StackName
