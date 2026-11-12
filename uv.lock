@@ -84,9 +84,9 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "ansible", specifier = "==12.3.0" },
-    { name = "azure-identity", marker = "extra == 'azure'", specifier = ">=1.15.0" },
-    { name = "azure-mgmt-compute", marker = "extra == 'azure'", specifier = ">=38.2.0" },
-    { name = "azure-mgmt-network", marker = "extra == 'azure'", specifier = ">=31.0.1" },
+    { name = "azure-identity", marker = "extra == 'azure'", specifier = ">=1.27.0" },
+    { name = "azure-mgmt-compute", marker = "extra == 'azure'", specifier = ">=39.0.0" },
+    { name = "azure-mgmt-network", marker = "extra == 'azure'", specifier = ">=33.1.0" },
     { name = "azure-mgmt-resource", marker = "extra == 'azure'", specifier = ">=26.0.0" },
     { name = "boto3", marker = "extra == 'aws'", specifier = "==1.43.124" },
     { name = "cryptography", specifier = "==50.0.2" },
@@ -213,7 +213,7 @@ wheels = [
 
 [[package]]
 name = "azure-identity"
-version = "1.25.3"
+version = "1.27.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "azure-core" },
@@ -222,23 +222,23 @@ dependencies = [
     { name = "msal-extensions" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c5/0e/3a63efb48aa4a5ae2cfca61ee152fbcb668092134d3eb8bfda472dd5c617/azure_identity-1.25.3.tar.gz", hash = "sha256:ab23c0d63015f50b630ef6c6cf395e7262f439ce06e5d07a64e874c724f8d9e6", size = 286304, upload-time = "2026-03-13T01:12:20.892Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cf/33/0b881d0093d64c965bb20fcf71b806c7097881b544a2a55d519cdcf3bab9/azure_identity-1.27.0.tar.gz", hash = "sha256:6a4c50e25e8e9a47b324a95ad024897e56cb3c6241e0094e93b126a2bf71edc5", size = 331360, upload-time = "2026-10-26T21:17:39.095Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/49/9a/417b3a533e01953a7c618884df2cb05a71e7b68bdbce4fbdb62349d2a2e8/azure_identity-1.25.3-py3-none-any.whl", hash = "sha256:f4d0b956a8146f30333e071374171f3cfa7bdb8073adb8c3814b65567aa7447c", size = 192138, upload-time = "2026-03-13T01:12:22.951Z" },
+    { url = "https://files.pythonhosted.org/packages/29/1e/6a2fe486576f41884a120ef7b2c3774f334f9143402fb73650c67db94ddd/azure_identity-1.27.0-py3-none-any.whl", hash = "sha256:92fd2a93c0d2f777dac6c04e5fd7d5734f6643582b983544ef66b4575844e46d", size = 203474, upload-time = "2026-10-26T21:17:40.92Z" },
 ]
 
 [[package]]
 name = "azure-mgmt-compute"
-version = "38.2.0"
+version = "39.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "azure-mgmt-core" },
     { name = "isodate" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ba/c0/1b4e76e9226bf990d6f309f0f6a7ec3a3ddb4bd2880782aa66997ba751e7/azure_mgmt_compute-38.2.0.tar.gz", hash = "sha256:5d245a7d86d62ea58d0e3ea93ea9da7e8aba8849f937d8d4965c714ca3f43bb3", size = 669778, upload-time = "2026-07-20T03:53:19.269Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/67/d9/dd0efc9a4d74f19f860b2eeae7635b0a2da72229220d8324b0b06d1f01ce/azure_mgmt_compute-39.0.0.tar.gz", hash = "sha256:0187dd028afcbab87d435498cd169f9e54fbb57c08785bcd59008a9a012861fa", size = 702714, upload-time = "2026-10-23T07:18:02.933Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e8/e4/5e338215c002c7fa9c3c2abf191c3bd7e2d829842285664f01f0cd9c16c2/azure_mgmt_compute-38.2.0-py3-none-any.whl", hash = "sha256:307e6dbc2d1b1dd4c891d68a0eca1136e5e560ba143cb55e433d7386bdf68c41", size = 567440, upload-time = "2026-07-20T03:53:21.571Z" },
+    { url = "https://files.pythonhosted.org/packages/e2/c1/594d7fcf27df89aa7820bca316dd1a9b15b6c57ea6c740b40013451b870c/azure_mgmt_compute-39.0.0-py3-none-any.whl", hash = "sha256:6e59c5d37aafa4eaa97df765ac58bb8b97ac8f32dc9993a88bc167a136fb6d7c", size = 598187, upload-time = "2026-10-23T07:18:04.97Z" },
 ]
 
 [[package]]
@@ -255,16 +255,16 @@ wheels = [
 
 [[package]]
 name = "azure-mgmt-network"
-version = "31.0.1"
+version = "33.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "azure-mgmt-core" },
     { name = "isodate" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/07/10/0c6e043eaaa21574464cd36ee15f9acd71f81c647ad89f72bd3e938d071b/azure_mgmt_network-31.0.1.tar.gz", hash = "sha256:2112f720eedca76173be4d47acb8bc58af16a90debc7b601bf11b37faaaed137", size = 902532, upload-time = "2026-07-02T05:44:23.634Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a4/64/745a47ed48aa3c193d6941c6d9d314f61043cd777bfe4f380c04a8819329/azure_mgmt_network-33.1.0.tar.gz", hash = "sha256:ca44e95967e530bdac32ff7d7e6476c84e852225e5aae148eef2694f34f9710b", size = 1124214, upload-time = "2026-10-12T07:38:56.088Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d6/60/2e473151925f893b0629e3cb913bf4fce82edbc5da884607b9a5e636b8d2/azure_mgmt_network-31.0.1-py3-none-any.whl", hash = "sha256:cb36bff1a08237211093b0c3b900cadfd344d08d4a437d526c1239fee3331d0c", size = 725755, upload-time = "2026-07-02T05:44:25.803Z" },
+    { url = "https://files.pythonhosted.org/packages/b6/d2/c0ba9d3515d10f943ac662d293d01a28145c0de605b37cb70b56997e644a/azure_mgmt_network-33.1.0-py3-none-any.whl", hash = "sha256:c768d065799db9751999bf041fa5130bff6ab7b2ac281207a2a3845c3c1cfe6f", size = 927178, upload-time = "2026-10-12T07:38:58.171Z" },
 ]
 
 [[package]]
@@ -983,16 +983,16 @@ wheels = [
 
 [[package]]
 name = "msal"
-version = "1.37.0"
+version = "1.39.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
     { name = "pyjwt", extra = ["crypto"] },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9a/99/d840198ecf6e8057bbc937f129ae940404485d736cda73253bbff9537f01/msal-1.37.0.tar.gz", hash = "sha256:1b1672a33ee467c1d70b341bb16cafd51bb3c817147a95b93263794b03971bec", size = 182444, upload-time = "2026-05-29T19:49:05.561Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/bb/85/747d28986a44b715cc51cf57aa021c8fd94e9614064261ceec77320e8b0b/msal-1.39.0.tar.gz", hash = "sha256:6ab7de335e6d7f5717e2c7e1dbf86e4dda2f6acf3c56773b78dc53ebc6395b5f", size = 205360, upload-time = "2026-09-17T16:07:45.1Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/94/b0/d807279f4b55d16d1f120d5ac4344c6e39b56732e2a224d40bded7fd67ad/msal-1.37.0-py3-none-any.whl", hash = "sha256:dd17e95a7c71bce75e8108113438ba7c4a086b3bcad4f57a8c09b7af3d753c2d", size = 123725, upload-time = "2026-05-29T19:49:04.335Z" },
+    { url = "https://files.pythonhosted.org/packages/a4/32/178457385925ce301c7b3232bd85665d4df57da39568b62dcfc74031873f/msal-1.39.0-py3-none-any.whl", hash = "sha256:2d2577886906cd7293850dffa2da29119966c213bfc6ec0cecf8bf7621e1ca77", size = 131629, upload-time = "2026-09-17T16:07:46.722Z" },
 ]
 
 [[package]]

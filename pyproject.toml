@@ -26,9 +26,9 @@ aws = [
     "boto3==1.43.124",
 ]
 azure = [
-    "azure-identity>=1.15.0",
-    "azure-mgmt-compute>=38.2.0",
-    "azure-mgmt-network>=31.0.1",
+    "azure-identity>=1.27.0",
+    "azure-mgmt-compute>=39.0.0",
+    "azure-mgmt-network>=33.1.0",
     "azure-mgmt-resource>=26.0.0",
     "msrestazure>=0.6.4",
 ]
