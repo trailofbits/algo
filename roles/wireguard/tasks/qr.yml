@@ -1,0 +1,23 @@
+---
+- name: Generate QR codes using the controller Python environment
+  command:
+    argv:
+      - "{{ ansible_playbook_python }}"
+      - -c
+      - |
+        import os
+        import sys
+        import segno
+
+        os.umask(0o077)
+        code = segno.make(sys.stdin.read(), micro=False)
+        with open(sys.argv[1], "wb") as image:
+            os.fchmod(image.fileno(), 0o600)
+            code.save(image, kind="png", scale=5)
+      - "{{ wireguard_config_path }}/{{ item }}.png"
+    stdin: "{{ lookup('file', wireguard_config_path ~ '/' ~ item ~ '.conf', rstrip=False) }}"
+    stdin_add_newline: false
+  changed_when: true
+  loop: "{{ wireguard_users }}"
+  when: item in users
+  no_log: true

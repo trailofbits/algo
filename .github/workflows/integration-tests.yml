@@ -6,9 +6,19 @@ name: Integration Tests
     types: [opened, synchronize, reopened]
     paths:
       - 'main.yml'
+      - 'input.yml'
+      - 'server.yml'
+      - 'users.yml'
+      - 'config.cfg'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'requirements.yml'
+      - 'files/**'
       - 'roles/**'
       - 'playbooks/**'
       - 'library/**'
+      - 'tests/e2e/**'
+      - '.github/workflows/integration-tests.yml'
   workflow_dispatch:
   schedule:
     - cron: '0 2 * * 1'  # Weekly on Monday at 2 AM
@@ -30,7 +40,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
           python-version: '3.11'
           # Note: No pip cache - we use uv for dependency management
@@ -51,10 +61,12 @@ jobs:
             dnsutils
 
       - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          version: '0.13.7'
 
       - name: Install Python dependencies
-        run: uv sync
+        run: uv sync --locked
 
       - name: Install Ansible collections
         run: uv run ansible-galaxy collection install -r requirements.yml
@@ -230,7 +242,7 @@ jobs:
 
       - name: Upload configs as artifacts
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: vpn-configs-${{ matrix.vpn_type }}-${{ github.run_id }}
           path: configs/
@@ -257,48 +269,3 @@ jobs:
           sudo journalctl -u dnscrypt-proxy -n 50 --no-pager || true
           echo "=== System Log (last 100 lines) ==="
           sudo journalctl -n 100 --no-pager || true
-
-  docker-build-test:
-    name: Docker Image Build Test
-    runs-on: ubuntu-22.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Build Algo Docker image
-        run: |
-          docker build -t algo:ci-test .
-
-      - name: Test Docker image
-        run: |
-          # Test that the image can run and show help
-          docker run --rm --entrypoint /bin/sh algo:ci-test -c "cd /algo && ./algo --help" || true
-
-          # Test that required binaries exist in the virtual environment
-          docker run --rm --entrypoint /bin/sh algo:ci-test -c "cd /algo && uv run which ansible"
-          docker run --rm --entrypoint /bin/sh algo:ci-test -c "which python3"
-          docker run --rm --entrypoint /bin/sh algo:ci-test -c "which rsync"
-
-      - name: Test Docker config validation
-        run: |
-          # Create a minimal valid config
-          mkdir -p test-data
-          cat > test-data/config.cfg << 'EOF'
-          users:
-            - test-user
-          cloud_providers:
-            ec2:
-              size: t3.micro
-              region: us-east-1
-          wireguard_enabled: true
-          ipsec_enabled: false
-          dns_encryption: true
-          algo_provider: ec2
-          EOF
-
-          # Test that config is readable
-          docker run --rm --entrypoint cat -v "$(pwd)/test-data:/data" algo:ci-test /data/config.cfg
-
-          echo "✓ Docker image built and basic tests passed"

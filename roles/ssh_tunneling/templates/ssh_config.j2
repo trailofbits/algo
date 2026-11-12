@@ -3,6 +3,7 @@ Host algo
   LogLevel quiet
   Compression yes
   IdentitiesOnly yes
-  IdentityFile {{ item }}.ssh.pem
+  IdentityFile "{{ (ssh_tunnels_config_path ~ '/' ~ item ~ '.pem') | realpath }}"
   User {{ item }}
   Hostname {{ IP_subject_alt_name }}
+  Port {{ ansible_ssh_port }}

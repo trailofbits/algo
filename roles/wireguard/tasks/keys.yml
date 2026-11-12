@@ -24,12 +24,19 @@
     mode: "0600"
   loop: "{{ users + [IP_subject_alt_name] }}"
 
+- name: Read raw private keys without text decoding
+  slurp:
+    src: "{{ wireguard_pki_path }}/private/{{ item }}.raw"
+  loop: "{{ users + [IP_subject_alt_name] }}"
+  register: wireguard_private_keys
+  no_log: true
+
 - name: Save base64 encoded private key
   copy:
-    dest: "{{ wireguard_pki_path }}/private/{{ item }}"
-    content: "{{ lookup('file', wireguard_pki_path + '/private/' + item + '.raw') | b64encode }}"
+    dest: "{{ wireguard_pki_path }}/private/{{ item.item }}"
+    content: "{{ item.content }}"
     mode: "0600"
-  loop: "{{ users + [IP_subject_alt_name] }}"
+  loop: "{{ wireguard_private_keys.results }}"
   no_log: true
 
 - name: Generate raw preshared keys
@@ -40,12 +47,19 @@
     mode: "0600"
   loop: "{{ users + [IP_subject_alt_name] }}"
 
+- name: Read raw preshared keys without text decoding
+  slurp:
+    src: "{{ wireguard_pki_path }}/preshared/{{ item }}.raw"
+  loop: "{{ users + [IP_subject_alt_name] }}"
+  register: wireguard_preshared_keys
+  no_log: true
+
 - name: Save base64 encoded preshared keys
   copy:
-    dest: "{{ wireguard_pki_path }}/preshared/{{ item }}"
-    content: "{{ lookup('file', wireguard_pki_path + '/preshared/' + item + '.raw') | b64encode }}"
+    dest: "{{ wireguard_pki_path }}/preshared/{{ item.item }}"
+    content: "{{ item.content }}"
     mode: "0600"
-  loop: "{{ users + [IP_subject_alt_name] }}"
+  loop: "{{ wireguard_preshared_keys.results }}"
   no_log: true
 
 - name: Generate public keys

@@ -1,6 +1,7 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
-set -ex
+set -euo pipefail
+umask 077
 
 METHOD="${1:-${METHOD:-cloud}}"
 ONDEMAND_CELLULAR="${2:-${ONDEMAND_CELLULAR:-false}}"
@@ -12,9 +13,9 @@ SSH_TUNNELING="${7:-${SSH_TUNNELING:-false}}"
 ENDPOINT="${8:-${ENDPOINT:-localhost}}"
 USERS="${9:-${USERS:-user1}}"
 REPO_SLUG="${10:-${REPO_SLUG:-trailofbits/algo}}"
-REPO_BRANCH="${11:-${REPO_BRANCH:-master}}"
+REPO_BRANCH="${11:-${REPO_BRANCH:-main}}"
 EXTRA_VARS="${12:-${EXTRA_VARS:-placeholder=null}}"
-ANSIBLE_EXTRA_ARGS="${13:-${ANSIBLE_EXTRA_ARGS}}"
+ANSIBLE_EXTRA_ARGS="${13:-${ANSIBLE_EXTRA_ARGS:-}}"
 
 cd /opt/
 
@@ -23,10 +24,11 @@ installRequirements() {
   apt-get update
   apt-get install \
     curl \
+    git \
     jq -y
 
   # Install uv
-  curl -LsSf https://astral.sh/uv/install.sh | sh
+  curl -LsSf https://github.com/astral-sh/uv/releases/download/0.13.7/uv-installer.sh | sh
   export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 }
 
@@ -35,7 +37,7 @@ getAlgo() {
   cd algo
 
   # uv handles all dependency installation automatically
-  uv sync
+  uv sync --locked
 }
 
 publicIpFromInterface() {
@@ -102,13 +104,15 @@ deployAlgo() {
 
   cd /opt/algo
 
-  export HOME=/root
-  export ANSIBLE_LOCAL_TEMP=/root/.ansible/tmp
-  export ANSIBLE_REMOTE_TEMP=/root/.ansible/tmp
+  export ANSIBLE_LOCAL_TEMP="${HOME}/.ansible/tmp"
+  export ANSIBLE_REMOTE_TEMP="${HOME}/.ansible/tmp"
+
+  install -m 0600 /dev/null /var/log/algo.log
 
   # shellcheck disable=SC2086
-  uv run ansible-playbook main.yml \
+  uv run --locked ansible-playbook main.yml \
     -e provider=local \
+    -e local_install_confirmed=true \
     -e "ondemand_cellular=${ONDEMAND_CELLULAR}" \
     -e "ondemand_wifi=${ONDEMAND_WIFI}" \
     -e "ondemand_wifi_exclude=${ONDEMAND_WIFI_EXCLUDE}" \
@@ -121,7 +125,7 @@ deployAlgo() {
     -e ssh_user=root \
     -e "${EXTRA_VARS}" \
     --skip-tags debug ${ANSIBLE_EXTRA_ARGS} |
-      tee /var/log/algo.log
+    tee /var/log/algo.log
 }
 
 if test "$METHOD" = "cloud"; then

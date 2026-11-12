@@ -44,7 +44,7 @@ This prevents automated tools from "fixing" the format and breaking deployments.
 
 The cloud-init files use Jinja2 templating:
 - `{{ ssh_port }}` - Configured SSH port (typically 4160)
-- `{{ lookup('file', '{{ SSH_keys.public }}') }}` - SSH public key
+- `{{ lookup('file', SSH_keys.public) }}` - SSH public key
 
 ## Editing Guidelines
 

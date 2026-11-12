@@ -11,7 +11,7 @@ While it is not possible to run your Algo server from within a Docker container,
 
 1. Install [Docker](https://www.docker.com/community-edition#/download) -- setup and configuration is not covered here
 2. Create a local directory to hold your VPN configs (e.g. `C:\Users\trailofbits\Documents\VPNs\`)
-3. Create a local copy of [config.cfg](https://github.com/trailofbits/algo/blob/master/config.cfg), with required modifications (e.g. `C:\Users\trailofbits\Documents\VPNs\config.cfg`)
+3. Create a local copy of [config.cfg](https://github.com/trailofbits/algo/blob/main/config.cfg), with required modifications (e.g. `C:\Users\trailofbits\Documents\VPNs\config.cfg`)
 4. Run the Docker container, mounting your configurations appropriately (assuming the container is named `trailofbits/algo` with a tag `latest`):
 
 - From Windows:
@@ -24,11 +24,20 @@ While it is not possible to run your Algo server from within a Docker container,
 
 - From Linux:
 
+  The container runs as UID 0 with its capabilities dropped. With a standard Linux Docker
+  daemon, grant UID 0 access to the bind-mounted directory before deploying.
+  The [setfacl](https://man7.org/linux/man-pages/man1/setfacl.1.html) command comes from
+  the `acl` package:
+
   ```bash
+  $ sudo setfacl -R -m u:0:rwX /home/trailofbits/Documents/VPNs
   $ docker run --cap-drop=all -it \
     -v /home/trailofbits/Documents/VPNs:/data \
     ghcr.io/trailofbits/algo:latest
   ```
+
+  The launcher rejects unwritable output directories before starting a deployment.
+  Generated configurations are private files owned by UID 0; use `sudo` to copy them as needed.
 
 5. When it exits, you'll be left with a fully populated `configs` directory, containing all appropriate configuration data for your clients, and for future server management
 

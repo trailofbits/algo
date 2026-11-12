@@ -8,7 +8,7 @@ See our [release announcement](https://blog.trailofbits.com/2016/12/12/meet-algo
 
 ## Features
 
-* Supports only IKEv2 with strong crypto (AES-GCM, SHA2, and P-256) for iOS, MacOS, and Linux
+* Supports only IKEv2 with strong crypto (AES-GCM, SHA2, and P-384) for iOS, MacOS, and Linux
 * Supports [WireGuard](https://www.wireguard.com/) for all of the above, in addition to Android and Windows 11
 * Generates .conf files and QR codes for iOS, macOS, Android, and Windows WireGuard clients
 * Generates Apple profiles to auto-configure iOS and macOS devices for IPsec - no client software required
@@ -35,14 +35,14 @@ The easiest way to get an Algo server running is to run it on your local system 
 
 2. **Get a copy of Algo.** The Algo scripts will be run from your local system. There are two ways to get a copy:
 
-    - Download the [ZIP file](https://github.com/trailofbits/algo/archive/master.zip). Unzip the file to create a directory named `algo-master` containing the Algo scripts.
+    - Download the [ZIP file](https://github.com/trailofbits/algo/archive/refs/heads/main.zip). Unzip the file to create a directory named `algo-main` containing the Algo scripts.
 
     - Use `git clone` to create a directory named `algo` containing the Algo scripts:
         ```bash
         git clone https://github.com/trailofbits/algo.git
         ```
 
-3. **Set your configuration options.** Open `config.cfg` in your favorite text editor. Specify the users you want to create in the `users` list. Create a unique user for each device you plan to connect to your VPN. You should also review the other options before deployment, as changing your mind about them later [may require you to deploy a brand new server](https://github.com/trailofbits/algo/blob/master/docs/faq.md#i-deployed-an-algo-server-can-you-update-it-with-new-features).
+3. **Set your configuration options.** Open `config.cfg` in your favorite text editor. Specify the users you want to create in the `users` list. Create a unique user for each device you plan to connect to your VPN. You should also review the other options before deployment, as changing your mind about them later [may require you to deploy a brand new server](https://github.com/trailofbits/algo/blob/main/docs/faq.md#i-deployed-an-algo-server-can-you-update-it-with-new-features).
 
 4. **Start the deployment.** Return to your terminal. In the Algo directory, run the appropriate script for your platform:
 
@@ -136,7 +136,7 @@ ssh -D 127.0.0.1:1080 -f -q -C -N <user>@algo -i configs/<ip>/ssh-tunnel/<user>.
 
 ## SSH into Algo Server
 
-Your Algo server is configured for key-only SSH access for administrative purposes. Open the Terminal app, `cd` into the `algo-master` directory where you originally downloaded Algo, and then use the command listed on the success message:
+Your Algo server is configured for key-only SSH access for administrative purposes. Open the Terminal app, `cd` into the `algo-main` directory where you originally downloaded Algo, and then use the command listed on the success message:
 
 ```
 ssh -F configs/<ip>/ssh_config <hostname>
@@ -191,7 +191,7 @@ Privacy is controlled by two main settings in `config.cfg`:
 * `strongswan_log_level: -1` - Controls StrongSwan connection logging (-1 = disabled, 2 = debug)
 * `privacy_enhancements_enabled: true` - Master switch for log rotation, history clearing, log filtering, and cleanup
 
-To enable full debugging when troubleshooting, set both `strongswan_log_level: 2` and `privacy_enhancements_enabled: false`. This will capture detailed connection logs and disable all privacy features. Remember to revert these changes after debugging.
+For a new deployment with debug logging, set `strongswan_log_level: 2` and `privacy_enhancements_enabled: false`. On an existing server, changing the privacy flag does not remove settings applied by an earlier deployment. Review those settings before troubleshooting.
 
 After deployment, verify your privacy settings:
 ```bash
@@ -266,7 +266,7 @@ If you've read all the documentation and have further questions, [create a new d
 
 ## Contributing
 
-See our [Development Guide](docs/DEVELOPMENT.md) for information on:
+See our [Development Guide](CONTRIBUTING.md) for information on:
 * Setting up your development environment
 * Using prek hooks for code quality
 * Running tests and linters
