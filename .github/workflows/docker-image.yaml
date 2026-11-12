@@ -3,7 +3,7 @@ name: Create and publish a Docker image
 
 'on':
   push:
-    branches: ['master']
+    branches: ['main']
 
 env:
   REGISTRY: ghcr.io
@@ -41,8 +41,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            # set latest tag for master branch
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
+            # set latest tag for main branch
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc  # v7.4.0
