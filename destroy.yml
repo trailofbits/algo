@@ -97,13 +97,16 @@
             region: "unused"
           when:
             - region is not defined
-            - algo_provider not in ['ec2', 'lightsail', 'gce', 'scaleway', 'vultr', 'azure']
+            - >-
+              algo_provider not in ['ec2', 'lightsail', 'gce', 'scaleway', 'vultr',
+                                    'azure', 'linode']
 
         - name: Gather provider credentials
           include_tasks:
             file: "roles/cloud-{{ algo_provider }}/tasks/{{ provider_credentials_file }}.yml"
           vars:
-            provider_credentials_file: "{{ 'auth' if algo_provider == 'azure' else 'prompts' }}"
+            provider_credentials_file: >-
+              {{ 'auth' if algo_provider in ['azure', 'linode'] else 'prompts' }}
           when: algo_provider != "local"
 
         - name: Display destroy plan
