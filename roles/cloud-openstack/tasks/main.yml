@@ -14,12 +14,18 @@
 
 - name: Security rules created
   openstack.cloud.security_group_rule:
-    state: "{{ state | default('present') }}"
+    state: >-
+      {{ state | default('present')
+         if item.proto != 'udp' or item.port_min | int in vpn_ports else 'absent' }}
     security_group: "{{ os_security_group.id }}"
     protocol: "{{ item.proto }}"
     port_range_min: "{{ item.port_min }}"
     port_range_max: "{{ item.port_max }}"
     remote_ip_prefix: "{{ item.range }}"
+  vars:
+    vpn_ports: >-
+      {{ ([wireguard_port | int] if wireguard_enabled | bool else []) +
+         ([500, 4500] if ipsec_enabled | bool else []) }}
   loop:
     - { proto: tcp, port_min: "{{ ssh_port }}", port_max: "{{ ssh_port }}", range: 0.0.0.0/0 }
     - { proto: icmp, port_min: -1, port_max: -1, range: 0.0.0.0/0 }

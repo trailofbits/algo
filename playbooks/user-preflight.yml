@@ -1,0 +1,50 @@
+---
+- name: Local deployment permission validation
+  when: algo_server == 'localhost' or algo_provider | default('') == 'local'
+  block:
+    - name: Gather the controller user identity
+      ansible.builtin.setup:
+        gather_subset: ['!all', '!min', user]
+
+    - name: Get config directory owner
+      ansible.builtin.stat:
+        path: configs/{{ algo_server }}
+      register: config_dir_stat
+
+    - name: Fail on permission mismatch
+      ansible.builtin.fail:
+        msg: |
+          PERMISSION MISMATCH DETECTED
+
+          Config directory owner: {{ config_dir_stat.stat.pw_name }}
+          Current user: {{ ansible_user_id }}
+
+          Running update-users with mismatched permissions will create
+          files with inconsistent ownership, breaking future operations.
+
+          TO FIX: Run this command, then retry update-users:
+            sudo chown -R {{ ansible_user_id }} configs/{{ algo_server }}/
+
+          PREVENT: Always run update-users the same way as initial deployment
+          (both with sudo, or both without sudo).
+      when: config_dir_stat.stat.pw_name != ansible_user_id
+
+- name: Test SSH connectivity to server
+  when: algo_server != 'localhost'
+  block:
+    - name: Wait for the server SSH port
+      ansible.builtin.wait_for:
+        host: "{{ algo_server }}"
+        port: "{{ ansible_ssh_port | default(ssh_port) | int }}"
+        timeout: 10
+  rescue:
+    - name: Fail with helpful message if server unreachable
+      ansible.builtin.fail:
+        msg: |
+          Cannot connect to {{ algo_server }} on port {{ ansible_ssh_port | default(ssh_port) }}.
+
+          Check that the server is running and its address has not changed.
+          Verify that its firewall allows port {{ ansible_ssh_port | default(ssh_port) }}.
+
+          To diagnose:
+            nc -zv {{ algo_server }} {{ ansible_ssh_port | default(ssh_port) }}

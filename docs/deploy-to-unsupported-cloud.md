@@ -1,6 +1,6 @@
 # Deploying to Unsupported Cloud Providers
 
-Algo officially supports the [cloud providers listed in the README](https://github.com/trailofbits/algo/blob/master/README.md#deploy-the-algo-server). If you want to deploy Algo on another cloud provider, that provider must meet specific technical requirements for compatibility.
+Algo officially supports the [cloud providers listed in the README](https://github.com/trailofbits/algo/blob/main/README.md#deploy-the-algo-server). If you want to deploy Algo on another cloud provider, that provider must meet specific technical requirements for compatibility.
 
 ## Technical Requirements
 
@@ -64,7 +64,7 @@ We strongly recommend choosing a provider that supports native kernel modules ra
 
 If your preferred provider doesn't support Algo's requirements:
 
-1. **Use a supported provider** - Deploy on AWS, DigitalOcean, Azure, GCP, or another [officially supported provider](https://github.com/trailofbits/algo/blob/master/README.md#deploy-the-algo-server)
+1. **Use a supported provider** - Deploy on AWS, DigitalOcean, Azure, GCP, or another [officially supported provider](https://github.com/trailofbits/algo/blob/main/README.md#deploy-the-algo-server)
 2. **Deploy locally** - Use the [Ubuntu server deployment option](deploy-to-ubuntu.md) on your own hardware
 3. **Hybrid approach** - Deploy the VPN server on a supported provider while using your preferred provider for other services
 

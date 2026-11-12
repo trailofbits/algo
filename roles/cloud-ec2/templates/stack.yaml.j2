@@ -1,0 +1,210 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Algo VPN stack'
+Parameters:
+  InstanceTypeParameter:
+    Type: String
+    Default: t3.micro
+  ImageIdParameter:
+    Type: AWS::EC2::Image::Id
+  WireGuardPort:
+    Type: String
+  UseThisElasticIP:
+    Type: String
+    Default: ''
+  EbsEncrypted:
+    Type: String
+  UserData:
+    Type: String
+  SshPort:
+    Type: String
+  InstanceMarketTypeParameter:
+    Description: Launch a Spot instance or standard on-demand instance
+    Type: String
+    Default: on-demand
+    AllowedValues:
+      - spot
+      - on-demand
+Conditions:
+  AllocateNewEIP: !Equals [!Ref UseThisElasticIP, '']
+  AssociateExistingEIP: !Not [!Equals [!Ref UseThisElasticIP, '']]
+  InstanceIsSpot: !Equals [spot, !Ref InstanceMarketTypeParameter]
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 172.16.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+
+  VPCIPv6:
+    Type: AWS::EC2::VPCCidrBlock
+    Properties:
+      AmazonProvidedIpv6CidrBlock: true
+      VpcId: !Ref VPC
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+
+  Subnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 172.16.254.0/23
+      MapPublicIpOnLaunch: false
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+
+  Route:
+    Type: AWS::EC2::Route
+    DependsOn:
+      - VPCGatewayAttachment
+    Properties:
+      RouteTableId: !Ref RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  RouteIPv6:
+    Type: AWS::EC2::Route
+    DependsOn:
+      - VPCGatewayAttachment
+    Properties:
+      RouteTableId: !Ref RouteTable
+      DestinationIpv6CidrBlock: "::/0"
+      GatewayId: !Ref InternetGateway
+
+  SubnetIPv6:
+    Type: AWS::EC2::SubnetCidrBlock
+    DependsOn:
+      - VPCIPv6
+    Properties:
+      Ipv6CidrBlock:
+        "Fn::Join":
+          - ""
+          - - !Select [0, !Split ["::", !Select [0, !GetAtt VPC.Ipv6CidrBlocks]]]
+            - "::dead:beef/64"
+      SubnetId: !Ref Subnet
+
+  RouteSubnet:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref RouteTable
+      SubnetId: !Ref Subnet
+
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn:
+      - Subnet
+    Properties:
+      VpcId: !Ref VPC
+      GroupDescription: Enable SSH and configured VPN protocols
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref SshPort
+          ToPort: !Ref SshPort
+          CidrIp: 0.0.0.0/0
+{% if ipsec_enabled | bool %}
+        - IpProtocol: udp
+          FromPort: '500'
+          ToPort: '500'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: udp
+          FromPort: '4500'
+          ToPort: '4500'
+          CidrIp: 0.0.0.0/0
+{% endif %}
+{% if wireguard_enabled | bool %}
+        - IpProtocol: udp
+          FromPort: !Ref WireGuardPort
+          ToPort: !Ref WireGuardPort
+          CidrIp: 0.0.0.0/0
+{% endif %}
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+
+  EC2LaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Condition: InstanceIsSpot    # Only create this template if requested
+    Properties:                  # a spot instance_market_type in config.cfg
+      LaunchTemplateName: !Ref AWS::StackName
+      LaunchTemplateData:
+        InstanceMarketOptions:
+          MarketType: spot
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    DependsOn:
+      - SubnetIPv6
+    Properties:
+      InstanceType:
+        Ref: InstanceTypeParameter
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            DeleteOnTermination: true
+            VolumeSize: 8
+            Encrypted: !Ref EbsEncrypted
+      InstanceInitiatedShutdownBehavior: terminate
+      SecurityGroupIds:
+        - Ref: InstanceSecurityGroup
+      ImageId:
+        Ref: ImageIdParameter
+      SubnetId: !Ref Subnet
+      Ipv6AddressCount: 1
+      UserData: !Ref UserData
+      LaunchTemplate:
+        !If               # Only if Conditions created "EC2LaunchTemplate"
+        - InstanceIsSpot
+        -
+          LaunchTemplateId:
+            !Ref EC2LaunchTemplate
+          Version: 1
+        - !Ref AWS::NoValue  # Else this LaunchTemplate not set
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+
+  ElasticIP:
+    Type: AWS::EC2::EIP
+    Condition: AllocateNewEIP
+    Properties:
+      Domain: vpc
+      InstanceId: !Ref EC2Instance
+    DependsOn:
+      - VPCGatewayAttachment
+
+  ElasticIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Condition: AssociateExistingEIP
+    Properties:
+      AllocationId: !Ref UseThisElasticIP
+      InstanceId: !Ref EC2Instance
+
+
+Outputs:
+  ElasticIP:
+    Value: !GetAtt [EC2Instance, PublicIp]

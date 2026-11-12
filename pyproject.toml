@@ -95,7 +95,9 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"library/*" = ["ALL"]  # Exclude Ansible library modules (external code)
+"library/gcp_compute_location_info.py" = ["ALL"]  # Vendored cloud modules
+"library/lightsail_region_facts.py" = ["ALL"]
+"library/scaleway_compute.py" = ["ALL"]
 "tests/*" = ["S101"]   # Allow assert in tests
 
 [tool.ty.environment]
@@ -126,6 +128,7 @@ dev = [
     "prek==0.5.10",        # Same hook runner locally and in CI
     "setuptools==84.2.1", # Audit the installed build tool
     "ty==0.0.97",         # Keep type checks stable across CI runs
+    "hypothesis==6.170.14",
 ]
 
 [tool.pytest.ini_options]

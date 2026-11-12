@@ -98,6 +98,19 @@ jobs:
         run: |
           docker run --rm local/algo:test /algo/algo --help
           docker run --rm local/algo:test uv run --locked --no-dev ansible-playbook --version
+      - name: Verify config persistence after deployment failures
+        # Linux bind mounts retain the fixture owner's UID; match the container's UID 0.
+        run: sudo python3 tests/docker_wrapper.py local/algo:test
+      - name: Validate firewall, DNS rebinding protection, and QR codes
+        run: |
+          docker run --rm --cap-add=NET_ADMIN \
+            -e UV_NO_DEV=false -e ALGO_NETWORK_RUNTIME=1 \
+            -v "$PWD/tests:/algo/tests:ro" \
+            -v "$PWD/config.cfg:/algo/config.cfg:ro" \
+            --entrypoint /bin/sh local/algo:test -ec '
+              apk add --no-cache iptables dnscrypt-proxy zbar imagemagick
+              uv run --locked pytest -q tests/network tests/test_wireguard_qr.py
+            '
 
   all-tests-required:
     name: All Required Tests

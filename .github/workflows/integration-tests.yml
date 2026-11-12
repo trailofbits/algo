@@ -6,9 +6,19 @@ name: Integration Tests
     types: [opened, synchronize, reopened]
     paths:
       - 'main.yml'
+      - 'input.yml'
+      - 'server.yml'
+      - 'users.yml'
+      - 'config.cfg'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'requirements.yml'
+      - 'files/**'
       - 'roles/**'
       - 'playbooks/**'
       - 'library/**'
+      - 'tests/e2e/**'
+      - '.github/workflows/integration-tests.yml'
   workflow_dispatch:
   schedule:
     - cron: '0 2 * * 1'  # Weekly on Monday at 2 AM
@@ -259,48 +269,3 @@ jobs:
           sudo journalctl -u dnscrypt-proxy -n 50 --no-pager || true
           echo "=== System Log (last 100 lines) ==="
           sudo journalctl -n 100 --no-pager || true
-
-  docker-build-test:
-    name: Docker Image Build Test
-    runs-on: ubuntu-22.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Build Algo Docker image
-        run: |
-          docker build -t algo:ci-test .
-
-      - name: Test Docker image
-        run: |
-          # Test that the image can run and show help
-          docker run --rm --entrypoint /bin/sh algo:ci-test -c "cd /algo && ./algo --help" || true
-
-          # Test that required binaries exist in the virtual environment
-          docker run --rm --entrypoint /bin/sh algo:ci-test -c "cd /algo && uv run which ansible"
-          docker run --rm --entrypoint /bin/sh algo:ci-test -c "which python3"
-          docker run --rm --entrypoint /bin/sh algo:ci-test -c "which rsync"
-
-      - name: Test Docker config validation
-        run: |
-          # Create a minimal valid config
-          mkdir -p test-data
-          cat > test-data/config.cfg << 'EOF'
-          users:
-            - test-user
-          cloud_providers:
-            ec2:
-              size: t3.micro
-              region: us-east-1
-          wireguard_enabled: true
-          ipsec_enabled: false
-          dns_encryption: true
-          algo_provider: ec2
-          EOF
-
-          # Test that config is readable
-          docker run --rm --entrypoint cat -v "$(pwd)/test-data:/data" algo:ci-test /data/config.cfg
-
-          echo "✓ Docker image built and basic tests passed"

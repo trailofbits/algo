@@ -63,57 +63,8 @@
               Add users to config.cfg before running update-users.
           when: users | default([]) | length == 0
 
-        - name: Local deployment permission validation
-          when: algo_server == 'localhost' or algo_provider | default('') == 'local'
-          block:
-            - name: Get config directory owner
-              stat:
-                path: configs/{{ algo_server }}
-              register: config_dir_stat
-
-            - name: Fail on permission mismatch
-              fail:
-                msg: |
-                  PERMISSION MISMATCH DETECTED
-
-                  Config directory owner: {{ config_dir_stat.stat.pw_name }}
-                  Current user: {{ ansible_user_id }}
-
-                  Running update-users with mismatched permissions will create
-                  files with inconsistent ownership, breaking future operations.
-
-                  TO FIX: Run this command, then retry update-users:
-                    sudo chown -R {{ ansible_user_id }} configs/{{ algo_server }}/
-
-                  PREVENT: Always run update-users the same way as initial deployment
-                  (both with sudo, or both without sudo).
-              when: config_dir_stat.stat.pw_name != ansible_user_id
-
-        - name: Test SSH connectivity to server
-          wait_for:
-            host: "{{ algo_server }}"
-            port: "{{ ansible_ssh_port | default(ssh_port) | int }}"
-            timeout: 10
-          register: ssh_check
-          failed_when: false
-          when: algo_server != 'localhost'
-
-        - name: Fail with helpful message if server unreachable
-          fail:
-            msg: |
-              Cannot connect to {{ algo_server }} on port {{ ansible_ssh_port | default(ssh_port) }}.
-
-              Possible causes:
-              - Server is not running (check your cloud provider console)
-              - IP address changed (common after EC2 restart without Elastic IP)
-              - Firewall/security group blocking port {{ ansible_ssh_port | default(ssh_port) }}
-
-              To diagnose:
-                nc -zv {{ algo_server }} {{ ansible_ssh_port | default(ssh_port) }}
-                ssh -vvv -p {{ ansible_ssh_port | default(ssh_port) }} -i configs/algo.pem {{ server_user | default('algo') }}@{{ algo_server }}
-          when:
-            - algo_server != 'localhost'
-            - ssh_check is failed
+        - name: Check local permissions and server connectivity
+          import_tasks: playbooks/user-preflight.yml
 
         - when: ipsec_enabled | bool
           block:

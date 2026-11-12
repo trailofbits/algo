@@ -22,7 +22,7 @@
           - algo_provider == 'local'
           - algo_server_name == 'smoke-test'
           - cloud_instance_ip == 'localhost'
-          - IP_subject_alt_name == '192.0.2.1'
+          - IP_subject_alt_name == endpoint
           - "'localhost' in groups['vpn-host']"
           - not algo_ondemand_cellular
           - not algo_ondemand_wifi
@@ -41,3 +41,115 @@
       vars:
         item: smoke-user
         index: 0
+
+    - name: Render the SSH tunnel client configuration
+      ansible.builtin.template:
+        src: "{{ algo_root }}/roles/ssh_tunneling/templates/ssh_config.j2"
+        dest: "{{ smoke_dir }}/ssh_config"
+        mode: '0600'
+      vars:
+        item: smoke-user
+        ssh_tunnels_config_path: "{{ smoke_dir }}/tunnel keys"
+        ansible_ssh_port: 4160
+
+    - name: Render the WireGuard server configuration
+      ansible.builtin.template:
+        src: "{{ algo_root }}/roles/wireguard/templates/server.conf.j2"
+        dest: "{{ smoke_dir }}/server.conf"
+        mode: '0600'
+      vars:
+        wireguard_users: [smoke-user, removed-user]
+
+    - name: Render WireGuard Apple profiles
+      ansible.builtin.template:
+        src: "{{ algo_root }}/roles/wireguard/templates/mobileconfig.j2"
+        dest: "{{ smoke_dir }}/{{ system }}.mobileconfig"
+        mode: '0600'
+      vars:
+        item: smoke-user
+        index: 0
+        ansible_search_path: ["{{ algo_root }}/roles/wireguard/templates"]
+      loop: [ios, macos]
+      loop_control:
+        loop_var: system
+
+    - name: Parse the SSH tunnel configuration without connecting
+      ansible.builtin.command:
+        argv: [ssh, -G, -F, "{{ smoke_dir }}/ssh_config", algo]
+      register: tunnel_config
+      changed_when: false
+
+    - name: Verify the SSH tunnel uses the generated key and configured port
+      ansible.builtin.assert:
+        that:
+          - "'port 4160' in tunnel_config.stdout_lines"
+          - "('identityfile ' ~ smoke_dir ~ '/tunnel keys/smoke-user.pem') in tunnel_config.stdout_lines"
+
+    - name: Write a public SSH key for cloud-init rendering
+      ansible.builtin.copy:
+        content: "ssh-ed25519 AAAA smoke-user\n"
+        dest: "{{ smoke_dir }}/cloud-init.pub"
+        mode: '0600'
+
+    - name: Render the production cloud-init template
+      ansible.builtin.template:
+        src: "{{ algo_root }}/files/cloud-init/base.yml"
+        dest: "{{ smoke_dir }}/cloud-init-{{ item }}.yml"
+        mode: '0600'
+      vars:
+        SSH_keys:
+          public: "{{ smoke_dir }}/cloud-init.pub"
+        performance_preinstall_packages: "{{ item }}"
+        ssh_port: 4160
+      loop: [false, true]
+
+    - name: Verify cloud-init user, SSH, and optional package configuration
+      ansible.builtin.assert:
+        that:
+          - content.startswith('#cloud-config\n')
+          - config.package_update and config.package_upgrade
+          - config.users[0] == 'default'
+          - config.users[1].name == 'algo'
+          - config.users[1].homedir == '/home/algo'
+          - config.users[1].groups == 'adm,netdev'
+          - config.users[1].shell == '/bin/bash'
+          - config.users[1].lock_passwd
+          - config.users[1].ssh_authorized_keys == ['ssh-ed25519 AAAA smoke-user']
+          - config.users[1].sudo == 'ALL=(ALL) NOPASSWD:ALL'
+          - "'Port 4160' in config.write_files[0].content.splitlines()"
+          - "'PasswordAuthentication no' in config.write_files[0].content.splitlines()"
+          - config.write_files[0].path == '/etc/ssh/sshd_config'
+          - "'PermitRootLogin no' in config.write_files[0].content.splitlines()"
+          - "'AllowGroups algo' in config.write_files[0].content.splitlines()"
+          - "'systemctl restart sshd.service' in config.runcmd"
+          - config.packages == (['sudo'] + extra_packages if item else ['sudo'])
+      vars:
+        content: "{{ lookup('file', smoke_dir ~ '/cloud-init-' ~ item ~ '.yml') }}"
+        config: "{{ content | from_yaml }}"
+        extra_packages:
+          - git
+          - screen
+          - apparmor-utils
+          - uuid-runtime
+          - coreutils
+          - iptables-persistent
+          - cgroup-tools
+      loop: [false, true]
+
+    - name: Render firewall rules with an alternate egress address
+      ansible.builtin.template:
+        src: "{{ algo_root }}/roles/common/templates/rules.v4.j2"
+        dest: "{{ smoke_dir }}/rules.v4"
+        mode: '0600'
+      vars:
+        snat_aipv4: 192.0.2.2
+        ansible_default_ipv4:
+          interface: eth0
+        ansible_ssh_port: 4160
+        wireguard_port_actual: 51820
+        reduce_mtu: 0
+
+    - name: Verify the alternate egress address is used
+      ansible.builtin.assert:
+        that:
+          - "'-j SNAT --to 192.0.2.2' in lookup('file', smoke_dir ~ '/rules.v4')"

@@ -10,9 +10,13 @@
     - block:
         - name: Validate server_ip is provided
           assert:
-            that: server_ip is defined and server_ip | length > 0
+            that:
+              - server_ip is defined and server_ip is string and server_ip | length > 0
+              - server_ip is match('^[A-Za-z0-9_.:-]+$')
+              - server_ip not in ['.', '..']
             fail_msg: |
-              server_ip is required. Usage:
+              server_ip must name a single server directory, using an IP address or hostname.
+              Paths and parent-directory references are not allowed. Usage:
                 ./algo destroy <server-ip>
                 ansible-playbook destroy.yml -e "server_ip=YOUR_SERVER_IP"
 
