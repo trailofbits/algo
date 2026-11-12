@@ -119,7 +119,8 @@
       community.crypto.openssl_csr_pipe:
         privatekey_path: "{{ ipsec_pki_path }}/private/{{ IP_subject_alt_name }}.key"
         subject_alt_name: "{{ subjectAltName.split(',') }}"
-        common_name: "{{ IP_subject_alt_name }}"
+        # Keep the CommonName inside the CA's DNS namespace; the SAN carries the IP identity.
+        common_name: "{{ openssl_constraint_random_id }}"
         # Add Basic Constraints to prevent certificate chain validation errors
         basic_constraints:
           - 'CA:FALSE'
