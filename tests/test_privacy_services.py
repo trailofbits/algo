@@ -2,12 +2,14 @@
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
 import yaml
+from jinja2 import Environment, StrictUndefined
 
 ROOT = Path(__file__).resolve().parents[1]
 ACTION = '''"""Record host operations without changing the test machine."""
@@ -130,6 +132,39 @@ def test_privacy_without_or_with_rsyslog(tmp_path, installed):
     if installed:
         assert any(args.get("_raw_params") == "rsyslogd -N1" for args in writes)
         assert any(args.get("name") == "rsyslog" for args in writes)
+        minimal_file = "/etc/rsyslog.d/45-privacy-minimal.conf"
+        minimal = next(i for i, args in enumerate(writes) if args.get("dest") == minimal_file)
+        validator = "rsyslogd -N1"
+        validation = next(i for i, args in enumerate(writes) if args.get("_raw_params") == validator)
+        assert minimal < validation
+
+
+@pytest.mark.parametrize("reduce_kernel_verbosity", [False, True])
+def test_privacy_dropin_uses_existing_input_modules(tmp_path, reduce_kernel_verbosity):
+    """Validate the production fragment alongside Ubuntu's existing input modules."""
+    binary = shutil.which("rsyslogd")
+    if binary is None:
+        if os.environ.get("GITHUB_ACTIONS") == "true":
+            pytest.fail("Install rsyslog to validate the production privacy configuration")
+        pytest.skip("Install rsyslog to run the native configuration parser")
+    source = (ROOT / "roles/privacy/templates/privacy-rsyslog.conf.j2").read_text()
+    fragment = (
+        Environment(undefined=StrictUndefined)
+        .from_string(source)
+        .render(
+            privacy_advanced={"reduce_kernel_verbosity": reduce_kernel_verbosity},
+        )
+    )
+    config = tmp_path / "rsyslog.conf"
+    config.write_text('module(load="imuxsock")\nmodule(load="imklog")\n' + fragment)
+    result = subprocess.run(
+        [binary, "-N1", "-f", str(config)],
+        capture_output=True,
+        text=True,
+        timeout=15,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_invalid_rsyslog_configuration_stops_deployment(tmp_path):

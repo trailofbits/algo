@@ -1,14 +1,6 @@
 ---
 # Configure rsyslog to filter out VPN-related logs for privacy
 
-- name: Create rsyslog privacy configuration directory
-  file:
-    path: /etc/rsyslog.d
-    state: directory
-    mode: '0755'
-    owner: root
-    group: root
-
 - name: Configure rsyslog to exclude VPN-related logs
   template:
     src: 49-privacy-vpn-filter.conf.j2
