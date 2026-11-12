@@ -72,7 +72,7 @@
             nat_ip: "{{ gcp_compute_address | default(None) }}"
             type: ONE_TO_ONE_NAT
     tags:
-      items:
+      tag_values:
         - environment-algo
   register: gcp_compute_instance
 

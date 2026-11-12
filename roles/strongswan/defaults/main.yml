@@ -19,8 +19,8 @@ openssl_constraint_random_id: "{{ IP_subject_alt_name | to_uuid }}.algo"
 # Without SAN, IKEv2 connections will fail with certificate validation errors
 subjectAltName_type: "{{ 'DNS' if IP_subject_alt_name | regex_search('[a-z]') else 'IP' }}"
 subjectAltName: >-
-  {{ subjectAltName_type }}:{{ IP_subject_alt_name }}
-  {%- if ipv6_support | bool -%},IP:{{ ansible_facts['default_ipv6']['address'] }}{%- endif -%}
+  {{ subjectAltName_type ~ ':' ~ IP_subject_alt_name ~
+     (',IP:' ~ ansible_facts['default_ipv6']['address'] if ipv6_support | bool else '') }}
 strongswan_enabled_plugins:
   - aes
   - gcm

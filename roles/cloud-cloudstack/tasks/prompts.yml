@@ -54,7 +54,7 @@
       when: "'exoscale.com' in algo_cs_url or 'exoscale.ch' in algo_cs_url"
 
     - name: Get zones on cloud
-      cs_zone_info:
+      ngine_io.cloudstack.zone_info:
       register: _cs_zones
       environment:
         CLOUDSTACK_KEY: "{{ algo_cs_key }}"

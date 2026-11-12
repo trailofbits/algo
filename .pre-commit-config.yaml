@@ -90,7 +90,7 @@ repos:
       - id: shellcheck
 
   - repo: https://github.com/semgrep/semgrep
-    rev: 4fe07d805dd2a4b64fed486e95136923f08648d0  # frozen: v1.183.0
+    rev: ac37d1f6e47b17648b8f854d6e2f2d72fade2567  # frozen: v1.184.0
     hooks:
       - id: semgrep
         args:

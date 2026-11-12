@@ -14,6 +14,50 @@ import pytest
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
 
 
+def test_scaleway_module_loads_through_ansible(tmp_path: Path) -> None:
+    """Package the custom module and validate arguments before any API request."""
+    root = Path(__file__).resolve().parents[1]
+    token = os.urandom(16).hex()
+    environment = {
+        **os.environ,
+        "ANSIBLE_CONFIG": str(root / "ansible.cfg"),
+        "ANSIBLE_LOCAL_TEMP": str(tmp_path / "controller-tmp"),
+        "ANSIBLE_REMOTE_TEMP": str(tmp_path / "module-tmp"),
+        "ANSIBLE_NOCOLOR": "1",
+        "ANSIBLE_FORCE_COLOR": "0",
+    }
+    environment.pop("ANSIBLE_LIBRARY", None)
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ansible.cli.adhoc",
+            "localhost",
+            "--inventory",
+            "localhost,",
+            "--connection",
+            "local",
+            "--module-name",
+            "scaleway_instance",
+            "--args",
+            json.dumps({"name": "algo", "zone": "invalid", "api_token": token, "state": "absent"}),
+            "--extra-vars",
+            json.dumps({"ansible_python_interpreter": sys.executable}),
+        ],
+        cwd=tmp_path,
+        env=environment,
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    output = result.stdout + result.stderr
+    assert result.returncode != 0, output
+    assert "value of zone must be one of" in output, output
+    assert token not in output
+
+
 @pytest.mark.parametrize(
     ("endpoint", "keepalive"),
     [("192.0.2.1", 0), ("192.0.2.1", 25), ("2001:db8::1", 25), ("vpn.example.com", 25)],

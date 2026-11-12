@@ -41,11 +41,11 @@ def check_azure_imports() -> None:
     assert ManagementLockClient(credential, "test").management_locks
 
 
-def check_linode_imports() -> None:
-    """Import both provisioning modules, including their specdoc dependency."""
-    for name in ("stackscript", "instance"):
-        module = importlib.import_module("ansible_collections.linode.cloud.plugins.modules." + name)
-        check_collection(module, "linode.cloud")
+def check_provider_imports(collection: str, names: list[str]) -> None:
+    """Import the pinned provider modules with their actual optional SDKs."""
+    for name in names:
+        module = importlib.import_module(f"ansible_collections.{collection}.plugins.modules.{name}")
+        check_collection(module, collection)
 
 
 def check_locations(locations: list[dict]) -> None:
@@ -98,8 +98,8 @@ if __name__ == "__main__":
     match sys.argv[1]:
         case "azure":
             check_azure_imports()
-        case "linode":
-            check_linode_imports()
+        case "modules":
+            check_provider_imports(sys.argv[2], sys.argv[3:])
         case "locations":
             check_locations(json.loads(sys.argv[2]))
         case other:

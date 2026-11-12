@@ -2,8 +2,58 @@
 - fail:
     msg: >-
       OpenStack credentials are not set. Download it from the OpenStack dashboard->Compute->API Access
-      and source it in the shell (eg: source /tmp/dhc-openrc.sh)
-  when: lookup('env', 'OS_AUTH_URL')|length <= 0
+      and source it in the shell (eg: source /tmp/dhc-openrc.sh), or set OS_CLOUD
+      to a configured cloud in clouds.yaml.
+  when:
+    - lookup('env', 'OS_AUTH_URL') | length == 0
+    - lookup('env', 'OS_CLOUD') | length == 0
+
+- name: Gather facts about flavors
+  openstack.cloud.compute_flavor_info:
+    ram: "{{ cloud_providers.openstack.flavor_ram }}"
+  register: os_flavor
+
+- name: Gather facts about images
+  openstack.cloud.image_info:
+  register: os_image
+
+- name: Select active images with the configured name
+  set_fact:
+    openstack_images: >-
+      {{ os_image.images |
+         selectattr('name', 'equalto', cloud_providers.openstack.image) |
+         selectattr('status', 'equalto', 'active') | list }}
+
+- name: Validate the OpenStack image and flavor selection
+  assert:
+    that:
+      - openstack_images | length == 1
+      - os_flavor.flavors | length > 0
+    fail_msg: >-
+      OpenStack must provide exactly one active image named
+      {{ cloud_providers.openstack.image }} and a flavor matching RAM
+      {{ cloud_providers.openstack.flavor_ram }}. Check the image name,
+      flavor filter, and project access in config.cfg and your cloud credentials.
+
+- name: Gather facts about public networks
+  openstack.cloud.networks_info:
+  register: os_network
+
+- name: Select active external networks
+  set_fact:
+    openstack_networks: >-
+      {{ os_network.networks |
+         selectattr('is_router_external', 'equalto', true) |
+         selectattr('is_admin_state_up', 'equalto', true) |
+         selectattr('status', 'equalto', 'ACTIVE') | list }}
+
+- name: Validate the OpenStack network selection
+  assert:
+    that:
+      - openstack_networks | length == 1
+    fail_msg: >-
+      OpenStack must expose exactly one active external network to this project.
+      Found {{ openstack_networks | length }}. Check network status and project access.
 
 - name: Security group created
   openstack.cloud.security_group:
@@ -17,7 +67,7 @@
     state: >-
       {{ state | default('present')
          if item.proto != 'udp' or item.port_min | int in vpn_ports else 'absent' }}
-    security_group: "{{ os_security_group.id }}"
+    security_group: "{{ os_security_group.security_group.id }}"
     protocol: "{{ item.proto }}"
     port_range_min: "{{ item.port_min }}"
     port_range_max: "{{ item.port_max }}"
@@ -33,40 +83,13 @@
     - { proto: udp, port_min: 500, port_max: 500, range: 0.0.0.0/0 }
     - { proto: udp, port_min: "{{ wireguard_port }}", port_max: "{{ wireguard_port }}", range: 0.0.0.0/0 }
 
-- name: Gather facts about flavors
-  openstack.cloud.compute_flavor_info:
-    ram: "{{ cloud_providers.openstack.flavor_ram }}"
-  register: os_flavor
-
-- name: Gather facts about images
-  openstack.cloud.image_info:
-  register: os_image
-
-- name: Set image as a fact
-  set_fact:
-    image_id: "{{ item.id }}"
-  loop: "{{ os_image.openstack_image }}"
-  when:
-    - item.name == cloud_providers.openstack.image
-    - item.status == "active"
-
-- name: Gather facts about public networks
-  openstack.cloud.networks_info:
-  register: os_network
-
-- name: Set the network as a fact
-  set_fact:
-    public_network_id: "{{ item.id }}"
-  when:
-    - item['router:external']|default(omit)
-    - item['admin_state_up']|default(omit)
-    - item['status'] == 'ACTIVE'
-  loop: "{{ os_network.openstack_networks }}"
-
 - name: Set facts
   set_fact:
-    flavor_id: "{{ (os_flavor.openstack_flavors | sort(attribute='ram'))[0]['id'] }}"
-    security_group_name: "{{ os_security_group['secgroup']['name'] }}"
+    image_id: "{{ openstack_images[0].id }}"
+    public_network_id: "{{ openstack_networks[0].id }}"
+    flavor_id: >-
+      {{ (os_flavor.flavors | sort(attribute='id') | sort(attribute='ram'))[0].id }}
+    security_group_name: "{{ os_security_group.security_group.name }}"
 
 - name: Server created
   openstack.cloud.server:
@@ -80,8 +103,28 @@
       - net-id: "{{ public_network_id }}"
   register: os_server
 
+- name: Find the server's floating and external IPv4 addresses
+  set_fact:
+    openstack_floating_ipv4: >-
+      {{ os_server.server.addresses.values() | flatten |
+         selectattr('version', 'equalto', 4) |
+         selectattr('OS-EXT-IPS:type', 'defined') |
+         selectattr('OS-EXT-IPS:type', 'equalto', 'floating') |
+         map(attribute='addr') | list }}
+    openstack_external_ipv4: >-
+      {{ os_server.server.addresses.get(openstack_networks[0].name, []) |
+         selectattr('version', 'equalto', 4) | map(attribute='addr') | list }}
+
+- name: Require an IPv4 endpoint for the OpenStack server
+  assert:
+    that:
+      - (openstack_floating_ipv4 + openstack_external_ipv4) | length > 0
+    fail_msg: >-
+      OpenStack created {{ algo_server_name }} without a floating or external IPv4 address.
+      Check the external network's IPv4 subnet and floating IP quota before retrying.
+
 - set_fact:
-    cloud_instance_ip: "{{ os_server['openstack']['public_v4'] }}"
+    cloud_instance_ip: "{{ (openstack_floating_ipv4 + openstack_external_ipv4)[0] }}"
     ansible_ssh_user: algo
     ansible_ssh_port: "{{ ssh_port }}"
     cloudinit: true

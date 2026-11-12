@@ -1,10 +1,6 @@
 """Exercise Scaleway image selection, zone handling, and the HTTP client."""
 
-import importlib
-import json
-from io import BytesIO
 from pathlib import Path
-from types import SimpleNamespace
 from urllib.parse import parse_qs, urlsplit
 
 import pytest
@@ -13,22 +9,6 @@ from ansible.template import Templar, trust_as_template
 
 ROOT = Path(__file__).resolve().parents[2]
 ROLE = ROOT / "roles/cloud-scaleway"
-
-
-@pytest.fixture(scope="module")
-def cloud_modules():
-    module_name = "ansible_collections.community.general.plugins.module_utils.scaleway"
-    scaleway = importlib.import_module(module_name)
-    manifest = Path(scaleway.__file__).parents[2] / "MANIFEST.json"
-    version = json.loads(manifest.read_text())["collection_info"]["version"]
-    requirements = DataLoader().load_from_file(str(ROOT / "requirements.yml"))
-    expected = next(
-        item["version"].removeprefix("==")
-        for item in requirements["collections"]
-        if item["name"] == "community.general"
-    )
-    assert version == expected, "Install the collections pinned in requirements.yml before testing"
-    return scaleway, importlib.import_module("scaleway_compute")
 
 
 @pytest.fixture
@@ -58,20 +38,18 @@ def _conditions(templar, expressions):
         ("waw3", "pl-waw-3"),
     ],
 )
-def test_scaleway_zones_and_standalone_destroy(role, cloud_modules, alias, zone):
-    scaleway, _ = cloud_modules
+def test_scaleway_zones_and_standalone_destroy(role, alias, zone):
     loader, defaults, tasks, block = role
     for region in (alias, zone):
         variables = dict(defaults, algo_region=region)
         templar = Templar(loader=loader, variables=variables)
         selected = templar.template(tasks[1]["set_fact"])
-        assert selected == {"algo_scaleway_zone": zone, "algo_scaleway_compute_alias": alias}
-        variables.update(selected, scaleway_compute={"msg": {"id": "server-id"}})
+        assert selected == {"algo_scaleway_zone": zone}
+        variables.update(selected, scaleway_created={"server": {"id": "server-id"}})
         templar = Templar(loader=loader, variables=variables)
         patch = next(task["uri"] for task in block if task.get("name") == "Patch the cloud-init")
         base = f"https://api.scaleway.com/instance/v1/zones/{zone}"
         assert templar.template(patch["url"]) == f"{base}/servers/server-id/user_data/cloud-init"
-        assert scaleway.SCALEWAY_LOCATION[alias]["api_endpoint"].endswith(f"/zones/{zone}")
 
         # destroy.yml includes these tasks directly, without loading the role defaults.
         destroy = loader.load_from_file(str(ROLE / "tasks/destroy.yml"), trusted_as_template=True)
@@ -80,7 +58,7 @@ def test_scaleway_zones_and_standalone_destroy(role, cloud_modules, alias, zone)
         defaults_path = templar.template(destroy[0]["include_vars"])
         variables.update(loader.load_from_file(defaults_path, trusted_as_template=True))
         templar = Templar(loader=loader, variables=variables)
-        assert templar.template(destroy[1]["set_fact"])["algo_scaleway_compute_alias"] == alias
+        assert templar.template(destroy[1]["set_fact"])["algo_scaleway_zone"] == zone
 
 
 @pytest.mark.parametrize("compatible,empty", [(True, False), (False, False), (False, True)])
@@ -132,103 +110,21 @@ def test_scaleway_rejects_truncated_images(role):
     assert "100 of 101 images" in message
 
 
-@pytest.mark.parametrize("public_ip", [None, {}, {"address": ""}, {"address": "192.0.2.1"}])
-def test_scaleway_waits_for_address(role, public_ip):
-    loader, _, _, block = role
-    start = next(task for task in block if task.get("name") == "Start the server")
-    templar = Templar(loader=loader, variables={"algo_instance": {"msg": {"public_ip": public_ip}}})
-    assert _conditions(templar, start["until"]) == (public_ip == {"address": "192.0.2.1"})
-
-
-@pytest.fixture
-def compute_module():
-    def fail_json(**result):
-        raise ValueError(result["msg"])
-
-    return SimpleNamespace(
-        params={
-            "api_url": "https://api.scaleway.com/instance/v1/zones/nl-ams-2",
-            "query_parameters": {},
-            "api_token": "fixture-token",
-            "api_timeout": 1,
-        },
-        ansible_version="test",
-        jsonify=json.dumps,
-        debug=lambda _message: None,
-        warn=lambda _message: None,
-        fail_json=fail_json,
-    )
-
-
 @pytest.mark.parametrize(
-    "response",
+    "public_ips,ready",
     [
-        (200, {"image": {"id": "wanted"}}, True),
-        (404, {"message": "missing"}, False),
-        (200, None, False),
-        (200, [], False),
-        (200, {}, False),
-        (200, {"image": "unexpected"}, False),
-        (200, {"image": {"id": "other"}}, False),
+        (None, False),
+        ([], False),
+        ([{"family": "inet", "address": ""}], False),
+        ([{"family": "inet6", "address": "2001:db8::1"}], False),
+        ([{"family": "inet6", "address": "2001:db8::1"}, {"family": "inet", "address": "192.0.2.1"}], True),
     ],
 )
-def test_scaleway_image_lookup(monkeypatch, compute_module, cloud_modules, response):
-    scaleway, scaleway_compute = cloud_modules
-    status, body, valid = response
-    requests = []
-
-    def fetch_url(_module, url, **kwargs):
-        requests.append((urlsplit(url).path, kwargs["method"]))
-        return BytesIO(json.dumps(body).encode()), {"status": status}
-
-    monkeypatch.setattr(scaleway, "fetch_url", fetch_url)
-    api = scaleway.Scaleway(compute_module)
-    if valid:
-        scaleway_compute.check_image_id(api, "wanted")
-    else:
-        with pytest.raises(ValueError, match="Cannot read Scaleway image wanted"):
-            scaleway_compute.check_image_id(api, "wanted")
-    assert requests == [("/instance/v1/zones/nl-ams-2/images/wanted", "GET")]
-
-
-def test_scaleway_creates_selected_image(monkeypatch, compute_module, cloud_modules):
-    scaleway, scaleway_compute = cloud_modules
-    requests = []
-
-    def fetch_url(_module, url, **kwargs):
-        path = urlsplit(url).path
-        requests.append((path, kwargs["method"], json.loads(kwargs["data"])))
-        if path.endswith("/images/wanted"):
-            body = {"image": {"id": "wanted"}}
-        elif kwargs["method"] == "POST":
-            body = {"server": {"id": "new-server"}}
-        else:
-            body = {"servers": []}
-        return BytesIO(json.dumps(body).encode()), {"status": 200}
-
-    monkeypatch.setattr(scaleway, "fetch_url", fetch_url)
-    compute_module.params.update(
-        region="ams2",
-        state="present",
-        image="wanted",
-        name="algo",
-        commercial_type="DEV1-S",
-        enable_ipv6=True,
-        boot_type="local",
-        tags=[],
-        organization="organization-id",
-        security_group=None,
-        public_ip="dynamic",
-        wait=False,
-    )
-    results = []
-    compute_module.check_mode = False
-    compute_module.exit_json = lambda **result: results.append(result)
-    scaleway_compute.core(compute_module)
-    path, method, payload = requests[-1]
-    assert path == "/instance/v1/zones/nl-ams-2/servers"
-    assert method == "POST"
-    assert payload["image"] == "wanted"
-    assert payload["organization"] == "organization-id"
-    assert payload["dynamic_ip_required"] is True
-    assert results == [{"changed": True, "msg": {"id": "new-server"}}]
+def test_scaleway_waits_for_address(role, public_ips, ready):
+    loader, _, tasks, block = role
+    start = next(task for task in block if task.get("name") == "Start the server")
+    variables = {"algo_instance": {"server": {"public_ips": public_ips}}}
+    templar = Templar(loader=loader, variables=variables)
+    assert _conditions(templar, start["until"]) == ready
+    if ready:
+        assert templar.template(tasks[-1]["set_fact"]["cloud_instance_ip"]) == "192.0.2.1"

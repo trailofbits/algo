@@ -139,7 +139,6 @@ def test_subsidiary_cleanup_is_best_effort():
     files_with_subsidiary = {
         "gce": ["gcp_compute_address", "gcp_compute_firewall", "gcp_compute_network"],
         "vultr": ["firewall_group"],
-        "openstack": ["security_group"],
         "cloudstack": ["security_group"],
     }
     for provider, _resources in files_with_subsidiary.items():

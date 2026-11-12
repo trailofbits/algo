@@ -5,24 +5,24 @@ collections:
   - name: ansible.utils
     version: "==6.1.1"
   - name: community.general
-    version: "==11.4.10"
+    version: "==14.0.0"
   - name: community.crypto
-    version: ">=3.1.1"
+    version: "==3.5.1"
   - name: openstack.cloud
-    version: "==2.4.1"
+    version: "==2.6.0"
   - name: linode.cloud
     version: "==0.52.0"
   - name: community.digitalocean
-    version: ">=1.26.0"
+    version: "==1.27.0"
   - name: azure.azcollection
-    version: "4.2.0"
+    version: "==4.2.0"
   - name: vultr.cloud
     version: "==1.14.1"
   - name: amazon.aws
-    version: "==10.3.2"
+    version: "==12.1.0"
   - name: google.cloud
-    version: "==1.13.0"
+    version: "==1.15.0"
   - name: hetzner.hcloud
-    version: "==6.9.0"
+    version: "==7.2.0"
   - name: ngine_io.cloudstack
-    version: "==3.0.0"
+    version: "==3.3.0"

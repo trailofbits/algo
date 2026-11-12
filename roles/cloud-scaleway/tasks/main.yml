@@ -2,10 +2,9 @@
 - name: Include prompts
   import_tasks: prompts.yml
 
-- name: Determine the Scaleway zone and legacy compute alias
+- name: Determine the Scaleway zone
   set_fact:
     algo_scaleway_zone: "{{ scaleway_zone_map.get(algo_region, algo_region) }}"
-    algo_scaleway_compute_alias: "{{ scaleway_compute_alias_map.get(algo_region, algo_region) }}"
 
 - environment:
     SCW_TOKEN: "{{ algo_scaleway_token }}"
@@ -54,29 +53,23 @@
         scaleway_image_id: "{{ scaleway_images[0].id }}"
 
     - name: Create a server
-      scaleway_compute:
+      scaleway_instance:
         name: "{{ algo_server_name }}"
-        enable_ipv6: true
-        public_ip: dynamic
-        boot_type: local
         state: present
         image: "{{ scaleway_image_id }}"
         organization: "{{ algo_scaleway_org_id }}"
-        region: "{{ algo_scaleway_compute_alias }}"
+        zone: "{{ algo_scaleway_zone }}"
         commercial_type: "{{ cloud_providers.scaleway.size }}"
-        wait: true
         tags:
           - Environment:Algo
           - AUTHORIZED_KEY={{ lookup('file', SSH_keys.public) | regex_replace(' ', '_') }}
-      register: scaleway_compute
+      register: scaleway_created
 
     - name: Patch the cloud-init
-      # Use the Instance API rather than the legacy cp-<alias>.scaleway.com
-      # hosts, which only resolve in par1/ams1 and block other zones.
       uri:
         url: >-
           {{ 'https://api.scaleway.com/instance/v1/zones/' ~ algo_scaleway_zone ~
-             '/servers/' ~ scaleway_compute.msg.id ~ '/user_data/cloud-init' }}
+             '/servers/' ~ scaleway_created.server.id ~ '/user_data/cloud-init' }}
         method: PATCH
         body: "{{ lookup('template', 'files/cloud-init/base.yml') }}"
         status_code: 204
@@ -85,30 +78,23 @@
           X-Auth-Token: "{{ algo_scaleway_token }}"
 
     - name: Start the server
-      scaleway_compute:
+      scaleway_instance:
         name: "{{ algo_server_name }}"
-        enable_ipv6: true
-        public_ip: dynamic
-        boot_type: local
         state: running
-        image: "{{ scaleway_image_id }}"
-        organization: "{{ algo_scaleway_org_id }}"
-        region: "{{ algo_scaleway_compute_alias }}"
-        commercial_type: "{{ cloud_providers.scaleway.size }}"
-        wait: true
-        tags:
-          - Environment:Algo
-          - AUTHORIZED_KEY={{ lookup('file', SSH_keys.public) | regex_replace(' ', '_') }}
+        zone: "{{ algo_scaleway_zone }}"
       register: algo_instance
       until:
-        - algo_instance.msg.public_ip is defined
-        - algo_instance.msg.public_ip is not none
-        - algo_instance.msg.public_ip.address | default('') | length > 0
+        - >-
+          algo_instance.server.public_ips | default([], true) |
+          selectattr('family', 'equalto', 'inet') |
+          map(attribute='address') | select | list | length > 0
       retries: 3
       delay: 3
 
 - set_fact:
-    cloud_instance_ip: "{{ algo_instance.msg.public_ip.address }}"
+    cloud_instance_ip: >-
+      {{ algo_instance.server.public_ips | selectattr('family', 'equalto', 'inet') |
+         map(attribute='address') | select | first }}
     ansible_ssh_user: algo
     ansible_ssh_port: "{{ ssh_port }}"
     cloudinit: true

@@ -12,7 +12,7 @@ import pytest
 
 def require_extra(module: str) -> None:
     """Require optional SDKs in CI and allow base-only local test environments."""
-    if importlib.util.find_spec(module) is not None:
+    if importlib.util.find_spec(module.split(".")[0]) is not None and importlib.util.find_spec(module) is not None:
         return
     if os.environ.get("ALGO_CLOUD_SMOKE") == "1":
         pytest.fail(f"Missing cloud dependency {module}; install the tested cloud extras")
@@ -37,10 +37,19 @@ def test_azure_modules_import():
     run_cloud_check("azure")
 
 
-def test_linode_modules_import():
-    """Load actual stackscript and instance modules, including their specdoc imports."""
-    require_extra("linode_api4")
-    run_cloud_check("linode")
+@pytest.mark.parametrize(
+    "sdk,collection,modules",
+    [
+        ("linode_api4", "linode.cloud", ["stackscript", "instance"]),
+        ("boto3", "amazon.aws", ["ec2_ami_info", "cloudformation"]),
+        ("google.auth", "google.cloud", ["gcp_compute_instance", "gcp_compute_network"]),
+        ("cs", "ngine_io.cloudstack", ["instance", "security_group", "zone_info"]),
+    ],
+)
+def test_provider_modules_import(sdk, collection, modules):
+    """Load the real provider modules in a process without other tests' imports."""
+    require_extra(sdk)
+    run_cloud_check("modules", collection, *modules)
 
 
 @pytest.mark.parametrize(

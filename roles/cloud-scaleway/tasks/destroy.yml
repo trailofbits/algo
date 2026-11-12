@@ -2,15 +2,15 @@
 - name: Load Scaleway zones for standalone destruction
   include_vars: "{{ playbook_dir }}/roles/cloud-scaleway/defaults/main.yml"
 
-- name: Map the Scaleway zone to the legacy compute alias
+- name: Determine the Scaleway zone
   set_fact:
-    algo_scaleway_compute_alias: "{{ scaleway_compute_alias_map.get(algo_region, algo_region) }}"
+    algo_scaleway_zone: "{{ scaleway_zone_map.get(algo_region, algo_region) }}"
 
 - environment:
     SCW_TOKEN: "{{ algo_scaleway_token }}"
   block:
     - name: Destroy Scaleway server
-      scaleway_compute:
+      scaleway_instance:
         name: "{{ algo_server_name }}"
         state: absent
-        region: "{{ algo_scaleway_compute_alias }}"
+        zone: "{{ algo_scaleway_zone }}"

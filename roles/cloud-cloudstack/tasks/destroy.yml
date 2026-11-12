@@ -6,12 +6,12 @@
   no_log: true
   block:
     - name: Destroy CloudStack instance
-      cs_instance:
+      ngine_io.cloudstack.instance:
         name: "{{ algo_server_name }}"
         state: expunged
 
     - name: Remove security group
-      cs_securitygroup:
+      ngine_io.cloudstack.security_group:
         name: "{{ algo_server_name }}-security_group"
         state: absent
       failed_when: false

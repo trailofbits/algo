@@ -43,6 +43,5 @@ mock_modules:
   - gcp_compute_location_info
   - lightsail_region_facts
   - x25519_pubkey
-  - scaleway_compute
 
 # vim: ft=yaml
