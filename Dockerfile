@@ -20,8 +20,9 @@ RUN apk --no-cache add ${PACKAGES} && \
 
 WORKDIR /algo
 
-# Copy uv binary from official image (using latest tag for automatic updates)
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
+# Use the same uv version as CI and keep development tools out of the image.
+COPY --from=ghcr.io/astral-sh/uv:0.13.7 /uv /bin/uv
+ENV UV_NO_DEV=true
 
 # Copy dependency files and install in single layer for better optimization
 COPY pyproject.toml uv.lock ./
@@ -31,14 +32,13 @@ RUN uv sync --locked --no-dev
 COPY . .
 
 # Install Ansible Galaxy collections for cloud provider modules
-RUN uv run ansible-galaxy collection install -r requirements.yml
+RUN uv run --locked --no-dev ansible-galaxy collection install -r requirements.yml
 
 # Set executable permissions and prepare runtime
 # Note: /algo must remain root-owned for --cap-drop=all compatibility
 # (root without CAP_DAC_OVERRIDE cannot write to files owned by others)
 RUN chmod 0755 /algo/algo-docker.sh && \
-    mkdir -p /data && \
-    chown algo:algo /data
+    mkdir -p /data
 
 # Multi-arch support metadata
 ARG TARGETPLATFORM
@@ -46,7 +46,7 @@ ARG BUILDPLATFORM
 RUN printf "Built on: %s\nTarget: %s\n" "${BUILDPLATFORM}" "${TARGETPLATFORM}" > /algo/build-info
 
 # Note: Running as root for bind mount compatibility with algo-docker.sh
-# The script handles /data volume permissions and needs root access
+# Bind mounts must allow UID 0 to read and write the configuration directory.
 # This is a Docker limitation with bind-mounted volumes
 USER root
 

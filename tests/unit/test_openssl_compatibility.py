@@ -40,8 +40,8 @@ def find_generated_certificates():
     return None
 
 
-def test_openssl_version_detection():
-    """Test that we can detect OpenSSL version for compatibility checks"""
+def detect_openssl_version():
+    """Return the installed OpenSSL major and minor versions."""
     result = subprocess.run(["openssl", "version"], capture_output=True, text=True)
 
     assert result.returncode == 0, "Failed to get OpenSSL version"
@@ -55,6 +55,13 @@ def test_openssl_version_detection():
 
     print(f"✓ OpenSSL version detected: {major}.{minor}")
     return (major, minor)
+
+
+def test_openssl_version_detection():
+    """Check that the installed OpenSSL version can be parsed."""
+    major, minor = detect_openssl_version()
+    assert major >= 1
+    assert minor >= 0
 
 
 def validate_ca_certificate_real(cert_files):
@@ -386,7 +393,7 @@ def validate_pkcs12_files_real(cert_files):
         print("⚠ No PKCS#12 files found")
         return
 
-    major, _minor = test_openssl_version_detection()
+    major, _minor = detect_openssl_version()
 
     for p12_file in cert_files["p12_files"]:
         assert os.path.exists(p12_file), f"PKCS#12 file should exist: {p12_file}"

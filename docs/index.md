@@ -1,7 +1,6 @@
 # Algo VPN documentation
 
 * Deployment instructions
-  - Deploy from [RedHat/CentOS 6.x](deploy-from-redhat-centos6.md)
   - Deploy from [Windows](deploy-from-windows.md)
   - Deploy from a [Docker container](deploy-from-docker.md)
   - Deploy from [Ansible](deploy-from-ansible.md) non-interactively

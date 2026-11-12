@@ -49,7 +49,7 @@ Alpine Linux is not supported out-of-the-box by any major cloud provider. While 
 
 ## Why does Algo support only a single cipher suite?
 
-Algo deliberately supports only one modern cipher suite (AES256-GCM with SHA2 and P-256) rather than offering a menu of cryptographic options. This design decision enhances security by:
+Algo deliberately supports only one modern cipher suite (AES256-GCM with SHA2 and P-384) rather than offering a menu of cryptographic options. This design decision enhances security by:
 
 1. **Eliminating downgrade attacks** - With no weaker ciphers available, attackers cannot force connections to use vulnerable algorithms
 2. **Reducing complexity** - A single, well-tested configuration minimizes the chance of implementation errors
@@ -96,7 +96,7 @@ You can temporarily disable DNS filtering for all IPsec clients at once with the
 
 ## Does Algo support zero logging?
 
-Yes, Algo includes privacy enhancements that minimize logging by default. StrongSwan connection logging is disabled, DNSCrypt syslog is turned off, and logs are automatically rotated after 7 days. However, some system-level logging remains for security and troubleshooting purposes. For detailed privacy configuration and limitations, see the [Privacy and Logging](#privacy-and-logging) section in the README.
+Yes, Algo includes privacy enhancements that minimize logging by default. StrongSwan connection logging is disabled, DNSCrypt syslog is turned off, and logs are automatically rotated after 7 days. However, some system-level logging remains for security and troubleshooting purposes. For detailed privacy configuration and limitations, see the [Privacy and Logging](../README.md#privacy-and-logging) section in the README.
 
 ## Wasn't IPSEC backdoored by the US government?
 
@@ -124,8 +124,8 @@ You should only need 4160/TCP, 500/UDP, 4500/UDP, and 51820/UDP opened on any fi
 
 ## How do I monitor user activity?
 
-Your Algo server will track IPsec client logins by default in `/var/log/syslog`. This will give you client names, date/time of connection and reconnection, and what IP addresses they're connecting from. This can be disabled entirely by setting `strongswan_log_level` to `-1` in `config.cfg`. WireGuard doesn't save any logs, but entering `sudo wg` on the server will give you the last endpoint and contact time of each client. Disabling this is [paradoxically difficult](https://git.zx2c4.com/blind-operator-mode/about/). There isn't any out-of-the-box way to monitor actual user _activity_ (e.g. websites browsed, etc.)
+IPsec connection logging is disabled by default. Enabling `strongswan_log_level` records IPsec client connections in the system log. This will give you client names, date/time of connection and reconnection, and what IP addresses they're connecting from. This can be disabled entirely by setting `strongswan_log_level` to `-1` in `config.cfg`. WireGuard doesn't save any logs, but entering `sudo wg` on the server will give you the last endpoint and contact time of each client. Disabling this is [paradoxically difficult](https://git.zx2c4.com/blind-operator-mode/about/). There isn't any out-of-the-box way to monitor actual user _activity_ (e.g. websites browsed, etc.)
 
 ## How do I reach another connected client?
 
-By default, your Algo server doesn't allow connections between connected clients. This can be changed at the time of deployment by enabling the `BetweenClients_DROP` flag in `config.cfg`. See the ["Road Warrior" instructions](/docs/deploy-to-ubuntu.md#road-warrior-setup) for more details.
+By default, your Algo server doesn't allow connections between connected clients. This can be changed at the time of deployment by setting `BetweenClients_DROP` to `false` in `config.cfg`. See the ["Road Warrior" instructions](/docs/deploy-to-ubuntu.md#road-warrior-setup) for more details.

@@ -5,9 +5,9 @@ Install strongSwan, then copy the included ipsec_user.conf, ipsec_user.secrets, 
 ## Ubuntu Server example
 
 1. `sudo apt install strongswan libstrongswan-standard-plugins`: install strongSwan
-2. `/etc/ipsec.d/certs`: copy `<name>.crt` from `algo-master/configs/<server_ip>/ipsec/.pki/certs/<name>.crt`
-3. `/etc/ipsec.d/private`: copy `<name>.key` from `algo-master/configs/<server_ip>/ipsec/.pki/private/<name>.key`
-4. `/etc/ipsec.d/cacerts`: copy `cacert.pem` from `algo-master/configs/<server_ip>/ipsec/manual/cacert.pem`
+2. `/etc/ipsec.d/certs`: copy `<name>.crt` from `algo-main/configs/<server_ip>/ipsec/.pki/certs/<name>.crt`
+3. `/etc/ipsec.d/private`: copy `<name>.key` from `algo-main/configs/<server_ip>/ipsec/.pki/private/<name>.key`
+4. `/etc/ipsec.d/cacerts`: copy `cacert.pem` from `algo-main/configs/<server_ip>/ipsec/manual/cacert.pem`
 5. `/etc/ipsec.secrets`: add your `user.key` to the list, e.g. `<server_ip> : ECDSA <name>.key`
 6. `/etc/ipsec.conf`: add the connection from `ipsec_user.conf` and ensure `leftcert` matches the `<name>.crt` filename
 7. `sudo ipsec restart`: pick up config changes

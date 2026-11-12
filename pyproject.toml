@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=83.0.0"]
+requires = ["setuptools==84.2.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,7 +9,7 @@ version = "2.0.0-beta"
 requires-python = ">=3.11"
 dependencies = [
     "ansible==12.3.0",
-    "cryptography>=50.0.0",
+    "cryptography==50.0.2",
     "jinja2>=3.1.6",
     "netaddr==1.3.0",
     "pyyaml>=6.0.2",
@@ -23,7 +23,7 @@ py-modules = []
 [project.optional-dependencies]
 # Cloud provider dependencies (installed automatically based on provider selection)
 aws = [
-    "boto3>=1.43.64",
+    "boto3==1.43.124",
 ]
 azure = [
     "azure-identity>=1.15.0",
@@ -33,20 +33,20 @@ azure = [
     "msrestazure>=0.6.4",
 ]
 gcp = [
-    "google-auth>=2.56.2",
+    "google-auth==2.62.1",
     "requests>=2.34.2",
 ]
 hetzner = [
-    "hcloud>=2.23.0",
+    "hcloud==2.27.0",
 ]
 linode = [
-    "linode-api4>=5.46.0",
+    "linode-api4==5.49.0",
 ]
 openstack = [
-    "openstacksdk>=4.18.0",
+    "openstacksdk==4.22.0",
 ]
 cloudstack = [
-    "cs>=4.0.1",
+    "cs==5.2.0",
 ]
 
 [tool.ruff]
@@ -95,7 +95,9 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"library/*" = ["ALL"]  # Exclude Ansible library modules (external code)
+"library/gcp_compute_location_info.py" = ["ALL"]  # Vendored cloud modules
+"library/lightsail_region_facts.py" = ["ALL"]
+"library/scaleway_compute.py" = ["ALL"]
 "tests/*" = ["S101"]   # Allow assert in tests
 
 [tool.ty.environment]
@@ -107,20 +109,26 @@ python-version = "3.11"
 exclude = ["library/**", "tests/**"]
 
 [tool.ty.rules]
-# Ignore import warnings - ty doesn't see the venv when run via uv --with
-# These are checked by Python's import system at runtime
-unresolved-import = "ignore"
+# Optional cloud SDKs are not installed in the base environment.
+import-not-found = "ignore"
 unknown-argument = "warn"
 
 [tool.uv]
-# Centralized uv version management
-dev-dependencies = [
-    "pytest>=8.0.0",
-    "pytest-xdist>=3.0.0",  # Parallel test execution
-    "ruff>=0.8.0",         # Python linter and formatter
-    "yamllint>=1.35.0",    # YAML linter
-    "ansible-lint>=24.0.0", # Ansible linter
-    "j2lint>=1.2.0",       # Jinja2 template linter
+exclude-newer = "7 days"
+preview-features = ["audit-command"]
+
+[dependency-groups]
+dev = [
+    "pytest==9.2.0",
+    "pytest-xdist==3.8.0",  # Parallel test execution
+    "ruff==0.17.3",        # Python linter and formatter
+    "yamllint==1.38.0",    # YAML linter
+    "ansible-lint==26.10.1", # Ansible and embedded Jinja checks
+    "j2lint==1.3.0",       # Jinja2 template linter
+    "prek==0.5.10",        # Same hook runner locally and in CI
+    "setuptools==84.2.1", # Audit the installed build tool
+    "ty==0.0.97",         # Keep type checks stable across CI runs
+    "hypothesis==6.170.14",
 ]
 
 [tool.pytest.ini_options]

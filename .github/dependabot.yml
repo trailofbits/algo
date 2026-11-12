@@ -23,6 +23,22 @@ updates:
     cooldown:
       default-days: 7
     groups:
+      python-tooling:
+        patterns:
+          - "pytest*"
+          - "ruff"
+          - "yamllint"
+          - "ansible-lint"
+          - "j2lint"
+          - "prek"
+          - "ty"
+          - "setuptools"
+      python-azure:
+        patterns:
+          - "azure-*"
+          - "msal*"
+          - "msrest*"
+          - "adal"
       python:
         patterns:
           - "*"

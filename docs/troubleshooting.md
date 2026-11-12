@@ -220,7 +220,7 @@ You tried to run Algo and you received an error like this one:
 ```
 TASK [Create a symlink if deploying to localhost] ********************************************************************
 fatal: [localhost]: FAILED! => {"changed": false, "gid": 1000, "group": "ubuntu", "mode": "0775", "msg": "the directory configs/localhost is not empty, refusing to convert it", "owner": "ubuntu", "path": "configs/localhost", "size": 4096, "state": "directory", "uid": 1000}
-included: /home/ubuntu/algo-master/playbooks/rescue.yml for localhost
+included: /home/ubuntu/algo-main/playbooks/rescue.yml for localhost
 
 TASK [debug] *********************************************************************************************************
 ok: [localhost] => {

@@ -309,7 +309,7 @@ def test_edge_cases_inline_comments():
         ('{{ "another # in string" }}', True, "Hash in double-quoted string should pass"),
         ("{{ var # comment }}", False, "Simple inline comment should fail"),
         ("{{ var1 + var2  # This is an inline comment }}", False, "Inline comment with text should fail"),
-        (r"{{ '\#' + 'escaped hash' }}", True, "Escaped hash should pass"),
+        (r"{{ '\\#' + 'escaped hash' }}", True, "Escaped hash should pass"),
         ("{% if true # comment %}", False, "Comment in control block should fail"),
         ("{% for item in list # loop comment %}", False, "Comment in for loop should fail"),
         ("{{ {'key': 'value # not a comment'} }}", True, "Hash in dict string value should pass"),
