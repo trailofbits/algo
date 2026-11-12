@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from ansible.plugins.loader import init_plugin_loader
 
 # Add library directory to path for custom module imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "library"))
@@ -134,9 +135,9 @@ def roles_dir(project_root):
     return project_root / "roles"
 
 
-# Skip markers for conditional tests
 def pytest_configure(config):
-    """Register custom markers."""
+    """Configure Ansible collection discovery before tests import or render templates."""
+    init_plugin_loader()
     config.addinivalue_line("markers", "requires_wireguard: mark test as requiring WireGuard tools")
     config.addinivalue_line("markers", "slow: mark test as slow running")
 

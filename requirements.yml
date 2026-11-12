@@ -5,7 +5,7 @@ collections:
   - name: ansible.utils
     version: ">=4.0.0"
   - name: community.general
-    version: "==11.4.2"
+    version: "==11.4.10"
   - name: community.crypto
     version: ">=3.1.1"
   - name: openstack.cloud
@@ -17,9 +17,9 @@ collections:
   - name: azure.azcollection
     version: "4.2.0"
   - name: vultr.cloud
-    version: "==1.14.0"
+    version: "==1.14.1"
   - name: amazon.aws
-    version: "==10.3.1"
+    version: "==10.3.2"
   - name: google.cloud
     version: "==1.13.0"
   - name: hetzner.hcloud
