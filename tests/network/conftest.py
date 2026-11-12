@@ -28,8 +28,10 @@ def ansible_templar(ansible_loader):
     def make(**variables):
         defaults = ansible_loader.load_from_file(str(ROOT / "config.cfg"), trusted_as_template=True)
         defaults.update(
-            ansible_default_ipv4={"interface": "eth0"},
-            ansible_default_ipv6={"interface": "eth0"},
+            ansible_facts={
+                "default_ipv4": {"interface": "eth0"},
+                "default_ipv6": {"interface": "eth0"},
+            },
             ansible_ssh_port=4160,
             wireguard_port_avoid=53,
             wireguard_port_actual=51820,

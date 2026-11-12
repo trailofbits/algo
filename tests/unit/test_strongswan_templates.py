@@ -63,7 +63,7 @@ def get_strongswan_test_variables(scenario="default"):
         "subjectAltName": "IP:10.0.0.1,IP:2600:3c01::f03c:91ff:fedf:3b2a",
         "subjectAltName_type": "IP",
         "subjectAltName_client": "IP:10.0.0.1",
-        "ansible_default_ipv6": {"address": "2600:3c01::f03c:91ff:fedf:3b2a"},
+        "ansible_facts": {"default_ipv6": {"address": "2600:3c01::f03c:91ff:fedf:3b2a"}},
         "openssl_version": "3.0.0",
         "p12_export_password": "test-password",
         "ike_lifetime": "24h",
@@ -88,7 +88,7 @@ def get_strongswan_test_variables(scenario="default"):
     if scenario == "ipv4_only":
         test_vars["ipv6_support"] = False
         test_vars["subjectAltName"] = "IP:10.0.0.1"
-        test_vars["ansible_default_ipv6"] = None
+        test_vars["ansible_facts"]["default_ipv6"] = {}
     elif scenario == "dns_hostname":
         test_vars["IP_subject_alt_name"] = "vpn.example.com"
         test_vars["subjectAltName"] = "DNS:vpn.example.com"

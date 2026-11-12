@@ -1,11 +1,11 @@
 ---
 - name: Include tasks for MacOS
   import_tasks: macos.yml
-  when: ansible_system == "Darwin"
+  when: ansible_facts['system'] == "Darwin"
 
 - name: Include tasks for Linux
   import_tasks: linux.yml
-  when: ansible_system == "Linux"
+  when: ansible_facts['system'] == "Linux"
 
 - name: Set config paths as facts
   set_fact:

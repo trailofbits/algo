@@ -18,10 +18,14 @@ install VPN services or change the host network. Ansible failures and invalid ou
 | `test_adblock.py` | Atomic blocklist refresh and preservation after network or write failures |
 | `test_algo_launcher.py` | CLI help, dependency failures, and locked dependency installation |
 | `test_destroy_paths.py` | Actual destroy playbook rejection of paths outside the config directory |
+| `test_ipsec_certificate_chain.py` | Generated CA restrictions, server/client purposes, chains, keys, and encrypted PKCS#12 exports |
 | `test_user_preflight.py` | User-update identity and SSH connectivity checks |
 | `network/` | Host firewall rules, cloud ingress requests, DNS rebinding protection, and protocol combinations |
-| `unit/` | Configuration, template, provider, certificate, and server-list regressions |
+| `unit/` | Configuration, template, provider, and server-list regressions |
 | `e2e/` | Deployed WireGuard connectivity, plus IPsec certificate and service checks |
+
+Certificate tests generate fresh IPv4 and dual-stack PKI in temporary directories. They never read
+saved deployments under `configs/`. OpenSSL verifies the chains and encrypted client exports.
 
 Cloud ingress tests render the actual provider requests without creating cloud resources.
 Google Cloud retains both VPN protocols because its firewall is shared across deployments.

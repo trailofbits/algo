@@ -184,11 +184,13 @@ def get_test_variables():
         "subjectAltName": "IP:10.0.0.1,DNS:vpn.example.com",
         "subjectAltName_type": "IP",
         # Ansible variables
-        "ansible_default_ipv4": {"address": "10.0.0.1"},
-        "ansible_default_ipv6": {"address": "2600:3c01::f03c:91ff:fedf:3b2a"},
-        "ansible_distribution": "Ubuntu",
-        "ansible_distribution_version": "22.04",
-        "ansible_date_time": {"epoch": "1234567890"},
+        "ansible_facts": {
+            "default_ipv4": {"address": "10.0.0.1"},
+            "default_ipv6": {"address": "2600:3c01::f03c:91ff:fedf:3b2a"},
+            "distribution": "Ubuntu",
+            "distribution_version": "22.04",
+            "date_time": {"epoch": "1234567890"},
+        },
         # User management
         "users": ["alice", "bob", "charlie"],
         "all_users": ["alice", "bob", "charlie", "david"],
@@ -266,7 +268,7 @@ def test_regression_openssl_inline_comments():
   'DNS:' + openssl_constraint_random_id,        # Per-deployment UUID prevents cross-deployment reuse
   'email:' + openssl_constraint_random_id       # Unique email domain isolates certificate scope
 ] + (
-  ['IP:' + ansible_default_ipv6['address'] + '/128'] if ipv6_support else []
+  ['IP:' + ansible_facts['default_ipv6']['address'] + '/128'] if ipv6_support else []
 ) }}"""
 
     # The fixed expression (without inline comments)
@@ -275,7 +277,7 @@ def test_regression_openssl_inline_comments():
   'DNS:' + openssl_constraint_random_id,
   'email:' + openssl_constraint_random_id
 ] + (
-  ['IP:' + ansible_default_ipv6['address'] + '/128'] if ipv6_support else []
+  ['IP:' + ansible_facts['default_ipv6']['address'] + '/128'] if ipv6_support else []
 ) }}"""
 
     # Test the problematic expression - should fail

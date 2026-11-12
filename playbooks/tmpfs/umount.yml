@@ -3,7 +3,7 @@
   file:
     path: /{{ facts.tmpfs_volume_path }}/{{ facts.tmpfs_volume_name }}/
     state: absent
-  when: facts.ansible_system == "Linux"
+  when: facts.ansible_facts['system'] == "Linux"
 
 - block:
     - name: MacOS | check fs the ramdisk exists
@@ -23,4 +23,4 @@
       retries: 5
       delay: 3
   when:
-    - facts.ansible_system == "Darwin"
+    - facts.ansible_facts['system'] == "Darwin"

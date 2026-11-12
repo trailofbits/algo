@@ -17,17 +17,17 @@
           PERMISSION MISMATCH DETECTED
 
           Config directory owner: {{ config_dir_stat.stat.pw_name }}
-          Current user: {{ ansible_user_id }}
+          Current user: {{ ansible_facts['user_id'] }}
 
           Running update-users with mismatched permissions will create
           files with inconsistent ownership, breaking future operations.
 
           TO FIX: Run this command, then retry update-users:
-            sudo chown -R {{ ansible_user_id }} configs/{{ algo_server }}/
+            sudo chown -R {{ ansible_facts['user_id'] }} configs/{{ algo_server }}/
 
           PREVENT: Always run update-users the same way as initial deployment
           (both with sudo, or both without sudo).
-      when: config_dir_stat.stat.pw_name != ansible_user_id
+      when: config_dir_stat.stat.pw_name != ansible_facts['user_id']
 
 - name: Test SSH connectivity to server
   when: algo_server != 'localhost'

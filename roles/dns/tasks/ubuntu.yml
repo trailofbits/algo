@@ -4,7 +4,7 @@
     - name: Add the repository
       apt_repository:
         state: present
-        codename: "{{ ansible_distribution_release }}"
+        codename: "{{ ansible_facts['distribution_release'] }}"
         repo: ppa:shevchuk/dnscrypt-proxy
       register: result
       until: result is succeeded
