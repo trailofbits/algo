@@ -2,42 +2,45 @@
 # Aggressive log rotation configuration for privacy
 # Reduces log retention time and implements more frequent rotation
 
-- name: Check if default rsyslog logrotate config exists
-  stat:
-    path: /etc/logrotate.d/rsyslog
-  register: rsyslog_logrotate
+- name: Configure rotation for rsyslog files
+  when: privacy_rsyslog.stat.exists
+  block:
+    - name: Check if default rsyslog logrotate config exists
+      stat:
+        path: /etc/logrotate.d/rsyslog
+      register: rsyslog_logrotate
 
-- name: Disable default rsyslog logrotate to prevent conflicts
-  command: mv /etc/logrotate.d/rsyslog /etc/logrotate.d/rsyslog.disabled
-  when: rsyslog_logrotate.stat.exists
-  changed_when: rsyslog_logrotate.stat.exists
+    - name: Disable default rsyslog logrotate to prevent conflicts
+      command: mv /etc/logrotate.d/rsyslog /etc/logrotate.d/rsyslog.disabled
+      when: rsyslog_logrotate.stat.exists
+      changed_when: rsyslog_logrotate.stat.exists
 
-- name: Configure aggressive logrotate for system logs
-  template:
-    src: privacy-logrotate.j2
-    dest: /etc/logrotate.d/99-privacy-enhanced
-    mode: '0644'
-    owner: root
-    group: root
-  notify: restart rsyslog
+    - name: Configure aggressive logrotate for system logs
+      template:
+        src: privacy-logrotate.j2
+        dest: /etc/logrotate.d/99-privacy-enhanced
+        mode: '0644'
+        owner: root
+        group: root
+      notify: restart rsyslog
 
-- name: Configure logrotate for auth logs with shorter retention
-  template:
-    src: auth-logrotate.j2
-    dest: /etc/logrotate.d/99-auth-privacy
-    mode: '0644'
-    owner: root
-    group: root
-  notify: restart rsyslog
+    - name: Configure logrotate for auth logs with shorter retention
+      template:
+        src: auth-logrotate.j2
+        dest: /etc/logrotate.d/99-auth-privacy
+        mode: '0644'
+        owner: root
+        group: root
+      notify: restart rsyslog
 
-- name: Configure logrotate for kern logs with VPN filtering
-  template:
-    src: kern-logrotate.j2
-    dest: /etc/logrotate.d/99-kern-privacy
-    mode: '0644'
-    owner: root
-    group: root
-  notify: restart rsyslog
+    - name: Configure logrotate for kern logs with VPN filtering
+      template:
+        src: kern-logrotate.j2
+        dest: /etc/logrotate.d/99-kern-privacy
+        mode: '0644'
+        owner: root
+        group: root
+      notify: restart rsyslog
 
 - name: Set more frequent logrotate execution
   cron:
