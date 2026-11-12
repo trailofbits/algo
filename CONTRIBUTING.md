@@ -22,6 +22,7 @@
 * Run the same hooks as CI: `./scripts/lint.sh`. Hook tools are installed automatically.
 * Run the full Python test suite: `uv run --locked pytest -q`
 * Update managed hooks: `uv run --locked prek update --cooldown-days 7 --freeze`
+* For local testing, consider using Docker or a cloud provider test instance
 
 Ruff handles Python linting, import sorting, and formatting; ty checks types, and prek runs the
 hooks. Black is installed only as an upstream dependency of ansible-lint, which uses it to check
@@ -29,6 +30,3 @@ Jinja expressions in playbooks. There is no Black formatter hook for Python file
 
 Dependabot groups Python development tools and Azure dependencies separately from other Python
 dependencies so an Azure compatibility issue does not block routine tooling updates.
-* For local testing, consider using Docker or a cloud provider test instance
-
-Thanks!
