@@ -1,28 +1,15 @@
 ---
-name: 'Setup uv Environment'
-description: 'Install uv and sync dependencies for Algo VPN project'
-inputs:
-  python-version:
-    description: 'Python version to use'
-    required: false
-    default: '3.11'
-outputs:
-  uv-version:
-    description: 'The version of uv that was installed'
-    value: ${{ steps.setup.outputs.uv-version }}
+name: 'Setup Python and uv'
+description: 'Install the pinned Python and uv tools for Algo VPN CI'
 runs:
   using: composite
   steps:
     - name: Setup Python
-      uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # v6.1.0
+      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
       with:
-        python-version: ${{ inputs.python-version }}
+        python-version: '3.11'
     - name: Install uv
-      id: setup
-      uses: astral-sh/setup-uv@1ddb97e5078301c0bec13b38151f8664ed04edc8  # v6
+      uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
       with:
         enable-cache: true
         version: '0.13.7'
-    - name: Sync dependencies
-      run: uv sync --locked
-      shell: bash

@@ -1,0 +1,43 @@
+---
+- name: Run Algo input handling
+  ansible.builtin.import_playbook: "{{ algo_root }}/input.yml"
+
+- name: Exercise local provisioning and WireGuard configuration
+  hosts: localhost
+  gather_facts: false
+  become: false
+  vars_files:
+    - "{{ algo_root }}/config.cfg"
+    - "{{ algo_root }}/roles/wireguard/defaults/main.yml"
+  tasks:
+    - name: Run the local provider tasks
+      ansible.builtin.import_tasks: "{{ algo_root }}/roles/local/tasks/main.yml"
+
+    - name: Build the VPN inventory
+      ansible.builtin.import_tasks: "{{ algo_root }}/playbooks/cloud-post.yml"
+
+    - name: Verify input handling and inventory
+      ansible.builtin.assert:
+        that:
+          - algo_provider == 'local'
+          - algo_server_name == 'smoke-test'
+          - cloud_instance_ip == 'localhost'
+          - IP_subject_alt_name == '192.0.2.1'
+          - "'localhost' in groups['vpn-host']"
+          - not algo_ondemand_cellular
+          - not algo_ondemand_wifi
+          - not algo_dns_adblocking
+          - not algo_ssh_tunneling
+        fail_msg: Algo input handling or localhost inventory setup changed unexpectedly.
+
+    - name: Generate WireGuard keys with the production tasks
+      ansible.builtin.import_tasks: "{{ algo_root }}/roles/wireguard/tasks/keys.yml"
+
+    - name: Render the production WireGuard client template
+      ansible.builtin.template:
+        src: "{{ algo_root }}/roles/wireguard/templates/client.conf.j2"
+        dest: "{{ smoke_dir }}/client.conf"
+        mode: '0600'
+      vars:
+        item: smoke-user
+        index: 0

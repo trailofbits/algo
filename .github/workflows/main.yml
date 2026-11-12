@@ -1,168 +1,118 @@
 ---
-name: Main
+name: CI
 
 'on':
   push:
-    branches:
-      - master
-      - main
+    branches: [main, master]
+  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
-  syntax-check:
-    name: Ansible syntax check
+  lint:
+    name: Pre-commit checks
+    needs: dependency-audit
     runs-on: ubuntu-22.04
-    permissions:
-      contents: read
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with:
-          python-version: '3.11'
+      - uses: ./.github/actions/setup-uv
+      - name: Sync dependencies
+        run: uv sync --locked
+      - name: Run all hooks
+        run: ./scripts/lint.sh
 
-      - name: Setup uv environment
-        uses: ./.github/actions/setup-uv
-
-      - name: Check Ansible playbook syntax
-        run: uv run ansible-playbook main.yml --syntax-check
-
-  basic-tests:
-    name: Basic sanity tests
+  tests:
+    name: Python tests
+    needs: dependency-audit
     runs-on: ubuntu-22.04
-    permissions:
-      contents: read
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+      - uses: ./.github/actions/setup-uv
+      - name: Sync dependencies
+        run: uv sync --locked
+      - name: Install test tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y shellcheck wireguard-tools
+      - name: Run the full Python suite and Ansible smoke test
+        run: uv run --locked pytest -q
+
+  powershell-lint:
+    name: PowerShell lint
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
-          python-version: '3.11'
+          persist-credentials: false
+      - name: Check PowerShell with PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable PSScriptAnalyzer |
+              Where-Object Version -EQ '1.25.0')) {
+            Install-Module PSScriptAnalyzer -RequiredVersion 1.25.0 -Force -Scope CurrentUser
+          }
+          Import-Module PSScriptAnalyzer -RequiredVersion 1.25.0
+          $results = Invoke-ScriptAnalyzer -Path ./algo.ps1 -Severity Warning,Error
+          if ($results.Count -gt 0) {
+            $results | Format-Table -AutoSize
+            exit 1
+          }
 
-      - name: Setup uv environment
-        uses: ./.github/actions/setup-uv
-
-      - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y shellcheck
-
-      - name: Run basic sanity tests
-        run: uv run pytest tests/unit/ -v
+  dependency-audit:
+    name: Python dependency audit
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-uv
+      - name: Audit locked dependencies
+        run: uv audit --locked
 
   docker-build:
     name: Docker build test
+    needs: dependency-audit
     runs-on: ubuntu-22.04
-    permissions:
-      contents: read
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with:
-          python-version: '3.11'
-
-      - name: Setup uv environment
-        uses: ./.github/actions/setup-uv
-
       - name: Build Docker image
         run: docker build -t local/algo:test .
-
-      - name: Test Docker image starts
+      - name: Check the container CLI and Ansible
         run: |
-          # Just verify the image can start and show help
           docker run --rm local/algo:test /algo/algo --help
+          docker run --rm local/algo:test uv run --locked --no-dev ansible-playbook --version
 
-      - name: Run Docker deployment tests
-        run: uv run pytest tests/unit/test_docker_localhost_deployment.py -v
-
-  config-generation:
-    name: Configuration generation test
+  all-tests-required:
+    name: All Required Tests
+    needs: [lint, tests, powershell-lint, dependency-audit, docker-build]
+    if: always()
     runs-on: ubuntu-22.04
-    timeout-minutes: 10
-    permissions:
-      contents: read
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with:
-          python-version: '3.11'
-
-      - name: Setup uv environment
-        uses: ./.github/actions/setup-uv
-
-      - name: Test configuration generation (local mode)
+      - name: Require every check to pass
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
         run: |
-          # Run our simplified config test
-          chmod +x tests/test-local-config.sh
-          ./tests/test-local-config.sh
-
-  ansible-dry-run:
-    name: Ansible dry-run validation
-    runs-on: ubuntu-22.04
-    timeout-minutes: 10
-    permissions:
-      contents: read
-    strategy:
-      matrix:
-        provider: [local, ec2, digitalocean, gce]
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with:
-          python-version: '3.11'
-
-      - name: Setup uv environment
-        uses: ./.github/actions/setup-uv
-
-      - name: Create test configuration for ${{ matrix.provider }}
-        run: |
-          # Create provider-specific test config
-          cat > test-${{ matrix.provider }}.cfg << 'EOF'
-          users:
-            - testuser
-          cloud_providers:
-            ${{ matrix.provider }}:
-              server: test-server
-              size: t3.micro
-              image: ubuntu-22.04
-              region: us-east-1
-          wireguard_enabled: true
-          ipsec_enabled: false
-          dns_adblocking: false
-          ssh_tunneling: false
-          store_pki: true
-          algo_provider: ${{ matrix.provider }}
-          algo_server_name: test-algo-vpn
-          server: test-server
-          endpoint: 10.0.0.1
-          ansible_ssh_user: ubuntu
-          ansible_ssh_port: 22
-          algo_ssh_port: 4160
-          algo_ondemand_cellular: false
-          algo_ondemand_wifi: false
-          EOF
-
-      - name: Run Ansible check mode for ${{ matrix.provider }}
-        run: |
-          # Run ansible in check mode to validate playbooks work
-          uv run ansible-playbook main.yml \
-            -i "localhost," \
-            -c local \
-            -e @test-${{ matrix.provider }}.cfg \
-            -e "provider=${{ matrix.provider }}" \
-            --check \
-            --diff \
-            -vv \
-            --skip-tags "facts,tests,local,update-alternatives,cloud_api" || true
-
-          # The || true is because check mode will fail on some tasks
-          # but we're looking for syntax/undefined variable errors
+          for result in $RESULTS; do
+            if [[ "$result" != success ]]; then
+              echo "A required check did not pass: $result"
+              exit 1
+            fi
+          done

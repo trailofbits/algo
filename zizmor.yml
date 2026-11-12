@@ -5,8 +5,4 @@
 rules:
   self-repository:
     ignore:
-      - action.yml
-      - lint.yml
       - main.yml
-      - security.yml
-      - smart-tests.yml

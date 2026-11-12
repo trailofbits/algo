@@ -4,10 +4,13 @@
 
 ```bash
 # Run all linters (same as CI)
-ansible-lint . && yamllint . && ruff check . && shellcheck scripts/*.sh
+./scripts/lint.sh
 
-# Run Python unit tests
-pytest tests/unit/ -q
+# Run the full Python test suite
+uv run --locked pytest -q
+
+# Run the Ansible runtime smoke test on its own
+uv run --locked pytest -q tests/test_ansible_smoke.py
 
 # Run E2E connectivity tests (requires deployed Algo on localhost)
 sudo tests/e2e/test-vpn-connectivity.sh both
@@ -40,16 +43,23 @@ tests/
 | Templates | `test_template_rendering.py` | Jinja2 template syntax, filter compatibility |
 | Certificates | `test_certificate_validation.py` | OpenSSL compatibility, PKCS#12 export |
 | Cloud Providers | `test_cloud_provider_configs.py` | Region formats, instance types, OS images |
+| Ansible runtime | `test_ansible_smoke.py` | Input handling, inventory, real keys, client rendering |
 | E2E | `test-vpn-connectivity.sh` | WireGuard handshake, IPsec connection, DNS through VPN |
 
 ## CI Workflows
 
 | Workflow | Trigger | What It Does |
 |----------|---------|--------------|
-| `lint.yml` | All PRs | ansible-lint, yamllint, ruff, shellcheck |
-| `main.yml` | Push to master | Syntax check, unit tests, Docker build |
+| `main.yml` | PRs and main/master pushes | Hooks, Python, PowerShell, audit, Docker |
 | `integration-tests.yml` | PRs to roles/ | Full localhost deployment + E2E tests |
-| `smart-tests.yml` | All PRs | Runs subset based on changed files |
+| `test-effectiveness.yml` | Weekly or manual | Report artifact and workflow summary |
+
+CI runs every hook in `.pre-commit-config.yaml`. Python tools and the hook runner use `uv.lock`;
+prek installs the remaining pinned hook tools. The final CI job requires every check to succeed.
+
+The Python suite runs the Ansible smoke playbook on every PR, including dependency updates. It
+executes production tasks and renders a client configuration in a temporary directory without
+installing services or changing the host network. Ansible errors and invalid output fail the test.
 
 ## Writing Tests
 
