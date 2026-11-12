@@ -41,10 +41,10 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup-uv
       - name: Sync dependencies
-        run: uv sync --locked --extra azure --extra linode --extra hetzner
+        run: uv sync --locked --all-extras
       - name: Install tested cloud collections
         run: >
-          uv run --locked --extra azure --extra linode --extra hetzner
+          uv run --locked --all-extras
           ansible-galaxy collection install -r requirements.yml
       - name: Install test tools
         run: |
@@ -53,7 +53,7 @@ jobs:
       - name: Run the full Python suite and Ansible smoke test
         env:
           ALGO_CLOUD_SMOKE: '1'
-        run: uv run --locked --extra azure --extra linode --extra hetzner pytest -q
+        run: uv run --locked --all-extras pytest -q
 
   powershell-lint:
     name: PowerShell lint

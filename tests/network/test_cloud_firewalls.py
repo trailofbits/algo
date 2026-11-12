@@ -73,7 +73,7 @@ def test_cloud_template_ingress(ansible_loader, ansible_templar, scenario, provi
     "provider_spec",
     [
         ("openstack", "openstack.cloud.security_group_rule", "protocol", "port_range_min"),
-        ("cloudstack", "cs_securitygroup_rule", "protocol", "start_port"),
+        ("cloudstack", "ngine_io.cloudstack.security_group_rule", "protocol", "start_port"),
         ("vultr", "vultr.cloud.firewall_rule", "protocol", "port"),
     ],
 )
@@ -99,7 +99,7 @@ def test_cloud_rule_requests(
         "wireguard_port": wireguard_port,
         "algo_server_name": "test",
         "cs_security_group": {"name": "test"},
-        "os_security_group": {"id": "test"},
+        "os_security_group": {"security_group": {"id": "test"}},
         **task.get("vars", {}),
     }
     actual = set()

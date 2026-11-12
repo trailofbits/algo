@@ -23,7 +23,7 @@ py-modules = []
 [project.optional-dependencies]
 # Cloud provider dependencies (installed automatically based on provider selection)
 aws = [
-    "boto3==1.43.124",
+    "boto3==1.43.125",
 ]
 # Keep these SDK pins aligned with azure.azcollection in requirements.yml.
 # The collection imports all of these from azure_rm_common, even for ARM deployments.
@@ -139,7 +139,6 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "library/gcp_compute_location_info.py" = ["ALL"]  # Vendored cloud modules
 "library/lightsail_region_facts.py" = ["ALL"]
-"library/scaleway_compute.py" = ["ALL"]
 "tests/*" = ["S101"]   # Allow assert in tests
 
 [tool.ty.environment]
@@ -147,8 +146,8 @@ ignore = [
 python-version = "3.12"
 
 [tool.ty.src]
-# Exclude Ansible library modules and tests (test code has looser typing)
-exclude = ["library/**", "tests/**"]
+# Exclude the two remaining vendored modules and tests; check Algo's own modules.
+exclude = ["library/gcp_compute_location_info.py", "library/lightsail_region_facts.py", "tests/**"]
 
 [tool.ty.rules]
 # Optional cloud SDKs are not installed in the base environment.
@@ -163,13 +162,13 @@ preview-features = ["audit-command"]
 dev = [
     "pytest==9.2.0",
     "pytest-xdist==3.8.0",  # Parallel test execution
-    "ruff==0.17.3",        # Python linter and formatter
+    "ruff==0.17.4",        # Python linter and formatter
     "yamllint==1.38.0",    # YAML linter
     "ansible-lint==26.11.0", # Ansible and embedded Jinja checks
     "j2lint==1.3.0",       # Jinja2 template linter
     "prek==0.5.10",        # Same hook runner locally and in CI
     "setuptools==84.2.1", # Audit the installed build tool
-    "ty==0.0.97",         # Keep type checks stable across CI runs
+    "ty==0.0.98",         # Keep type checks stable across CI runs
     "hypothesis==6.170.14",
 ]
 
