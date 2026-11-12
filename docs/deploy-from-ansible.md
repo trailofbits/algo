@@ -283,7 +283,8 @@ Possible options can be gathered via cli `aws lightsail get-regions`
 Required variables:
 
 - [scaleway_token](https://www.scaleway.com/docs/generate-an-api-token/)
-- region: e.g. `ams1`, `par1`
+- region: e.g. `par1`, `par2`, `ams1`, `ams2`, `ams3`, `waw1`, `waw2`, `waw3`
+  (full zone names like `fr-par-1` are also accepted)
 
 ### OpenStack
 

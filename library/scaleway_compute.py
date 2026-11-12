@@ -160,7 +160,11 @@ import datetime
 import time
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.scaleway import SCALEWAY_LOCATION, Scaleway, scaleway_argument_spec
+from ansible_collections.community.general.plugins.module_utils.scaleway import (
+    SCALEWAY_LOCATION,
+    Scaleway,
+    scaleway_argument_spec,
+)
 
 SCALEWAY_SERVER_STATES = ("stopped", "stopping", "starting", "running", "locked")
 
@@ -168,16 +172,16 @@ SCALEWAY_TRANSITIONS_STATES = ("stopping", "starting", "pending")
 
 
 def check_image_id(compute_api, image_id):
-    response = compute_api.get(path="images")
+    # Fetch the image directly instead of scanning the paginated
+    # GET /images list, which only returns the first page by default.
+    response = compute_api.get(path="images/%s" % image_id)
+    image = response.json.get("image") if isinstance(response.json, dict) else None
 
-    if response.ok and response.json:
-        image_ids = [image["id"] for image in response.json["images"]]
-        if image_id not in image_ids:
-            compute_api.module.fail_json(
-                msg="Error in getting image %s on %s" % (image_id, compute_api.module.params.get("api_url"))
-            )
-    else:
-        compute_api.module.fail_json(msg="Error in getting images from: %s" % compute_api.module.params.get("api_url"))
+    if not response.ok or not isinstance(image, dict) or image.get("id") != image_id:
+        compute_api.module.fail_json(
+            msg="Cannot read Scaleway image %s at %s (HTTP %s). Verify the image ID and zone."
+            % (image_id, compute_api.module.params.get("api_url"), response.status_code)
+        )
 
 
 def fetch_state(compute_api, server):
