@@ -26,6 +26,8 @@ install VPN services or change the host network. Ansible failures and invalid ou
 
 Certificate tests generate fresh IPv4 and dual-stack PKI in temporary directories. They never read
 saved deployments under `configs/`. OpenSSL verifies the chains and encrypted client exports.
+The tests also inspect the exact subject alternative names, so unexpected IP identities fail
+even on macOS LibreSSL, whose `verify` command lacks OpenSSL's `-verify_ip` option.
 
 Cloud ingress tests render the actual provider requests without creating cloud resources.
 Google Cloud retains both VPN protocols because its firewall is shared across deployments.
