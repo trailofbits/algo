@@ -78,6 +78,7 @@
           when:
             - region is not defined
             - _server_cfg.algo_region is defined
+            - _server_cfg.algo_region is string
             - _server_cfg.algo_region | length > 0
 
         - name: Validate region for providers that require it
