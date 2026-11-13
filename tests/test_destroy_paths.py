@@ -13,18 +13,26 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 @pytest.mark.parametrize(
-    ("server", "valid"),
+    ("server", "valid", "region_setting"),
     [
-        ("../victim", False),
-        ("..", False),
-        (".", False),
-        ("", False),
-        ("192.0.2.1", True),
-        ("2001:db8::1", True),
-        ("vpn.example.com", True),
+        ("../victim", False, ""),
+        ("..", False, ""),
+        (".", False, ""),
+        ("", False, ""),
+        ("192.0.2.1", True, "algo_region:\n"),
+        ("192.0.2.2", True, "algo_region: ''\n"),
+        ("192.0.2.3", True, "algo_region: 3\n"),
+        ("192.0.2.4", True, "algo_region: nyc3\n"),
+        ("2001:db8::1", True, ""),
+        ("vpn.example.com", True, ""),
     ],
 )
-def test_destroy_only_removes_one_server_directory(tmp_path: Path, server: str, valid: bool):
+def test_destroy_only_removes_one_server_directory(
+    tmp_path: Path,
+    server: str,
+    valid: bool,
+    region_setting: str,
+):
     shutil.copy(ROOT / "destroy.yml", tmp_path)
     shutil.copy(ROOT / "config.cfg", tmp_path)
     (tmp_path / "playbooks").mkdir()
@@ -32,7 +40,9 @@ def test_destroy_only_removes_one_server_directory(tmp_path: Path, server: str, 
     (tmp_path / "configs").mkdir()
     victim = tmp_path / "victim"
     victim.mkdir()
-    (victim / ".config.yml").write_text("algo_provider: local\nalgo_server_name: victim\n")
+    (victim / ".config.yml").write_text(
+        "algo_provider: local\nalgo_server_name: victim\n" + region_setting,
+    )
     if valid:
         target = tmp_path / "configs" / server
         target.mkdir()
