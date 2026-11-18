@@ -23,7 +23,7 @@ py-modules = []
 [project.optional-dependencies]
 # Cloud provider dependencies (installed automatically based on provider selection)
 aws = [
-    "boto3==1.43.125",
+    "boto3==1.44.0",
 ]
 # Keep these SDK pins aligned with azure.azcollection in requirements.yml.
 # The collection imports all of these from azure_rm_common, even for ARM deployments.
@@ -70,10 +70,10 @@ azure = [
     "azure-mgmt-web==7.3.1",
     "azure-storage-blob==12.23.0b1",
     "azure-storage-file-share==12.24.0",
-    "msgraph-sdk==1.6.0",
+    "msgraph-sdk==1.65.0",
 ]
 gcp = [
-    "google-auth==2.62.1",
+    "google-auth==2.62.2",
     "requests>=2.34.2",
 ]
 hetzner = [
@@ -169,7 +169,7 @@ dev = [
     "prek==0.5.10",        # Same hook runner locally and in CI
     "setuptools==84.2.1", # Audit the installed build tool
     "ty==0.0.98",         # Keep type checks stable across CI runs
-    "hypothesis==6.170.14",
+    "hypothesis==6.170.15",
 ]
 
 [tool.pytest.ini_options]
