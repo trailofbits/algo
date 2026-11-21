@@ -115,4 +115,4 @@
         remove: true
         force: true
       when: item not in users
-      loop: "{{ getent_group['algo'][2].split(',') }}"
+      loop: "{{ ansible_facts['getent_group']['algo'][2].split(',') | select | list }}"
