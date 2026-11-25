@@ -41,6 +41,16 @@
                     KeepAlive yes
                     ServerAliveInterval 30
 
+        - name: Record active and retired devices before updating credentials
+          algo_enrollment:
+            directory: "{{ playbook_dir }}/configs/{{ IP_subject_alt_name }}"
+            users: "{{ users }}"
+          become: false
+          delegate_to: localhost
+          vars:
+            ansible_python_interpreter: "{{ ansible_playbook_python }}"
+          tags: always
+
         - import_role:
             name: common
           tags: common

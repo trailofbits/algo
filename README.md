@@ -42,7 +42,7 @@ The easiest way to get an Algo server running is to run it on your local system 
         git clone https://github.com/trailofbits/algo.git
         ```
 
-3. **Set your configuration options.** Open `config.cfg` in your favorite text editor. Specify the users you want to create in the `users` list. Create a unique user for each device you plan to connect to your VPN. You should also review the other options before deployment, as changing your mind about them later [may require you to deploy a brand new server](https://github.com/trailofbits/algo/blob/main/docs/faq.md#i-deployed-an-algo-server-can-you-update-it-with-new-features).
+3. **Set your configuration options.** Open `config.cfg` in your favorite text editor. Specify the users you want to create in the `users` list. Create a unique user for each device you plan to connect to your VPN. When replacing a device, give it a new name. Algo reserves removed names in the server's local configuration directory. Upgraded deployments import retained IPsec revocations. For names removed before the upgrade on WireGuard-only or SSH-only deployments, choose a new name because older deployments did not record which devices were retired. You should also review the other options before deployment, as changing your mind about them later [may require you to deploy a brand new server](https://github.com/trailofbits/algo/blob/main/docs/faq.md#i-deployed-an-algo-server-can-you-update-it-with-new-features).
 
 4. **Start the deployment.** Return to your terminal. In the Algo directory, run the appropriate script for your platform:
 
