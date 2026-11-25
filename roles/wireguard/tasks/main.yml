@@ -74,14 +74,12 @@
     state: started
     enabled: true
 
-- name: Delete the PKI directory
+- name: Discard WireGuard management keys after one-time provisioning
   file:
     path: "{{ wireguard_pki_path }}"
     state: absent
   become: false
   delegate_to: localhost
-  when:
-    - not algo_store_pki
-    - not pki_in_tmpfs
+  when: not wireguard_store_keys | bool
 
 - meta: flush_handlers

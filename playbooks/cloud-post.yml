@@ -43,6 +43,7 @@
 - name: Mount tmpfs
   import_tasks: tmpfs/main.yml
   when:
+    - ipsec_enabled | bool
     - pki_in_tmpfs
     - not algo_store_pki
     - ansible_facts['system'] == "Darwin" or ansible_facts['system'] == "Linux"

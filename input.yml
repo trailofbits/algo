@@ -147,6 +147,6 @@
               elif _store_pki.user_input is defined -%}{{ booleans_map[_store_pki.user_input] | default(defaults['store_pki']) }}{%-
               else -%}{{ false }}{%-
               endif -%}
-              {%- endif -%}
+              {%- else -%}{{ false }}{%- endif -%}
       rescue:
         - include_tasks: playbooks/rescue.yml
