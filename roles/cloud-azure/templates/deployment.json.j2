@@ -223,6 +223,17 @@
     }
   ],
   "outputs": {
+    "algoResourceIds": {
+      "type": "array",
+      "value": [
+        "[resourceId('Microsoft.Compute/virtualMachines', resourceGroup().name)]",
+        "[reference(resourceId('Microsoft.Compute/virtualMachines', resourceGroup().name), '2016-04-30-preview').storageProfile.osDisk.managedDisk.id]",
+        "[resourceId('Microsoft.Network/networkInterfaces', resourceGroup().name)]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', resourceGroup().name)]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', resourceGroup().name)]",
+        "[resourceId('Microsoft.Network/virtualNetworks', resourceGroup().name)]"
+      ]
+    },
     "publicIPAddresses": {
       "type": "string",
       "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses',resourceGroup().name),providers('Microsoft.Network', 'publicIPAddresses').apiVersions[0]).ipAddress]"

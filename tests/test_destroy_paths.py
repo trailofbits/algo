@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -119,17 +120,40 @@ def prepare_azure_destroy(tmp_path: Path) -> tuple[Path, Path]:
         "Path(os.environ['DESTROY_TEST_CALL']).write_text(json.dumps(module.params))\n"
         "module.exit_json(changed=True)\n",
     )
+    (collection / "azure_rm_resource.py").write_text(
+        "import json, os\nfrom pathlib import Path\nfrom ansible.module_utils.basic import AnsibleModule\n"
+        "module = AnsibleModule(argument_spec=dict(url=dict(), state=dict(), status_code=dict(type='list'), "
+        "polling_interval=dict(type='int'), polling_timeout=dict(type='int'), secret=dict(no_log=True), tenant=dict(), client_id=dict(), subscription_id=dict()))\n"
+        "with Path(os.environ['DESTROY_TEST_CALL'] + '.ids').open('a') as log: log.write(module.params['url']+'\\n')\n"
+        "module.exit_json(changed=True)\n",
+    )
     (collection / "azure_rm_resource_info.py").write_text(
         "from ansible.module_utils.basic import AnsibleModule\n"
-        "module = AnsibleModule(argument_spec={})\n"
-        "module.fail_json(msg='Unexpected region discovery during destruction')\n",
+        "import os, json\nmodule = AnsibleModule(argument_spec=dict(url=dict(), api_version=dict(), secret=dict(no_log=True), "
+        "tenant=dict(), client_id=dict(), subscription_id=dict()))\n"
+        "assert module.params['url'].endswith('/resources')\n"
+        "module.exit_json(status_code=200, response=[dict(id=r) for r in json.loads(os.environ['AZURE_TEST_RESOURCES'])])\n",
     )
     return server, tmp_path / "deleted.json"
 
 
-def test_azure_destroy_does_not_require_region(tmp_path: Path):
-    """Delete an old Azure deployment without prompting for or reading available regions."""
+@pytest.mark.parametrize("scenario", ["recorded", "foreign", "wrong-subscription", "legacy", "retry"])
+def test_azure_destroy_uses_only_recorded_resources(tmp_path: Path, scenario):
+    """Exercise local retention, inventory checks and dependency-ordered teardown."""
     server, call = prepare_azure_destroy(tmp_path)
+    base = "/subscriptions/test-subscription/resourceGroups/test-vpn/providers/"
+    ids = [base + "Microsoft.Compute/virtualMachines/test-vpn", base + "Microsoft.Network/networkInterfaces/test-vpn"]
+    existing = list(ids)
+    if scenario == "foreign":
+        existing.append(base + "Microsoft.Network/networkInterfaces/other")
+    if scenario == "wrong-subscription":
+        ids[-1] = ids[-1].replace("test-subscription", "other")
+        existing = [ids[0]]
+    if scenario == "retry":
+        existing = [ids[-1]]
+    if scenario != "legacy":
+        path = server / ".config.yml"
+        path.write_text(path.read_text() + yaml.safe_dump({"azure_resource_ids": ids}))
     environment = {key: value for key, value in os.environ.items() if not key.startswith("AZURE_")}
     result = subprocess.run(
         [
@@ -159,6 +183,7 @@ def test_azure_destroy_does_not_require_region(tmp_path: Path):
             "ANSIBLE_LOCAL_TEMP": str(tmp_path / "controller"),
             "ANSIBLE_REMOTE_TEMP": str(tmp_path / "remote"),
             "DESTROY_TEST_CALL": str(call),
+            "AZURE_TEST_RESOURCES": json.dumps(existing),
         },
         stdin=subprocess.DEVNULL,
         capture_output=True,
@@ -166,12 +191,17 @@ def test_azure_destroy_does_not_require_region(tmp_path: Path):
         timeout=30,
         check=False,
     )
+    if scenario in {"legacy", "wrong-subscription", "foreign"}:
+        assert result.returncode != 0, result.stdout + result.stderr
+        assert server.exists() and not call.exists() and not Path(f"{call}.ids").exists()
+        return
     assert result.returncode == 0, result.stdout + result.stderr
     assert not server.exists()
+    assert Path(f"{call}.ids").read_text().splitlines() == existing
     assert json.loads(call.read_text()) == {
         "name": "test-vpn",
         "state": "absent",
-        "force_delete_nonempty": True,
+        "force_delete_nonempty": False,
         "subscription_id": "test-subscription",
         "secret": None,
         "tenant": None,

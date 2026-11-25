@@ -2,6 +2,29 @@
 - name: Include prompts
   import_tasks: prompts.yml
 
+- import_tasks: inventory.yml
+
+- name: Check ownership before reusing names in a nonempty Azure group
+  when: azure_existing_ids | length > 0
+  block:
+    - name: Read the previous Algo deployment record
+      azure.azcollection.azure_rm_resource_info:
+        url: >-
+          /subscriptions/{{ subscription_id }}/resourceGroups/{{ algo_server_name }}/providers/Microsoft.Resources/deployments/{{ algo_server_name }}
+        api_version: "2021-04-01"
+        secret: "{{ secret | default(omit, true) }}"
+        tenant: "{{ tenant | default(omit, true) }}"
+        client_id: "{{ client_id | default(omit, true) }}"
+        subscription_id: "{{ subscription_id }}"
+      register: azure_previous
+
+    - name: Require a recorded Algo deployment to own every existing resource
+      assert:
+        that:
+          - azure_previous.status_code == 200
+          - azure_existing_ids | difference(azure_previous.response[0].properties.outputs.algoResourceIds.value | default([]) | map('lower')) | length == 0
+        fail_msg: Select an unused resource group or verify and migrate the existing Azure deployment first.
+
 - name: Create AlgoVPN Server
   azure.azcollection.azure_rm_deployment:
     state: present
@@ -37,6 +60,7 @@
   register: azure_rm_deployment
 
 - set_fact:
+    azure_resource_ids: "{{ azure_rm_deployment.deployment.outputs.algoResourceIds.value }}"
     cloud_instance_ip: "{{ azure_rm_deployment.deployment.outputs.publicIPAddresses.value }}"
     ansible_ssh_user: algo
     ansible_ssh_port: "{{ ssh_port }}"

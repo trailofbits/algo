@@ -1,0 +1,26 @@
+---
+- name: Read the resources already in the Azure group
+  azure.azcollection.azure_rm_resource_info:
+    url: "/subscriptions/{{ subscription_id }}/resourceGroups/{{ algo_server_name }}/resources"
+    api_version: "2021-04-01"
+    secret: "{{ secret | default(omit, true) }}"
+    tenant: "{{ tenant | default(omit, true) }}"
+    client_id: "{{ client_id | default(omit, true) }}"
+    subscription_id: "{{ subscription_id }}"
+  register: azure_group_inventory
+
+- name: Collect current resource IDs
+  set_fact:
+    azure_existing_ids: >-
+      {{ azure_group_inventory.response | selectattr('id', 'defined') | map(attribute='id') | map('lower') | list
+         if azure_group_inventory.status_code == 200 else [] }}
+
+- name: Check Azure returned a complete inventory
+  assert:
+    that:
+      - azure_group_inventory.status_code in [200, 404]
+      - >-
+        azure_group_inventory.status_code == 404 or
+        azure_group_inventory.response in [[], [{'value': []}]] or
+        azure_existing_ids | length == azure_group_inventory.response | length
+    fail_msg: Azure returned an unrecognized resource inventory. Inspect the group before retrying.
