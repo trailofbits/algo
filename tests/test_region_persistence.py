@@ -40,8 +40,9 @@ def test_region_survives_host_transition(
     inventory_name = "Add the server to an inventory group"
     inventory = next(task for task in post if task.get("name") == inventory_name)
     server = yaml.safe_load((ROOT / "server.yml").read_text())[0]["tasks"][0]["block"]
-    final = next(task for task in server if task.get("tags") == "always")["block"]
-    save = next(task for task in final if task.get("name") == "Dump the configuration")
+    save = next(
+        task for group in server for task in group.get("block", []) if task.get("name") == "Dump the configuration"
+    )
     target = tmp_path / "configs/192.0.2.1"
     target.mkdir(parents=True)
     playbook = tmp_path / "region.yml"

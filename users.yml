@@ -116,7 +116,7 @@
           delegate_to: localhost
           vars:
             ansible_python_interpreter: "{{ ansible_playbook_python }}"
-          tags: always
+          tags: [wireguard, ipsec, ssh_tunneling, update-users]
 
         - import_role:
             name: common

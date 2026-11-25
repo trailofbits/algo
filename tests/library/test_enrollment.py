@@ -1,9 +1,14 @@
 """Check state transitions for replacement devices, including pre-upgrade history."""
 
 import json
+import os
+import subprocess
+import sys
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 
 import pytest
+import yaml
 from algo_enrollment import reconcile
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
@@ -68,3 +73,29 @@ def test_invalid_history_preserved(tmp_path):
     with pytest.raises(ValueError, match="valid enrollment record"):
         reconcile(tmp_path, ["phone"], check=False)
     assert history.read_text() == '{"active":false}'
+
+
+@pytest.mark.parametrize(("entry", "index"), [("server.yml", 0), ("users.yml", 1)])
+def test_enrollment_precedes_credentials_on_user_update(tmp_path, entry, index):
+    root = Path(__file__).resolve().parents[2]
+    tasks = yaml.safe_load((root / entry).read_text())[index]["tasks"][0]["block"]
+    position, enroll = next((n, task) for n, task in enumerate(tasks) if "algo_enrollment" in task)
+    assert all(n > position for n, task in enumerate(tasks) if "import_role" in task)
+    playbook = tmp_path / "enroll.yml"
+    playbook.write_text(yaml.safe_dump([{"hosts": "localhost", "gather_facts": False, "tasks": [enroll]}]))
+    record = tmp_path / "configs/server/.users.json"
+    args = [sys.executable, "-m", "ansible.cli.playbook", "-i", "localhost,", "-c", "local", str(playbook)]
+    env = {**os.environ, "ANSIBLE_LOCAL_TEMP": str(tmp_path / "controller")}
+    for tag in ("privacy", "update-users"):
+        completed = subprocess.run(
+            [*args, "--tags", tag, "-e", json.dumps({"IP_subject_alt_name": "server", "users": ["phone"]})],
+            cwd=root,
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        assert completed.returncode == 0, completed.stdout + completed.stderr
+        assert record.exists() == (tag == "update-users")
+    assert json.loads(record.read_text()) == {"active": ["phone"], "retired": []}
