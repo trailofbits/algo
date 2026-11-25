@@ -32,6 +32,37 @@
 
 - meta: flush_handlers
 
+- name: Refresh IPsec revocations after deployment or a user update
+  tags: update-users
+  when: installed_crl.changed | default(false) or 'update-users' in ansible_run_tags
+  block:
+    - name: Gather service state before reloading strongSwan
+      service_facts: {}
+
+    # A previous run may have installed the CRL and stopped before reloading it.
+    - name: Refresh the running daemon's revocation list
+      command: ipsec {{ item }}
+      loop: [purgecrls, rereadcrls]
+      when: ansible_facts.services[strongswan_service ~ '.service'].state == 'running'
+      register: refresh_result
+      until: refresh_result is succeeded
+      retries: 3
+      delay: 2
+      changed_when: false
+
+    - name: Close established IPsec sessions belonging to removed users
+      algo_ipsec_sessions:
+        retired: "{{ all_users | difference(users) }}"
+        domain: "{{ openssl_constraint_random_id }}"
+      when:
+        - "'update-users' in ansible_run_tags"
+        - ansible_facts.services[strongswan_service ~ '.service'].state == 'running'
+        - all_users | difference(users) | length > 0
+      register: retired_connections
+      until: retired_connections is succeeded
+      retries: 3
+      delay: 1
+
 - name: Delete the PKI directory
   file:
     path: "{{ ipsec_pki_path }}"
