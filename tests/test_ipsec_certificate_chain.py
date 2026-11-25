@@ -221,10 +221,8 @@ def test_pkcs12_export(deployment: CertificateDeployment, include_ca: bool):
 def generate_certificates(deployment: CertificateDeployment) -> None:
     """Run production PKI and profile tasks entirely in a temporary workspace."""
     workspace = deployment.workspace
-    (workspace / "templates").symlink_to(
-        ROOT / "roles/strongswan/templates",
-        target_is_directory=True,
-    )
+    if not (workspace / "templates").exists():
+        (workspace / "templates").symlink_to(ROOT / "roles/strongswan/templates", target_is_directory=True)
     production = yaml.safe_load((ROOT / "roles/strongswan/tasks/openssl.yml").read_text())
     playbook = [
         {
@@ -296,4 +294,15 @@ def verify_certificate(ca: str, certificate: str):
         text=True,
         timeout=10,
         check=False,
+    )
+
+
+def test_apple_profile_identity_survives_refresh(deployment):
+    profile = deployment.workspace / "config/apple/phone.mobileconfig"
+    first = profile.read_bytes()
+    generate_certificates(deployment)
+    assert profile.read_bytes() == first
+    payloads = plistlib.loads(first)["PayloadContent"]
+    assert payloads[0]["IKEv2"]["PayloadCertificateUUID"] == next(
+        item["PayloadUUID"] for item in payloads if item["PayloadType"] == "com.apple.security.pkcs12"
     )

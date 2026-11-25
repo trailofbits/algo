@@ -42,30 +42,34 @@ def test_qr_generation_without_cli_on_path(tmp_path: Path, writable: bool):
         "users": ["test-user"],
         "ansible_python_interpreter": sys.executable,
     }
-    result = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "ansible.cli.playbook",
-            str(playbook),
-            "-i",
-            "localhost,",
-            "-c",
-            "local",
-            "-e",
-            json.dumps(variables),
-        ],
-        env={
-            **os.environ,
-            "PATH": "/usr/bin:/bin",
-            "ANSIBLE_LOCAL_TEMP": str(tmp_path / "local"),
-            "ANSIBLE_REMOTE_TEMP": str(tmp_path / "remote"),
-        },
-        capture_output=True,
-        text=True,
-        timeout=30,
-        check=False,
-    )
+
+    def render():
+        return subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "ansible.cli.playbook",
+                str(playbook),
+                "-i",
+                "localhost,",
+                "-c",
+                "local",
+                "-e",
+                json.dumps(variables),
+            ],
+            env={
+                **os.environ,
+                "PATH": "/usr/bin:/bin",
+                "ANSIBLE_LOCAL_TEMP": str(tmp_path / "local"),
+                "ANSIBLE_REMOTE_TEMP": str(tmp_path / "remote"),
+            },
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+
+    result = render()
     assert "example-secret" not in result.stdout + result.stderr
     if not writable:
         assert result.returncode != 0
@@ -74,6 +78,14 @@ def test_qr_generation_without_cli_on_path(tmp_path: Path, writable: bool):
     assert output.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
     assert output.stat().st_mode & 0o777 == 0o600
     assert not (configs / "removed-user.png").exists()
+    before = output.stat().st_mtime_ns
+    again = render()
+    assert again.returncode == 0 and "changed=0" in again.stdout
+    assert output.stat().st_mtime_ns == before
+    output.chmod(0o644)
+    assert render().returncode == 0
+    assert output.stat().st_mode & 0o777 == 0o600
+    assert output.stat().st_mtime_ns == before
     decoder = shutil.which("zbarimg")
     if os.environ.get("ALGO_NETWORK_RUNTIME") == "1":
         assert decoder, "Install zbarimg in the network test container"

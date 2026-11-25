@@ -162,9 +162,12 @@ def verify_wireguard_configs(tmp_path: Path, endpoint: str, keepalive: int) -> N
     )
     expected_client_public = client_key.public_key().public_bytes_raw()
     assert base64.b64decode(server["Peer"]["PublicKey"], validate=True) == expected_client_public
+    platform_identifiers = set()
     for system in ("ios", "macos"):
         profile = plistlib.loads((tmp_path / f"{system}.mobileconfig").read_bytes())
         assert profile["PayloadType"] == "Configuration"
+        assert profile["PayloadIdentifier"] not in platform_identifiers
+        platform_identifiers.add(profile["PayloadIdentifier"])
         vpn = profile["PayloadContent"][0]
         assert vpn["VPNSubType"] == f"com.wireguard.{system}"
         apple_config = configparser.ConfigParser(interpolation=None)

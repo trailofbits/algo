@@ -45,7 +45,3 @@ ciphers:
   defaults:
     ike: aes256gcm16-prfsha512-ecp384!
     esp: aes256gcm16-ecp384!
-
-pkcs12_PayloadCertificateUUID: "{{ 900000 | random | to_uuid | upper }}"
-VPN_PayloadIdentifier: "{{ 800000 | random | to_uuid | upper }}"
-CA_PayloadIdentifier: "{{ 700000 | random | to_uuid | upper }}"

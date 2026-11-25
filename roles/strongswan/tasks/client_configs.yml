@@ -1,15 +1,10 @@
 ---
-- name: Register p12 PayloadContent
-  shell: |
-    set -o pipefail
-    cat private/{{ item }}.p12 |
-    base64
-  register: PayloadContent
-  changed_when: false
-  args:
-    executable: bash
-    chdir: "{{ ipsec_pki_path }}"
+- name: Read the PKCS#12 bundle for each Apple profile
+  slurp:
+    src: "{{ ipsec_pki_path }}/private/{{ item }}.p12"
   loop: "{{ users }}"
+  register: client_bundles
+  no_log: true
 
 - name: Set facts for mobileconfigs
   set_fact:
@@ -18,12 +13,12 @@
 - name: Build the mobileconfigs
   template:
     src: mobileconfig.j2
-    dest: "{{ ipsec_config_path }}/apple/{{ item.0 }}.mobileconfig"
+    dest: "{{ ipsec_config_path }}/apple/{{ bundle.item }}.mobileconfig"
     mode: '0600'
-  with_together:
-    - "{{ users }}"
-    - "{{ PayloadContent.results }}"
-  no_log: "{{ algo_no_log | bool }}"
+  loop: "{{ client_bundles.results }}"
+  loop_control:
+    loop_var: bundle
+  no_log: true
 
 - name: Build the client ipsec config file
   template:
