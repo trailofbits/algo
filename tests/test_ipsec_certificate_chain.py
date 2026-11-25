@@ -66,10 +66,14 @@ def test_server_certificate_chain(deployment: CertificateDeployment):
     client = verify_certificate(ca, str(deployment.pki / "certs/phone.crt"))
     assert client.returncode == 0, client.stdout + client.stderr
     certificate = deployment.certificate(SERVER_ADDRESS)
-    common_name = certificate.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value
     profile_path = deployment.workspace / "config/apple/phone.mobileconfig"
     ike = plistlib.loads(profile_path.read_bytes())["PayloadContent"][0]["IKEv2"]
-    assert ike["ServerCertificateCommonName"] == common_name
+    # Apple checks ServerCertificateCommonName against the SANs and ignores the subject CN
+    # when SANs are present, so the expected name must be one of the certificate's SANs.
+    san = certificate.extensions.get_extension_for_class(x509.SubjectAlternativeName).value
+    san_names = {str(ip) for ip in san.get_values_for_type(x509.IPAddress)}
+    san_names.update(san.get_values_for_type(x509.DNSName))
+    assert ike["ServerCertificateCommonName"] in san_names
     assert ike["ServerCertificateIssuerCommonName"] == SERVER_ADDRESS
     assert ike["RemoteIdentifier"] == SERVER_ADDRESS
 
