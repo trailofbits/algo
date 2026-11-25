@@ -103,7 +103,8 @@ def linode_workspace(tmp_path):
     for filename in ("destroy.yml", "config.cfg"):
         shutil.copy(ROOT / filename, tmp_path)
     (tmp_path / "playbooks").mkdir()
-    shutil.copy(ROOT / "playbooks/rescue.yml", tmp_path / "playbooks")
+    for name in ("rescue.yml", "install-provider.yml"):
+        shutil.copy(ROOT / "playbooks" / name, tmp_path / "playbooks")
     shutil.copytree(ROOT / "roles/cloud-linode", tmp_path / "roles/cloud-linode")
     server = tmp_path / "configs/192.0.2.1"
     server.mkdir(parents=True)

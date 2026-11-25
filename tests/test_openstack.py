@@ -237,7 +237,7 @@ def test_openrc_or_named_cloud(monkeypatch, auth_url, cloud_name, should_fail):
     monkeypatch.setenv("OS_CLOUD", cloud_name)
     loader = DataLoader()
     tasks = loader.load_from_file(
-        str(ROOT / "roles/cloud-openstack/tasks/main.yml"),
+        str(ROOT / "roles/cloud-openstack/tasks/auth.yml"),
         trusted_as_template=True,
     )
     templar = Templar(loader=loader)

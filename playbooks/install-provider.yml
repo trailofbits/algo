@@ -1,0 +1,16 @@
+---
+- name: Install cloud provider dependencies
+  command:
+    argv: [uv, sync, --locked, --inexact, --extra, '{{ _provider_extras[algo_provider] }}']
+  vars:
+    _provider_extras:
+      ec2: aws
+      lightsail: aws
+      azure: azure
+      gce: gcp
+      hetzner: hetzner
+      linode: linode
+      openstack: openstack
+      cloudstack: cloudstack
+  when: algo_provider in _provider_extras
+  changed_when: false

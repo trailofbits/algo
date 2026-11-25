@@ -1,0 +1,9 @@
+---
+- fail:
+    msg: >-
+      OpenStack credentials are not set. Download it from the OpenStack dashboard->Compute->API Access
+      and source it in the shell (eg: source /tmp/dhc-openrc.sh), or set OS_CLOUD
+      to a configured cloud in clouds.yaml.
+  when:
+    - lookup('env', 'OS_AUTH_URL') | length == 0
+    - lookup('env', 'OS_CLOUD') | length == 0
