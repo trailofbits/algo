@@ -198,13 +198,5 @@ def test_azure_destroy_uses_only_recorded_resources(tmp_path: Path, scenario):
     assert result.returncode == 0, result.stdout + result.stderr
     assert not server.exists()
     assert Path(f"{call}.ids").read_text().splitlines() == existing
-    assert json.loads(call.read_text()) == {
-        "name": "test-vpn",
-        "state": "absent",
-        "force_delete_nonempty": False,
-        "subscription_id": "test-subscription",
-        "secret": None,
-        "tenant": None,
-        "client_id": None,
-    }
+    assert not call.exists(), "Teardown must never issue a cascading resource-group delete"
     assert "List regions" not in result.stdout

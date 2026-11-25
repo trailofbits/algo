@@ -34,15 +34,3 @@
     subscription_id: "{{ subscription_id }}"
   loop: "{{ _server_cfg.azure_resource_ids | default([]) }}"
   when: item | lower in azure_existing_ids
-
-# The collection checks again before deleting the group. Keep empty groups from legacy deployments under administrator control.
-- name: Remove the empty Azure resource group
-  azure.azcollection.azure_rm_resourcegroup:
-    name: "{{ algo_server_name }}"
-    state: absent
-    force_delete_nonempty: false
-    secret: "{{ secret | default(omit, true) }}"
-    tenant: "{{ tenant | default(omit, true) }}"
-    client_id: "{{ client_id | default(omit, true) }}"
-    subscription_id: "{{ subscription_id }}"
-  when: _server_cfg.azure_resource_ids | default([]) | length > 0 and azure_group_inventory.status_code == 200
