@@ -78,3 +78,7 @@ region; adjust `cloud_providers.azure.size` in `config.cfg` if Azure rejects the
 Algo installs the Azure Python dependencies from `uv.lock`. Their versions match the Azure
 Ansible collection pinned in `requirements.yml`; upgrading individual Azure SDK packages can
 break collection imports. Update and test the collection and SDK versions together.
+
+## Teardown
+
+Algo records the resource IDs returned by its ARM deployment. Teardown stops if the group contains a resource outside that record or the configuration predates the record. After deleting the recorded resources, Algo leaves the group itself available for inspection. You can remove an empty group in the Azure portal.

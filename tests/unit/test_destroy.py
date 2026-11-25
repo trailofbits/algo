@@ -155,14 +155,6 @@ def test_linode_uses_label_not_name():
     assert "label:" in content, "Linode destroy should use 'label' parameter"
 
 
-def test_azure_deletes_resource_group():
-    """Azure destroy should delete the entire resource group."""
-    with open("roles/cloud-azure/tasks/destroy.yml") as f:
-        content = f.read()
-    assert "azure_rm_resourcegroup" in content
-    assert "force_delete_nonempty" in content
-
-
 def test_algo_script_has_destroy_command():
     """The algo shell script must include the destroy subcommand."""
     with open("algo") as f:

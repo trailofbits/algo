@@ -1,10 +1,36 @@
 ---
-- name: Destroy Azure resource group
-  azure.azcollection.azure_rm_resourcegroup:
-    name: "{{ algo_server_name }}"
+- import_tasks: inventory.yml
+
+- name: Require all existing resources to appear in the saved deployment
+  assert:
+    that:
+      - _server_cfg.azure_resource_ids | default([]) | length > 0
+      - azure_existing_ids | difference(_server_cfg.azure_resource_ids | map('lower')) | length == 0
+    fail_msg: Teardown requires a saved inventory covering every resource in this Azure group. Inspect legacy or shared groups before removing anything.
+
+- name: Check that every recorded resource belongs to this subscription and deployment group
+  assert:
+    that:
+      - item is string
+      - item.lower().startswith(azure_resource_prefix | lower)
+      - >-
+        item[azure_resource_prefix | length:] is match(
+        '^Microsoft[.](Compute/(virtualMachines|disks)|Network/(networkInterfaces|publicIPAddresses|networkSecurityGroups|virtualNetworks))/[^/?#]+$')
+    fail_msg: The saved Azure resource does not belong to the selected subscription and resource group.
+  vars:
+    azure_resource_prefix: "/subscriptions/{{ subscription_id }}/resourceGroups/{{ algo_server_name }}/providers/"
+  loop: "{{ _server_cfg.azure_resource_ids | default([]) }}"
+
+- name: Remove the resources recorded by the ARM deployment in dependency order
+  azure.azcollection.azure_rm_resource:
+    url: "{{ item }}"
     state: absent
-    force_delete_nonempty: true
+    status_code: [200, 202, 204, 404]
+    polling_timeout: 600
+    polling_interval: 5
     secret: "{{ secret | default(omit, true) }}"
     tenant: "{{ tenant | default(omit, true) }}"
     client_id: "{{ client_id | default(omit, true) }}"
     subscription_id: "{{ subscription_id }}"
+  loop: "{{ _server_cfg.azure_resource_ids | default([]) }}"
+  when: item | lower in azure_existing_ids

@@ -83,6 +83,9 @@
                   {% if algo_provider != "local" %}
                   ansible_ssh_private_key_file: {{ SSH_keys.private }}
                   {% endif %}
+                  {% if algo_provider == 'azure' and azure_resource_ids is defined %}
+                  azure_resource_ids: {{ azure_resource_ids | to_json }}
+                  {% endif %}
                   algo_provider: {{ algo_provider }}
                   algo_server_name: {{ algo_server_name }}
                   algo_region: {{ algo_region | default('', true) | to_json }}
