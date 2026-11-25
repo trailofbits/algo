@@ -28,5 +28,6 @@ Ruff handles Python linting, import sorting, and formatting; ty checks types, an
 hooks. Black is installed only as an upstream dependency of ansible-lint, which uses it to check
 Jinja expressions in playbooks. There is no Black formatter hook for Python files.
 
-Dependabot groups Python development tools and Azure dependencies separately from other Python
-dependencies so an Azure compatibility issue does not block routine tooling updates.
+Dependabot groups Python development tools separately from other Python dependencies. It skips the
+Azure SDK pins, including `msgraph-sdk`. Upgrade those pins alongside `azure.azcollection` in
+`requirements.yml`.
