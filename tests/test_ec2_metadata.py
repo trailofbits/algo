@@ -38,3 +38,21 @@ esac
     assert "test-metadata-token" not in result.stdout + result.stderr
     if not available:
         assert "Supply the public VPN endpoint" in result.stderr
+
+
+@pytest.mark.parametrize("piped", [False, True], ids=["file", "stdin"])
+def test_bootstrap_reaches_package_install(tmp_path, piped):
+    """Exercise both documented launch methods, stopping at the package manager."""
+    installer = ROOT / "install.sh"
+    apt = tmp_path / "apt-get"
+    apt.write_text('#!/bin/sh\n[ "$1" = update ] || exit 1\nexit 73\n')
+    apt.chmod(0o755)
+    result = subprocess.run(
+        ["bash", "-s" if piped else str(installer)],
+        input=installer.read_bytes() if piped else None,
+        env={**os.environ, "METHOD": "local", "PATH": f"{tmp_path}:{os.environ['PATH']}"},
+        capture_output=True,
+        check=False,
+        timeout=5,
+    )
+    assert result.returncode == 73, result.stderr.decode()

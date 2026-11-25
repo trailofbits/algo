@@ -134,7 +134,8 @@ deployAlgo() {
     tee /var/log/algo.log
 }
 
-if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+# Bash leaves BASH_SOURCE empty when reading the installer from standard input.
+if [[ ${BASH_SOURCE[0]:-$0} == "$0" ]]; then
   cd /opt/
   if [[ $METHOD == cloud && $ENDPOINT == localhost ]]; then
     publicIpFromMetadata
