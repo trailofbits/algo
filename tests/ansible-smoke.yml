@@ -28,6 +28,8 @@
           - not algo_ondemand_wifi
           - not algo_dns_adblocking
           - not algo_ssh_tunneling
+          - algo_store_pki is boolean
+          - not algo_store_pki
         fail_msg: Algo input handling or localhost inventory setup changed unexpectedly.
 
     - name: Generate WireGuard keys with the production tasks

@@ -29,6 +29,25 @@
           (both with sudo, or both without sudo).
       when: config_dir_stat.stat.pw_name != ansible_facts['user_id']
 
+- name: Verify the saved WireGuard management state
+  when: wireguard_enabled | default(false) | bool
+  block:
+    - name: Check the server key and user address index
+      stat:
+        path: "configs/{{ algo_server }}/wireguard/.pki/{{ item }}"
+      loop:
+        - "private/{{ IP_subject_alt_name }}.raw"
+        - index.txt
+      register: wireguard_saved_keys
+
+    - name: Require the original WireGuard management keys
+      assert:
+        that: item.stat.isreg | default(false)
+        fail_msg: Restore the saved WireGuard keys and index from backup before updating users.
+      loop: "{{ wireguard_saved_keys.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
 - name: Test SSH connectivity to server
   when: algo_server != 'localhost'
   block:

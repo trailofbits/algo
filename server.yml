@@ -119,6 +119,7 @@
               vars:
                 facts: "{{ hostvars['localhost'] }}"
               when:
+                - ipsec_enabled | bool
                 - pki_in_tmpfs
                 - not algo_store_pki
 
