@@ -103,11 +103,11 @@
                                     'azure', 'linode']
 
         - name: Gather provider credentials
-          include_tasks:
-            file: "roles/cloud-{{ algo_provider }}/tasks/{{ provider_credentials_file }}.yml"
+          include_tasks: "{{ lookup('first_found', provider_credentials) }}"
           vars:
-            provider_credentials_file: >-
-              {{ 'auth' if algo_provider in ['azure', 'linode', 'gce'] else 'prompts' }}
+            provider_credentials:
+              files: [auth.yml, prompts.yml]
+              paths: ["{{ playbook_dir }}/roles/cloud-{{ algo_provider }}/tasks"]
           when: algo_provider != "local"
 
         - name: Display destroy plan
