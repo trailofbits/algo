@@ -17,7 +17,10 @@ openssl_constraint_random_id: "{{ IP_subject_alt_name | to_uuid }}.algo"
 # Subject Alternative Name (SAN) configuration - CRITICAL for client compatibility
 # Modern clients (especially macOS/iOS) REQUIRE SAN extension in server certificates
 # Without SAN, IKEv2 connections will fail with certificate validation errors
-subjectAltName_type: "{{ 'DNS' if IP_subject_alt_name | regex_search('[a-z]') else 'IP' }}"
+ipsec_excluded_dns_suffixes: [com, org, net, gov, edu, mil, int]
+ipsec_excluded_ipv4_ranges: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16]
+ipsec_excluded_ipv6_ranges: ['fc00::/7', 'fe80::/10', '2001:db8::/32']
+subjectAltName_type: "{{ 'DNS' if IP_subject_alt_name is not ansible.utils.ip_address else 'IP' }}"
 subjectAltName: >-
   {{ subjectAltName_type ~ ':' ~ IP_subject_alt_name ~
      (',IP:' ~ ansible_facts['default_ipv6']['address'] if ipv6_support | bool else '') }}
