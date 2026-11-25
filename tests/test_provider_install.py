@@ -14,7 +14,8 @@ def test_provider_install_uses_lock(tmp_path):
     root = Path(__file__).resolve().parents[1]
     cloud_pre = yaml.safe_load((root / "playbooks/cloud-pre.yml").read_text())
     task_name = "Install cloud provider dependencies"
-    task = next(task for task in cloud_pre[0]["block"] if task.get("name") == task_name)
+    entry = next(task for task in cloud_pre[0]["block"] if task.get("name") == task_name)
+    task = yaml.safe_load((root / "playbooks" / entry["import_tasks"]).read_text())[0]
     providers = [
         "ec2",
         "lightsail",

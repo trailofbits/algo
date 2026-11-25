@@ -57,20 +57,7 @@
               Check configs/{{ server_ip }}/.config.yml
 
         - name: Install cloud provider dependencies
-          command:
-            argv: [uv, sync, --locked, --inexact, --extra, '{{ _provider_extras[algo_provider] }}']
-          vars:
-            _provider_extras:
-              ec2: aws
-              lightsail: aws
-              azure: azure
-              gce: gcp
-              hetzner: hetzner
-              linode: linode
-              openstack: openstack
-              cloudstack: cloudstack
-          when: algo_provider in _provider_extras
-          changed_when: false
+          import_tasks: playbooks/install-provider.yml
 
         - name: Set region from stored config
           set_fact:
@@ -107,7 +94,7 @@
             file: "roles/cloud-{{ algo_provider }}/tasks/{{ provider_credentials_file }}.yml"
           vars:
             provider_credentials_file: >-
-              {{ 'auth' if algo_provider in ['azure', 'linode'] else 'prompts' }}
+              {{ 'auth' if algo_provider in ['azure', 'linode', 'openstack'] else 'prompts' }}
           when: algo_provider != "local"
 
         - name: Display destroy plan
