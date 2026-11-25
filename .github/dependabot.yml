@@ -22,6 +22,10 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 7
+    # Revisit these exclusions when upgrading azure.azcollection in requirements.yml.
+    ignore:
+      - dependency-name: "azure-*"
+      - dependency-name: "msgraph-sdk"
     groups:
       python-tooling:
         patterns:
@@ -33,12 +37,6 @@ updates:
           - "prek"
           - "ty"
           - "setuptools"
-      python-azure:
-        patterns:
-          - "azure-*"
-          - "msal*"
-          - "msrest*"
-          - "adal"
       python:
         patterns:
           - "*"
