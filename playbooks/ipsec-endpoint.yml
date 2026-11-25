@@ -1,0 +1,19 @@
+---
+- name: Check the proposed IPsec endpoint against the CA name constraints
+  when: ipsec_enabled | bool
+  block:
+    - name: Read the signing policy
+      include_vars:
+        file: ../roles/strongswan/defaults/main.yml
+        name: ipsec_policy
+
+    - name: Require an endpoint the Algo CA can certify
+      assert:
+        that:
+          - >-
+            IP_subject_alt_name is not ansible.utils.in_any_network(ipsec_policy.ipsec_excluded_ipv4_ranges + ipsec_policy.ipsec_excluded_ipv6_ranges)
+            if IP_subject_alt_name is ansible.utils.ip_address else
+            IP_subject_alt_name.rstrip('.').lower().split('.')[-1] not in ipsec_policy.ipsec_excluded_dns_suffixes
+        fail_msg: >-
+          The IPsec CA excludes {{ IP_subject_alt_name }}. Choose a permitted server address or
+          deploy with IPsec disabled to use this endpoint with WireGuard.
