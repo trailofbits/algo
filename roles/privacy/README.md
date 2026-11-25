@@ -26,7 +26,6 @@ This Ansible role implements additional privacy enhancements for Algo VPN to min
 - Daily/weekly/monthly cleanup of old logs and temporary files
 - Package cache cleaning
 - Configurable retention policies
-- Optional shutdown cleanup for extreme privacy
 
 ### 5. Advanced Privacy Settings
 - Reduced kernel log verbosity
@@ -73,7 +72,6 @@ privacy_auto_cleanup:
 privacy_advanced:
   disable_ssh_success_logs: false
   reduce_kernel_verbosity: true
-  clear_logs_on_shutdown: false  # Extreme measure
 ```
 
 ## Security Considerations
@@ -86,7 +84,6 @@ privacy_advanced:
 ### Use With Caution
 - `exclude_auth_logs: true` - Reduces security logging, makes incident investigation harder
 - `disable_ssh_success_logs: true` - Removes audit trail for successful connections
-- `clear_logs_on_shutdown: true` - Extreme measure, makes debugging very difficult
 
 ## Files Created
 
@@ -107,7 +104,6 @@ privacy_advanced:
 - `/etc/bash.bash_logout` - History clearing on logout
 
 ### Systemd Services
-- `/etc/systemd/system/privacy-shutdown-cleanup.service` - Shutdown cleanup (optional)
 
 ## Usage
 
@@ -202,3 +198,5 @@ This role aims to balance privacy with security by:
 - Maintaining essential audit trails while reducing VPN usage traces
 
 For maximum privacy, consider running your own log analysis before enabling aggressive filtering options.
+
+Set `privacy_enhancements_enabled: false` and rerun provisioning to remove Algo’s scheduled jobs, filtering rules and journal configuration. Previous releases edited the host’s main journald and sysctl files directly. Compare those files with your saved configuration before restoring earlier values. Previously deleted logs and history cannot be recovered by changing this setting.

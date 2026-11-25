@@ -47,7 +47,18 @@ def run_privacy(
     """Execute production role conditions and handlers against recorded OS boundaries."""
     plugins = tmp_path / "plugins"
     plugins.mkdir()
-    for module in ("stat", "file", "template", "cron", "lineinfile", "systemd", "command"):
+    for module in (
+        "stat",
+        "file",
+        "template",
+        "cron",
+        "lineinfile",
+        "systemd",
+        "command",
+        "blockinfile",
+        "replace",
+        "copy",
+    ):
         (plugins / f"{module}.py").write_text(ACTION)
     playbook = tmp_path / "privacy.yml"
     playbook.write_text(
@@ -71,7 +82,6 @@ def run_privacy(
                         "privacy_advanced": {
                             "reduce_kernel_verbosity": False,
                             "disable_ssh_success_logs": True,
-                            "clear_logs_on_shutdown": True,
                         },
                     },
                 },
@@ -118,17 +128,16 @@ def test_privacy_without_or_with_rsyslog(tmp_path, installed):
     writes = [operation["args"] for operation in operations if operation["action"] != "stat"]
     rsyslog = [args for args in writes if "rsyslog" in json.dumps(args)]
     assert bool(rsyslog) == installed
-    assert {
-        "path": "/etc/systemd/journald.conf",
-        "regexp": "^#?Storage=",
-        "line": "Storage=volatile",
-        "backup": True,
-    } in writes
-    assert any(args.get("line") == "ForwardToSyslog=no" for args in writes)
+    assert any(
+        "Storage=volatile" in args.get("content", "") and "ForwardToSyslog=no" in args["content"] for args in writes
+    )
     assert any(args.get("name") == "systemd-journald" for args in writes)
     assert any(args.get("dest") == "/usr/local/bin/privacy-log-cleanup.sh" for args in writes)
     assert any(args.get("dest") == "/usr/local/bin/privacy-auto-cleanup.sh" for args in writes)
-    assert any(args.get("name") == "privacy-shutdown-cleanup.service" for args in writes)
+    assert any(
+        args.get("path", "").endswith("/privacy-shutdown-cleanup.service") and args.get("state") == "absent"
+        for args in writes
+    )
     if installed:
         assert any(args.get("_raw_params") == "rsyslogd -N1" for args in writes)
         assert any(args.get("name") == "rsyslog" for args in writes)
@@ -196,20 +205,51 @@ def test_privacy_tags_keep_shared_prerequisite(tmp_path, category, option, insta
     elif category == "privacy-logs":
         cleanup_script = "/usr/local/bin/privacy-log-cleanup.sh"
         assert not any(args.get("dest") == cleanup_script for args in writes)
-        assert any(args.get("line") == "Storage=volatile" for args in writes)
+        assert any("Storage=volatile" in args.get("content", "") for args in writes)
     elif category == "privacy-filtering":
         assert not any(args.get("_raw_params") == "rsyslogd -N1" for args in writes)
-        assert any(args.get("line") == "Storage=volatile" for args in writes)
+        assert any("Storage=volatile" in args.get("content", "") for args in writes)
     else:
-        assert not any(args.get("line") == "Storage=volatile" for args in writes)
+        assert not any("Storage=volatile" in args.get("content", "") for args in writes)
 
 
-def test_disabled_privacy_skips_shared_prerequisite(tmp_path):
-    """The always tag must still respect the role's privacy-enabled condition."""
+def test_disabled_privacy_removes_host_configuration(tmp_path):
+    """A subsequent run removes persistent jobs and config without running cleanup."""
     result, operations = run_privacy(
         tmp_path,
         True,
         options=("--extra-vars", '{"privacy_enhancements_enabled": false}'),
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert operations == []
+    jobs = {
+        item["args"]["name"] for item in operations if item["action"] == "cron" and item["args"]["state"] == "absent"
+    }
+    assert jobs == {
+        "Enhanced privacy log rotation",
+        "Privacy auto cleanup",
+        "Privacy auto cleanup weekly",
+        "Privacy auto cleanup monthly",
+    }
+    removed = {
+        item["args"].get("path")
+        for item in operations
+        if item["action"] == "file" and item["args"].get("state") == "absent"
+    }
+    assert "/etc/systemd/journald.conf.d/99-algo-privacy.conf" in removed
+    assert "/usr/local/bin/privacy-auto-cleanup.sh" in removed
+    assert "/etc/systemd/system/privacy-shutdown-cleanup.service" in removed
+    assert "/var/log/journal" not in removed
+    assert not any(item["action"] == "shell" for item in operations)
+
+
+@pytest.mark.parametrize("enabled", [False, True])
+def test_scheduled_history_uses_history_switch(enabled):
+    source = (ROOT / "roles/privacy/templates/privacy-auto-cleanup.sh.j2").read_text()
+    env = Environment(undefined=StrictUndefined)
+    env.filters["bool"] = bool
+    output = env.from_string(source).render(
+        privacy_auto_cleanup={"enabled": True, "temp_files_max_age": 1, "clean_package_cache": False},
+        privacy_log_rotation={"max_age": 7},
+        privacy_history_clearing={"clear_bash_history": enabled},
+    )
+    assert (".bash_history" in output) == enabled

@@ -1,0 +1,5 @@
+---
+# SHA-256 of Algo's two historical logout script variants.
+privacy_logout_hashes:
+  - 3a54bcc7f9a598bf9b333e06b4fd1413484ec9b038f42265e38da18b6f9b5724
+  - 72466d6d84ca70272a1a171550d2f05c39f255b19699d82f5a2ecc764e1a8428

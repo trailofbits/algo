@@ -53,5 +53,3 @@ privacy_advanced:
   disable_ssh_success_logs: false
   # Reduce kernel log verbosity
   reduce_kernel_verbosity: true
-  # Clear logs on shutdown (use with caution)
-  clear_logs_on_shutdown: false

@@ -21,10 +21,3 @@
   systemd:
     daemon_reload: yes
   become: yes
-
-- name: enable privacy shutdown cleanup
-  systemd:
-    name: privacy-shutdown-cleanup.service
-    enabled: yes
-    daemon_reload: yes
-  become: yes

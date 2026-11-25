@@ -1,0 +1,49 @@
+---
+- name: Find existing service shell startup files
+  stat:
+    path: "{{ item }}/.bashrc"
+  loop: [/root, /home/ubuntu]
+  register: privacy_shells
+
+- name: Remove the exact history block written by older Algo versions
+  replace:
+    path: "{{ item.item }}/.bashrc"
+    regexp: '(?m)^# Privacy enhancement: disable bash history\nexport HISTFILE=/dev/null\nexport HISTSIZE=0\nexport HISTFILESIZE=0\nunset HISTFILE\n?'
+    replace: ''
+  loop: "{{ privacy_shells.results }}"
+  when: item.stat.exists
+
+- name: Apply the requested history policy to existing service accounts
+  blockinfile:
+    path: "{{ item.item }}/.bashrc"
+    marker: "# {mark} Algo service history"
+    block: |
+      export HISTSIZE=0
+      export HISTFILESIZE=0
+      unset HISTFILE
+    state: "{{ 'present' if privacy_enhancements_enabled | bool and privacy_history_clearing.disable_service_history | bool else 'absent' }}"
+  loop: "{{ privacy_shells.results }}"
+  when: item.stat.exists
+
+- name: Check the ownership of the global logout file
+  stat:
+    path: /etc/bash.bash_logout
+    checksum_algorithm: sha256
+  register: privacy_logout
+
+- name: Install the logout policy if Algo can manage this file
+  template:
+    src: clear-history-on-logout.sh.j2
+    dest: /etc/bash.bash_logout
+    mode: '0644'
+  when:
+    - privacy_enhancements_enabled | bool and privacy_history_clearing.clear_bash_history | bool
+    - not privacy_logout.stat.exists or privacy_logout.stat.checksum | default('') in privacy_logout_hashes
+
+- name: Remove the Algo logout policy when history cleanup is disabled
+  file:
+    path: /etc/bash.bash_logout
+    state: absent
+  when:
+    - not privacy_enhancements_enabled | bool or not privacy_history_clearing.clear_bash_history | bool
+    - privacy_logout.stat.checksum | default('') in privacy_logout_hashes

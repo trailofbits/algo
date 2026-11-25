@@ -67,7 +67,6 @@
 
         - import_role:
             name: privacy
-          when: privacy_enhancements_enabled | default(true)
           tags: privacy
 
         - tags: always
