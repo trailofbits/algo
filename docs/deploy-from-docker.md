@@ -108,6 +108,10 @@ Docker themselves provide a concept of [Content Trust](https://docs.docker.com/e
 2. The Docker image doesn't natively support [advanced](deploy-from-ansible.md) Algo deployments, which is useful for scripting. This can be done by launching an interactive shell and running the commands yourself.
 3. The way configuration is passed into and out of the container is a bit kludgy. Hopefully, future improvements in Docker volumes will make this a bit easier to handle.
 
+The wrapper preserves relative links inside the deployment store. On volumes that cannot create symlinks, it saves the localhost deployment name in `.algo-localhost` next to `config.cfg` and recreates the alias inside the container. Include that file when backing up the volume.
+
+If an older run left a physical `configs/localhost` directory alongside another deployment, the wrapper stops. Back up both directories, compare their contents and identify the active deployment before reconciling them.
+
 ## Advanced Usage
 
 If you want to poke around the Docker container yourself, you can do so by changing your `entrypoint`. Pass `--entrypoint=/bin/ash` as a parameter to `docker run`, and you'll be dropped into a full Linux shell in the container.
