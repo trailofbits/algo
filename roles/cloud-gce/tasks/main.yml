@@ -2,12 +2,33 @@
 - name: Include prompts
   import_tasks: prompts.yml
 
+- name: Derive a stable GCE network name for this deployment
+  set_fact:
+    gce_network_name: "algo-{{ ([project_id, algo_zone, algo_server_name] | join('/') | hash('sha256'))[:24] }}"
+
+- name: Look for an existing instance before configuring the network
+  gcp_compute_instance_info:
+    auth_kind: serviceaccount
+    service_account_file: "{{ credentials_file_path }}"
+    project: "{{ project_id }}"
+    zone: "{{ algo_zone }}"
+    filters: ["name = {{ algo_server_name }}"]
+  register: gce_existing
+
+- name: Require a matching network before reusing an instance
+  assert:
+    that: >-
+      not gce_existing.resources or
+      (gce_existing.resources | length == 1 and
+       gce_existing.resources[0].networkInterfaces[0].network | basename == gce_network_name)
+    fail_msg: An instance with this name uses a different network. Choose a new deployment name or manage the existing server with update-users.
+
 - name: Network configured
   gcp_compute_network:
     auth_kind: serviceaccount
     service_account_file: "{{ credentials_file_path }}"
     project: "{{ project_id }}"
-    name: algovpn
+    name: "{{ gce_network_name }}"
     auto_create_subnetworks: true
     routing_config:
       routing_mode: REGIONAL
@@ -18,21 +39,16 @@
     auth_kind: serviceaccount
     service_account_file: "{{ credentials_file_path }}"
     project: "{{ project_id }}"
-    name: algovpn
+    name: "{{ gce_network_name }}"
     network: "{{ gcp_compute_network }}"
     direction: INGRESS
-    # This firewall is shared across Algo instances in the project.
-    # Keep both protocols until firewall ownership is scoped to individual deployments.
-    allowed:
-      - ip_protocol: udp
-        ports:
-          - "500"
-          - "4500"
-          - "{{ wireguard_port | string }}"
-      - ip_protocol: tcp
-        ports:
-          - "{{ ssh_port }}"
-      - ip_protocol: icmp
+    target_tags: ["{{ gce_network_name }}"]
+    allowed: >-
+      {{ [{'ip_protocol': 'tcp', 'ports': [ssh_port | string]}, {'ip_protocol': 'icmp'}] +
+         ([{'ip_protocol': 'udp', 'ports': (['500', '4500'] if ipsec_enabled | bool else []) +
+              ([wireguard_port | string] if wireguard_enabled | bool else [])}]
+          if ipsec_enabled | bool or wireguard_enabled | bool else []) }}
+  register: gce_firewall
 
 - when: cloud_providers.gce.external_static_ip
   block:
@@ -41,7 +57,7 @@
         auth_kind: serviceaccount
         service_account_file: "{{ credentials_file_path }}"
         project: "{{ project_id }}"
-        name: "{{ algo_server_name }}"
+        name: "{{ gce_network_name }}"
         region: "{{ algo_region }}"
       register: gcp_compute_address
 
@@ -63,7 +79,7 @@
         initialize_params:
           source_image: projects/ubuntu-os-cloud/global/images/family/{{ cloud_providers.gce.image }}
     metadata:
-      ssh-keys: algo:{{ ssh_public_key_lookup }}
+      ssh-keys: algo:{{ lookup('file', SSH_keys.public) }}
       user-data: "{{ lookup('template', 'files/cloud-init/base.yml') }}"
     network_interfaces:
       - network: "{{ gcp_compute_network }}"
@@ -73,10 +89,19 @@
             type: ONE_TO_ONE_NAT
     tags:
       tag_values:
-        - environment-algo
+        - "{{ gce_network_name }}"
   register: gcp_compute_instance
 
 - set_fact:
+    gce_deployment:
+      project: "{{ project_id }}"
+      zone: "{{ algo_zone }}"
+      region: "{{ algo_region }}"
+      instance_id: "{{ gcp_compute_instance.id | string }}"
+      network_name: "{{ gce_network_name }}"
+      network_id: "{{ gcp_compute_network.id | string }}"
+      firewall_id: "{{ gce_firewall.id | string }}"
+      address_id: "{{ gcp_compute_address.id | default('') | string }}"
     cloud_instance_ip: "{{ gcp_compute_instance.networkInterfaces[0].accessConfigs[0].natIP }}"
     ansible_ssh_user: algo
     ansible_ssh_port: "{{ ssh_port }}"

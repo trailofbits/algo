@@ -1,90 +1,72 @@
 #!/usr/bin/python
+"""List Compute Engine regions or zones with the installed Google collection."""
+
+from ansible_collections.google.cloud.plugins.module_utils.gcp_utils import GcpModule, GcpSession
+
+DOCUMENTATION = """
+module: gcp_compute_location_info
+short_description: List Compute Engine regions or zones
+description: Lists the regions or zones visible to the authenticated Google Cloud project.
+extends_documentation_fragment:
+  - google.cloud.gcp
+  - google.cloud.info
+options:
+  scope:
+    description: The type of location to list.
+    type: str
+    required: true
+    choices: [regions, zones]
+"""
+
+EXAMPLES = """
+- name: List available Compute Engine regions
+  gcp_compute_location_info:
+    project: example-project
+    auth_kind: application
+    scope: regions
+"""
+
+RETURN = """
+resources:
+  description: Locations returned by Compute Engine.
+  type: list
+  elements: dict
+  returned: success
+"""
 
 
-import json
-
-from ansible.module_utils.gcp_utils import GcpModule, GcpSession, navigate_hash
-
-################################################################################
-# Documentation
-################################################################################
-
-ANSIBLE_METADATA = {"metadata_version": "1.1", "status": ["preview"], "supported_by": "community"}
-
-################################################################################
-# Main
-################################################################################
+def location_page(module, response):
+    """Read one list response, including empty pages and Google API errors."""
+    if response.status_code in (204, 404):
+        return {}
+    module.raise_for_status(response)
+    try:
+        result = response.json()
+    except ValueError as error:
+        module.fail_json(msg=f"Invalid JSON listing GCE locations: {error}")
+    if result.get("error"):
+        module.fail_json(msg=result["error"])
+    return result
 
 
 def main():
+    """Return every matching GCE location, following the API's page tokens."""
     module = GcpModule(
-        argument_spec={"filters": {"type": "list", "elements": "str"}, "scope": {"required": True, "type": "str"}}
+        argument_spec={
+            "filters": {"type": "list", "elements": "str", "default": []},
+            "scope": {"required": True, "type": "str", "choices": ["regions", "zones"]},
+        },
+        supports_check_mode=True,
     )
-
-    if module._name == "gcp_compute_image_facts":
-        module.deprecate(
-            "The 'gcp_compute_image_facts' module has been renamed to 'gcp_compute_regions_info'", version="2.13"
-        )
-
     if not module.params["scopes"]:
         module.params["scopes"] = ["https://www.googleapis.com/auth/compute"]
-
-    items = fetch_list(module, collection(module), query_options(module.params["filters"]))
-    if items.get("items"):
-        items = items.get("items")
-    else:
-        items = []
-    return_value = {"resources": items}
-    module.exit_json(**return_value)
-
-
-def collection(module):
-    return "https://www.googleapis.com/compute/v1/projects/{project}/{scope}".format(**module.params)
-
-
-def fetch_list(module, link, query):
-    auth = GcpSession(module, "compute")
-    response = auth.get(link, params={"filter": query})
-    return return_if_object(module, response)
-
-
-def query_options(filters):
-    if not filters:
-        return ""
-
-    if len(filters) == 1:
-        return filters[0]
-    else:
-        queries = []
-        for f in filters:
-            # For multiple queries, all queries should have ()
-            if f[0] != "(" and f[-1] != ")":
-                queries.append("({})".format("".join(f)))
-            else:
-                queries.append(f)
-
-        return " ".join(queries)
-
-
-def return_if_object(module, response):
-    # If not found, return nothing.
-    if response.status_code == 404:
-        return None
-
-    # If no content, return nothing.
-    if response.status_code == 204:
-        return None
-
-    try:
-        module.raise_for_status(response)
-        result = response.json()
-    except getattr(json.decoder, "JSONDecodeError", ValueError) as inst:
-        module.fail_json(msg=f"Invalid JSON response with error: {inst}")
-
-    if navigate_hash(result, ["error", "errors"]):
-        module.fail_json(msg=navigate_hash(result, ["error", "errors"]))
-
-    return result
+    filters = module.params["filters"]
+    if len(filters) > 1:
+        filters = [term if term.startswith("(") and term.endswith(")") else f"({term})" for term in filters]
+    query = " ".join(filters)
+    url = "https://compute.googleapis.com/compute/v1/projects/{project}/{scope}".format(**module.params)
+    resources = GcpSession(module, "compute").list(url, location_page, params={"filter": query})
+    module.exit_json(resources=resources)
 
 
 if __name__ == "__main__":

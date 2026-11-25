@@ -107,7 +107,7 @@
             file: "roles/cloud-{{ algo_provider }}/tasks/{{ provider_credentials_file }}.yml"
           vars:
             provider_credentials_file: >-
-              {{ 'auth' if algo_provider in ['azure', 'linode'] else 'prompts' }}
+              {{ 'auth' if algo_provider in ['azure', 'linode', 'gce'] else 'prompts' }}
           when: algo_provider != "local"
 
         - name: Display destroy plan
