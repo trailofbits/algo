@@ -80,6 +80,31 @@ def test_server_certificate_chain(deployment: CertificateDeployment):
     assert ike["RemoteIdentifier"] == SERVER_ADDRESS
 
 
+def test_crl_matches_issuer_and_preserves_retirement(deployment):
+    now = datetime.now(UTC)
+    path = deployment.pki / "crl.pem"
+    original = path.read_bytes()
+    try:
+        encoded = build_crl(deployment.pki, ["phone"], deployment.ca_password.decode(), now)
+        assert encoded is not None
+        crl = x509.load_pem_x509_crl(encoded)
+        ca = deployment.certificate("ca")
+        assert crl.is_signature_valid(ca.public_key())
+        assert crl.extensions.get_extension_for_class(x509.AuthorityKeyIdentifier).value.key_identifier == (
+            ca.extensions.get_extension_for_class(x509.SubjectKeyIdentifier).value.digest
+        )
+        assert [entry.serial_number for entry in crl] == [deployment.certificate("phone").serial_number]
+        path.write_bytes(encoded)
+        assert build_crl(deployment.pki, ["phone"], deployment.ca_password.decode(), now) is None
+        refreshed = build_crl(
+            deployment.pki, ["phone"], deployment.ca_password.decode(), crl.next_update_utc - timedelta(hours=1)
+        )
+        assert refreshed is not None
+        assert x509.load_pem_x509_crl(refreshed)[0].revocation_date_utc == crl[0].revocation_date_utc
+    finally:
+        path.write_bytes(original)
+
+
 def test_ca_restrictions(deployment: CertificateDeployment):
     """Keep the CA limited to IPsec issuance with no subordinate certificate authorities."""
     ca = deployment.certificate("ca")
@@ -299,28 +324,3 @@ def verify_certificate(ca: str, certificate: str):
         timeout=10,
         check=False,
     )
-
-
-def test_crl_matches_issuer_and_preserves_retirement(deployment):
-    now = datetime.now(UTC)
-    path = deployment.pki / "crl.pem"
-    original = path.read_bytes()
-    try:
-        encoded = build_crl(deployment.pki, ["phone"], deployment.ca_password.decode(), now)
-        assert encoded is not None
-        crl = x509.load_pem_x509_crl(encoded)
-        ca = deployment.certificate("ca")
-        assert crl.is_signature_valid(ca.public_key())
-        assert crl.extensions.get_extension_for_class(x509.AuthorityKeyIdentifier).value.key_identifier == (
-            ca.extensions.get_extension_for_class(x509.SubjectKeyIdentifier).value.digest
-        )
-        assert [entry.serial_number for entry in crl] == [deployment.certificate("phone").serial_number]
-        path.write_bytes(encoded)
-        assert build_crl(deployment.pki, ["phone"], deployment.ca_password.decode(), now) is None
-        refreshed = build_crl(
-            deployment.pki, ["phone"], deployment.ca_password.decode(), crl.next_update_utc - timedelta(hours=1)
-        )
-        assert refreshed is not None
-        assert x509.load_pem_x509_crl(refreshed)[0].revocation_date_utc == crl[0].revocation_date_utc
-    finally:
-        path.write_bytes(original)
