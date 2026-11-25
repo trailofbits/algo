@@ -23,7 +23,7 @@ py-modules = []
 [project.optional-dependencies]
 # Cloud provider dependencies (installed automatically based on provider selection)
 aws = [
-    "boto3==1.44.0",
+    "boto3==1.44.5",
 ]
 # Keep these SDK pins aligned with azure.azcollection in requirements.yml.
 # The collection imports all of these from azure_rm_common, even for ARM deployments.
