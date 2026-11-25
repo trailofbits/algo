@@ -242,35 +242,11 @@
       set_fact:
         all_users: "{{ lookup('file', ipsec_pki_path + '/all-users').splitlines() }}"
 
-    # Certificate Revocation List (CRL) for removed users
-    - name: Calculate current timestamp for CRL
-      set_fact:
-        crl_timestamp: "{{ '%Y%m%d%H%M%SZ' | strftime(ansible_facts['date_time'].epoch | int) }}"
-
-    - name: Identify users whose certificates need revocation
-      set_fact:
-        users_to_revoke: "{{ all_users | difference(users) }}"
-
-    - name: Build revoked certificates list
-      set_fact:
-        revoked_certificates: >-
-          {{ users_to_revoke | map('regex_replace', '^(.*)$',
-             '{"path": "' + ipsec_pki_path + '/certs/\1.crt", "revocation_date": "' + crl_timestamp + '"}') | list }}
-
-    - name: Generate a CRL
-      community.crypto.x509_crl:
-        path: "{{ ipsec_pki_path }}/crl.pem"
-        privatekey_path: "{{ ipsec_pki_path }}/private/cakey.pem"
-        privatekey_passphrase: "{{ CA_password }}"
-        last_update: "{{ '%Y%m%d%H%M%SZ' | strftime(ansible_facts['date_time'].epoch | int) }}"
-        next_update: >-
-          {{ '%Y%m%d%H%M%SZ' | strftime(
-             (ansible_facts['date_time'].epoch | int) + (10 * 365 * 24 * 60 * 60)) }}
-        crl_mode: generate
-        issuer:
-          CN: "{{ IP_subject_alt_name }}"
-        revoked_certificates: "{{ revoked_certificates }}"
-      no_log: true
+    - name: Sign the IPsec certificate revocation list
+      algo_ipsec_crl:
+        pki_dir: "{{ ipsec_pki_path | realpath }}"
+        revoked_users: "{{ all_users | difference(users) }}"
+        ca_password: "{{ CA_password }}"
 
     - name: Set CRL file permissions
       file:
@@ -282,5 +258,4 @@
     src: "{{ ipsec_pki_path }}/crl.pem"
     dest: "{{ config_prefix | default('/') }}etc/ipsec.d/crls/algo.root.pem"
     mode: '0644'
-  notify:
-    - rereadcrls
+  register: installed_crl
