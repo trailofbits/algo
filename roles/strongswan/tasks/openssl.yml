@@ -242,6 +242,12 @@
       set_fact:
         all_users: "{{ lookup('file', ipsec_pki_path + '/all-users').splitlines() }}"
 
+    - name: Check the retained device index before using certificate paths
+      include_tasks: "{{ algo_validate_names_file }}"
+      vars:
+        config_users: "{{ all_users }}"
+        config_endpoint: "{{ IP_subject_alt_name }}"
+
     # Certificate Revocation List (CRL) for removed users
     - name: Calculate current timestamp for CRL
       set_fact:
