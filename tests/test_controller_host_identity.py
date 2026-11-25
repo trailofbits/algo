@@ -26,6 +26,7 @@ def run_tasks(tmp_path, tasks, variables):
 
 
 def test_deployment_known_hosts(tmp_path):
+    tmp_path = tmp_path / "workspace with spaces"
     folder = tmp_path / "configs/server"
     folder.mkdir(parents=True)
     known = folder / "known_hosts"
@@ -39,6 +40,9 @@ def test_deployment_known_hosts(tmp_path):
     assert known.read_text() == "# existing host record\n"
     assert known.stat().st_mode & 0o777 == 0o600
     args = shlex.split((tmp_path / "args").read_text())
-    config = subprocess.check_output(["ssh", "-G", *args, "test.invalid"], text=True).lower()
-    assert "stricthostkeychecking accept-new" in config
-    assert str(known).lower() in config
+    assert f'UserKnownHostsFile="{known}"' in args
+    for address in ("test.invalid", "198.51.100.30"):
+        config = subprocess.check_output(["ssh", "-G", *args, address], text=True).lower()
+        assert "stricthostkeychecking accept-new" in config
+        assert "hostkeyalias server" in config
+        assert str(known).lower() in config

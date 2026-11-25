@@ -21,4 +21,5 @@
       set_fact:
         algo_ssh_trust_args: >-
           -o StrictHostKeyChecking=accept-new
-          -o {{ ('UserKnownHostsFile=' ~ playbook_dir ~ '/configs/' ~ IP_subject_alt_name ~ '/known_hosts') | quote }}
+          -o {{ ('HostKeyAlias=' ~ (IP_subject_alt_name | to_json)) | quote }}
+          -o {{ ('UserKnownHostsFile=' ~ ((playbook_dir ~ '/configs/' ~ IP_subject_alt_name ~ '/known_hosts') | to_json)) | quote }}
