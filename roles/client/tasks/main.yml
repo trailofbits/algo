@@ -51,13 +51,20 @@
   notify:
     - restart strongswan
 
-- name: Configure libstrongswan to relax CA constraints
-  copy:
-    src: libstrongswan-relax-constraints.conf
-    dest: "{{ configs_prefix }}/strongswan.d/relax-ca-constraints.conf"
-    owner: root
-    group: root
-    mode: '0644'
+- name: Inspect the former Algo certificate override
+  stat:
+    path: "{{ configs_prefix }}/strongswan.d/relax-ca-constraints.conf"
+    checksum_algorithm: sha256
+  register: client_certificate_override
+
+- name: Restore the distribution's certificate validation policy
+  file:
+    path: "{{ configs_prefix }}/strongswan.d/relax-ca-constraints.conf"
+    state: absent
+  when:
+    - client_certificate_override.stat.isreg | default(false)
+    - client_certificate_override.stat.checksum == (lookup('file', role_path ~ '/files/libstrongswan-relax-constraints.conf', rstrip=false) | hash('sha256'))
+  notify: restart strongswan
 
 - name: Setup the certificates and keys
   template:
