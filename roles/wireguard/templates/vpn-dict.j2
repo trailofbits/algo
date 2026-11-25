@@ -9,11 +9,11 @@
 	<key>PayloadDisplayName</key>
 	<string>{{ algo_server_name }}</string>
 	<key>PayloadIdentifier</key>
-	<string>com.apple.vpn.managed.{{ algo_server_name + system | to_uuid | upper }}</string>
+	<string>com.apple.vpn.managed.{{ (profile_seed ~ '/vpn') | to_uuid | upper }}</string>
 	<key>PayloadType</key>
 	<string>com.apple.vpn.managed</string>
 	<key>PayloadUUID</key>
-	<string>{{ algo_server_name + system | to_uuid | upper }}</string>
+	<string>{{ (profile_seed ~ '/vpn') | to_uuid | upper }}</string>
 	<key>PayloadVersion</key>
 	<integer>1</integer>
 	<key>Proxies</key>

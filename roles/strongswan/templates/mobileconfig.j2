@@ -1,6 +1,7 @@
 #jinja2:lstrip_blocks: True
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+{% set profile_seed = [IP_subject_alt_name, bundle.item, 'ipsec'] | to_json %}
 <plist version="1.0">
 <dict>
     <key>PayloadContent</key>
@@ -96,9 +97,9 @@
                     <integer>1440</integer>
                 </dict>
                 <key>LocalIdentifier</key>
-                <string>{{ item.0 }}@{{ openssl_constraint_random_id }}</string>
+                <string>{{ bundle.item }}@{{ openssl_constraint_random_id }}</string>
                 <key>PayloadCertificateUUID</key>
-                <string>{{ pkcs12_PayloadCertificateUUID }}</string>
+                <string>{{ (profile_seed ~ '/identity') | to_uuid | upper }}</string>
                 <!-- Use ECDSA P-384 certificates for strong security -->
                 <key>CertificateType</key>
                 <string>ECDSA384</string>
@@ -125,11 +126,11 @@
             <key>PayloadDisplayName</key>
             <string>{{ algo_server_name }}</string>
             <key>PayloadIdentifier</key>
-            <string>com.apple.vpn.managed.{{ VPN_PayloadIdentifier }}</string>
+            <string>com.apple.vpn.managed.{{ (profile_seed ~ '/vpn') | to_uuid | upper }}</string>
             <key>PayloadType</key>
             <string>com.apple.vpn.managed</string>
             <key>PayloadUUID</key>
-            <string>{{ VPN_PayloadIdentifier }}</string>
+            <string>{{ (profile_seed ~ '/vpn') | to_uuid | upper }}</string>
             <key>PayloadVersion</key>
             <real>1</real>
             <key>Proxies</key>
@@ -148,21 +149,21 @@
             <key>Password</key>
             <string>{{ p12_export_password }}</string>
             <key>PayloadCertificateFileName</key>
-            <string>{{ item.0 }}.p12</string>
+            <string>{{ bundle.item }}.p12</string>
             <key>PayloadContent</key>
             <data>
-            {{ item.1.stdout }}
+            {{ bundle.content }}
             </data>
             <key>PayloadDescription</key>
             <string>Adds a PKCS#12-formatted certificate</string>
             <key>PayloadDisplayName</key>
             <string>{{ algo_server_name }}</string>
             <key>PayloadIdentifier</key>
-            <string>com.apple.security.pkcs12.{{ pkcs12_PayloadCertificateUUID }}</string>
+            <string>com.apple.security.pkcs12.{{ (profile_seed ~ '/identity') | to_uuid | upper }}</string>
             <key>PayloadType</key>
             <string>com.apple.security.pkcs12</string>
             <key>PayloadUUID</key>
-            <string>{{ pkcs12_PayloadCertificateUUID }}</string>
+            <string>{{ (profile_seed ~ '/identity') | to_uuid | upper }}</string>
             <key>PayloadVersion</key>
             <integer>1</integer>
         </dict>
@@ -178,11 +179,11 @@
             <key>PayloadDisplayName</key>
             <string>{{ algo_server_name }}</string>
             <key>PayloadIdentifier</key>
-            <string>com.apple.security.root.{{ CA_PayloadIdentifier }}</string>
+            <string>com.apple.security.root.{{ (profile_seed ~ '/ca') | to_uuid | upper }}</string>
             <key>PayloadType</key>
             <string>com.apple.security.root</string>
             <key>PayloadUUID</key>
-            <string>{{ CA_PayloadIdentifier }}</string>
+            <string>{{ (profile_seed ~ '/ca') | to_uuid | upper }}</string>
             <key>PayloadVersion</key>
             <integer>1</integer>
         </dict>
@@ -190,7 +191,7 @@
     <key>PayloadDisplayName</key>
     <string>AlgoVPN {{ algo_server_name }} IKEv2</string>
     <key>PayloadIdentifier</key>
-    <string>donut.local.{{ 500000 | random | to_uuid | upper }}</string>
+    <string>donut.local.{{ (profile_seed ~ '/identifier') | to_uuid | upper }}</string>
     <key>PayloadOrganization</key>
 	<string>AlgoVPN</string>
     <key>PayloadRemovalDisallowed</key>
@@ -198,7 +199,7 @@
     <key>PayloadType</key>
     <string>Configuration</string>
     <key>PayloadUUID</key>
-    <string>{{ 400000 | random | to_uuid | upper }}</string>
+    <string>{{ (profile_seed ~ '/profile') | to_uuid | upper }}</string>
     <key>PayloadVersion</key>
     <integer>1</integer>
 </dict>
