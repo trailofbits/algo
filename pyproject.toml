@@ -168,7 +168,7 @@ dev = [
     "j2lint==1.3.0",       # Jinja2 template linter
     "prek==0.5.11",        # Same hook runner locally and in CI
     "setuptools==84.2.1", # Audit the installed build tool
-    "ty==0.0.105",         # Keep type checks stable across CI runs
+    "ty==0.0.106",         # Keep type checks stable across CI runs
     "hypothesis==6.170.15",
 ]
 
