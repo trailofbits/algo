@@ -288,7 +288,11 @@ Required variables:
 
 ### OpenStack
 
-You need to source the rc file prior to run Algo. Download it from the OpenStack dashboard->Compute->API Access and source it in the shell (eg: source /tmp/dhc-openrc.sh)
+Authenticate in the shell where you will run Algo. Download the OpenStack RC file from your provider's API Access page and source it, for example `source ~/Downloads/project-openrc.sh`. If you already have a `clouds.yaml`, set `OS_CLOUD` to the name of the cloud in that file.
+
+In `config.cfg`, set `cloud_providers.openstack.image` to the exact name of an active Ubuntu 22.04 image available to your project. The project needs a flavor that matches `cloud_providers.openstack.flavor_ram`, exactly one active external network, and an external or floating IPv4 address for the server.
+
+Run `./algo -e provider=openstack` and follow the prompts.
 
 ### CloudStack
 
