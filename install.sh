@@ -17,8 +17,6 @@ REPO_BRANCH="${11:-${REPO_BRANCH:-main}}"
 EXTRA_VARS="${12:-${EXTRA_VARS:-placeholder=null}}"
 ANSIBLE_EXTRA_ARGS="${13:-${ANSIBLE_EXTRA_ARGS:-}}"
 
-cd /opt/
-
 installRequirements() {
   export DEBIAN_FRONTEND=noninteractive
   apt-get update
@@ -50,16 +48,14 @@ publicIpFromInterface() {
 
 tryGetMetadata() {
   # Helper function to fetch metadata with retry
-  url="$1"
-  headers="$2"
-  response=""
+  local url="$1" headers="$2" response attempt
 
   # Try up to 2 times
   for attempt in 1 2; do
     if [ -n "$headers" ]; then
-      response="$(curl -s --connect-timeout 5 --max-time "${METADATA_TIMEOUT}" -H "$headers" "$url" || true)"
+      response="$(curl --noproxy '*' -fsS --connect-timeout 5 --max-time "${METADATA_TIMEOUT}" -H "$headers" "$url" || true)"
     else
-      response="$(curl -s --connect-timeout 5 --max-time "${METADATA_TIMEOUT}" "$url" || true)"
+      response="$(curl --noproxy '*' -fsS --connect-timeout 5 --max-time "${METADATA_TIMEOUT}" "$url" || true)"
     fi
 
     # If we got a response, return it
@@ -77,14 +73,41 @@ tryGetMetadata() {
   return 1
 }
 
+ec2MetadataHeader() {
+  local response token
+  response=$(curl --noproxy '*' -sS --connect-timeout 2 --max-time "${METADATA_TIMEOUT}" \
+    -X PUT -H 'X-aws-ec2-metadata-token-ttl-seconds: 60' \
+    --write-out $'\n%{http_code}' http://169.254.169.254/latest/api/token 2>/dev/null) || return 1
+  case "${response##*$'\n'}" in
+  200)
+    token=${response%$'\n'*}
+    [[ -n $token && $token != *$'\n'* && $token != *$'\r'* ]] || return 1
+    printf 'X-aws-ec2-metadata-token: %s' "$token"
+    ;;
+  404 | 405)
+    # Some Lightsail images only support IMDSv1. Verify AWS before using it.
+    [[ $(tryGetMetadata "http://169.254.169.254/latest/meta-data/services/domain" "") == amazonaws.com ]]
+    ;;
+  *) return 1 ;;
+  esac
+}
+
 publicIpFromMetadata() {
   # Set default timeout from environment or use 20 seconds
   METADATA_TIMEOUT="${METADATA_TIMEOUT:-20}"
 
-  if tryGetMetadata "http://169.254.169.254/metadata/v1/vendor-data" "" | grep DigitalOcean >/dev/null; then
+  local ec2_header
+  if ec2_header=$(ec2MetadataHeader); then
+    if ! ENDPOINT=$(tryGetMetadata "http://169.254.169.254/latest/meta-data/public-ipv4" "$ec2_header") ||
+      [[ ! $ENDPOINT =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
+      echo "EC2 returned no public IPv4 address. Supply the public VPN endpoint explicitly." >&2
+      return 1
+    fi
+  elif [[ $(cat /sys/class/dmi/id/sys_vendor 2>/dev/null) == 'Amazon EC2' ]]; then
+    echo "EC2 metadata is unavailable. Supply the public VPN endpoint explicitly." >&2
+    return 1
+  elif tryGetMetadata "http://169.254.169.254/metadata/v1/vendor-data" "" | grep DigitalOcean >/dev/null; then
     ENDPOINT="$(tryGetMetadata "http://169.254.169.254/metadata/v1/interfaces/public/0/ipv4/address" "")"
-  elif test "$(tryGetMetadata "http://169.254.169.254/latest/meta-data/services/domain" "")" = "amazonaws.com"; then
-    ENDPOINT="$(tryGetMetadata "http://169.254.169.254/latest/meta-data/public-ipv4" "")"
   elif host -t A -W 10 metadata.google.internal 127.0.0.53 >/dev/null; then
     ENDPOINT="$(tryGetMetadata "http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip" "Metadata-Flavor: Google")"
   elif test "$(tryGetMetadata "http://169.254.169.254/metadata/instance/compute/publisher/?api-version=2017-04-02&format=text" "Metadata:true")" = "Canonical"; then
@@ -128,10 +151,12 @@ deployAlgo() {
     tee /var/log/algo.log
 }
 
-if test "$METHOD" = "cloud"; then
-  publicIpFromMetadata
+# Bash leaves BASH_SOURCE empty when reading the installer from standard input.
+if [[ ${BASH_SOURCE[0]:-$0} == "$0" ]]; then
+  cd /opt/
+  if [[ $METHOD == cloud && $ENDPOINT == localhost ]]; then
+    publicIpFromMetadata
+  fi
+  installRequirements
+  deployAlgo
 fi
-
-installRequirements
-
-deployAlgo
