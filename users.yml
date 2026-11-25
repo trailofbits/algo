@@ -50,6 +50,12 @@
               else -%}omit{%-
               endif -%}
 
+        - name: Validate the selected directory before loading its configuration
+          assert:
+            that:
+              - algo_server is string and algo_server is match('^[A-Za-z0-9_.:-]+\Z') and algo_server not in ['.', '..']
+            fail_msg: Select a saved server directory by its IP address or hostname.
+
         - name: Import host specific variables
           include_vars:
             file: configs/{{ algo_server }}/.config.yml
@@ -62,6 +68,12 @@
               The 'users' list in config.cfg is empty. At least one user is required.
               Add users to config.cfg before running update-users.
           when: users | default([]) | length == 0
+
+        - name: Validate saved deployment and user names before updating keys
+          import_tasks: playbooks/validate-config-names.yml
+          vars:
+            config_users: "{{ users }}"
+            config_endpoint: "{{ IP_subject_alt_name }}"
 
         - name: Check local permissions and server connectivity
           import_tasks: playbooks/user-preflight.yml

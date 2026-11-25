@@ -6,6 +6,12 @@
     - config.cfg
 
   tasks:
+    - name: Validate the saved client and server names
+      import_tasks: playbooks/validate-config-names.yml
+      vars:
+        config_users: "{{ [vpn_user] }}"
+        config_endpoint: "{{ server_ip }}"
+
     - name: Add the droplet to an inventory group
       add_host:
         name: "{{ client_ip }}"

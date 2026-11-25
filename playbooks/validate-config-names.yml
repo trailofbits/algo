@@ -1,0 +1,22 @@
+---
+- name: Validate names used for generated files
+  assert:
+    that:
+      - config_users is sequence and config_users is not string and config_users is not mapping
+      - config_users | length > 0
+      - config_users | select('string') | list | length == config_users | length
+      - config_users | reject('match', '^[A-Za-z0-9_][A-Za-z0-9_.-]*\Z') | list | length == 0
+      - config_users | select('search', '\.\Z') | list | length == 0
+      - config_users | select('match', '(?i)^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|\Z)') | list | length == 0
+      - config_users | map('lower') | unique | length == config_users | length
+      - >-
+        config_endpoint is undefined or
+        (config_endpoint is string and
+         (config_endpoint is ansible.utils.ip_address or
+          (config_endpoint is match('^[A-Za-z0-9_][A-Za-z0-9_.-]*\Z') and not config_endpoint.endswith('.') and
+           config_endpoint is not match('(?i)^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\\.|\\Z)'))) and
+         config_endpoint | lower not in config_users | map('lower'))
+    fail_msg: >-
+      Use unique device names made of letters, numbers, underscores, dots or hyphens.
+      Start with a letter, number or underscore. Windows device names and trailing dots are reserved.
+      Use a distinct IP address or hostname for the server. Check config.cfg and the selected deployment.

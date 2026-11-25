@@ -252,6 +252,7 @@ def generate_certificates(deployment: CertificateDeployment) -> None:
         "IP_subject_alt_name": SERVER_ADDRESS,
         "ipv6_support": deployment.ipv6_support,
         "ipsec_pki_path": str(deployment.pki),
+        "algo_validate_names_file": str(ROOT / "playbooks/validate-config-names.yml"),
         "ipsec_config_path": str(workspace / "config"),
         "CA_password": deployment.ca_password.decode(),
         "p12_export_password": deployment.p12_password.decode(),

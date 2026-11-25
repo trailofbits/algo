@@ -27,6 +27,11 @@
     - config.cfg
 
   tasks:
+    - name: Check user names before provisioning
+      import_tasks: playbooks/validate-config-names.yml
+      vars:
+        config_users: "{{ users }}"
+
     - block:
         - name: Cloud prompt
           pause:
