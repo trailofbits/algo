@@ -38,13 +38,8 @@ def run_tasks(tmp_path, tasks, variables):
     ],
 )
 def test_endpoint_policy(tmp_path, endpoint, ipsec, accepted):
-    task = next(
-        task
-        for task in yaml.safe_load((ROOT / "playbooks/cloud-post.yml").read_text())
-        if task.get("name", "").startswith("Check the proposed IPsec")
-    )
-    task["block"][0]["include_vars"]["file"] = str(ROOT / "roles/strongswan/defaults/main.yml")
-    result = run_tasks(tmp_path, [task], {"IP_subject_alt_name": endpoint, "ipsec_enabled": ipsec})
+    tasks = [{"import_tasks": str(ROOT / "playbooks/ipsec-endpoint.yml")}]
+    result = run_tasks(tmp_path, tasks, {"IP_subject_alt_name": endpoint, "ipsec_enabled": ipsec})
     assert (result.returncode == 0) == accepted, result.stdout + result.stderr
     if not accepted:
         assert "The IPsec CA excludes" in result.stdout

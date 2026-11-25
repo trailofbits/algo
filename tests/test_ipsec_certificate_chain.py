@@ -94,6 +94,17 @@ def test_ca_restrictions(deployment: CertificateDeployment):
     assert set(extended_usage.value) == {IPSEC_END_ENTITY}
 
 
+def test_excluded_secondary_address_keeps_primary_certificate_valid(tmp_path):
+    deployment = CertificateDeployment(tmp_path, True, secrets.token_hex(16).encode(), secrets.token_hex(16).encode())
+    generate_certificates(deployment, supplemental_ipv6="fd00::1")
+    identity = (
+        deployment.certificate(SERVER_ADDRESS).extensions.get_extension_for_class(x509.SubjectAlternativeName).value
+    )
+    assert identity.get_values_for_type(x509.IPAddress) == [ipaddress.ip_address(SERVER_ADDRESS)]
+    valid = verify_certificate(str(deployment.pki / "cacert.pem"), str(deployment.pki / f"certs/{SERVER_ADDRESS}.crt"))
+    assert valid.returncode == 0, valid.stdout + valid.stderr
+
+
 def test_ca_name_constraints(deployment: CertificateDeployment):
     """Limit issued identities to this deployment and exclude public or private namespaces."""
     server = deployment.certificate(SERVER_ADDRESS)
@@ -218,7 +229,7 @@ def test_pkcs12_export(deployment: CertificateDeployment, include_ca: bool):
         assert manual.stat().st_mode & 0o777 == 0o600
 
 
-def generate_certificates(deployment: CertificateDeployment) -> None:
+def generate_certificates(deployment: CertificateDeployment, *, supplemental_ipv6: str = SERVER_IPV6) -> None:
     """Run production PKI and profile tasks entirely in a temporary workspace."""
     workspace = deployment.workspace
     (workspace / "templates").symlink_to(
@@ -247,7 +258,7 @@ def generate_certificates(deployment: CertificateDeployment) -> None:
         "ansible_python_interpreter": sys.executable,
         "ansible_facts": {
             "date_time": {"epoch": "1794480000"},
-            "default_ipv6": {"address": SERVER_IPV6},
+            "default_ipv6": {"address": supplemental_ipv6},
         },
         "IP_subject_alt_name": SERVER_ADDRESS,
         "ipv6_support": deployment.ipv6_support,
