@@ -114,8 +114,8 @@ def test_cloud_rule_requests(
 
 
 @pytest.mark.parametrize("scenario", CASES)
-def test_shared_gce_firewall_preserves_other_deployments(ansible_loader, ansible_templar, scenario):
-    wireguard, ipsec, _ = scenario
+def test_gce_firewall_targets_the_deployment(ansible_loader, ansible_templar, scenario):
+    wireguard, ipsec, expected = scenario
     tasks = ansible_loader.load_from_file(
         "roles/cloud-gce/tasks/main.yml",
         trusted_as_template=True,
@@ -125,8 +125,11 @@ def test_shared_gce_firewall_preserves_other_deployments(ansible_loader, ansible
         wireguard_enabled=wireguard,
         ipsec_enabled=ipsec,
         wireguard_port=42123,
+        ssh_port=2222,
+        gce_network_name="algo-one",
     )
+    assert templar.template(task["gcp_compute_firewall"]["target_tags"]) == ["algo-one"]
     allowed = templar.template(task["gcp_compute_firewall"]["allowed"])
     udp = [rule for rule in allowed if rule["ip_protocol"] == "udp"]
     assert all(rule["ports"] for rule in udp), "Empty GCE port lists open every UDP port"
-    assert {int(port) for rule in udp for port in rule["ports"]} == {500, 4500, 42123}
+    assert {int(port) for rule in udp for port in rule["ports"]} == expected

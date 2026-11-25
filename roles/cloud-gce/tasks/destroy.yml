@@ -1,55 +1,122 @@
 ---
-- name: Get zones
-  gcp_compute_location_info:
+- name: Read saved GCE ownership
+  set_fact:
+    gce_saved: "{{ _server_cfg.gce_deployment | default({}) }}"
+
+- name: Verify the project and zone before looking up resources
+  assert:
+    that:
+      - project_id | length > 0
+      - project_id == gce_saved.project | default(gce_legacy_project | default(''))
+      - gce_saved.zone | default(gce_legacy_zone | default('')) is match('^' + (region | regex_escape) + '-[a-z]$')
+      - >-
+        not gce_saved or (gce_saved.region == region and gce_saved.instance_id | string | length > 0 and
+        gce_saved.network_id | string | length > 0 and gce_saved.firewall_id | string | length > 0)
+    fail_msg: >-
+      Verify the project, region and zone against the saved deployment.
+      Older deployments require explicit gce_legacy_project and gce_legacy_zone values.
+
+- name: Select the recorded names and zone
+  set_fact:
+    gce_destroy_zone: "{{ gce_saved.zone | default(gce_legacy_zone | default('')) }}"
+    gce_address_name: "{{ gce_saved.network_name | default(algo_server_name) }}"
+
+- name: Look up the instance by name and verified zone
+  gcp_compute_instance_info:
     auth_kind: serviceaccount
     service_account_file: "{{ credentials_file_path }}"
     project: "{{ project_id }}"
-    scope: zones
-    filters:
-      - name={{ algo_region }}-*
-      - status=UP
-  register: gcp_compute_zone_info
+    zone: "{{ gce_destroy_zone }}"
+    filters: ["name = {{ algo_server_name }}"]
+  register: gce_instance
 
-- name: Set zone
-  set_fact:
-    algo_zone: >-
-      {{ (gcp_compute_zone_info.resources |
-          random(seed=algo_server_name + algo_region + project_id)
-         ).name }}
+- name: Look up the reserved address in the verified region
+  gcp_compute_address_info:
+    auth_kind: serviceaccount
+    service_account_file: "{{ credentials_file_path }}"
+    project: "{{ project_id }}"
+    region: "{{ region }}"
+    filters: ["name = {{ gce_address_name }}"]
+  register: gce_address
 
-- name: Destroy GCE instance
+- name: Check instance and address identity before deleting anything
+  assert:
+    that:
+      - gce_instance.resources | length <= 1 and gce_address.resources | length <= 1
+      - >-
+        not gce_instance.resources or
+        (gce_instance.resources[0].id | string == gce_saved.instance_id | string if gce_saved else
+        saved_ip in (gce_instance.resources[0].networkInterfaces | map(attribute='accessConfigs', default=[]) |
+        flatten | selectattr('natIP', 'defined') | map(attribute='natIP') | list))
+      - >-
+        not gce_address.resources or
+        (gce_address.resources[0].id | string == gce_saved.address_id | string if gce_saved else gce_address.resources[0].address == saved_ip)
+      - gce_saved | length > 0 or gce_instance.resources | length > 0 or gce_address.resources | length > 0
+    fail_msg: The GCE resources do not match this deployment. Verify the stored identifiers before retrying.
+  vars:
+    saved_ip: "{{ _server_cfg.server | default(server_ip) }}"
+
+- name: Look up the deployment firewall
+  gcp_compute_firewall_info:
+    auth_kind: serviceaccount
+    service_account_file: "{{ credentials_file_path }}"
+    project: "{{ project_id }}"
+    filters: ["name = {{ gce_saved.network_name }}"]
+  register: gce_firewall
+  when: gce_saved | length > 0
+
+- name: Look up the deployment network
+  gcp_compute_network_info:
+    auth_kind: serviceaccount
+    service_account_file: "{{ credentials_file_path }}"
+    project: "{{ project_id }}"
+    filters: ["name = {{ gce_saved.network_name }}"]
+  register: gce_network
+  when: gce_saved | length > 0
+
+- name: Verify firewall and network IDs before issuing any delete
+  assert:
+    that:
+      - gce_firewall.resources | length <= 1 and gce_network.resources | length <= 1
+      - not gce_firewall.resources or gce_firewall.resources[0].id | string == gce_saved.firewall_id | string
+      - not gce_network.resources or gce_network.resources[0].id | string == gce_saved.network_id | string
+    fail_msg: A GCE firewall or network was replaced. Inspect it before retrying.
+  when: gce_saved | length > 0
+
+- name: Remove the verified instance
   gcp_compute_instance:
     auth_kind: serviceaccount
     service_account_file: "{{ credentials_file_path }}"
     project: "{{ project_id }}"
     name: "{{ algo_server_name }}"
-    zone: "{{ algo_zone }}"
+    zone: "{{ gce_destroy_zone }}"
     state: absent
+  when: gce_instance.resources | length == 1
 
-- name: Remove static IP
+- name: Remove the verified address
   gcp_compute_address:
     auth_kind: serviceaccount
     service_account_file: "{{ credentials_file_path }}"
     project: "{{ project_id }}"
-    name: "{{ algo_server_name }}"
-    region: "{{ algo_region }}"
+    name: "{{ gce_address_name }}"
+    region: "{{ region }}"
     state: absent
-  failed_when: false
+  when: gce_address.resources | length == 1
 
-- name: Remove firewall rule
+- name: Remove the verified firewall
   gcp_compute_firewall:
     auth_kind: serviceaccount
     service_account_file: "{{ credentials_file_path }}"
     project: "{{ project_id }}"
-    name: algovpn
+    name: "{{ gce_saved.network_name }}"
     state: absent
-  failed_when: false
+  when: gce_saved | length > 0 and gce_firewall.resources | length == 1
 
-- name: Remove network
+- name: Remove the verified network
   gcp_compute_network:
     auth_kind: serviceaccount
     service_account_file: "{{ credentials_file_path }}"
     project: "{{ project_id }}"
-    name: algovpn
+    name: "{{ gce_saved.network_name }}"
     state: absent
-  failed_when: false
+  when: gce_saved | length > 0 and gce_network.resources | length == 1

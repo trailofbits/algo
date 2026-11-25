@@ -39,3 +39,7 @@ gcloud services enable compute.googleapis.com
 
 
 There are more advanced arguments available for deployment [using ansible](deploy-from-ansible.md).
+
+## Managing existing deployments
+
+New deployments save their project, zone and cloud resource IDs and use a separate network and firewall. Older servers stay on the shared network. Use the usual user update command to manage their users. To destroy an older server, supply its verified project and zone, for example `./algo destroy 198.51.100.10 -e gce_legacy_project=my-project -e gce_legacy_zone=us-east1-b`. Algo checks the public address and leaves the shared network and firewall in place. If the instance and address are both gone, reconcile the local backup manually.
