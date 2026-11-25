@@ -21,6 +21,7 @@ def test_destroy_uses_locked_extras(tmp_path: Path, provider: str, extra: str | 
     tasks = yaml.safe_load((ROOT / "destroy.yml").read_text())[0]["tasks"][0]["block"]
     task_name = "Install cloud provider dependencies"
     install = next(task for task in tasks if task.get("name") == task_name)
+    install["import_tasks"] = str(ROOT / install["import_tasks"])
     recorded = tmp_path / "arguments.json"
     binary = tmp_path / "uv"
     binary.write_text(

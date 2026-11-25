@@ -36,7 +36,8 @@ def test_destroy_only_removes_one_server_directory(
     shutil.copy(ROOT / "destroy.yml", tmp_path)
     shutil.copy(ROOT / "config.cfg", tmp_path)
     (tmp_path / "playbooks").mkdir()
-    shutil.copy(ROOT / "playbooks/rescue.yml", tmp_path / "playbooks")
+    for name in ("rescue.yml", "install-provider.yml"):
+        shutil.copy(ROOT / "playbooks" / name, tmp_path / "playbooks")
     (tmp_path / "configs").mkdir()
     victim = tmp_path / "victim"
     victim.mkdir()
@@ -93,7 +94,8 @@ def prepare_azure_destroy(tmp_path: Path) -> tuple[Path, Path]:
     for name in ("destroy.yml", "config.cfg"):
         shutil.copy(ROOT / name, tmp_path)
     (tmp_path / "playbooks").mkdir()
-    shutil.copy(ROOT / "playbooks/rescue.yml", tmp_path / "playbooks")
+    for name in ("rescue.yml", "install-provider.yml"):
+        shutil.copy(ROOT / "playbooks" / name, tmp_path / "playbooks")
     role = tmp_path / "roles/cloud-azure"
     shutil.copytree(ROOT / "roles/cloud-azure", role)
     server = tmp_path / "configs/192.0.2.1"
