@@ -73,16 +73,33 @@ tryGetMetadata() {
   return 1
 }
 
+ec2MetadataHeader() {
+  local response token
+  response=$(curl --noproxy '*' -sS --connect-timeout 2 --max-time "${METADATA_TIMEOUT}" \
+    -X PUT -H 'X-aws-ec2-metadata-token-ttl-seconds: 60' \
+    --write-out $'\n%{http_code}' http://169.254.169.254/latest/api/token 2>/dev/null) || return 1
+  case "${response##*$'\n'}" in
+  200)
+    token=${response%$'\n'*}
+    [[ -n $token && $token != *$'\n'* && $token != *$'\r'* ]] || return 1
+    printf 'X-aws-ec2-metadata-token: %s' "$token"
+    ;;
+  404 | 405)
+    # Some Lightsail images only support IMDSv1. Verify AWS before using it.
+    [[ $(tryGetMetadata "http://169.254.169.254/latest/meta-data/services/domain" "") == amazonaws.com ]]
+    ;;
+  *) return 1 ;;
+  esac
+}
+
 publicIpFromMetadata() {
   # Set default timeout from environment or use 20 seconds
   METADATA_TIMEOUT="${METADATA_TIMEOUT:-20}"
 
-  local token
-  if token=$(curl --noproxy '*' -fsS --connect-timeout 2 --max-time "${METADATA_TIMEOUT}" \
-      -X PUT -H 'X-aws-ec2-metadata-token-ttl-seconds: 60' \
-      http://169.254.169.254/latest/api/token 2>/dev/null) && [[ -n $token ]]; then
-    if ! ENDPOINT=$(tryGetMetadata "http://169.254.169.254/latest/meta-data/public-ipv4" "X-aws-ec2-metadata-token: $token") ||
-        [[ ! $ENDPOINT =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
+  local ec2_header
+  if ec2_header=$(ec2MetadataHeader); then
+    if ! ENDPOINT=$(tryGetMetadata "http://169.254.169.254/latest/meta-data/public-ipv4" "$ec2_header") ||
+      [[ ! $ENDPOINT =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
       echo "EC2 returned no public IPv4 address. Supply the public VPN endpoint explicitly." >&2
       return 1
     fi
