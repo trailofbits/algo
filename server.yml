@@ -33,7 +33,9 @@
                 mode: "0600"
                 content: |
                   Host {{ IP_subject_alt_name }} {{ algo_server_name }}
-                    HostName {{ IP_subject_alt_name }}
+                    HostName {{ inventory_hostname }}
+                    StrictHostKeyChecking accept-new
+                    UserKnownHostsFile {{ (playbook_dir ~ '/configs/' ~ IP_subject_alt_name ~ '/known_hosts') | to_json }}
                     User {{ ansible_ssh_user }}
                     Port {{ ansible_ssh_port }}
                     IdentitiesOnly yes

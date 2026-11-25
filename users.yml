@@ -87,10 +87,15 @@
           import_tasks: playbooks/cloud-pre.yml
           become: false
 
+        - name: Prepare SSH server verification
+          import_tasks: playbooks/ssh-trust.yml
+          when: algo_server != 'localhost'
+
         - name: Add the server to the vpn-host group
           add_host:
             name: "{{ algo_server }}"
             groups: vpn-host
+            ansible_ssh_common_args: "{{ algo_ssh_trust_args | default(omit) }}"
             ansible_ssh_user: "{{ server_user | default('root') }}"
             ansible_connection: "{% if algo_server == 'localhost' %}local{% else %}ssh{% endif %}"
             ansible_python_interpreter: "{% if algo_server == 'localhost' %}{{ ansible_playbook_python }}{% else %}/usr/bin/python3{% endif %}"

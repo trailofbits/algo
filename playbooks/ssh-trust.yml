@@ -1,0 +1,24 @@
+---
+- name: Prepare the controller's SSH trust file for this deployment
+  become: false
+  delegate_to: localhost
+  block:
+    - name: Create the deployment directory before the first SSH connection
+      file:
+        path: "{{ playbook_dir }}/configs/{{ IP_subject_alt_name }}"
+        state: directory
+        mode: '0700'
+
+    - name: Preserve remembered SSH server keys
+      file:
+        path: "{{ playbook_dir }}/configs/{{ IP_subject_alt_name }}/known_hosts"
+        state: touch
+        mode: '0600'
+        modification_time: preserve
+        access_time: preserve
+
+    - name: Use this deployment's trust file for SSH
+      set_fact:
+        algo_ssh_trust_args: >-
+          -o StrictHostKeyChecking=accept-new
+          -o {{ ('UserKnownHostsFile=' ~ playbook_dir ~ '/configs/' ~ IP_subject_alt_name ~ '/known_hosts') | quote }}
