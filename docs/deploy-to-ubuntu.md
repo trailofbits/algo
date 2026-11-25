@@ -21,6 +21,12 @@ For local installation on the same machine, you must run:
 sudo ./algo
 ```
 
+If the remote server listens on an SSH port other than 22, pass that port when you start Algo. This command uses port 22022.
+
+```bash
+./algo -e ansible_ssh_port=22022
+```
+
 ## Confirmation Prompt
 
 Local installation displays a warning and requires you to type `yes` to proceed. This ensures you understand that Algo will modify firewall rules and system settings, and that there is no uninstall option.
