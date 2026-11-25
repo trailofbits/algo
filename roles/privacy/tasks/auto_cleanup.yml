@@ -16,8 +16,7 @@
     minute: "30"
     hour: "2"
     user: root
-    state: "{{ 'present' if privacy_auto_cleanup.enabled else 'absent' }}"
-  when: privacy_auto_cleanup.frequency == 'daily'
+    state: "{{ 'present' if privacy_auto_cleanup.enabled | bool and privacy_auto_cleanup.frequency == 'daily' else 'absent' }}"
 
 - name: Set up weekly privacy cleanup cron job
   cron:
@@ -27,8 +26,7 @@
     hour: "2"
     weekday: "0"
     user: root
-    state: "{{ 'present' if privacy_auto_cleanup.enabled else 'absent' }}"
-  when: privacy_auto_cleanup.frequency == 'weekly'
+    state: "{{ 'present' if privacy_auto_cleanup.enabled | bool and privacy_auto_cleanup.frequency == 'weekly' else 'absent' }}"
 
 - name: Set up monthly privacy cleanup cron job
   cron:
@@ -38,20 +36,7 @@
     hour: "2"
     day: "1"
     user: root
-    state: "{{ 'present' if privacy_auto_cleanup.enabled else 'absent' }}"
-  when: privacy_auto_cleanup.frequency == 'monthly'
-
-- name: Create systemd service for privacy cleanup on shutdown
-  template:
-    src: privacy-shutdown-cleanup.service.j2
-    dest: /etc/systemd/system/privacy-shutdown-cleanup.service
-    mode: '0644'
-    owner: root
-    group: root
-  when: privacy_advanced.clear_logs_on_shutdown | bool
-  notify:
-    - reload systemd
-    - enable privacy shutdown cleanup
+    state: "{{ 'present' if privacy_auto_cleanup.enabled | bool and privacy_auto_cleanup.frequency == 'monthly' else 'absent' }}"
 
 - name: Clean up temporary files immediately
   shell: |

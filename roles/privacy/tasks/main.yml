@@ -7,15 +7,33 @@
   debug:
     msg: "Privacy enhancements are {{ 'enabled' if privacy_enhancements_enabled else 'disabled' }}"
 
+- name: Check whether rsyslog is installed
+  stat:
+    path: /usr/sbin/rsyslogd
+  register: privacy_rsyslog
+  tags: [always]
+
+
+- name: Retire the old shutdown unit without running its stop command
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/systemd/system/shutdown.target.wants/privacy-shutdown-cleanup.service
+    - /etc/systemd/system/privacy-shutdown-cleanup.service
+  notify: reload systemd
+
+- name: Reconcile history configuration
+  import_tasks: history_policy.yml
+  tags: privacy-history
+
+- name: Remove privacy settings when disabled
+  include_tasks: disable.yml
+  when: not privacy_enhancements_enabled | bool
+
 - name: Privacy enhancements block
   when: privacy_enhancements_enabled | bool
   block:
-    - name: Check whether rsyslog is installed
-      stat:
-        path: /usr/sbin/rsyslogd
-      register: privacy_rsyslog
-      tags: [always]
-
     - name: Include log rotation tasks
       include_tasks: log_rotation.yml
       tags: privacy-logs

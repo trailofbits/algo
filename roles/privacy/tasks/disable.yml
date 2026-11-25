@@ -1,0 +1,48 @@
+---
+- name: Remove Algo's scheduled cleanup jobs
+  cron:
+    name: "{{ item }}"
+    user: root
+    state: absent
+  loop:
+    - Privacy auto cleanup
+    - Privacy auto cleanup weekly
+    - Privacy auto cleanup monthly
+    - Enhanced privacy log rotation
+
+- name: Remove Algo's privacy scripts and kernel configuration
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /usr/local/bin/privacy-auto-cleanup.sh
+    - /usr/local/bin/privacy-log-cleanup.sh
+    - /usr/local/bin/privacy-monitor.sh
+    - /etc/sysctl.d/99-privacy.conf
+
+- name: Remove Algo's journal policy
+  file:
+    path: /etc/systemd/journald.conf.d/99-algo-privacy.conf
+    state: absent
+  notify: restart systemd-journald
+
+- name: Remove Algo's log rotation and rsyslog rules
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/logrotate.d/99-privacy-enhanced
+    - /etc/logrotate.d/99-auth-privacy
+    - /etc/logrotate.d/99-kern-privacy
+    - /etc/rsyslog.d/45-privacy-minimal.conf
+    - /etc/rsyslog.d/46-privacy-ssh-filter.conf
+    - /etc/rsyslog.d/47-privacy-auth-filter.conf
+    - /etc/rsyslog.d/48-privacy-kernel-filter.conf
+    - /etc/rsyslog.d/49-privacy-vpn-filter.conf
+  notify: restart rsyslog
+
+- name: Restore the distribution logrotate file if it is still absent
+  command: mv /etc/logrotate.d/rsyslog.disabled /etc/logrotate.d/rsyslog
+  args:
+    creates: /etc/logrotate.d/rsyslog
+    removes: /etc/logrotate.d/rsyslog.disabled

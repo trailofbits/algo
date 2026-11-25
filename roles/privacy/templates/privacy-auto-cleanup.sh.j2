@@ -47,6 +47,7 @@ apt-get clean 2>/dev/null || true
 apt-get autoclean 2>/dev/null || true
 {% endif %}
 
+{% if privacy_history_clearing.clear_bash_history | bool %}
 # Clean bash history files
 log_message "Cleaning bash history files"
 for user_home in /home/* /root; do
@@ -57,6 +58,7 @@ for user_home in /home/* /root; do
         rm -f "$user_home/.viminfo" 2>/dev/null || true
     fi
 done
+{% endif %}
 
 # Clean core dumps
 log_message "Cleaning core dumps"
