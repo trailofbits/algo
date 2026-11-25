@@ -3,9 +3,22 @@
   delegate_to: localhost
   vars:
     ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    algo_validate_names_file: "{{ role_path }}/../../playbooks/validate-config-names.yml"
     certificate_validity_days: 3650  # 10 years - configurable certificate lifespan
   block:
     - debug: var=subjectAltName
+
+    - name: Locate the retained device index before changing keys
+      stat:
+        path: "{{ ipsec_pki_path }}/all-users"
+      register: ipsec_device_index
+
+    - name: Check the retained device index before using certificate paths
+      include_tasks: "{{ algo_validate_names_file }}"
+      vars:
+        config_users: "{{ lookup('file', ipsec_pki_path + '/all-users').splitlines() }}"
+        config_endpoint: "{{ IP_subject_alt_name }}"
+      when: ipsec_device_index.stat.exists
 
     - name: Ensure the pki directory does not exist
       file:
@@ -241,12 +254,6 @@
     - name: Set all users as a fact
       set_fact:
         all_users: "{{ lookup('file', ipsec_pki_path + '/all-users').splitlines() }}"
-
-    - name: Check the retained device index before using certificate paths
-      include_tasks: "{{ algo_validate_names_file }}"
-      vars:
-        config_users: "{{ all_users }}"
-        config_endpoint: "{{ IP_subject_alt_name }}"
 
     # Certificate Revocation List (CRL) for removed users
     - name: Calculate current timestamp for CRL
